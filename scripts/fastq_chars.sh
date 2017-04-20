@@ -249,6 +249,20 @@ fi
 rm "${OUTPUT}"
 rm "${INPUT}"
 
+## --fastq_chars number of nucleotides is correct #1
+INPUT=$(mktemp)
+printf '@a_1\nACCC\n+\naacc\n' > "${INPUT}"
+OUTPUT=$(mktemp)
+DESCRIPTION="--fastq_chars number of nucleotides is correct #1"
+"${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
+NUMBER=$(sed "12q;d" "${OUTPUT}" | \
+		    awk -F "[ ]" '{print $16}')
+[[ "${NUMBER}" == '1' ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+rm "${INPUT}"
+
 ## --fastq_chars percentage of nucleotides is correct
 INPUT=$(mktemp)
 printf '@a_1\nCTAT\n+\n;CXH\n' > "${INPUT}"
@@ -325,7 +339,6 @@ printf '@a_1\nCCACCTT\n+\n;CCCCXH\n' > "${INPUT}"
 OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars percentage of nucleotides is rounded to 1 digit of precison #2"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
-cat "${OUTPUT}"
 PERCENTAGE=$(sed "19q;d" "${OUTPUT}" | \
 		    awk -F "[ ]" '{print $10}')
 [[ "${PERCENTAGE}" == '57.1%' ]] && \
