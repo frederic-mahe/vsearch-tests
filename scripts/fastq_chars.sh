@@ -263,6 +263,20 @@ NUMBER=$(sed "12q;d" "${OUTPUT}" | \
 rm "${OUTPUT}"
 rm "${INPUT}"
 
+## --fastq_chars number of nucleotides is correct #2
+INPUT=$(mktemp)
+printf '@a_1\nACAA\n+\naacc\n' > "${INPUT}"
+OUTPUT=$(mktemp)
+DESCRIPTION="--fastq_chars number of nucleotides is correct #2"
+"${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
+NUMBER=$(sed "12q;d" "${OUTPUT}" | \
+		    awk -F "[ ]" '{print $16}')
+[[ "${NUMBER}" == '3' ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+rm "${INPUT}"
+
 ## --fastq_chars percentage of nucleotides is correct
 INPUT=$(mktemp)
 printf '@a_1\nCTAT\n+\n;CXH\n' > "${INPUT}"
@@ -304,6 +318,37 @@ PERCENTAGE=$(sed "13q;d" "${OUTPUT}" | \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 rm "${INPUT}"
+
+## --fastq_chars MaxRun is correct #1
+INPUT=$(mktemp)
+printf '@a_1\nAACT\n+\naacc\n' > "${INPUT}"
+OUTPUT=$(mktemp)
+DESCRIPTION="--fastq_chars MaxRun is correct #1"
+"${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
+NUMBER=$(sed "12q;d" "${OUTPUT}" | \
+		    awk -F "[ ]" '{print $24}')
+[[ "${NUMBER}" == '1' ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+rm "${INPUT}"
+
+## --fastq_chars MaxRun is correct #2
+INPUT=$(mktemp)
+printf '@a_1\nAAAACA\n+\naaaccc\n' > "${INPUT}"
+OUTPUT=$(mktemp)
+DESCRIPTION="--fastq_chars MaxRun is correct #2"
+"${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
+cat "${OUTPUT}"
+NUMBER=$(sed "12q;d" "${OUTPUT}" | \
+		awk -F "[ ]" '{print $24}')
+printf "${NUMBER}"
+[[ "${NUMBER}" == '3' ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+rm "${INPUT}"
+
 
 ## --fastq_chars percentage of score letters is correct
 INPUT=$(mktemp)
