@@ -31,10 +31,9 @@ DESCRIPTION="check if vsearch is in the PATH"
 #*****************************************************************************#
 
 ## --fastq_chars is accepted
-INPUT=$(mktemp)
-printf '@a_1\nACGT\n+\n!!aa\n' > "${INPUT}"
 DESCRIPTION="--fastq_chars is accepted"
-"${VSEARCH}" --fastq_chars "${INPUT}" &> /dev/null && \
+printf '@a_1\nACGT\n+\n!!aa\n' | \
+    "${VSEARCH}" --fastq_chars - &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -51,8 +50,6 @@ OFFSET=$(sed "8q;d" "${OUTPUT}" | \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 rm "${OFF33}"
-
-
 
 ## --fastq_chars detects +64 quality score
 OFF64=$(mktemp)
@@ -90,7 +87,7 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars diplay correct number of sequences #1"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 NB_SEQUENCES=$(sed "5q;d" "${OUTPUT}" | \
-		awk -F "[ ]" '{print $2}')
+		      awk -F "[ ]" '{print $2}')
 [[ "${NB_SEQUENCES}" == "1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -104,7 +101,7 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars diplay correct number of sequences #2"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 NB_SEQUENCES=$(sed "5q;d" "${OUTPUT}" | \
-		awk -F "[ ]" '{print $2}')
+		      awk -F "[ ]" '{print $2}')
 [[ "${NB_SEQUENCES}" == "3" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -118,7 +115,7 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars diplay correct number of sequences #2"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 NB_SEQUENCES=$(sed "5q;d" "${OUTPUT}" | \
-		awk -F "[ ]" '{print $2}')
+		      awk -F "[ ]" '{print $2}')
 [[ "${NB_SEQUENCES}" == "3" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -160,7 +157,7 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars range is correct"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 RANGE=$(sed "6q;d" "${OUTPUT}" | \
-	      awk -F "[ ]" '{print $6}')
+	       awk -F "[ ]" '{print $6}')
 [[ "${RANGE}" == "30" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -174,7 +171,7 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars range is correct"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 RANGE=$(sed "6q;d" "${OUTPUT}" | \
-	      awk -F "[ ]" '{print $6}')
+	       awk -F "[ ]" '{print $6}')
 [[ "${RANGE}" == "30" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -202,9 +199,9 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars format guess is correct for Illumina 1.3+"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 FORMAT=$(sed "8q;d" "${OUTPUT}" | \
-	      awk -F "[ ]" '{print $2}')
+		awk -F "[ ]" '{print $2}')
 VERSION=$(sed "8q;d" "${OUTPUT}" | \
-	      awk -F "[ ]" '{print $3}')
+		 awk -F "[ ]" '{print $3}')
 if [[ "${FORMAT}" == "Illumina" ]] && [[ "${VERSION}" == "1.3+" ]]; then
     success "${DESCRIPTION}"
 else
@@ -220,9 +217,9 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars format guess is correct for Illumina 1.5+"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 FORMAT=$(sed "8q;d" "${OUTPUT}" | \
-	      awk -F "[ ]" '{print $2}')
+		awk -F "[ ]" '{print $2}')
 VERSION=$(sed "8q;d" "${OUTPUT}" | \
-	      awk -F "[ ]" '{print $3}')
+		 awk -F "[ ]" '{print $3}')
 if [[ "${FORMAT}" == "Illumina" ]] && [[ "${VERSION}" == "1.5+" ]]; then
     success "${DESCRIPTION}"
 else
@@ -238,9 +235,9 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars format guess is correct for Illumina 1.8+"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 FORMAT=$(sed "8q;d" "${OUTPUT}" | \
-	      awk -F "[ ]" '{print $2}')
+		awk -F "[ ]" '{print $2}')
 VERSION=$(sed "8q;d" "${OUTPUT}" | \
-	      awk -F "[ ]" '{print $3}')
+		 awk -F "[ ]" '{print $3}')
 if [[ "${FORMAT}" == "Illumina" ]] && [[ "${VERSION}" == "1.8+" ]]; then
     success "${DESCRIPTION}"
 else
@@ -256,7 +253,7 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars number of nucleotides is correct #1"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 NUMBER=$(sed "12q;d" "${OUTPUT}" | \
-		    awk -F "[ ]" '{print $16}')
+		awk -F "[ ]" '{print $16}')
 [[ "${NUMBER}" == '1' ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -270,7 +267,7 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars number of nucleotides is correct #2"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 NUMBER=$(sed "12q;d" "${OUTPUT}" | \
-		    awk -F "[ ]" '{print $16}')
+		awk -F "[ ]" '{print $16}')
 [[ "${NUMBER}" == '3' ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -326,7 +323,7 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars MaxRun is correct #1"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
 NUMBER=$(sed "12q;d" "${OUTPUT}" | \
-		    awk -F "[ ]" '{print $24}')
+		awk -F "[ ]" '{print $24}')
 [[ "${NUMBER}" == '1' ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -339,10 +336,8 @@ printf '@a_1\nAAAACA\n+\naaaccc\n' > "${INPUT}"
 OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_chars MaxRun is correct #2"
 "${VSEARCH}" --fastq_chars "${INPUT}" 2> "${OUTPUT}"
-cat "${OUTPUT}"
 NUMBER=$(sed "12q;d" "${OUTPUT}" | \
 		awk -F "[ ]" '{print $24}')
-printf "${NUMBER}"
 [[ "${NUMBER}" == '3' ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -392,3 +387,40 @@ PERCENTAGE=$(sed "19q;d" "${OUTPUT}" | \
 rm "${OUTPUT}"
 rm "${INPUT}"
 
+## --fastq_chars number of tails is correct with default settings
+DESCRIPTION="--fastq_chars number of tails is correct with default settings"
+OUTPUT=$(mktemp)
+printf '@a_1\nAAAAA\n+\nHHHHH\n' | \
+    "${VSEARCH}" --fastq_chars - 2> "${OUTPUT}"
+TAILS=$(sed "16q;d" "${OUTPUT}" | \
+	       awk -F "[ ]" '{print $20}')
+[[ "${TAILS}" == '1' ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --fastq_chars number of tails is correct with default settings
+DESCRIPTION="--fastq_chars number of tails is correct with default settings"
+OUTPUT=$(mktemp)
+printf '@a_1\nAAAAA\n+\nHHHHH\n' | \
+    "${VSEARCH}" --fastq_chars - 2> "${OUTPUT}"
+cat "${OUTPUT}"
+TAILS=$(sed "16q;d" "${OUTPUT}" | \
+	       awk -F "[ ]" '{print $20}')
+[[ "${TAILS}" == '1' ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --fastq_chars number of tails is correct with --fastq_tail 2
+DESCRIPTION="--fastq_chars number of tails is correct with --fastq_tail 2"
+OUTPUT=$(mktemp)
+printf '@a_1\nAAAA\n+\nHHCC\n' | \
+    "${VSEARCH}" --fastq_chars - --fastq_tail 2 2> "${OUTPUT}"
+cat "${OUTPUT}"
+TAILS=$(sed "17q;d" "${OUTPUT}" | \
+	       awk -F "[ ]" '{print $20}')
+[[ "${TAILS}" == '1' ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"

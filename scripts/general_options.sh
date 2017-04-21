@@ -39,4 +39,47 @@ for OPTION in "-h" "-v" ; do
             failure "${DESCRIPTION}"
 done
 
+#*****************************************************************************#
+#                                                                             #
+#                                Options --log                                #
+#                                                                             #
+#*****************************************************************************#
+
+## --log is accepted
+OUTPUT=$(mktemp)
+DESCRIPTION="--log is accepted"
+printf '@a_1\nACGT\n+\n@JJh\n' | \
+"${VSEARCH}" --fastq_chars - --log "${OUTPUT}" &> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --log actually fill a file
+OUTPUT=$(mktemp)
+DESCRIPTION="--log actually fill a file"
+printf '@a_1\nACGT\n+\n@JJh\n' | \
+"${VSEARCH}" --fastq_chars - --log "${OUTPUT}" &> /dev/null
+[[ -s "${OUTPUT}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+#*****************************************************************************#
+#                                                                             #
+#                               Options --quiet                               #
+#                                                                             #
+#*****************************************************************************#
+
+## --quiet is accepted
+OUTPUT=$(mktemp)
+DESCRIPTION="--quiet is accepted"
+printf '@a_1\nACGT\n+\n@JJh\n' | \
+    "${VSEARCH}" --fastq_chars - --quiet 2> "${OUTPUT}"
+[[ -s "${OUTPUT}" ]] && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+
+
 exit 0
