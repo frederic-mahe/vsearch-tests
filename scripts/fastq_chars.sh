@@ -387,8 +387,8 @@ PERCENTAGE=$(sed "19q;d" "${OUTPUT}" | \
 rm "${OUTPUT}"
 rm "${INPUT}"
 
-## --fastq_chars number of tails is correct with default settings
-DESCRIPTION="--fastq_chars number of tails is correct with default settings"
+## --fastq_chars number of tails is correct with default settings #1
+DESCRIPTION="--fastq_chars number of tails is correct with default settings #1"
 OUTPUT=$(mktemp)
 printf '@a_1\nAAAAA\n+\nHHHHH\n' | \
     "${VSEARCH}" --fastq_chars - 2> "${OUTPUT}"
@@ -399,15 +399,14 @@ TAILS=$(sed "16q;d" "${OUTPUT}" | \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-## --fastq_chars number of tails is correct with default settings
-DESCRIPTION="--fastq_chars number of tails is correct with default settings"
+## --fastq_chars number of tails is correct with default settings #2
+DESCRIPTION="--fastq_chars number of tails is correct with default settings #2"
 OUTPUT=$(mktemp)
-printf '@a_1\nAAAAA\n+\nHHHHH\n' | \
+printf '@a_1\nAAAAA\n+\nHHHHH\n@b_1\nAAAAA\n+\nHHHGG\n@c_1\nAAAAA\n+\nHHHHH\n' | \
     "${VSEARCH}" --fastq_chars - 2> "${OUTPUT}"
-cat "${OUTPUT}"
-TAILS=$(sed "16q;d" "${OUTPUT}" | \
-	       awk -F "[ ]" '{print $20}')
-[[ "${TAILS}" == '1' ]] && \
+TAILS=$(sed "17q;d" "${OUTPUT}" | \
+	       awk -F "[ ]" '{print $21}')
+[[ "${TAILS}" == '2' ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -415,12 +414,11 @@ rm "${OUTPUT}"
 ## --fastq_chars number of tails is correct with --fastq_tail 2
 DESCRIPTION="--fastq_chars number of tails is correct with --fastq_tail 2"
 OUTPUT=$(mktemp)
-printf '@a_1\nAAAA\n+\nHHCC\n' | \
+printf '@a_1\nAAAA\n+\nHHCC\n@b_1\nAAAA\n+\nHHCC\n@a_1\nAAAA\n+\nHHHC\n' | \
     "${VSEARCH}" --fastq_chars - --fastq_tail 2 2> "${OUTPUT}"
-cat "${OUTPUT}"
-TAILS=$(sed "17q;d" "${OUTPUT}" | \
-	       awk -F "[ ]" '{print $20}')
-[[ "${TAILS}" == '1' ]] && \
+TAILS=$(sed "16q;d" "${OUTPUT}" | \
+	       awk -F "[ ]" '{print $21}')
+[[ "${TAILS}" == '2' ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
