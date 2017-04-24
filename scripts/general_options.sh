@@ -19,6 +19,12 @@ success () {
     printf "${GREEN}PASS${NO_COLOR}: ${1}\n"
 }
 
+## Constructing a test file
+ALL_IDENTICAL=$(mktemp)
+for ((i=1 ; i<=10 ; i++)) ; do
+    printf "@%s%d\nAAGG\n+\nGGGG\n" "seq" ${i}
+done > "${ALL_IDENTICAL}"
+
 ## Is vsearch installed?
 VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
@@ -40,30 +46,15 @@ which bzip2 > "${OUTPUT}"
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-## Creating a bzip2 file
-## We write in tmp file that we then zip and erase
-## Then we create a handle for the compressed file created
-BZIP2_FILE=$(mktemp)
-for ((i=1 ; i<=100 ; i++)) ; do
-    printf ">%s%d\nAAGG\n+\nAAGG\n" "seq" ${i}
-done > "${BZIP2_FILE}"
-bzip2 "${BZIP2_FILE}" -c > BZIP2_FILE_NAME
-rm "${BZIP2_FILE}"
-BZIP2_FILE=BZIP2_FILE_NAME
-
 ## --bzip2 is accepted
-#DESCRIPTION="--bzip2 is accepted"
-#printf "${BZIP2_FILE}" | \
-#"${VSEARCH}" --fastq_chars - --bzip2_decompress &> /dev/null && \
+#DESCRIPTION="--bzip2_decompress is accepted"
+#"${VSEARCH}" --fastq_chars <(cat "${ALL_IDENTICAL}" | bzip2) --bzip2_decompress  &> /dev/null && \
 #    success "${DESCRIPTION}" || \
 #       failure "${DESCRIPTION}"
 
-## Removing bzip2 file
-rm "${BZIP2_FILE}"
-
 #*****************************************************************************#
 #                                                                             #
-#                         Options --bzip2_decompress                          #
+#                          Options --gzip_decompress                          #
 #                                                                             #
 #*****************************************************************************#
 
@@ -76,27 +67,18 @@ which gzip > "${OUTPUT}"
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-## Creating a gzip file
-## We write in tmp file that we then zip and erase
-## Then we create a handle for the compressed file created
-GZIP_FILE=$(mktemp)
-for ((i=1 ; i<=100 ; i++)) ; do
-    printf ">%s%d\nAAGG\n+\nAAGG\n" "seq" ${i}
-done > "${GZIP_FILE}"
-gzip "${GZIP_FILE}" -c > GZIP_FILE_NAME
-rm "${GZIP_FILE}"
-GZIP_FILE=GZIP_FILE_NAME
-
-## --gzip is accepted
-DESCRIPTION="--gzip is accepted"
-printf "${GZIP_FILE}" | \
-"${VSEARCH}" --fastq_chars - --gzip_decompress &> /dev/null && \
+## --gzip_decompress is accepted
+DESCRIPTION="--gzip_decompress is accepted"
+"${VSEARCH}" --fastq_chars <(cat "${ALL_IDENTICAL}" | gzip) --gzip_decompres &> /dev/null && \
     success "${DESCRIPTION}" || \
        failure "${DESCRIPTION}"
 
-## Removing gzip file
-rm "${GZIP_FILE}"
-
+## --gzip_decompress does not modify output
+DESCRIPTION="--gzip_decompress does not modify output"
+[[ $("${VSEARCH}" --fastq_chars  <(cat "${ALL_IDENTICAL}" | gzip) --gzip_decompres &> /dev/null) ==\
+		$("${VSEARCH}" --fastq_chars "${ALL_IDENTICAL}" &>/dev/null) ]] &&
+    success "${DESCRIPTION}" || \
+       failure "${DESCRIPTION}"
 
 #*****************************************************************************#
 #                                                                             #
@@ -111,6 +93,27 @@ for OPTION in "-h" "-v" ; do
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
 done
+
+#*****************************************************************************#
+#                                                                             #
+#                            Option --maxseqlength                            #
+#                                                                             #
+#*****************************************************************************#
+
+## --maxseqlength is accepted
+DESCRIPTION="--maxseqlength is accepted"
+"${VSEARCH}" --fastq_chars  "${ALL_IDENTICAL}" --maxseqlength 2 &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## --maxseqlength actually discard sequences
+#OUTPUT=$(mktemp)
+#DESCRIPTION="--maxseqlength actually discard sequences"
+#"${VSEARCH}" --fastq_chars  "${ALL_IDENTICAL}" --maxseqlength 2 2> "${OUTPUT}"
+#NB_OF_SEQ_READ=$(awk 'NR==5 {print $2}' "${OUTPUT}")
+#    [[ "${NB_OF_SEQ_READ}" == 2 ]] && \
+#    success "${DESCRIPTION}" || \
+#	failure "${DESCRIPTION}"
 
 #*****************************************************************************#
 #                                                                             #
@@ -161,4 +164,5 @@ COUNT=$(wc -l < "${OUTPUT}")
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
+rm "${ALL_IDENTICAL}"
 exit 0
