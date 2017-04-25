@@ -47,10 +47,10 @@ which bzip2 > "${OUTPUT}"
 rm "${OUTPUT}"
 
 ## --bzip2 is accepted
-#DESCRIPTION="--bzip2_decompress is accepted"
-#"${VSEARCH}" --fastq_chars <(cat "${ALL_IDENTICAL}" | bzip2) --bzip2_decompress  &> /dev/null && \
-#    success "${DESCRIPTION}" || \
-#       failure "${DESCRIPTION}"
+DESCRIPTION="--bzip2_decompress is accepted"
+"${VSEARCH}" --fastq_chars <(cat "${ALL_IDENTICAL}" | bzip2) --bzip2_decompress  &> /dev/null && \
+    success "${DESCRIPTION}" || \
+       failure "${DESCRIPTION}"
 
 #*****************************************************************************#
 #                                                                             #

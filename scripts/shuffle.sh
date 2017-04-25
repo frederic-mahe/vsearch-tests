@@ -21,7 +21,7 @@ success () {
 
 ## Constructing a test file
 ALL_IDENTICAL=$(mktemp)
-for ((i=1 ; i<=10 ; i++)) ; do
+for ((i=1 ; i<=100 ; i++)) ; do
     printf "@%s%d\nAAGG\n+\nGGGG\n" "seq" ${i}
 done > "${ALL_IDENTICAL}"
 
@@ -83,5 +83,80 @@ DESCRIPTION="--randseed products constant output"
 [[ $("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 666 --output "${OUTPUT}" &> /dev/null) == \
 $("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 666 --output "${OUTPUT}" &> /dev/null) ]]
 success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --randseed 0 products different outputs (may fail if very unlucky)
+OUTPUT=$(mktemp)
+DESCRIPTION="--randseed 0 products different outputs (may fail if very unlucky)"
+[[ $("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 0 --output "${OUTPUT}" &> /dev/null) == \
+$("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 0 --output "${OUTPUT}" &> /dev/null) ]]
+success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+#*****************************************************************************#
+#                                                                             #
+#                                 --relabel                                   #
+#                                                                             #
+#*****************************************************************************#
+
+## --relabel is accepted
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel is accepted"
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --output "${OUTPUT}" &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --relabel products correct labels #1
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel products correct labels #1"
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --output "${OUTPUT}" &> /dev/null
+[[ $(sed "1q;d" "${OUTPUT}") == ">lab1" ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --relabel products correct labels #2
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel products correct labels #2"
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --output "${OUTPUT}" &> /dev/null
+[[ $(sed "23q;d" "${OUTPUT}") == ">lab12" ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+#*****************************************************************************#
+#                                                                             #
+#                               --relabel_keep                                #
+#                                                                             #
+#*****************************************************************************#
+
+## --relabel_keep is accepted
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel_keep is accepted"
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --relabel_keep products correct labels #1
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel_keep products correct labels #1"
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null
+cat "${OUTPUT}"
+[[ $(sed "1q;d" "${OUTPUT}") == ">lab1 seq1" ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --relabel_keep products correct labels #2
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel_keep products correct labels #2"
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null
+cat "${OUTPUT}"
+[[ $(sed "23q;d" "${OUTPUT}") == ">lab12 seq12" ]] && \
+    success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
