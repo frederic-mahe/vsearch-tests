@@ -38,19 +38,16 @@ DESCRIPTION="check if vsearch is in the PATH"
 #*****************************************************************************#
 
 ## bzip2 is installed
-OUTPUT=$(mktemp)
 DESCRIPTION="bzip2 is installed"
-which bzip2 > "${OUTPUT}"
-[[ -s "${OUTPUT}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+which bzip2 && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
 ## --bzip2 is accepted
 DESCRIPTION="--bzip2_decompress is accepted"
-"${VSEARCH}" --fastq_chars <(cat "${ALL_IDENTICAL}" | bzip2) --bzip2_decompress  &> /dev/null && \
+"${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n" | bzip2) \
+             --bzip2_decompress &> /dev/null && \
     success "${DESCRIPTION}" || \
-       failure "${DESCRIPTION}"
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -59,24 +56,20 @@ DESCRIPTION="--bzip2_decompress is accepted"
 #*****************************************************************************#
 
 ## gzip is installed
-OUTPUT=$(mktemp)
 DESCRIPTION="gzip is installed"
-which gzip > "${OUTPUT}"
-[[ -s "${OUTPUT}" ]] && \
+which gzip && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
+
+## --gzip is accepted
+DESCRIPTION="--gzip_decompress is accepted"
+"${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n" | gzip) \
+             --gzip_decompress &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
-
-## --gzip_decompress is accepted
-DESCRIPTION="--gzip_decompress is accepted"
-"${VSEARCH}" --fastq_chars <(cat "${ALL_IDENTICAL}" | gzip) --gzip_decompres &> /dev/null && \
-    success "${DESCRIPTION}" || \
-       failure "${DESCRIPTION}"
 
 ## --gzip_decompress does not modify output
 DESCRIPTION="--gzip_decompress does not modify output"
-[[ $("${VSEARCH}" --fastq_chars  <(cat "${ALL_IDENTICAL}" | gzip) --gzip_decompres &> /dev/null) ==\
-		$("${VSEARCH}" --fastq_chars "${ALL_IDENTICAL}" &>/dev/null) ]] &&
+[[ $("${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n" | gzip) --gzip_decompres &> /dev/null) ==\
+		$("${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n") &>/dev/null) ]] &&
     success "${DESCRIPTION}" || \
        failure "${DESCRIPTION}"
 
@@ -89,7 +82,7 @@ DESCRIPTION="--gzip_decompress does not modify output"
 ## Return status should be 0 after -h and -v (GNU standards)
 for OPTION in "-h" "-v" ; do
     DESCRIPTION="return status should be 0 after ${OPTION}"
-    "${VSEARCH}" "${OPTION}" 2> /dev/null > /dev/null && \
+    "${VSEARCH}" "${OPTION}" &> /dev/null && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
 done
@@ -104,7 +97,7 @@ done
 DESCRIPTION="--maxseqlength is accepted"
 "${VSEARCH}" --fastq_chars  "${ALL_IDENTICAL}" --maxseqlength 2 &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 ## --maxseqlength actually discard sequences
 #OUTPUT=$(mktemp)
@@ -125,7 +118,7 @@ DESCRIPTION="--maxseqlength is accepted"
 OUTPUT=$(mktemp)
 DESCRIPTION="--log is accepted"
 printf '@a_1\nACGT\n+\n@JJh\n' | \
-"${VSEARCH}" --fastq_chars - --log "${OUTPUT}" &> /dev/null && \
+    "${VSEARCH}" --fastq_chars - --log "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -134,11 +127,12 @@ rm "${OUTPUT}"
 OUTPUT=$(mktemp)
 DESCRIPTION="--log actually fill a file"
 printf '@a_1\nACGT\n+\n@JJh\n' | \
-"${VSEARCH}" --fastq_chars - --log "${OUTPUT}" &> /dev/null
+    "${VSEARCH}" --fastq_chars - --log "${OUTPUT}" &> /dev/null
 [[ -s "${OUTPUT}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -156,10 +150,10 @@ printf '@a\nACGT\n+\n@JJh\n' | \
 ## --quiet actually shrink the output
 OUTPUT=$(mktemp)
 DESCRIPTION="--quiet actually shrink the output"
-printf '@a\nAAAA\n+\naaaa\n' | \
+printf '@a\nA\n+\nI\n' | \
     "${VSEARCH}" --fastq_chars - --quiet 2> "${OUTPUT}"
 COUNT=$(wc -l < "${OUTPUT}")
-[[ "${COUNT}" = "12" ]] && \
+(( "${COUNT}" == 12 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
