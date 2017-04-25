@@ -168,7 +168,7 @@ rm "${OUTPUT}"
 ## --relabel_md5 is accepted
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_md5 is accepted"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_md5 --output "${OUTPUT}" &> /dev/null && \
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_md5 --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -176,7 +176,7 @@ rm "${OUTPUT}"
 ## --relabel_md5 products correct labels
 # OUTPUT=$(mktemp)
 # DESCRIPTION="--relabel_md5 products correct labels"
-# "${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_md5 --output "${OUTPUT}" &> /dev/null
+# "${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_md5 --output "${OUTPUT}" &> /dev/null
 # [[ $(awk 'NR==1 {print $1}' "${OUTPUT}") == ">lab1" ]] && \
 #     success "${DESCRIPTION}" || \
 # 	failure "${DESCRIPTION}"
@@ -185,8 +185,88 @@ rm "${OUTPUT}"
 ## --relabel_md5 original labels are shuffled
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_md5 original labels are shuffled"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_md5 --output "${OUTPUT}" &> /dev/null
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_md5 --output "${OUTPUT}" &> /dev/null
 [[ $(awk 'NR==1 {print $2}' "${OUTPUT}") != "seq1" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
+
+#*****************************************************************************#
+#                                                                             #
+#                               --relabel_sha1                                #
+#                                                                             #
+#*****************************************************************************#
+
+## --relabel_sha1 is accepted
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel_sha1 is accepted"
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_sha1 --output "${OUTPUT}" &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --relabel_sha1 products correct labels
+# OUTPUT=$(mktemp)
+# DESCRIPTION="--relabel_sha1 products correct labels"
+# "${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_sha1 --output "${OUTPUT}" &> /dev/null
+# [[ $(awk 'NR==1 {print $1}' "${OUTPUT}") == ">lab1" ]] && \
+#     success "${DESCRIPTION}" || \
+# 	failure "${DESCRIPTION}"
+# rm "${OUTPUT}"
+
+## --relabel_sha1 original labels are shuffled
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel_sha1 original labels are shuffled"
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_sha1 --output "${OUTPUT}" &> /dev/null
+[[ $(awk 'NR==1 {print $2}' "${OUTPUT}") != "seq1" ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+#*****************************************************************************#
+#                                                                             #
+#                                  --sizeout                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## --sizeout is accepted
+OUTPUT=$(mktemp)
+DESCRIPTION="--sizeout is accepted"
+"${VSEARCH}" --shuffle <(printf '>a_;size=5;\nAAAA\n') --relabel 'lab' --output "${OUTPUT}" --sizeout &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --sizeout output is correct with --relabel
+# OUTPUT=$(mktemp)
+# DESCRIPTION="--sizeout output is correct with --relabel"
+# "${VSEARCH}" --shuffle <(printf '>a_;size=5;\nAAAA\n') --relabel 'lab' --output "${OUTPUT}" 
+# cat "${OUTPUT}"
+# [[ $(awk '{print $2}' "${OUTPUT}") == ">lab1;size=5;" ]] && \
+#     success "${DESCRIPTION}" || \
+# 	failure "${DESCRIPTION}"
+# rm "${OUTPUT}"
+
+#*****************************************************************************#
+#                                                                             #
+#                                   --topn                                    #
+#                                                                             #
+#*****************************************************************************#
+
+## --topn is accepted
+OUTPUT=$(mktemp)
+DESCRIPTION="--topn is accepted"
+"${VSEARCH}" --shuffle <(printf '>a\nAAAA\n') --output "${OUTPUT}" --topn 1 &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --topn truncate the output
+OUTPUT=$(mktemp)
+DESCRIPTION="--topn truncate the output"
+"${VSEARCH}" --shuffle <(printf '>a\nAAAA\n>b\nAAAA\n>c\nAAAA\n') --output "${OUTPUT}" --topn 2 &> /dev/null
+(( $(wc -l < "${OUTPUT}") == "4" )) && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
