@@ -89,8 +89,8 @@ rm "${OUTPUT}"
 ## --randseed 0 products different outputs (may fail if very unlucky)
 OUTPUT=$(mktemp)
 DESCRIPTION="--randseed 0 products different outputs (may fail if very unlucky)"
-[[ $("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 0 --output "${OUTPUT}" &> /dev/null) == \
-$("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 0 --output "${OUTPUT}" &> /dev/null) ]]
+[[ $("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 0 --output "${OUTPUT}" 2>&1) == \
+$("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 0 --output "${OUTPUT}" 2>&1) ]]
 success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -122,7 +122,7 @@ rm "${OUTPUT}"
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel products correct labels #2"
 "${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --output "${OUTPUT}" &> /dev/null
-[[ $(sed "23q;d" "${OUTPUT}") == ">lab12" ]] && \
+[[ $(sed "7q;d" "${OUTPUT}") == ">lab4" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -141,22 +141,52 @@ DESCRIPTION="--relabel_keep is accepted"
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-## --relabel_keep products correct labels #1
+## --relabel_keep products correct labels
 OUTPUT=$(mktemp)
-DESCRIPTION="--relabel_keep products correct labels #1"
+DESCRIPTION="--relabel_keep products correct labels"
 "${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null
-cat "${OUTPUT}"
-[[ $(sed "1q;d" "${OUTPUT}") == ">lab1 seq1" ]] && \
+[[ $(awk 'NR==1 {print $1}' "${OUTPUT}") == ">lab1" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-## --relabel_keep products correct labels #2
+## --relabel_keep original labels are shuffled (1% chance fail)
 OUTPUT=$(mktemp)
-DESCRIPTION="--relabel_keep products correct labels #2"
+DESCRIPTION="--relabel_keep original labels are shuffled (1% chance fail)"
 "${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null
-cat "${OUTPUT}"
-[[ $(sed "23q;d" "${OUTPUT}") == ">lab12 seq12" ]] && \
+[[ $(awk 'NR==1 {print $2}' "${OUTPUT}") != "seq1" ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+#*****************************************************************************#
+#                                                                             #
+#                               --relabel_md5                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## --relabel_md5 is accepted
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel_md5 is accepted"
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_md5 --output "${OUTPUT}" &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --relabel_md5 products correct labels
+# OUTPUT=$(mktemp)
+# DESCRIPTION="--relabel_md5 products correct labels"
+# "${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_md5 --output "${OUTPUT}" &> /dev/null
+# [[ $(awk 'NR==1 {print $1}' "${OUTPUT}") == ">lab1" ]] && \
+#     success "${DESCRIPTION}" || \
+# 	failure "${DESCRIPTION}"
+# rm "${OUTPUT}"
+
+## --relabel_md5 original labels are shuffled
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel_md5 original labels are shuffled"
+"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_md5 --output "${OUTPUT}" &> /dev/null
+[[ $(awk 'NR==1 {print $2}' "${OUTPUT}") != "seq1" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
