@@ -220,20 +220,20 @@ rm "${OUTPUT}"
 ## --sizeout is accepted
 OUTPUT=$(mktemp)
 DESCRIPTION="--sizeout is accepted"
-"${VSEARCH}" --shuffle <(printf '>a_;size=5;\nAAAA\n') --relabel 'lab' --output "${OUTPUT}" --sizeout &> /dev/null && \
+"${VSEARCH}" --shuffle <(printf '>a;size=5;\nAAAA\n') --relabel 'lab' --output "${OUTPUT}" --sizeout &> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizeout output is correct with --relabel
-# OUTPUT=$(mktemp)
-# DESCRIPTION="--sizeout output is correct with --relabel"
-# "${VSEARCH}" --shuffle <(printf '>a_;size=5;\nAAAA\n') --relabel 'lab' --output "${OUTPUT}" 
-# cat "${OUTPUT}"
-# [[ $(awk '{print $2}' "${OUTPUT}") == ">lab1;size=5;" ]] && \
-#     success "${DESCRIPTION}" || \
-# 	failure "${DESCRIPTION}"
-# rm "${OUTPUT}"
+OUTPUT=$(mktemp)
+DESCRIPTION="--sizeout output is correct with --relabel"
+[[ $("${VSEARCH}" --shuffle <(printf '>a;size=5;\nAAAA\n') --relabel 'lab' --sizeout --output - 2> /dev/null | \
+	    sed "1q;d") == \
+   ">lab1;size=5;" ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
 
 #*****************************************************************************#
 #                                                                             #
@@ -254,6 +254,30 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--topn truncate the output"
 "${VSEARCH}" --shuffle <(printf '>a\nAAAA\n>b\nAAAA\n>c\nAAAA\n') --output "${OUTPUT}" --topn 2 &> /dev/null
 (( $(wc -l < "${OUTPUT}") == "4" )) && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+#*****************************************************************************#
+#                                                                             #
+#                                  --xsize                                    #
+#                                                                             #
+#*****************************************************************************#
+
+## --xsize is accepted
+OUTPUT=$(mktemp)
+DESCRIPTION="--xsize is accepted"
+"${VSEARCH}" --shuffle <(printf '>a;size=5;\nAAAA\n') --output "${OUTPUT}" --xsize &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --xsize output is correct with --relabel
+OUTPUT=$(mktemp)
+DESCRIPTION="--xsize output is correct with --relabel"
+[[ $("${VSEARCH}" --shuffle <(printf '>a;size=5;\nAAAA\n') --xsize --output - 2> /dev/null | \
+	    sed "1q;d") == \
+   ">a" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
