@@ -28,8 +28,25 @@ done > "${ALL_IDENTICAL}"
 ## Is vsearch installed?
 VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
-[[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
+[[ "${VSEARCH}" ]] &> /dev/null && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
+#*****************************************************************************#
+#                                                                             #
+#                                 Input tests                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## vsearch accept classical inputs
+DESCRIPTION="vsearch accept classical inputs"
+"${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n") &>/dev/null && \ 
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+    
+## vsearch accept inputs from pipes
+DESCRIPTION="vsearch accept inputs from pipes"
+printf "@a\nA\n+\nI\n" | "${VSEARCH}" --fastq_chars - &>/dev/null && \ 
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 #*****************************************************************************#
 #                                                                             #
@@ -39,14 +56,14 @@ DESCRIPTION="check if vsearch is in the PATH"
 
 ## bzip2 is installed
 DESCRIPTION="bzip2 is installed"
-which bzip2 && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
+which bzip2 &> /dev/null && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
-## --bzip2 is accepted
-DESCRIPTION="--bzip2_decompress is accepted"
-"${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n" | bzip2) \
-             --bzip2_decompress &> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+# ## --bzip2 is accepted
+# DESCRIPTION="--bzip2_decompress is accepted"
+# "${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n" | bzip2) \
+#              --bzip2_decompress &> /dev/null && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -57,7 +74,7 @@ DESCRIPTION="--bzip2_decompress is accepted"
 
 ## gzip is installed
 DESCRIPTION="gzip is installed"
-which gzip && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
+which gzip &> /dev/null && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
 ## --gzip is accepted
 DESCRIPTION="--gzip_decompress is accepted"
@@ -68,8 +85,8 @@ DESCRIPTION="--gzip_decompress is accepted"
 
 ## --gzip_decompress does not modify output
 DESCRIPTION="--gzip_decompress does not modify output"
-[[ $("${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n" | gzip) --gzip_decompres &> /dev/null) ==\
-		$("${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n") &>/dev/null) ]] &&
+[[ $("${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n" | gzip) --gzip_decompres 2>&1) ==\
+		$("${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n") 2>&1 ) ]] &&
     success "${DESCRIPTION}" || \
        failure "${DESCRIPTION}"
 
