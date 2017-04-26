@@ -29,6 +29,7 @@ VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
 [[ "${VSEARCH}" ]] &> /dev/null && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
+
 #*****************************************************************************#
 #                                                                             #
 #                                 Input tests                                 #
@@ -55,6 +56,7 @@ DESCRIPTION="vsearch accept inputs from pipes"
 printf "@a\nA\n+\nI\n" | "${VSEARCH}" --fastq_chars - &>/dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -114,6 +116,7 @@ for OPTION in "-h" "-v" ; do
 	    failure "${DESCRIPTION}"
 done
 
+
 #*****************************************************************************#
 #                                                                             #
 #                            Option --maxseqlength                            #
@@ -128,13 +131,41 @@ DESCRIPTION="--maxseqlength is accepted"
 	    failure "${DESCRIPTION}"
 
 ## --maxseqlength actually discard sequences
-#OUTPUT=$(mktemp)
-#DESCRIPTION="--maxseqlength actually discard sequences"
-#"${VSEARCH}" --fastq_chars  "${ALL_IDENTICAL}" --maxseqlength 2 2> "${OUTPUT}"
-#NB_OF_SEQ_READ=$(awk 'NR==5 {print $2}' "${OUTPUT}")
-#    [[ "${NB_OF_SEQ_READ}" == 2 ]] && \
-#    success "${DESCRIPTION}" || \
-#	failure "${DESCRIPTION}"
+OUTPUT=$(mktemp)
+DESCRIPTION="--maxseqlength actually discard sequences"
+"${VSEARCH}" --shuffle  <(printf ">a\nAAAA\n>b\nAA\n>c\nA\n") --maxseqlength 2 \
+	     --output "${OUTPUT}" &> /dev/null
+NB_OF_SEQ_READx2=$(wc -l < "${OUTPUT}")
+   [[ "${NB_OF_SEQ_READx2}" == 4 ]] && \
+   success "${DESCRIPTION}" || \
+       failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            Option --minseqlength                            #
+#                                                                             #
+#*****************************************************************************#
+
+## --minseqlength is accepted
+DESCRIPTION="--minseqlength is accepted"
+"${VSEARCH}" --fastq_chars  "${ALL_IDENTICAL}" \
+	     --minseqlength 2 &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
+
+## --minseqlength actually discard sequences
+OUTPUT=$(mktemp)
+DESCRIPTION="--minseqlength actually discard sequences"
+"${VSEARCH}" --shuffle  <(printf ">a\nAAAA\n>b\nAA\n>c\nA\n") --minseqlength 2 \
+	     --output "${OUTPUT}" &> /dev/null
+NB_OF_SEQ_READx2=$(wc -l < "${OUTPUT}")
+   [[ "${NB_OF_SEQ_READx2}" == 4 ]] && \
+   success "${DESCRIPTION}" || \
+       failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
 
 #*****************************************************************************#
 #                                                                             #
