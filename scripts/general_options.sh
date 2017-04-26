@@ -48,13 +48,13 @@ rm "${INPUT}"
 DESCRIPTION="vsearch accept sub-process inputs"
 "${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n") &>/dev/null && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## vsearch accept inputs from pipes
 DESCRIPTION="vsearch accept inputs from pipes"
 printf "@a\nA\n+\nI\n" | "${VSEARCH}" --fastq_chars - &>/dev/null && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 #*****************************************************************************#
 #                                                                             #
@@ -87,14 +87,16 @@ which gzip &> /dev/null && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 ## --gzip is accepted
 DESCRIPTION="--gzip_decompress is accepted"
 "${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n" | gzip) \
-             --gzip_decompress &> /dev/null && \
+	     --gzip_decompress &> /dev/null && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --gzip_decompress does not modify output
 DESCRIPTION="--gzip_decompress does not modify output"
-[[ $("${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n" | gzip) --gzip_decompres 2>&1) ==\
-		$("${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n") 2>&1 ) ]] &&
+GZIP_OUTPUT=$("${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n" | gzip) \
+			   --gzip_decompres 2>&1)
+CLASSIC_OUTPUT=$("${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n") 2>&1 )
+[[ "${GZIP_OUTPUT}" == "${CLASSIC_OUTPUT}" ]] && \
     success "${DESCRIPTION}" || \
        failure "${DESCRIPTION}"
 
@@ -108,8 +110,8 @@ DESCRIPTION="--gzip_decompress does not modify output"
 for OPTION in "-h" "-v" ; do
     DESCRIPTION="return status should be 0 after ${OPTION}"
     "${VSEARCH}" "${OPTION}" &> /dev/null && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+	success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
 done
 
 #*****************************************************************************#
@@ -120,7 +122,8 @@ done
 
 ## --maxseqlength is accepted
 DESCRIPTION="--maxseqlength is accepted"
-"${VSEARCH}" --fastq_chars  "${ALL_IDENTICAL}" --maxseqlength 2 &> /dev/null && \
+"${VSEARCH}" --fastq_chars  "${ALL_IDENTICAL}" \
+	     --maxseqlength 2 &> /dev/null && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -145,7 +148,7 @@ DESCRIPTION="--log is accepted"
 printf '@a_1\nACGT\n+\n@JJh\n' | \
     "${VSEARCH}" --fastq_chars - --log "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --log actually fill a file
@@ -155,7 +158,7 @@ printf '@a_1\nACGT\n+\n@JJh\n' | \
     "${VSEARCH}" --fastq_chars - --log "${OUTPUT}" &> /dev/null
 [[ -s "${OUTPUT}" ]] && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 
@@ -170,7 +173,7 @@ DESCRIPTION="--quiet is accepted"
 printf '@a\nACGT\n+\n@JJh\n' | \
     "${VSEARCH}" --fastq_chars - --quiet &> /dev/null && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --quiet actually shrink the output
 OUTPUT=$(mktemp)
@@ -180,7 +183,7 @@ printf '@a\nA\n+\nI\n' | \
 COUNT=$(wc -l < "${OUTPUT}")
 (( "${COUNT}" == 12 )) && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 rm "${ALL_IDENTICAL}"
