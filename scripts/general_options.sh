@@ -1,7 +1,7 @@
 #!/bin/bash -
 
 ## Print a header
-SCRIPT_NAME="Test options"
+SCRIPT_NAME="General options"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
@@ -12,7 +12,6 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    exit -1
 }
 
 success () {
@@ -37,14 +36,23 @@ DESCRIPTION="check if vsearch is in the PATH"
 #*****************************************************************************#
 
 ## vsearch accept classical inputs
+INPUT=$(mktemp)
 DESCRIPTION="vsearch accept classical inputs"
-"${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n") &>/dev/null && \ 
+printf "@a\nA\n+\nI\n" > "${INPUT}"
+"${VSEARCH}" --fastq_chars "${INPUT}" &>/dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${INPUT}"
+
+## vsearch accept sub-process inputs
+DESCRIPTION="vsearch accept sub-process inputs"
+"${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n") &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-    
+
 ## vsearch accept inputs from pipes
 DESCRIPTION="vsearch accept inputs from pipes"
-printf "@a\nA\n+\nI\n" | "${VSEARCH}" --fastq_chars - &>/dev/null && \ 
+printf "@a\nA\n+\nI\n" | "${VSEARCH}" --fastq_chars - &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

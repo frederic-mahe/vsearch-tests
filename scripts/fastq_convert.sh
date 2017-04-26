@@ -32,7 +32,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 
 ## --fastq_convert is accepted with its necessary arguments
 OUTPUT=$(mktemp)
-printf "@a\nAAAA\n
+printf "@a\nAAAA\n"
 DESCRIPTION="--fastq_convert is accepted with its necessary arguments"
 "${VSEARCH}" --fastq_convert "${ALL_IDENTICAL}" --fasq_ascii 33 --fastqout &> /dev/null && \
     success "${DESCRIPTION}" || \

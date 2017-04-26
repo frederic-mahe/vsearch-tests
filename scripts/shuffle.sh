@@ -1,7 +1,7 @@
 #!/bin/bash -
 
 ## Print a header
-SCRIPT_NAME="Test options"
+SCRIPT_NAME="Shuffle"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
@@ -12,7 +12,6 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    exit -1
 }
 
 success () {
@@ -20,10 +19,10 @@ success () {
 }
 
 ## Constructing a test file
-ALL_IDENTICAL=$(mktemp)
-for ((i=1 ; i<=100 ; i++)) ; do
+SEQx1000=$(mktemp)
+for ((i=1 ; i<=1000 ; i++)) ; do
     printf "@%s%d\nAAGG\n+\nGGGG\n" "seq" ${i}
-done > "${ALL_IDENTICAL}"
+done > "${SEQx1000}"
 
 ## Is vsearch installed?
 VSEARCH=$(which vsearch)
@@ -40,15 +39,15 @@ DESCRIPTION="check if vsearch is in the PATH"
 ## --shuffle is accepted
 OUTPUT=$(mktemp)
 DESCRIPTION="--shuffle is accepted"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --output "${OUTPUT}" &> /dev/null && \
+"${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-## --shuffle --output fill the passed file
+## --shuffle --output fill the passed file (1% chance fail) 
 OUTPUT=$(mktemp)
-DESCRIPTION="--shuffle --output fill the passed file"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --output "${OUTPUT}" &> /dev/null
+DESCRIPTION="--shuffle --output fill the passed file (1‰ chance of failure)"
+"${VSEARCH}" --shuffle "${SEQx1000}" --output "${OUTPUT}" &> /dev/null
 [[ -s "${OUTPUT}" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -63,34 +62,25 @@ rm "${OUTPUT}"
 ## --randseed is accepted
 OUTPUT=$(mktemp)
 DESCRIPTION="--randseed is accepted"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 666 --output "${OUTPUT}" &> /dev/null && \
+"${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --randseed 666 --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-rm "${OUTPUT}"
-
-## --randseed output is different from classic output
-OUTPUT=$(mktemp)
-DESCRIPTION="--randseed output is different from classic output"
-[[ $("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 666 --output - 2> /dev/null) == \
-$("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --output - 2> /dev/null) ]]
-success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --randseed products constant output
 OUTPUT=$(mktemp)
 DESCRIPTION="--randseed products constant output"
-[[ $("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 666 --output "${OUTPUT}" &> /dev/null) == \
-$("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 666 --output "${OUTPUT}" &> /dev/null) ]]
+[[ $("${VSEARCH}" --shuffle "${SEQx1000}" --randseed 666 --output "${OUTPUT}" &> /dev/null) == \
+$("${VSEARCH}" --shuffle "${SEQx1000}" --randseed 666 --output "${OUTPUT}" &> /dev/null) ]]
 success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-## --randseed 0 products different outputs (may fail if very unlucky)
+## --randseed 0 products different outputs (tiny chances of failure)
 OUTPUT=$(mktemp)
-DESCRIPTION="--randseed 0 products different outputs (may fail if very unlucky)"
-[[ $("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 0 --output "${OUTPUT}" 2>&1) == \
-$("${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --randseed 0 --output "${OUTPUT}" 2>&1) ]]
+DESCRIPTION="--randseed 0 products different outputs (tiny chances of failure)"
+[[ $("${VSEARCH}" --shuffle "${SEQx1000}" --randseed 0 --output "${OUTPUT}" 2>&1) == \
+$("${VSEARCH}" --shuffle "${SEQx1000}" --randseed 0 --output "${OUTPUT}" 2>&1) ]]
 success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -104,7 +94,7 @@ rm "${OUTPUT}"
 ## --relabel is accepted
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel is accepted"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --output "${OUTPUT}" &> /dev/null && \
+"${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel 'lab' --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -112,7 +102,7 @@ rm "${OUTPUT}"
 ## --relabel products correct labels #1
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel products correct labels #1"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --output "${OUTPUT}" &> /dev/null
+"${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel 'lab' --output "${OUTPUT}" &> /dev/null
 [[ $(sed "1q;d" "${OUTPUT}") == ">lab1" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -121,7 +111,7 @@ rm "${OUTPUT}"
 ## --relabel products correct labels #2
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel products correct labels #2"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --output "${OUTPUT}" &> /dev/null
+"${VSEARCH}" --shuffle "${SEQx1000}" --relabel 'lab' --output "${OUTPUT}" &> /dev/null
 [[ $(sed "7q;d" "${OUTPUT}") == ">lab4" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -136,7 +126,7 @@ rm "${OUTPUT}"
 ## --relabel_keep is accepted
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_keep is accepted"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null && \
+"${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -144,16 +134,16 @@ rm "${OUTPUT}"
 ## --relabel_keep products correct labels
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_keep products correct labels"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null
+"${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null
 [[ $(awk 'NR==1 {print $1}' "${OUTPUT}") == ">lab1" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-## --relabel_keep original labels are shuffled (1% chance fail)
+## --relabel_keep original labels are shuffled (1‰ chance of failure)
 OUTPUT=$(mktemp)
-DESCRIPTION="--relabel_keep original labels are shuffled (1% chance fail)"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null
+DESCRIPTION="--relabel_keep original labels are shuffled shuffled (1‰ chance of failure)"
+"${VSEARCH}" --shuffle "${SEQx1000}" --relabel 'lab' --relabel_keep --output "${OUTPUT}" &> /dev/null
 [[ $(awk 'NR==1 {print $2}' "${OUTPUT}") != "seq1" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -168,24 +158,23 @@ rm "${OUTPUT}"
 ## --relabel_md5 is accepted
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_md5 is accepted"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_md5 --output "${OUTPUT}" &> /dev/null && \
+"${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel_md5 --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --relabel_md5 products correct labels
-# OUTPUT=$(mktemp)
-# DESCRIPTION="--relabel_md5 products correct labels"
-# "${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_md5 --output "${OUTPUT}" &> /dev/null
-# [[ $(awk 'NR==1 {print $1}' "${OUTPUT}") == ">lab1" ]] && \
-#     success "${DESCRIPTION}" || \
-# 	failure "${DESCRIPTION}"
-# rm "${OUTPUT}"
+DESCRIPTION="--relabel_md5 products correct labels"
+[[ $("${VSEARCH}" --shuffle <(printf '>a\nAAAA\n') --relabel_md5 --output - 2> /dev/null \
+	    | awk -F "[>]" '{printf $2}') == \
+   $(printf "AAAA" | md5sum - | awk '{printf $1}') ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
-## --relabel_md5 original labels are shuffled
+## --relabel_md5 original labels are shuffled (1‰ chance of failure)
 OUTPUT=$(mktemp)
-DESCRIPTION="--relabel_md5 original labels are shuffled"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_md5 --output "${OUTPUT}" &> /dev/null
+DESCRIPTION="--relabel_md5 original labels are shuffled (1‰ chance of failure)"
+"${VSEARCH}" --shuffle "${SEQx1000}" --relabel_md5 --output "${OUTPUT}" &> /dev/null
 [[ $(awk 'NR==1 {print $2}' "${OUTPUT}") != "seq1" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -200,24 +189,23 @@ rm "${OUTPUT}"
 ## --relabel_sha1 is accepted
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_sha1 is accepted"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_sha1 --output "${OUTPUT}" &> /dev/null && \
+"${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel_sha1 --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --relabel_sha1 products correct labels
-# OUTPUT=$(mktemp)
-# DESCRIPTION="--relabel_sha1 products correct labels"
-# "${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_sha1 --output "${OUTPUT}" &> /dev/null
-# [[ $(awk 'NR==1 {print $1}' "${OUTPUT}") == ">lab1" ]] && \
-#     success "${DESCRIPTION}" || \
-# 	failure "${DESCRIPTION}"
-# rm "${OUTPUT}"
+DESCRIPTION="--relabel_sha1 products correct labels"
+[[ $("${VSEARCH}" --shuffle <(printf '>a\nAAAA\n') --relabel_sha1 --output - 2> /dev/null \
+	    | awk -F "[>]" '{printf $2}') == \
+   $(printf "AAAA" | sha1sum - | awk '{printf $1}') ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
-## --relabel_sha1 original labels are shuffled
+## --relabel_sha1 original labels are shuffled (1‰ chance of failure)
 OUTPUT=$(mktemp)
-DESCRIPTION="--relabel_sha1 original labels are shuffled"
-"${VSEARCH}" --shuffle "${ALL_IDENTICAL}" --relabel_sha1 --output "${OUTPUT}" &> /dev/null
+DESCRIPTION="--relabel_sha1 original labels are shuffled (1‰ chance of failure)"
+"${VSEARCH}" --shuffle "${SEQx1000}" --relabel_sha1 --output "${OUTPUT}" &> /dev/null
 [[ $(awk 'NR==1 {print $2}' "${OUTPUT}") != "seq1" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
