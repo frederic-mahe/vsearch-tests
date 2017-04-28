@@ -126,15 +126,14 @@ DESCRIPTION="--relabel products correct labels #2"
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-## --relabel should not be used with relabel_sha
-OUTPUT=$(mktemp)
-DESCRIPTION="--relabel is accepted"
-"${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel 'lab' \
-	     --output "${OUTPUT}" &> /dev/null && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-rm "${OUTPUT}"
-
+## --relabel should not be used with other labelling options
+for OPTION in "--relabel_md5" "--relabel_sha1" ; do
+    DESCRIPTION="--relabel should not be used with ${OPTION}"
+    "${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel_md5 ${OPTION} \
+		 --output - &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	    success "${DESCRIPTION}"
+done
 
 #*****************************************************************************#
 #                                                                             #
@@ -160,16 +159,6 @@ DESCRIPTION="--relabel_keep products correct labels"
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
-
-## --relabel_keep should not be used with other labelling options
-for OPTION in "--relabel_sha1" "--relabel_md5" ; do
-    DESCRIPTION="--relabel_keep should not be used with ${OPTION}"
-    "${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel 'lab' "${OPTION}" \
-		 --output - &> /dev/null && \
-    failure "${DESCRIPTION}" || \
-	    success "${DESCRIPTION}"
-done
-
 
 #*****************************************************************************#
 #                                                                             #
