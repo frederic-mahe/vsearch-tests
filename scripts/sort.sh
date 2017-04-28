@@ -235,7 +235,7 @@ DESCRIPTION="--relabel_keep products correct labels #2"
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-exit 0
+
 #*****************************************************************************#
 #                                                                             #
 #                                  --relabel_md5                              #
@@ -269,7 +269,7 @@ DESCRIPTION="--relabel_md5 products correct labels #2"
    $(md5sum <(printf "AA") | awk '{print $1}') ]] && 
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
-tm "${OUTPUT}"
+rm "${OUTPUT}"
 
 ## --relabel_md5 should not be used with other labelling options
 for OPTION in "--relabel 'lab'" "--relabel_sha1" ; do
@@ -324,3 +324,111 @@ for OPTION in "--relabel 'lab'" "--relabel_md5" ; do
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
 done
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                 --sizeout                                   #
+#                                                                             #
+#*****************************************************************************#
+
+# --sizeout is accepted
+DESCRIPTION="--sizeout is accepted"
+"${VSEARCH}" --sortbysize <(printf ">a\nAAAA\n") --output - --relabel 'lab' \
+	     --sizeout &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# --sizeout products correct labels #1
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel_sha1 products correct labels #1"
+"${VSEARCH}" --sortbysize <(printf ">a;size=5;\nA\n") --output "${OUTPUT}" \
+	     --relabel 'lab' --sizeout &> /dev/null
+[[ $(sed "1q;d" "${OUTPUT}") == ">lab1;size=5;" ]] && 
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+# --sizeout products correct labels #
+OUTPUT=$(mktemp)
+DESCRIPTION="--relabel_sha1 products correct labels #2"
+"${VSEARCH}" --sortbysize <(printf ">a;size=1;\nA\n>b;size=10;\nA\n>c;size=5;\nA\n") \
+	     --output "${OUTPUT}" --relabel 'lab' --sizeout &> /dev/null
+[[ $(sed "5q;d" "${OUTPUT}") == ">lab3;size=1;" ]] && 
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                  --topn                                     #
+#                                                                             #
+#*****************************************************************************#
+
+# --topn is accepted
+DESCRIPTION="--topn is accepted"
+"${VSEARCH}" --sortbysize <(printf ">a\nAAAA\n") --output - \
+	     --topn 3 &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# --topn fails if negative number given
+DESCRIPTION="--topn fails if negative number given"
+"${VSEARCH}" --sortbysize <(printf ">a\nAAAA\n") --output - \
+	     --topn -1 &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# --topn select sequences with the best abundance score
+DESCRIPTION="--topn select sequences with the best abundance score" 
+"${VSEARCH}" --sortbysize <(printf ">a;size=1;\nA\n>b;size=10;\nA\n>c;size=5;\nA\n") \
+	     --output "${OUTPUT}" --topn 2 &> /dev/null
+[[ $(cat "${OUTPUT}") == $(printf ">b;size=10;\nA\n>c;size=5;\nA") ]]
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# --topn select largest sequences
+DESCRIPTION="--topn select largest sequences" 
+"${VSEARCH}" --sortbylength <(printf ">a\nAAA\n>b\nAA\n>c\nA\n") \
+	     --output "${OUTPUT}" --topn 2 &> /dev/null
+[[ $(cat "${OUTPUT}") == $(printf ">a\nAAA\n>b\nAA") ]]
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# --topn select sequences with the best abundance score over their size
+DESCRIPTION="--topn select sequences with the best abundance score over their size" 
+"${VSEARCH}" --sortbysize <(printf ">a;size=1;\nAAAAA\n>b;size=3;\nA\n>c;size=2;\nAAAA\n") \
+	     --output "${OUTPUT}" --topn 1 &> /dev/null
+[[ $(cat "${OUTPUT}") == $(printf ">b;size=3;\nA") ]]
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+    
+# --topn select largest sequences when size is equal
+DESCRIPTION="--topn select largest sequences when size is equal" 
+"${VSEARCH}" --sortbysize <(printf ">a;size=1;\nAAA\n>b;size=1;\nA\n>c;size=1;\nAA\n") \
+	     --output "${OUTPUT}" --topn 1 &> /dev/null
+[[ $(cat "${OUTPUT}") == $(printf ">a;size=1;\nAAA") ]]
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+#*****************************************************************************#
+#                                                                             #
+#                                  --xsize                                    #
+#                                                                             #
+#*****************************************************************************#
+
+# --xsize is accepted
+DESCRIPTION="--xsize is accepted"
+"${VSEARCH}" --sortbysize <(printf ">a\nAAAA\n") --output - \
+	     --xsize &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# --xsize strip the abundance score
+DESCRIPTION="--xsize strip the abundance score" 
+"${VSEARCH}" --sortbysize <(printf ">a;size=1;\nA\n>b;size=10;\nA\n>c;size=5;\nA\n") \
+	     --output "${OUTPUT}" --xsize &> /dev/null
+[[ $(cat "${OUTPUT}") == $(printf ">b;size=10;\n>c;size=5;\nA\n>a;size=1;\nA") ]]
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
