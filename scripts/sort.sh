@@ -67,6 +67,16 @@ DESCRIPTION="--sortbysize is accepted"
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+# --sortbysize abundance default value is 1 when abundance value is missing
+DESCRIPTION="--sortbysize abundance default value is 1 when abundance value is missing"
+OUTPUT1=$("${VSEARCH}" --sortbysize <(printf ">b\nA\n>a;size=1;\nA\n") \
+		       --output - &> /dev/null)
+OUTPUT2=$("${VSEARCH}" --sortbysize <(printf ">a\nA\n>b;size=1;\nA\n") \
+		       --output - &> /dev/null)
+[[ "${OUTPUT1}" == "${OUTPUT2}" ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 # --output create and fill a file
 OUTPUT=$(mktemp)
 DESCRIPTION="--output create and fill a file"
@@ -125,6 +135,21 @@ DESCRIPTION="--maxsize fail if used with negative integers"
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
+# --maxsize fail if used with 0
+DESCRIPTION="--maxsize fail if used with 0"
+"${VSEARCH}" --sortbylength <(printf ">a\nAAAA\n") --output - --maxsize 0 \
+    &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+# --maxsize fail if used with a character
+DESCRIPTION="--maxsize fail if used a character"
+"${VSEARCH}" --sortbylength <(printf ">a\nAAAA\n") --output - --maxsize "e" \
+    &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+
 #*****************************************************************************#
 #                                                                             #
 #                                  --minsize                                  #
@@ -158,6 +183,20 @@ DESCRIPTION="--minsize fail if used with sortbylength"
 # --minsize fail if used with negative integers
 DESCRIPTION="--minsize fail if used with negative integers"
 "${VSEARCH}" --sortbylength <(printf ">a\nAAAA\n") --output - --minsize -1 \
+    &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+# --minsize fail if used with 0
+DESCRIPTION="--minsize fail if used with 0"
+"${VSEARCH}" --sortbylength <(printf ">a\nAAAA\n") --output - --minsize 0 \
+    &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+# --minsize fail if used with a character
+DESCRIPTION="--minsize fail if used a character"
+"${VSEARCH}" --sortbylength <(printf ">a\nAAAA\n") --output - --minsize "e" \
     &> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
@@ -432,3 +471,5 @@ DESCRIPTION="--xsize strip the abundance score"
 [[ $(cat "${OUTPUT}") == $(printf ">b;size=10;\n>c;size=5;\nA\n>a;size=1;\nA") ]]
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+
+exit 0

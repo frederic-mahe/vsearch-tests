@@ -69,7 +69,7 @@ rm "${OUTPUT}"
 ## --fastq_qminout output is correct from 33 to 64
 OUTPUT=$(mktemp)
 DESCRIPTION="--fastq_qminout output is correct from 33 to 64"
-"${VSEARCH}" --fastq_convert <(printf '@a\nAAA\n+\n%(4\n') --fastq_ascii 33 \
+"${VSEARCH}" --fastq_convert <(printf '@a\nAAA\n+\n$(4\n') --fastq_ascii 33 \
 	     --fastq_asciiout 64 --fastqout "${OUTPUT}" \
 	     --fastq_qminout 8 &> /dev/null
 [[ $(sed "4q;d" "${OUTPUT}") == "HHS" ]] && \
@@ -124,16 +124,18 @@ DESCRIPTION="--fastq_convert fails if quality score are out of specified range #
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-## --fastq_convert fails if quality specified is invalid for input
-DESCRIPTION="--fastq_convert fails if quality specified is invalid for input"
+## --fastq_convert fails if offset specified is invalid for input
+DESCRIPTION="--fastq_convert fails if offset specified is invalid for input"
 "${VSEARCH}" --fastq_convert <(printf '@a\nA\n+\nA') --fastq_ascii 56 \
 	     --fastq_asciiout 33 --fastqout - &> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-## --fastq_convert fails if quality specified is invalid for output
-DESCRIPTION="--fastq_convert fails if quality specified is invalid for output"
+## --fastq_convert fails if offset specified is invalid for output
+DESCRIPTION="--fastq_convert fails if offset specified is invalid for output"
 "${VSEARCH}" --fastq_convert <(printf '@a\nA\n+\nA') --fastq_ascii 64 \
 	     --fastq_asciiout 17 --fastqout - &> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
+
+exit 0

@@ -1,7 +1,7 @@
 #!/bin/bash -
 
 ## Print a header
-SCRIPT_NAME="Shuffle"
+SCRIPT_NAME="shuffling options"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
@@ -327,3 +327,5 @@ DESCRIPTION="--xsize output is correct with --relabel"
 rm "${OUTPUT}"
 
 rm "${SEQx1000}"
+
+exit 0
