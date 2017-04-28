@@ -129,7 +129,7 @@ rm "${OUTPUT}"
 ## --relabel should not be used with other labelling options
 for OPTION in "--relabel_md5" "--relabel_sha1" ; do
     DESCRIPTION="--relabel should not be used with ${OPTION}"
-    "${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel_md5 ${OPTION} \
+    "${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel 'lab' ${OPTION} \
 		 --output - &> /dev/null && \
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
