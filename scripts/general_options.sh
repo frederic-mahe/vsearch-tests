@@ -36,26 +36,48 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                                                             #
 #*****************************************************************************#
 
-## vsearch accept classical inputs
+## vsearch accepts classical inputs
 INPUT=$(mktemp)
-DESCRIPTION="vsearch accept classical inputs"
+DESCRIPTION="vsearch accepts classical inputs"
 printf "@a\nA\n+\nI\n" > "${INPUT}"
 "${VSEARCH}" --fastq_chars "${INPUT}" &>/dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${INPUT}"
 
-## vsearch accept sub-process inputs
-DESCRIPTION="vsearch accept sub-process inputs"
+## vsearch accepts sub-process inputs
+DESCRIPTION="vsearch accepts sub-process inputs"
 "${VSEARCH}" --fastq_chars <(printf "@a\nA\n+\nI\n") &>/dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-## vsearch accept inputs from pipes
-DESCRIPTION="vsearch accept inputs from pipes"
+## vsearch accepts inputs from pipes
+DESCRIPTION="vsearch accepts inputs from pipes"
 printf "@a\nA\n+\nI\n" | "${VSEARCH}" --fastq_chars - &>/dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+
+## vsearch accepts inputs from named pipes
+DESCRIPTION="vsearch accepts inputs from named pipes"
+mkfifo fifoTestInput123
+"${VSEARCH}" --fastq_chars fifoTestInput123 &> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}" &
+printf "@a\nA\n+\na\n" > fifoTestInput123
+rm fifoTestInput123
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                 fastq tests                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## vsearch should not accepts empty sequences
+DESCRIPTION="vsearch should not accepts empty sequences"
+"${VSEARCH}" --fastq_chars <(printf "@a\n\n+\n\n") &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
