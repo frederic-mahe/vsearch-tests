@@ -626,13 +626,11 @@ rm "${OUTPUT}"
 #*****************************************************************************#
 
 ## --sizeout is accepted
-OUTPUT=$(mktemp)
 DESCRIPTION="--sizeout is accepted"
 printf ">a\nAAAA\n" | \
-"${VSEARCH}" --rereplicate - --output "${OUTPUT}" --sizeout &> /dev/null && \
+"${VSEARCH}" --rereplicate - --output --sizeout &> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --sizeout completes missing abundance scores
 OUTPUT=$(mktemp)
@@ -688,3 +686,57 @@ printf ">a;size=3;\nAA\n>a;size=2;\nAA" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                  --strand                                   #
+#                                                                             #
+#*****************************************************************************#
+
+## --strand is accepted
+DESCRIPTION="--strand is accepted"
+printf ">a\nAAAA\n" | \
+"${VSEARCH}" --derep_fulllength - --output - --strand both &> /dev/null &&\
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## --strand both allow dereplication of strand plus and minus (--derep_fulllength)
+OUTPUT=$(mktemp)
+DESCRIPTION="--strand allow dereplication of strand plus and minus (--derep_fulllength)"
+printf ">s1;size=1;\nTAGC\n>s2;size=1;\nGCTA" | \
+    "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --strand both \
+		 --sizein --sizeout --minseqlength 1 &> /dev/null
+[[ $(cat "${OUTPUT}") == $(printf ">s1;size=2;\nTAGC\n") ]] &&\
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --strand plus does not change default behaviour
+OUTPUT=$(mktemp)
+DESCRIPTION="--strand plus does not change default behaviour"
+printf ">s1;size=1;\nTAGC\n>s2;size=1;\nGCTA" | \
+    "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --strand plus \
+		 --sizein --sizeout --minseqlength 1 &> /dev/null
+[[ $(cat "${OUTPUT}") == $(printf ">s1;size=1;\nTAGC\n>s2;size=1;\nGCTA") ]] &&\
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --strand allow dereplication of strand plus and minus (--derep_prefix)
+OUTPUT=$(mktemp)
+DESCRIPTION="--strand allow dereplication of strand plus and minus (--derep_prefix)"
+printf ">s1;size=1;\nTAGCAA\n>s2;size=1;\nGCTA" | \
+    "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" --strand both \
+		 --sizein --sizeout --minseqlength 1 &> /dev/null
+[[ $(cat "${OUTPUT}") == $(printf ">s1;size=2;\nTAGCAA\n") ]] &&\
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+## --strand fails if unknown argument is given
+DESCRIPTION="--strand fails if unknown argument is given"
+printf ">a\nAAAA\n" | \
+"${VSEARCH}" --derep_fulllength - --output - --strand bonjour &> /dev/null &&\
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
