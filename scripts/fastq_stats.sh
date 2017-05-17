@@ -78,7 +78,7 @@ printf "@s1\nACGT\n+\nGGGG" |
 
 #*****************************************************************************#
 #                                                                             #
-#                                    Array                                    #
+#                          Read length distribution                           #
 #                                                                             #
 #*****************************************************************************#
 
@@ -130,9 +130,28 @@ READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_stats fraction of reads with this length or more is correct"
+READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
+		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		     awk 'NR==9 {print $5}' -)
+[[ $(echo "${READ_PERCENT}") == "66.7%" ]] &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats fraction of reads with this length or more is correct"
+READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
+		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		     awk 'NR==9 {print $5}' -)
+[[ $(echo "${READ_PERCENT}") == "66.7%" ]] &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
-## TODO fraction of reads
+#*****************************************************************************#
+#                                                                             #
+#                         Quality score distribution                          #
+#                                                                             #
+#*****************************************************************************#
 
 # DESCRIPTION="--fastq_stats number of reads is correct #2"
 # for i in {33..104}
@@ -145,13 +164,29 @@ READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
 # 				  awk 'NR==13{print $1}' -)
 # 	     else
 # 		 READ_NB=$(printf "@s1\nA\n+\n${LETTER}" | \
-# 				  "${VSEARCH}" --fastq_stats - --log - --fastq_ascii 64 2> /dev/null | \
+# 				  "${VSEARCHg}" --fastq_stats - --log - --fastq_ascii 64 2> /dev/null | \
 # 				  awk 'NR==13{print $1}' -)
 # 	     fi 
 # 	     [[ $(printf "${READ_NB}") == "${LETTER}" ]] &&
 # 		 success  "${DESCRIPTION}" || \
 # 		     failure "${DESCRIPTION}"
 # }
+
+DESCRIPTION="--fastq_stats Phred quality score is correct #1"
+E_PROBA=$(printf '@s1\nA\n+\nH\n' | \
+		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		     awk 'NR==13 {print $3}' -)
+[[ $(printf "${E_PROBA}") == "0.00013" ]] &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats Phred quality score is correct #2"
+E_PROBA=$(printf '@s1\nA\n+\n"' | \
+		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		     awk 'NR==13 {print $3}' -)
+[[ $(printf "${E_PROBA}") == "0.79433" ]] &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats number of bases with this quality score is correct #1"
 BASES_NB=$(printf '@s1\nA\n+\nH\n@s2\nA\n+\nG' | \
@@ -193,6 +228,13 @@ BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nI' | \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#*****************************************************************************#
+#                                                                             #
+#                         Quality score distribution                          #
+#                                                                             #
+#*****************************************************************************#
+
 DESCRIPTION="--fastq_stats percentage of reads with at least this length is correct"
 BASES_PRCT=$(printf '@s1\nA\n+\nH\n@s2\nAA\n+\nHH\n@s3\nAAA\n+\nHHH' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
@@ -201,11 +243,39 @@ BASES_PRCT=$(printf '@s1\nA\n+\nH\n@s2\nAA\n+\nHH\n@s3\nAAA\n+\nHHH' | \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats percentage of reads with at least this length is correct"
-READS_PRCT=$(printf '@s1\nAA\n+\nHD\n@s2\nAA\n+\nHG\n@s3\nAA\n+\nHI' | \
+
+## following tests are checkinfg that nucleotides after position 2 are not taken in
+## account by using 4 nucletotide sequence, and that result is truncated by
+## testing result having at least 2 significant numbers with the second above 4 before
+## truncating
+DESCRIPTION="--fastq_stats average quality score at this position is correct"
+AVG_QSCORE=$(printf '@s1\nAAAA\n+\nHDII\n@s2\nAA\n+\nHG\n@s3\nAA\n+\nHI' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==20 {print $3}' -)
-[[ $(echo "${READS_PRCT}") == "37.7" ]] &&
+		     awk 'NR==21 {print $3}' -)
+[[ $(echo "${AVG_QSCORE}") == "37.7" ]] &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats error probability coresponding to AvgQ is correct"
+ERROR_PROB=$(printf '@s1\nAAAA\n+\nHDII\n@s2\nAA\n+\nHG\n@s3\nAA\n+\nHI' | \
+		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		     awk 'NR==21 {print $4}' -)
+[[ $(echo "${ERROR_PROB}") == "0.00017" ]] &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats average error probability on this position is correct"
+AVG_ERROR=$(printf '@s1\nAAAA\n+\nIDII\n@s2\nAA\n+\nHH\n' | \
+		    "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		    awk 'NR==20 {print $5}' -)
+[[ $(echo "${AVG_ERROR}") == "0.000221" ]] &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats expected error up to this position is correct"
+AVG_ERROR=$(printf '@s1\nAAAA\n+\n++++\n@s2\nAA\n+\n--' | \
+		    "${VSEARCH}" --fastq_stats - --log - 2> /dev/null)
+[[ $(echo "${AVG_ERROR}") == "0.33" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
