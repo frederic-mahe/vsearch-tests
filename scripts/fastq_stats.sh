@@ -1,4 +1,7 @@
-#!/bin/bash -
+printf "@s1\nACGT\n+\nGGGG" |
+"${VSEARCH}" --fastq_stats - --log - &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"#!/bin/bash -
 
 ## Print a header
 SCRIPT_NAME="fastq_stats all tests"
@@ -119,7 +122,7 @@ READ_PERCENT=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAA\n+\nGG" | \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats fraction of reads with this length is correct"
+DESCRIPTION="--fastq_stats fraction of reads with this length or more is correct"
 READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==9 {print $5}' -)
@@ -167,29 +170,44 @@ BASES_NB=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nG' | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats percentage of bases with this quality score is correct"
-BASES_NB=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nH' | \
+BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nH' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==13 {print $5}' -)
-[[ $(echo "${BASES_NB}") == "66.7%" ]] &&
+[[ $(echo "${BASES_PRCT}") == "66.7%" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats percentage of bases with this quality score is correct"
-BASES_NB=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nH' | \
+BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nH' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==13 {print $5}' -)
-[[ $(echo "${BASES_NB}") == "66.7%" ]] &&
+[[ $(echo "${BASES_PRCT}") == "66.7%" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats percentage of bases with this quality score or higher is correct"
-BASES_NB=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nI' | \
+BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nI' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==14 {print $6}' -)
-[[ $(echo "${BASES_NB}") == "66.7%" ]] &&
+[[ $(echo "${BASES_PRCT}") == "66.7%" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_stats percentage of reads with at least this length is correct"
+BASES_PRCT=$(printf '@s1\nA\n+\nH\n@s2\nAA\n+\nHH\n@s3\nAAA\n+\nHHH' | \
+		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		     awk 'NR==19 {print $2}' -)
+[[ $(echo "${BASES_PRCT}") == "66.7%" ]] &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats percentage of reads with at least this length is correct"
+READS_PRCT=$(printf '@s1\nAA\n+\nHD\n@s2\nAA\n+\nHG\n@s3\nAA\n+\nHI' | \
+		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		     awk 'NR==20 {print $3}' -)
+[[ $(echo "${READS_PRCT}") == "37.7" ]] &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
