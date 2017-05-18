@@ -272,13 +272,19 @@ AVG_ERROR=$(printf '@s1\nAAAA\n+\nIDII\n@s2\nAA\n+\nHH\n' | \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats expected error up to this position is correct"
-AVG_ERROR=$(printf '@s1\nAAAA\n+\n++++\n@s2\nAA\n+\n--' | \
-		    "${VSEARCH}" --fastq_stats - --log - 2> /dev/null)
-[[ $(echo "${AVG_ERROR}") == "0.33" ]] &&
+DESCRIPTION="--fastq_stats average expected error up to this position is correct"
+AVG_ERROR=$(printf '@s1\nAAA\n+\n++5\n@s2\nAAA\n+\n++5' | \
+		   "${VSEARCH}" --fastq_stats - --log - 2> /dev/null)
+[[ $(echo "${AVG_ERROR}") == "0.17" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# DESCRIPTION="--fastq_stats rate growth is correct"
+# AVG_ERROR=$(printf '@s1\nAAAA\n+\n++++\n@s2\nAA\n+\n-,' | \
+# 		    "${VSEARCH}" --fastq_stats - --log - 2> /dev/null)
+# [[ $(echo "${AVG_ERROR}") == "0.33" ]] &&
+#     success  "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
 
 #*****************************************************************************#
 #                                                                             #
