@@ -4,7 +4,7 @@ printf "@s1\nACGT\n+\nGGGG" |
         failure "${DESCRIPTION}"#!/bin/bash -
 
 ## Print a header
-SCRIPT_NAME="fastq_stats all tests"
+SCRIPT_NAME="subsampling options"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
@@ -21,6 +21,17 @@ success () {
     printf "${GREEN}PASS${NO_COLOR}: ${1}\n"
 }
 
+## Constructing a test file
+FASTQx1000=$(mktemp)
+for ((i=1 ; i<=1000 ; i++)) ; do
+    printf "@%s%d\nA\n+\nG\n" "seq" ${i}
+done > "${FASTQx1000}"
+
+## Constructing a test file
+FASTAx1000=$(mktemp)
+for ((i=1 ; i<=1000 ; i++)) ; do
+    printf ">%s%d\nA\n" "seq" ${i}
+done > "${FASTAx1000}"
 
 ## Is vsearch installed?
 VSEARCH=$(which vsearch)
@@ -128,17 +139,6 @@ printf "@s1\nA\n+\nG\n@s2\nA\n+\nG" |
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-DESCRIPTION="--fastx_subsample --fastaout_discarded discard sequences from the input (fastq)"
-OUTPUT=$(mktemp)
-printf "@s1\nA\n+\nG\n@s2\nA\n+\nG" |
-    "${VSEARCH}" --fastx_subsample - --fastaout_discarded "${OUTPUT}" \
-		 --sample_size 1 --fastaout - &> /dev/null
-[[ $(cat "${OUTPUT}") == $(printf ">s1\nA") ]] ||
-    [[ $(cat "${OUTPUT}") == $(printf ">s2\nA") ]] && \
-    success  "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm "${OUTPUT}"
-
 
 #*****************************************************************************#
 #                                                                             #
@@ -147,33 +147,41 @@ rm "${OUTPUT}"
 #*****************************************************************************#
 
 DESCRIPTION="--fastx_subsample --fastq_ascii is accepted"
-OUTPUT=$(mktemp)
 printf "@s1\nA\n+\n-\n" |
     "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
 		 --fastq_ascii 33 --sizein &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_ascii should fail with fasta"
+printf ">s1\nA\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
+		 --fastq_ascii 33 &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --fastq_ascii should fail with argument other than 33/64"
+printf ">s1\nA\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
+		 --fastq_ascii 72 &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## those 2 tests should fail because Qscores are outside 0-41 range specified by default
 ## see fastq_qmax
 DESCRIPTION="--fastx_subsample --fastq_ascii fails when Qscore is outside specified range +64"
-OUTPUT=$(mktemp)
 printf "@s1\nA\n+\na\n" |
     "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
 		 --fastq_ascii 33 --sizein &> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 DESCRIPTION="--fastx_subsample --fastq_ascii fails when Qscore is outside specified range +33"
 OUTPUT=$(mktemp)
-printf "@s1\nA\n+\n-\n" |
     "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
 		 --fastq_ascii 64 --sizein &> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 
 #*****************************************************************************#
@@ -184,19 +192,486 @@ rm "${OUTPUT}"
 
 DESCRIPTION="--fastx_subsample --fastq_qmax is accepted"
 OUTPUT=$(mktemp)
-printf ">s1\nA\n>s2\nA\n" |
+printf "@s1\nA\n+\n-\n" |
     "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
 		 --fastq_ascii 33 --fastq_qmax 10 &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-DESCRIPTION="--fastx_subsample --fastq_qmax is accepted"
+DESCRIPTION="--fastx_subsample --fastq_qmax should fail if argument is negative"
 OUTPUT=$(mktemp)
-printf "@s1\nA\n+\n-\n@s2\nA\n+\n-\n" |
+printf "@s1\nA\n+\n-\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
+		 --fastq_ascii 33 --fastq_qmax -1 &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_qmax should fail if argument > 41"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\n-\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
+		 --fastq_ascii 33 --fastq_qmax 42 &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_qmax should fail with fasta"
+OUTPUT=$(mktemp)
+printf ">s1\nA\n>s2\nA\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
+		 --fastq_ascii 33 --fastq_qmax -1 &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_qmax rewrite Qscore capped (fastq_ascii 33)"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\n-\n" |
     "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastqout "${OUTPUT}" \
-		 --fastq_ascii 33 --fastq_qmax 1 --sizein --sizeout && \
+		 --fastq_ascii 33 --fastq_qmax 0 &> /dev/null
+[[ "${OUTPUT}" == "@s1\nA\n+\n!\n" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-cat "${OUTPUT}"
 rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_qmax rewrite Qscore capped (fastq_ascii 64)"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\na\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastqout "${OUTPUT}" \
+		 --fastq_ascii 64 --fastq_qmax 0 &> /dev/null
+[[ "${OUTPUT}" == "@s1\nA\n+\n@\n" ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                --fastq_qmin                                 #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastx_subsample --fastq_qmin is accepted"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\n-\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
+		 --fastq_ascii 33 --fastq_qmin 10 &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_qmin should fail if argument is negative"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\n-\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
+		 --fastq_ascii 33 --fastq_qmin -1 &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_qmin should fail if argument > 41"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\n-\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
+		 --fastq_ascii 33 --fastq_qmin 42 &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_qmin should fail with fasta"
+OUTPUT=$(mktemp)
+printf ">s1\nA\n>s2\nA\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
+		 --fastq_ascii 33 --fastq_qmin -1 &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_qmin rewrite Qscore capped (fastq_ascii 33)"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\n-\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastqout "${OUTPUT}" \
+		 --fastq_ascii 33 --fastq_qmin 0 &> /dev/null
+[[ "${OUTPUT}" == "@s1\nA\n+\n!\n" ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_qmin rewrite Qscore capped (fastq_ascii 64)"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\na\n" |
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastqout "${OUTPUT}" \
+		 --fastq_ascii 64 --fastq_qmin 0 &> /dev/null
+[[ "${OUTPUT}" == "@s1\nA\n+\n@\n" ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                  --fastqout                                 #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastx_subsample --fastqout is accepted"
+printf "@s1\nA\n+\nG" |
+"${VSEARCH}" --fastx_subsample - --fastqout - --sample_size 1 &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --fastqout should fail with fasta"
+printf ">s1\nA" |
+"${VSEARCH}" --fastx_subsample - --fastqout - --sample_size 1 &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --fastqout fill a file"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nG" |
+    "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" \
+		 --sample_size 1 &> /dev/null
+[[ -s "${OUTPUT}" ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastqout output is correct"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nG" |
+    "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" \
+		 --sample_size 1 &> /dev/null
+[[ $(cat "${OUTPUT}") == $(printf "@s1\nA\n+\nG") ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                             --fastqout_discarded                            #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastx_subsample --fastqout_discarded is accepted"
+printf "@s1\nA\n+\nG" |
+    "${VSEARCH}" --fastx_subsample - --fastqout_discarded - \
+		 --sample_size 1 --fastqout - &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --fastqout_discarded should fail  with fasta"
+printf ">s1\nA\n" |
+    "${VSEARCH}" --fastx_subsample - --fastqout_discarded - \
+		 --sample_size 1 --fastqout - &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --fastqout_discarded fill a file"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" |
+    "${VSEARCH}" --fastx_subsample - --fastqout_discarded "${OUTPUT}" \
+		 --sample_size 1 --fastqout - &> /dev/null
+[[ -s "${OUTPUT}" ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastqout_discarded display discarded sequences from the input"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" |
+    "${VSEARCH}" --fastx_subsample - --fastqout_discarded "${OUTPUT}" \
+		 --sample_size 1 --fastqout - &> /dev/null
+[[ $(cat "${OUTPUT}") == $(printf "@s1\nA\n+\nG\n") ]] ||
+    [[ $(cat "${OUTPUT}") == $(printf "@s2\nA\n+\nG\n") ]] && \
+	success  "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              --fastx_subsample                              #
+#                                                                             #
+#*****************************************************************************#
+
+## functionalities are tested through other options
+DESCRIPTION="--fastx_subsample is accepted"
+printf "@s1\nA\n+\nG" |
+    "${VSEARCH}" --fastx_subsample - --fastaout - --sample_size 1 \
+	&> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                  --randseed                                 #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastx_subsample --randseed is accepted"
+printf "@s1\nA\n+\nG" |
+    "${VSEARCH}" --fastx_subsample - --fastaout - --randseed 0 --sample_size 1 \
+	&> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --randseed should fail whit negative arguments"
+printf "@s1\nA\n+\nG" |
+    "${VSEARCH}" --fastx_subsample - --fastaout - --randseed -1 --sample_size 1 \
+	&> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --randseed x produces constant output"
+OUTPUT=$(mktemp)
+RANDSEED_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTAx1000}" --randseed 666 \
+			       --fastaout - --sample_size 1 2> /dev/null)
+CLASSIC_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTAx1000}" --randseed 666 \
+			       --fastaout - --sample_size 1 2> /dev/null)
+[[ "${RANDSEED_OUTPUT}" == "${CLASSIC_OUTPUT}" ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --randseed 0 produces different outputs (tiny chances of failure) (fasta)"
+OUTPUT=$(mktemp)
+FIRST_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTAx1000}" --randseed 0 \
+			    --fastaout - --sample_size 5 2> /dev/null)
+SECOND_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTAx1000}" --randseed 0 \
+			       --fastaout - --sample_size 5 2> /dev/null)
+[[ "${FIRST_OUTPUT}" == "${SECOND_OUTPUT}" ]] && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --randseed x produces constant output (fastq)"
+OUTPUT=$(mktemp)
+RANDSEED_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTQx1000}" --randseed 666 \
+			       --fastaout - --sample_size 1 2> /dev/null)
+CLASSIC_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTQx1000}" --randseed 666 \
+			       --fastaout - --sample_size 1 2> /dev/null)
+[[ "${RANDSEED_OUTPUT}" == "${CLASSIC_OUTPUT}" ]] && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --randseed 0 produces different outputs (tiny chances of failure) (fastq)"
+OUTPUT=$(mktemp)
+FIRST_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTQx1000}" --randseed 0 \
+			    --fastaout - --sample_size 5 2> /dev/null)
+SECOND_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTQx1000}" --randseed 0 \
+			       --fastaout - --sample_size 5 2> /dev/null)
+[[ "${FIRST_OUTPUT}" == "${SECOND_OUTPUT}" ]] && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                 --relabel                                   #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastx_subsample --relabel is accepted"
+printf "@s1\nA\n+\nG" |
+    "${VSEARCH}" --fastx_subsample - --fastaout - --randseed 0 --sample_size 1 \
+	         --relabel 'lab' &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --relabel produces correct outputs #1 fasta"
+OUTPUT=$(mktemp)
+printf ">s1\nA\n" |
+    "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --relabel 'lab' \
+		 --sample_size 1 &> /dev/null
+[[ $(sed "1q;d" "${OUTPUT}") == '>lab1' ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+DESCRIPTION="--fastx_subsample --relabel produces correct outputs #2 fasta"
+OUTPUT=$(mktemp)
+printf ">s1\nA\n>s2\nA\n" |
+    "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --relabel 'lab' \
+		 --sample_size 1 &> /dev/null
+[[ $(sed "3q;d" "${OUTPUT}") == '>lab2' ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+DESCRIPTION="--fastx_subsample --relabel produces correct outputs #1 fastq"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nG\n" |
+    "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --relabel 'lab' \
+		 --sample_size 1 &> /dev/null
+[[ $(sed "1q;d" "${OUTPUT}") == '@lab1' ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+DESCRIPTION="--fastx_subsample --relabel produces correct outputs #2 fastq"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nG\n" |
+    "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --relabel 'lab' \
+		 --sample_size 1 &> /dev/null
+[[ $(sed "1q;d" "${OUTPUT}") == '@lab1' ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+for OPTION in "--relabel_md5" "--relabel_sha1" ; do
+    DESCRIPTION="--fastx_subsample --relabel should not be used with ${OPTION} fasta"
+    "${VSEARCH}" --fastx_subsample <(printf ">a\nA\n") --relabel 'lab' ${OPTION} \
+		 --fastaout - --sample_size 1&> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	    success "${DESCRIPTION}"
+done
+
+for OPTION in "--relabel_md5" "--relabel_sha1" ; do
+    DESCRIPTION="--fastx_subsample --relabel should not be used with ${OPTION} fastq"
+    "${VSEARCH}" --fastx_subsample <(printf "@a\nA\n+\n-") --relabel 'lab' ${OPTION} \
+		 --fastaout - --sample_size 1 &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	    success "${DESCRIPTION}"
+done
+
+
+#*****************************************************************************#
+#                                                                             #
+#                               --relabel_keep                                #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastx_subsample --relabel_keep is accepted"
+printf "@s1\nA\n+\nG" |
+    "${VSEARCH}" --fastx_subsample - --fastaout - --randseed 0 --sample_size 1 \
+		 --relabel 'lab' --relabel_keep &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --relabel_keep should fail if not used with anoter relabel option"
+printf "@s1\nA\n+\nG" |
+    "${VSEARCH}" --fastx_subsample - --fastaout - --randseed 0 --sample_size 1 \
+		 --relabel_keep &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --relabel produces correct outputs #1 fasta"
+OUTPUT=$(mktemp)
+printf ">s1\nA\n" |
+    "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --relabel 'lab' \
+		 --sample_size 1 --relabel_keep &> /dev/null
+[[ $(sed "1q;d" "${OUTPUT}") == '>lab1 s1' ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+DESCRIPTION="--fastx_subsample --relabel produces correct outputs #2 fasta"
+OUTPUT=$(mktemp)
+printf ">s1\nA\n>s2\nA\n" |
+    "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --relabel 'lab' \
+		 --sample_size 2 --relabel_keep &> /dev/null
+[[ $(sed "3q;d" "${OUTPUT}") == '>lab2 s2' ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+DESCRIPTION="--fastx_subsample --relabel produces correct outputs #1 fastq"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nG\n" |
+    "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --relabel 'lab' \
+		 --sample_size 1 --relabel_keep &> /dev/null
+[[ $(sed "1q;d" "${OUTPUT}") == '@lab1 s1' ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+DESCRIPTION="--fastx_subsample --relabel produces correct outputs #2 fastq"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" |
+    "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --relabel 'lab' \
+		 --sample_size 2 --relabel_keep &> /dev/null
+[[ $(sed "5q;d" "${OUTPUT}") == '@lab2 s2' ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              --relabel_sha1                                 #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastx_subsample --relabel_sha1 is accepted"
+printf "@s1\nA\n+\nG" |
+    "${VSEARCH}" --fastx_subsample - --fastaout - --randseed 0 --sample_size 1 \
+	         --relabel_sha1 &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --relabel_sha1 produces correct outputs #1 fasta"
+OUTPUT=$(mktemp)
+printf ">s1\nA\n" |
+    "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --relabel_sha1 \
+		 --sample_size 1 &> /dev/null
+[[ $(awk -F '>' 'NR==1 {print $2}' "${OUTPUT}") == \
+   $(printf "A" | sha1sum - | awk '{printf $1}') ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+DESCRIPTION="--fastx_subsample --relabel_sha1 produces correct outputs #2 fasta"
+OUTPUT=$(mktemp)
+printf ">s1\nA\n>s2\nC\n" |
+    "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --relabel_sha1 \
+		 --sample_size 1 &> /dev/null
+[[ $(awk -F '>' 'NR==3 {print $2}' "${OUTPUT}") == \
+   $(printf "C" | sha1sum - | awk '{printf $1}') ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+DESCRIPTION="--fastx_subsample --relabel_sha1 produces correct outputs #1 fastq"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nG\n" |
+    "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --relabel_sha1 \
+		 --sample_size 1 &> /dev/null
+[[ $(awk -F '>' 'NR==1 {print $2}' "${OUTPUT}") == \
+   $(printf "A" | sha1sum - | awk '{printf $1}') ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+DESCRIPTION="--fastx_subsample --relabel_sha1 produces correct outputs #2 fastq"
+OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nG\n@s2\nC\n+\nG\n" |
+    "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --relabel_sha1 \
+		 --sample_size 1 &> /dev/null
+[[ $(awk -F '>' 'NR==5 {print $2}' "${OUTPUT}") == \
+   $(printf "C" | sha1sum - | awk '{printf $1}') ]] && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"       
+
+for OPTION in "--relabel_md5" "--relabel_sha1" ; do
+    DESCRIPTION="--fastx_subsample --relabel should not be used with ${OPTION} fasta"
+    "${VSEARCH}" --fastx_subsample <(printf ">a\nA\n") --relabel 'lab' ${OPTION} \
+		 --fastaout - --sample_size 1&> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	    success "${DESCRIPTION}"
+done
+
+for OPTION in "--relabel_md5" "--relabel_sha1" ; do
+    DESCRIPTION="--fastx_subsample --relabel should not be used with ${OPTION} fastq"
+    "${VSEARCH}" --fastx_subsample <(printf "@a\nA\n+\n-") --relabel 'lab' ${OPTION} \
+		 --fastaout - --sample_size 1 &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	    success "${DESCRIPTION}"
+done
+
