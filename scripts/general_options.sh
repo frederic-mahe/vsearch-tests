@@ -51,6 +51,13 @@ DESCRIPTION="vsearch accepts sub-process inputs"
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+## vsearch accepts inputs from pipes (/dev/stdin)
+DESCRIPTION="vsearch accepts inputs from pipes (/dev/stdin)"
+printf "@a\nA\n+\nI\n" | \
+    "${VSEARCH}" --fastq_chars /dev/stdin &>/dev/null && \
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
+
 ## vsearch accepts inputs from pipes
 DESCRIPTION="vsearch accepts inputs from pipes"
 printf "@a\nA\n+\nI\n" | "${VSEARCH}" --fastq_chars - &>/dev/null && \
