@@ -274,10 +274,19 @@ AVG_ERROR=$(printf '@s1\nAAAA\n+\nIDII\n@s2\nAA\n+\nHH\n' | \
 
 DESCRIPTION="--fastq_stats average expected error up to this position is correct"
 AVG_ERROR=$(printf '@s1\nAAA\n+\n++5\n@s2\nAAA\n+\n++5' | \
+		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+         awk 'NR==20 {print $6}' -)
+[[ $(echo "${AVG_ERROR}") == "0.17" ]] &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+exit
+DESCRIPTION="--fastq_stats average expected error up to this position is correct"
+AVG_ERROR=$(printf '@s1\nAAA\n+\n++5\n@s2\nAAA\n+\n++5' | \
 		   "${VSEARCH}" --fastq_stats - --log - 2> /dev/null)
 [[ $(echo "${AVG_ERROR}") == "0.17" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
 
 # DESCRIPTION="--fastq_stats rate growth is correct"
 # AVG_ERROR=$(printf '@s1\nAAAA\n+\n++++\n@s2\nAA\n+\n-,' | \

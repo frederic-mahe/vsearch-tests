@@ -211,7 +211,6 @@ printf ">s1;size=%d;\nA\n" $(( (1 << 32) + 1 )) | \
 #                                                                             #
 #*****************************************************************************#
 
-
 ## Print a header
 SCRIPT_NAME="Tests inputs FASTQ"
 LINE=$(printf "%076s\n" | tr " " "-")
@@ -366,4 +365,5 @@ printf "@s1;size=%d;\nA\n+\nG\n" $(( (1 << 32) + 1 )) | \
     "${VSEARCH}" --sample_size 1 --fastaout - &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
 exit
