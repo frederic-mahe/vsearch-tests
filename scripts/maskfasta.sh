@@ -81,3 +81,5 @@ DESCRIPTION="--qmask fails if argument given is not valid"
 vsearch --qmask 6T &> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+exit 0
