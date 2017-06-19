@@ -31,55 +31,75 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                                                             #
 #*****************************************************************************#
 
-DESCRIPTION="--fastaout is accepted"
-OUTPUT=$(mktemp)
-vsearch --fastaout "${OUTPUT}" &> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+# DESCRIPTION="--fastaout is accepted"
+# OUTPUT=$(mktemp)
+# vsearch --fastaout "${OUTPUT}" &> /dev/null && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+# rm "${OUTPUT}"
 
-DESCRIPTION="--fastaout is accepted with fastx_mask"
+# DESCRIPTION="--fastaout is accepted with fastx_mask"
+# OUTPUT=$(mktemp)
+# printf '>seq1\nA\n' | \
+# vsearch --fastx_mask - --fastaout "${OUTPUT}" &> /dev/null && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+# rm "${OUTPUT}"
+
+# DESCRIPTION="--fastaout fails if no filename given"
+# vsearch --fastaout &> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+#         success "${DESCRIPTION}"
+
+# DESCRIPTION="--fastqout is accepted"
+# OUTPUT=$(mktemp)
+# vsearch --fastqout "${OUTPUT}" &> /dev/null && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+# rm "${OUTPUT}"
+
+# DESCRIPTION="--fastqout is accepted with fastx_mask"
+# OUTPUT=$(mktemp)
+# printf '@seq1\nA\n+\n!' | \
+# vsearch --fastx_mask - --fastqout "${OUTPUT}" &> /dev/null && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+# rm "${OUTPUT}"
+
+# DESCRIPTION="--fastqout fails if no filename given"
+# vsearch --fastqout &> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+#         success "${DESCRIPTION}"
+
+# DESCRIPTION="--qmask is accepted"
+# printf '@seq1\nA\n+\n!\n' | \
+# vsearch --qmask none &> /dev/null && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+
+# DESCRIPTION="--qmask fails if argument given is not valid"
+# vsearch --qmask 6T &> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+#         success "${DESCRIPTION}"
+
+# DESCRIPTION="
+# exit 0
+
+
+rDESCRIPTION="--maskfasta is accepted"
 OUTPUT=$(mktemp)
 printf '>seq1\nA\n' | \
-vsearch --fastx_mask - --fastaout "${OUTPUT}" &> /dev/null && \
+    vsearch --maskfasta - --output "${OUTPUT}"  &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-DESCRIPTION="--fastaout fails if no filename given"
-vsearch --fastaout &> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
 
-DESCRIPTION="--fastqout is accepted"
+
+DESCRIPTION="--maskfasta if argument given is not valid"
 OUTPUT=$(mktemp)
-vsearch --fastqout "${OUTPUT}" &> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm "${OUTPUT}"
-
-DESCRIPTION="--fastqout is accepted with fastx_mask"
-OUTPUT=$(mktemp)
-printf '@seq1\nA\n+\n!' | \
-vsearch --fastx_mask - --fastqout "${OUTPUT}" &> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm "${OUTPUT}"
-
-DESCRIPTION="--fastqout fails if no filename given"
-vsearch --fastqout &> /dev/null && \
+    vsearch --maskfasta OUTEST --output "${OUTPUT}"  &> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm "${OUTPUT}"
 
-DESCRIPTION="--qmask is accepted"
-printf '@seq1\nA\n+\n!\n' | \
-vsearch --qmask none &> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--qmask fails if argument given is not valid"
-vsearch --qmask 6T &> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-exit 0
