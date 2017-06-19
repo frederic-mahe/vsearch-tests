@@ -27,74 +27,18 @@ DESCRIPTION="check if vsearch is in the PATH"
 
 #*****************************************************************************#
 #                                                                             #
-#                               General options                               #    
+#                               Maskfasta                                     #    
 #                                                                             #
 #*****************************************************************************#
 
-# DESCRIPTION="--fastaout is accepted"
-# OUTPUT=$(mktemp)
-# vsearch --fastaout "${OUTPUT}" &> /dev/null && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
-# rm "${OUTPUT}"
 
-# DESCRIPTION="--fastaout is accepted with fastx_mask"
-# OUTPUT=$(mktemp)
-# printf '>seq1\nA\n' | \
-# vsearch --fastx_mask - --fastaout "${OUTPUT}" &> /dev/null && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
-# rm "${OUTPUT}"
-
-# DESCRIPTION="--fastaout fails if no filename given"
-# vsearch --fastaout &> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-#         success "${DESCRIPTION}"
-
-# DESCRIPTION="--fastqout is accepted"
-# OUTPUT=$(mktemp)
-# vsearch --fastqout "${OUTPUT}" &> /dev/null && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
-# rm "${OUTPUT}"
-
-# DESCRIPTION="--fastqout is accepted with fastx_mask"
-# OUTPUT=$(mktemp)
-# printf '@seq1\nA\n+\n!' | \
-# vsearch --fastx_mask - --fastqout "${OUTPUT}" &> /dev/null && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
-# rm "${OUTPUT}"
-
-# DESCRIPTION="--fastqout fails if no filename given"
-# vsearch --fastqout &> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-#         success "${DESCRIPTION}"
-
-# DESCRIPTION="--qmask is accepted"
-# printf '@seq1\nA\n+\n!\n' | \
-# vsearch --qmask none &> /dev/null && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
-
-# DESCRIPTION="--qmask fails if argument given is not valid"
-# vsearch --qmask 6T &> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-#         success "${DESCRIPTION}"
-
-# DESCRIPTION="
-# exit 0
-
-
-rDESCRIPTION="--maskfasta is accepted"
+DESCRIPTION="--maskfasta is accepted"
 OUTPUT=$(mktemp)
 printf '>seq1\nA\n' | \
     vsearch --maskfasta - --output "${OUTPUT}"  &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
-
-
 
 DESCRIPTION="--maskfasta if argument given is not valid"
 OUTPUT=$(mktemp)
@@ -103,3 +47,183 @@ OUTPUT=$(mktemp)
         success "${DESCRIPTION}"
 rm "${OUTPUT}"
 
+DESCRIPTION="--maskfasta if no argument"
+OUTPUT=$(mktemp)
+    vsearch --output "${OUTPUT}" --maskfasta  &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+    rm "${OUTPUT}"
+
+DESCRIPTION="--qmask is accepted with none"
+vsearch --qmask none &> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--qmask is not accepted with no arguments"
+    vsearch --qmask  &> /dev/null && \
+    failure "${DESCRIPTION}" ||  \
+         success "${DESCRIPTION}"
+
+DESCRIPTION="--qmask is accepted with no arguments"
+ERROR=$(vsearch --qmask  2>&1> /dev/null)
+[[ -n $ERROR ]]      && \
+    success "${DESCRIPTION}" ||  \
+         failure "${DESCRIPTION}"
+
+DESCRIPTION="--qmask is accepted with invalid argument"
+vsearch --qmask "toto" &> /dev/null && \
+	failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+
+DESCRIPTION="--maskfasta --qmask none output is correct"
+OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
+		vsearch --maskfasta - --qmask none \
+			--output - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="--maskfasta --qmask dust output is correct"
+OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
+		vsearch --maskfasta - --qmask dust \
+			--output - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCtaaaacttaaagtataataataataaaattaaaaaaaaaTGCTACAGTATGACCCCACTCCTGG\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--maskfasta --qmask soft output is correct"
+OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
+		vsearch --maskfasta - --qmask soft \
+			--output - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="--maskfasta --hardmask is accepted"
+printf ">seq1\nA\n" | \
+    vsearch --maskfasta - --output  --hardmask &>/dev/null && \
+    success "${DESCRIPTION}" || \
+       failure "${DESCRIPTION}"
+
+DESCRIPTION="--maskfasta --hardmask --qmask none output is correct"
+OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
+		vsearch --maskfasta - --hardmask --qmask none\
+			--output - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--maskfasta --hardmask --qmask soft output is correct"
+OUTPUT=$(printf ">seq1\nacctGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCctgg\n" | \
+		vsearch --maskfasta - --hardmask --qmask soft \
+			--output - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf ">seq1\nNNNNGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCNNNN\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--maskfasta --hardmask --qmask dust output is correct"
+OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
+		vsearch --maskfasta - --hardmask --qmask dust \
+			--output - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNTGCTACAGTATGACCCCACTCCTGG\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+#*****************************************************************************#
+#                                                                             #
+#                                fastx_mask                                   #    
+#                                                                             #
+#*****************************************************************************#
+
+
+
+DESCRIPTION="--fastx_mask is accepted"
+OUTPUT=$(mktemp)
+printf '>seq1\nA\n' | \
+    vsearch --fastx_mask - --fastaout "${OUTPUT}"  &> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_mask if argument given is not valid"
+OUTPUT=$(mktemp)
+    vsearch --fastx_mask OUTEST --output "${OUTPUT}"  &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_mask if no argument"
+OUTPUT=$(mktemp)
+    vsearch --output "${OUTPUT}" --fastx_mask  &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+    rm "${OUTPUT}"
+
+
+DESCRIPTION="--fastx_mask --qmask none output is correct"
+OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
+		vsearch --fastx_mask - --qmask none \
+			--fastaout - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="--fastx_mask --qmask dust output is correct for a fasta input"
+OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
+		vsearch --fastx_mask - --qmask dust \
+			--fastaout - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCtaaaacttaaagtataataataataaaattaaaaaaaaaTGCTACAGTATGACCCCACTCCTGG\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask --qmask soft output is correct for a fasta input"
+OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
+		vsearch --fastx_mask - --qmask soft \
+			--fastaout - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="--fastx_mask --qmask none output is correct for a fasta input"
+OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n"
+		vsearch --fastx_mask - --qmask none \
+			--fastqout - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask --qmask none output is correct for a fastq input"
+OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n' | vsearch --fastx_mask - --qmask none --fastqout - --fasta_width 0)
+[[ "${OUTPUT}" == \
+   $(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="--fastx_mask --qmask soft output is correct for a fastq input"
+OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n' | vsearch --fastx_mask - --qmask soft --fastqout - --fasta_width 0)
+[[ "${OUTPUT}" == \
+   $(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask --qmask dust output is correct for a fastq input"
+OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n' | vsearch --fastx_mask - --qmask dust --fastqout - --fasta_width 0)
+[[ "${OUTPUT}" == \
+   $(printf '@seq1\nACCTGCACATTGTGCACATGTACCCtaaaacttaaagtataataataataaaattaaaaaaaaaTGCTACAGTATGACCCCACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
