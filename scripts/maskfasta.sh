@@ -222,19 +222,17 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_mask --qmask soft --hardmask output is correct for a fasta input"
+OUTPUT=$(printf ">seq1\nACCtgcACATTGTGCACATGTACCCTaaaaCTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATgacCCCACTCCTGG\n" | vsearch --fastx_mask - --qmask soft --hardmask --fastaout - --fasta_width 0 2> /dev/null)
+[[ "${OUTPUT}" == \
+   $(printf     ">seq1\nACCNNNACATTGTGCACATGTACCCTNNNNCTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATNNNCCCACTCCTGG\n") ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_mask --qmask dust --hardmask output is correct for a fasta input"
 OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
 		vsearch --fastx_mask - --qmask dust --hardmask \
 			--fastaout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-   $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNTGCTACAGTATGACCCCACTCCTGG\n") ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --qmask soft --hardmask output is correct for a fasta input"
-OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n") | \
-		vsearch --fastx_mask - --qmask soft --hardmask\
-			--fastaout - --fasta_width 0 2> /dev/null
 [[ "${OUTPUT}" == \
    $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNTGCTACAGTATGACCCCACTCCTGG\n") ]] && \
     success "${DESCRIPTION}" || \
