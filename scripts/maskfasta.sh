@@ -167,7 +167,6 @@ OUTPUT=$(mktemp)
         success "${DESCRIPTION}"
     rm "${OUTPUT}"
 
-
 DESCRIPTION="--fastx_mask --qmask none output is correct for a fasta input"
 OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
     vsearch --fastx_mask - --qmask none --fastaout - --fasta_width 0 2> /dev/null)
@@ -250,10 +249,10 @@ OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_mask --qmask soft --hardmask output is correct for a fastq input"
-OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n' | \
+OUTPUT=$(printf '@seq1\nACCtcgACATTGTGCACATGTACCCTaaaaCTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGAccccACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n' | \
 		vsearch --fastx_mask - --qmask soft --hardmask --fastqout - --fasta_width 0 2>/dev/null)
 [[ "${OUTPUT}" == \
-   $(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n') ]] && \
+   $(printf '@seq1\nACCNNNACATTGTGCACATGTACCCTNNNNCTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGANNNNACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n') ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
