@@ -31,7 +31,6 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                                                             #
 #*****************************************************************************#
 
-
 DESCRIPTION="--maskfasta is accepted"
 OUTPUT=$(mktemp)
 printf '>seq1\nA\n' | \
@@ -84,7 +83,6 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
 DESCRIPTION="--maskfasta --qmask dust output is correct"
 OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
 		vsearch --maskfasta - --qmask dust \
@@ -102,7 +100,6 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
    $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n") ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
 
 DESCRIPTION="--maskfasta --hardmask is accepted"
 printf ">seq1\nA\n" | \
@@ -137,6 +134,7 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
 #*****************************************************************************#
 #                                                                             #
 #                                fastx_mask                                   #    
@@ -165,6 +163,13 @@ OUTPUT=$(mktemp)
         success "${DESCRIPTION}"
     rm "${OUTPUT}"
 
+    
+#*****************************************************************************#
+#                                                                             #
+#                            fasta harsmask off                               #    
+#                                                                             #
+#*****************************************************************************#
+
 DESCRIPTION="--fastx_mask --qmask none output is correct for a fasta input"
 OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
     vsearch --fastx_mask - --qmask none --fastaout - --fasta_width 0 2> /dev/null)
@@ -191,6 +196,13 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#*****************************************************************************#
+#                                                                             #
+#                            fastq harsmask off                               #    
+#                                                                             #
+#*****************************************************************************#
+
 DESCRIPTION="--fastx_mask --qmask none output is correct for a fastq input"
 OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n' | \
 		vsearch --fastx_mask - --qmask none --fastqout - --fasta_width 0 2>/dev/null)
@@ -213,8 +225,14 @@ OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_mask --qmask none --hardmask output is correct for a fasta input"
 
+#*****************************************************************************#
+#                                                                             #
+#                            fasta harsmask on                                #    
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastx_mask --qmask none --hardmask output is correct for a fasta input"
 OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
 		vsearch --fastx_mask - --qmask none \
 			--fastaout - --fasta_width 0 2> /dev/null)
@@ -238,6 +256,13 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
    $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNTGCTACAGTATGACCCCACTCCTGG\n") ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            fastq harsmask on                                #    
+#                                                                             #
+#*****************************************************************************#
 
 DESCRIPTION="--fastx_mask --qmask none --hardmask output is correct for a fastq input"
 OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n+\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n' | \
