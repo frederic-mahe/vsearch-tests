@@ -83,7 +83,7 @@ DESCRIPTION="--fastq_stats read length is correct #1"
 READ_LENGTH=$(printf "@s1\nAC\n+\nGG" | \
 		     "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==8 {print $2}' -)
-[[ $(printf "${READ_LENGTH}") == "2" ]] &&
+[[ $(printf "${READ_LENGTH}") == "2" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -91,7 +91,7 @@ DESCRIPTION="--fastq_stats read length is correct #2"
 READ_LENGTH=$(printf "@s1\n\n+\n" | \
 		     "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==8 {print $2}' -)
-[[ $(printf "${READ_LENGTH}") == "0" ]] &&
+[[ $(printf "${READ_LENGTH}") == "0" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -99,7 +99,7 @@ DESCRIPTION="--fastq_stats number of reads is correct #1"
 READ_NB=$(printf "@s1\nA\n+\nG" | \
 		     "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==8 {print $3}' -)
-[[ $(printf "${READ_NB}") == "1" ]] &&
+[[ $(printf "${READ_NB}") == "1" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -107,7 +107,7 @@ DESCRIPTION="--fastq_stats number of reads is correct #2"
 READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nA\n+\nG" | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==8 {print $3}' -)
-[[ $(printf "${READ_NB}") == "2" ]] &&
+[[ $(printf "${READ_NB}") == "2" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -115,7 +115,7 @@ DESCRIPTION="--fastq_stats percentage of reads with this length is correct"
 READ_PERCENT=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAA\n+\nGG" | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==8 {print $4}' -)
-[[ $(echo "${READ_PERCENT}") == "66.7%" ]] &&
+[[ $(echo "${READ_PERCENT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -123,7 +123,7 @@ DESCRIPTION="--fastq_stats fraction of reads with this length or more is correct
 READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==9 {print $5}' -)
-[[ $(echo "${READ_PERCENT}") == "66.7%" ]] &&
+[[ $(echo "${READ_PERCENT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -131,7 +131,7 @@ DESCRIPTION="--fastq_stats fraction of reads with this length or more is correct
 READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==9 {print $5}' -)
-[[ $(echo "${READ_PERCENT}") == "66.7%" ]] &&
+[[ $(echo "${READ_PERCENT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -139,7 +139,7 @@ DESCRIPTION="--fastq_stats fraction of reads with this length or more is correct
 READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==9 {print $5}' -)
-[[ $(echo "${READ_PERCENT}") == "66.7%" ]] &&
+[[ $(echo "${READ_PERCENT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -164,7 +164,7 @@ READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
 # 				  "${VSEARCHg}" --fastq_stats - --log - --fastq_ascii 64 2> /dev/null | \
 # 				  awk 'NR==13{print $1}' -)
 # 	     fi 
-# 	     [[ $(printf "${READ_NB}") == "${LETTER}" ]] &&
+# 	     [[ $(printf "${READ_NB}") == "${LETTER}" ]] && \
 # 		 success  "${DESCRIPTION}" || \
 # 		     failure "${DESCRIPTION}"
 # }
@@ -173,7 +173,7 @@ DESCRIPTION="--fastq_stats Phred quality score is correct #1"
 E_PROBA=$(printf '@s1\nA\n+\nH\n' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==13 {print $3}' -)
-[[ $(printf "${E_PROBA}") == "0.00013" ]] &&
+[[ $(printf "${E_PROBA}") == "0.00013" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -181,7 +181,7 @@ DESCRIPTION="--fastq_stats Phred quality score is correct #2"
 E_PROBA=$(printf '@s1\nA\n+\n"' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==13 {print $3}' -)
-[[ $(printf "${E_PROBA}") == "0.79433" ]] &&
+[[ $(printf "${E_PROBA}") == "0.79433" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -189,7 +189,7 @@ DESCRIPTION="--fastq_stats number of bases with this quality score is correct #1
 BASES_NB=$(printf '@s1\nA\n+\nH\n@s2\nA\n+\nG' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==13 {print $4}' -)
-[[ $(echo "${BASES_NB}") == "1" ]] &&
+[[ $(echo "${BASES_NB}") == "1" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -197,7 +197,7 @@ DESCRIPTION="--fastq_stats number of bases with this quality score is correct #2
 BASES_NB=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nG' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==13 {print $4}' -)
-[[ $(echo "${BASES_NB}") == "2" ]] &&
+[[ $(echo "${BASES_NB}") == "2" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -205,7 +205,7 @@ DESCRIPTION="--fastq_stats percentage of bases with this quality score is correc
 BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nH' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==13 {print $5}' -)
-[[ $(echo "${BASES_PRCT}") == "66.7%" ]] &&
+[[ $(echo "${BASES_PRCT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -213,7 +213,7 @@ DESCRIPTION="--fastq_stats percentage of bases with this quality score is correc
 BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nH' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==13 {print $5}' -)
-[[ $(echo "${BASES_PRCT}") == "66.7%" ]] &&
+[[ $(echo "${BASES_PRCT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -221,7 +221,7 @@ DESCRIPTION="--fastq_stats percentage of bases with this quality score or higher
 BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nI' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==14 {print $6}' -)
-[[ $(echo "${BASES_PRCT}") == "66.7%" ]] &&
+[[ $(echo "${BASES_PRCT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -236,7 +236,7 @@ DESCRIPTION="--fastq_stats PctRecs is correct"
 BASES_PRCT=$(printf '@s1\nA\n+\nH\n@s2\nAA\n+\nHH\n@s3\nAAA\n+\nHHH' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==19 {print $2}' -)
-[[ $(echo "${BASES_PRCT}") == "66.7%" ]] &&
+[[ $(echo "${BASES_PRCT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -248,7 +248,7 @@ DESCRIPTION="--fastq_stats AvgQ is correct"
 AVGQ=$(printf '@s1\nAAAA\n+\nHDII\n@s2\nAA\n+\nHG\n@s3\nAA\n+\nHI' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==21 {print $3}' -)
-[[ $(echo "${AVGQ}") == "37.7" ]] &&
+[[ $(echo "${AVGQ}") == "37.7" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -256,7 +256,7 @@ DESCRIPTION="--fastq_stats P(AvgQ) is correct"
 PAVGQ=$(printf '@s1\nAAAA\n+\nHDII\n@s2\nAA\n+\nHG\n@s3\nAA\n+\nHI' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		     awk 'NR==21 {print $4}' -)
-[[ $(echo "${PAVGQ}") == "0.00017" ]] &&
+[[ $(echo "${PAVGQ}") == "0.00017" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -264,7 +264,7 @@ DESCRIPTION="--fastq_stats avgP is correct"
 AVGP=$(printf '@s1\nAAAA\n+\nIDII\n@s2\nAA\n+\nHH\n' | \
 		    "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
 		    awk 'NR==20 {print $5}' -)
-[[ $(echo "${AVGP}") == "0.000221" ]] &&
+[[ $(echo "${AVGP}") == "0.000221" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -272,7 +272,7 @@ DESCRIPTION="--fastq_stats avgEE is correct"
 AVGEE=$(printf '@s1\nAAA\n+\n++5\n@s2\nAAA\n+\n""5' | \
 		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
      awk 'NR==20 {print $6}' -)
-[[ $(echo "${AVGEE}") == "0.90" ]] &&
+[[ $(echo "${AVGEE}") == "0.90" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -280,7 +280,7 @@ DESCRIPTION="--fastq_stats Rate is correct"
 RATE=$(printf '@s1\nAAA\n+\n++0\n@s2\nAAA\n+\n++0' | \
 		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
                    awk 'NR==19 {print $7}' -)
-[[ $(echo "${RATE}") == "0.077208" ]] &&
+[[ $(echo "${RATE}") == "0.077208" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -288,7 +288,7 @@ DESCRIPTION="--fastq_stats RatePct is correct"
 RATEPCT=$(printf '@s1\nAAA\n+\n++0\n@s2\nAAA\n+\n++0' | \
 		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
                    awk 'NR==19 {print $8}' -)
-[[ $(echo "${RATEPCT}") == "7.721%" ]] &&
+[[ $(echo "${RATEPCT}") == "7.721%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -302,7 +302,7 @@ DESCRIPTION="--fastq_stats RatePct is correct"
 RATEPCT=$(printf '@s1\nAAA\n+\n++0\n@s2\nAAA\n+\n++0' | \
 		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
                    awk 'NR==23 {print $2}' -)
-[[ $(echo "${RATEPCT}") == "7.721%" ]] &&
+[[ $(echo "${RATEPCT}") == "7.721%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -318,7 +318,7 @@ RATEPCT=$(printf "@s1\nAAA\n+\n('&\n" | \
 		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null) #| \
 #                   awk 'NR==32 {print $2}' -)
 echo "${RATEPCT}"
-[[ $(echo "${RATEPCT}") == "7.721%" ]] &&
+[[ $(echo "${RATEPCT}") == "7.721%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
