@@ -103,14 +103,13 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
 
 DESCRIPTION="--maskfasta --hardmask is accepted"
 printf ">seq1\nA\n" | \
-    vsearch --maskfasta - --output  --hardmask &>/dev/null && \
+    vsearch --maskfasta - --output - --hardmask &>/dev/null && \
     success "${DESCRIPTION}" || \
        failure "${DESCRIPTION}"
 
 DESCRIPTION="--maskfasta --hardmask --qmask none output is correct"
 OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
-		vsearch --maskfasta - --hardmask --qmask none\
-			--output - --fasta_width 0 2> /dev/null)
+		vsearch --maskfasta - --hardmask --qmask none --output - --fasta_width 0 2> /dev/null)
 [[ "${OUTPUT}" == \
    $(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n") ]] && \
     success "${DESCRIPTION}" || \
@@ -118,8 +117,7 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
 
 DESCRIPTION="--maskfasta --hardmask --qmask soft output is correct"
 OUTPUT=$(printf ">seq1\nacctGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCctgg\n" | \
-		vsearch --maskfasta - --hardmask --qmask soft \
-			--output - --fasta_width 0 2> /dev/null)
+		vsearch --maskfasta - --hardmask --qmask soft --output - --fasta_width 0 2> /dev/null)
 [[ "${OUTPUT}" == \
    $(printf ">seq1\nNNNNGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCNNNN\n") ]] && \
     success "${DESCRIPTION}" || \
@@ -364,16 +362,34 @@ printf '>seq1\natGC\n>seq2\na' | \
 		vsearch --fastx_mask - --qmask soft --hardmask --max_unmasked_pct 110 --fastaout - &>/dev/null &&
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-    
-DESCRIPTION="--fastx_mask --max_unmasked_pct fails if value less than 0"
+
+DESCRIPTION="--fastx_mask --min_unmasked_pct fails if value is greater than 100"
 printf '>seq1\natGC\n>seq2\na' | \
-		vsearch --fastx_mask - --qmask soft --hardmask --max_unmasked_pct -10 --fastaout - &>/dev/null &&
+		vsearch --fastx_mask - --qmask soft --hardmask --min_unmasked_pct 110 --fastaout - &>/dev/null &&
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_mask --min_unmasked_pct fails if value is more than 100"
 printf '>seq1\natGC\n>seq2\na' | \
-		vsearch --fastx_mask - --qmask soft --hardmask --min_unmasked_pct 110 --fastaout - &>/dev/null &&
+		vsearch --fastx_mask - --qmask soft --hardmask --fastaout - --max_unmasked_pct \-10 --min_unmasked_pct \-40 &>/dev/null &&
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask --max_unmasked_pct --min_unmasked_pct fails if min between 100 and max with max greater than 100"
+printf '>seq1\natGC\n>seq2\na' | \
+		vsearch --fastx_mask - --qmask soft --hardmask --max_unmasked_pct 140 --min_unmasked_pct 110 --fastaout - &>/dev/null &&
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask --max_unmasked_pct fails if value greater than 100"
+printf '>seq1\natGC\n>seq2\na' | \
+		vsearch --fastx_mask - --qmask soft --hardmask --fastaout - --max_unmasked_pct \-1 &>/dev/null &&
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask --max_unmasked_pct --min_unmasked_pct fails if min less than 0"
+printf '>seq1\natGC\n>seq2\na' | \
+		vsearch --fastx_mask - --qmask soft --hardmask --min_unmasked_pct \-1 --fastaout - &>/dev/null &&
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
