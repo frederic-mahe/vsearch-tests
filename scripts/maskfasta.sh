@@ -214,6 +214,7 @@ OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_mask --qmask none --hardmask output is correct for a fasta input"
+
 OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
 		vsearch --fastx_mask - --qmask none \
 			--fastaout - --fasta_width 0 2> /dev/null)
