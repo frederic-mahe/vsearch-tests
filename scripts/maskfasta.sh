@@ -143,8 +143,6 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
 #                                                                             #
 #*****************************************************************************#
 
-
-
 DESCRIPTION="--fastx_mask is accepted"
 OUTPUT=$(mktemp)
 printf '>seq1\nA\n' | \
@@ -166,7 +164,6 @@ OUTPUT=$(mktemp)
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
     rm "${OUTPUT}"
-
 
 DESCRIPTION="--fastx_mask --qmask none output is correct for a fasta input"
 OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
