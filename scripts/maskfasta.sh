@@ -175,6 +175,13 @@ printf "@seq1\nACG\n+\n!!!" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#*****************************************************************************#
+#                                                                             #
+#                            fasta hardmask off                               #    
+#                                                                             #
+#*****************************************************************************#
+
 DESCRIPTION="--fastx_mask --qmask none output is correct for a fasta input"
 OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG\n" | \
     vsearch --fastx_mask - --qmask none --fastaout - --fasta_width 0 2> /dev/null)
@@ -204,7 +211,7 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
 
 #*****************************************************************************#
 #                                                                             #
-#                            fastq harsmask off                               #    
+#                            fastq hardmask off                               #    
 #                                                                             #
 #*****************************************************************************#
 
@@ -233,7 +240,7 @@ OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
 
 #*****************************************************************************#
 #                                                                             #
-#                            fasta harsmask on                                #    
+#                            fasta hardmask on                                #    
 #                                                                             #
 #*****************************************************************************#
 
@@ -265,7 +272,7 @@ OUTPUT=$(printf ">seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
 
 #*****************************************************************************#
 #                                                                             #
-#                            fastq harsmask on                                #    
+#                            fastq hardmask on                                #    
 #                                                                             #
 #*****************************************************************************#
 
@@ -294,16 +301,11 @@ OUTPUT=$(printf '@seq1\nACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTA
         failure "${DESCRIPTION}"
 
 
-
-
-
 #*****************************************************************************#
 #                                                                             #
 #                            max/min_unmasked_pct                             #    
 #                                                                             #
 #*****************************************************************************#
-
-
 
 DESCRIPTION="--fastx_mask --max_unmasked_pct is accepted"
 printf '>seq1\natGC' | \
@@ -317,7 +319,6 @@ printf '>seq1\natGC' | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
 DESCRIPTION="--fastx_mask --max_unmasked_pct fails if no argument given"
 printf '>seq1\natGC' | \
 		vsearch --fastx_mask - --qmask soft --hardmask --max_unmasked_pct --fastaout - &>/dev/null && \
@@ -330,13 +331,13 @@ printf '>seq1\natGC' | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_mask --max_unmasked_pct fails if value given is false"
+DESCRIPTION="--fastx_mask --max_unmasked_pct fails if value given is not valid"
 printf '>seq1\natGC' | \
 		vsearch --fastx_mask - --qmask soft --hardmask --max_unmasked_pct toto --fastaout - &>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_mask --min_unmasked_pct fails if value given is false"
+DESCRIPTION="--fastx_mask --min_unmasked_pct fails if value given is not valid"
 printf '>seq1\natGC' | \
 		vsearch --fastx_mask - --qmask soft --hardmask --min_unmasked_pct toto --fastaout - &>/dev/null && \
     failure "${DESCRIPTION}" || \
@@ -350,7 +351,6 @@ OUTPUT=$(printf '>seq1\natGC\n>seq2\na' | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
 DESCRIPTION="--fastx_mask --min_unmasked_pct gives the correct result"
 OUTPUT=$(printf '>seq1\natGC\n>seq2\na' | \
 		vsearch --fastx_mask - --qmask soft --hardmask --min_unmasked_pct 50 --fastaout - 2>/dev/null)
@@ -358,7 +358,6 @@ OUTPUT=$(printf '>seq1\natGC\n>seq2\na' | \
    $(printf '>seq1\nNNGC') ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
 
 DESCRIPTION="--fastx_mask --max_unmasked_pct fails if value is more than 100"
 printf '>seq1\natGC\n>seq2\na' | \
@@ -372,17 +371,20 @@ printf '>seq1\natGC\n>seq2\na' | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-    
 DESCRIPTION="--fastx_mask --min_unmasked_pct fails if value is more than 100"
 printf '>seq1\natGC\n>seq2\na' | \
 		vsearch --fastx_mask - --qmask soft --hardmask --min_unmasked_pct 110 --fastaout - &>/dev/null &&
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-    
+DESCRIPTION="--fastx_mask --min_unmasked_pct fails if value less than 0"
+printf '>seq1\natGC\n>seq2\na' | \
+		vsearch --fastx_mask - --qmask soft --hardmask --min_unmasked_pct -10 --fastaout - &>/dev/null &&
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_mask --min_unmasked_pct --max_unmasked_pct fails if min greater than max"
 printf '>seq1\natGC\n>seq2\na' | \
 		vsearch --fastx_mask - --qmask soft --hardmask --min_unmasked_pct 60 --max_unmasked_pct 40 --fastaout - &>/dev/null &&
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-
