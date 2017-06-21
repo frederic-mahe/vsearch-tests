@@ -27,6 +27,19 @@ DESCRIPTION="check if vsearch is in the PATH"
 
 #*****************************************************************************#
 #                                                                             #
+#                                Generals tests                               #    
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastq_eestats is accepted"
+printf '@s1\nA\n+\nH\n' | \
+		     "${VSEARCH}" --fastq_eestats - --output - &> /dev/null &&
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                           Positions and quartiles                           #    
 #                                                                             #
 #*****************************************************************************#
@@ -104,10 +117,10 @@ LOWQ=$(printf '@s1\nA\n+\n!\n@s2\nA\n+\n"\n@s3\nA\n+\n#\n@s4\nA\n+\n#\n@s5\nA\n+
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_eestats Med_Q is correct #1"
-MEDQ=$(printf '@s1\nA\n+\n!\n@s2\nA\n+\n!\n@s3\nA\n+\n"\n@s4\nA\n+\n"\n' | \
+MEDQ=$(printf '@s1\nA\n+\n!\n@s2\nA\n+\n"\n@s3\nA\n+\n#\n@s4\nA\n+\n$\n' | \
 		      "${VSEARCH}" --fastq_eestats - --output - 2> /dev/null | \
               awk 'NR==2 {print $6}' -)
-[[ $(echo "${MEDQ}") == "0.5" ]] &&
+[[ $(echo "${MEDQ}") == "1.0" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -178,15 +191,15 @@ DESCRIPTION="--fastq_eestats Low_PE is correct #1"
 LOWPE=$(printf '@s1\nA\n+\n!\n@s2\nA\n+\n"\n@s3\nA\n+\n#\n@s4\nA\n+\n$\n' | \
 		      "${VSEARCH}" --fastq_eestats - --output - 2> /dev/null | \
               awk 'NR==2 {print $11}' -)
-[[ $(echo "${LOWPE}") == "0.63" ]] &&
+[[ $(echo "${LOWPE}") == "0.5" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_eestats Low_PE is correct #2"
-LOWPE=$(printf '@s1\nA\n+\n!\n@s2\nA\n+\n"\n@s3\nA\n+\n#\n@s4\nA\n+\n#\n@s5\nA\n+\n#\n' | \
+LOWPE=$(printf '@s1\nA\n+\n!\n@s2\nA\n+\n"\n@s3\nA\n+\n#\n@s4\nA\n+\n$\n@s5\nA\n+\n%%\n' | \
 		      "${VSEARCH}" --fastq_eestats - --output - 2> /dev/null | \
               awk 'NR==2 {print $11}' -)
-[[ $(echo "${LOWPE}") == "0.63" ]] &&
+[[ $(echo "${LOWPE}") == "0.5" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -194,7 +207,7 @@ DESCRIPTION="--fastq_eestats Med_PE is correct #1"
 MEDPE=$(printf '@s1\nA\n+\n!\n@s2\nA\n+\n"\n@s3\nA\n+\n#\n@s4\nA\n+\n$\n' | \
 		      "${VSEARCH}" --fastq_eestats - --output - 2> /dev/null | \
               awk 'NR==2 {print $12}' -)
-[[ $(echo "${MEDPE}") == "0.71" ]] &&
+[[ $(echo "${MEDPE}") == "0.63" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -223,7 +236,7 @@ HIPE=$(printf '@s1\nA\n+\n!\n@s2\nA\n+\n"\n@s3\nA\n+\n#\n@s4\nA\n+\n$\n' | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_eestats Hi_PE is correct #2"
-HIPE=$(printf '@s1\nA\n+\n!\n@s2\nA\n+\n!\n@s3\nA\n+\n"\n@s4\nA\n+\n#\n@s5\nA\n+\n$\n' | \
+HIPE=$(printf '@s1\nA\n+\n!\n@s2\nA\n+\n"\n@s3\nA\n+\n#\n@s4\nA\n+\n$\n@s5\nA\n+\n%%\n' | \
 		      "${VSEARCH}" --fastq_eestats - --output - 2> /dev/null | \
               awk 'NR==2 {print $14}' -)
 [[ $(echo "${HIPE}") == "0.79" ]] &&
@@ -234,7 +247,7 @@ DESCRIPTION="--fastq_eestats Max_PE is correct #1"
 MAXPE=$(printf '@s1\nA\n+\n"\n@s2\nA\n+\n!\n' | \
 		      "${VSEARCH}" --fastq_eestats - --output - 2> /dev/null | \
               awk 'NR==2 {print $15}' -)
-[[ $(echo "${HIPE}") == "1" ]] &&
+[[ $(echo "${HIPE}") == "1.0" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -245,6 +258,7 @@ MAXPE=$(printf '@s1\nAA\n+\n"&\n@s2\nAA\n+\n#$\n' | \
 [[ $(echo "${MAXPE}") == "0.5" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -288,7 +302,7 @@ DESCRIPTION="--fastq_eestats Med_EE is correct #1"
 MEDEE=$(printf '@s1\nAA\n+\n!"\n@s2\nAA\n+\n"#\n@s3\nAA\n+\n#$\n@s4\nAA\n+\n$%%\n' | \
 		      "${VSEARCH}" --fastq_eestats - --output - 2> /dev/null | \
               awk 'NR==3 {print $18}' -)
-[[ $(echo "${MEDEE}") == "1.28" ]] &&
+[[ $(echo "${MEDEE}") == "1.13" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -328,7 +342,7 @@ DESCRIPTION="--fastq_eestats Max_EE is correct #1"
 MAXEE=$(printf '@s1\nA\n+\n"\n@s2\nA\n+\n!\n' | \
 		      "${VSEARCH}" --fastq_eestats - --output - 2> /dev/null | \
               awk 'NR==2 {print $21}' -)
-[[ $(echo "${HIEE}") == "1.00" ]] &&
+[[ $(echo "${MAXEE}") == "1.00" ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
