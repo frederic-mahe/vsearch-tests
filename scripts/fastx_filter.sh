@@ -112,6 +112,56 @@ printf '@seq1\nAGC\n+\nIII\n' | \
     failure "${DESCRIPTION}"|| \
             success "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_filter --fastq_maxlen gives the correct result"
+OUTPUT=$(printf '>seq1\nAGA\n' | \
+		 "${VSEARCH}" --fastx_filter - --fastq_maxlen 2 --fastaout - 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --fastq_minlen gives the correct result"
+OUTPUT=$(printf '>seq1\nAGA\n' | \
+		 "${VSEARCH}" --fastx_filter - --fastq_minlen 4 --fastaout - 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --fastq_maxlen fails if negative value"
+printf '@seq1\nAGA\n+\n!!!\n' | \
+    "${VSEARCH}" --fastx_filter - --fastq_maxlen \-1 --fastqout - 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --fastq_minlen is accepted"
+printf '@seq1\nAGC\n+\nIII\n' | \
+    "${VSEARCH}" --fastx_filter - --fastq_minlen 2 --fastaout - &>/dev/null && \
+    success "${DESCRIPTION}"|| \
+            failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --fastq_minlen is giving the correct result"
+OUTPUT=$(printf '@seq1\nAGA\n+\n!!!\n' | \
+		 "${VSEARCH}" --fastx_filter - --fastq_minlen 3 --fastqout - 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '@seq1\nAGA\n+\n!!!\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --fastq_minlen is giving the correct result #2"
+OUTPUT=$(printf '@seq1\nAGA\n+\n!!\n' | \
+		 "${VSEARCH}" --fastx_filter - --fastq_minlen 2 --fastqout - 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --fastq_minlen fails if negative value"
+printf '@seq1\nAGA\n+\n!!!\n' | \
+    "${VSEARCH}" --fastx_filter - --fastq_minlen \-1 --fastqout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -149,6 +199,12 @@ OUTPUT=$(printf '@seq1\nAG\n+\n!!\n' | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_filter --fastq_maxee_rate is accepted"
+printf '@seq1\nAGC\n+\nIII\n' | \
+    "${VSEARCH}" --fastx_filter - --fastq_maxee_rate 110 --fastaout - &>/dev/null && \
+    success "${DESCRIPTION}"|| \
+            failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_filter --fastq_maxee_rate does not impact a fasta input"
 OUTPUT=$(printf '>seq1\nAG\n' | \
 		 "${VSEARCH}" --fastx_filter - --fastq_maxee_rate 0.9 --fastaout - 2>/dev/null)
@@ -170,40 +226,6 @@ OUTPUT=$(printf '@seq1\nAG\n+\n!!\n' | \
 		 "${VSEARCH}" --fastx_filter - --fastq_maxee_rate 0.9 --fastqout - 2>/dev/null)
 [[ "${OUTPUT}" == \
    $(printf '@seq1\nAG\n+\n!!\n') ]] && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_filter --fastq_maxee_rate is accepted"
-printf '@seq1\nAGC\n+\nIII\n' | \
-    "${VSEARCH}" --fastx_filter - --fastq_maxee_rate 110 --fastaout - &>/dev/null && \
-    success "${DESCRIPTION}"|| \
-            failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_filter --fastq_maxlen is accepted"
-printf '@seq1\nAGC\n+\nIII\n' | \
-    "${VSEARCH}" --fastx_filter - --fastq_maxlen 2 --fastaout - &>/dev/null && \
-    success "${DESCRIPTION}"|| \
-            failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_filter --fastq_maxlen is giving the correct result"
-OUTPUT=$(printf '@seq1\nAGA\n+\n!!!\n' | \
-		 "${VSEARCH}" --fastx_filter - --fastq_maxlen 3 --fastqout - 2>/dev/null)
-[[ "${OUTPUT}" == \
-   $(printf '@seq1\nAGA\n+\n!!!\n') ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_filter --fastq_maxlen is giving the correct result #2"
-OUTPUT=$(printf '@seq1\nAGA\n+\n!!\n' | \
-		 "${VSEARCH}" --fastx_filter - --fastq_maxlen 2 --fastqout - 2>/dev/null)
-[[ "${OUTPUT}" == \
-   $(printf '') ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_filter --fastq_maxlen fails if negative value"
-printf '@seq1\nAGA\n+\n!!!\n' | \
-    "${VSEARCH}" --fastx_filter - --fastq_maxlen \-1 --fastqout - 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -232,34 +254,6 @@ OUTPUT=$(printf '@seq1\nANA\n+\n!!\n' | \
 DESCRIPTION="--fastx_filter --fastq_maxns fails if negative value"
 printf '@seq1\nAGA\n+\n!!!\n' | \
     "${VSEARCH}" --fastx_filter - --fastq_maxns \-1 --fastqout - 2>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_filter --fastq_minlen is accepted"
-printf '@seq1\nAGC\n+\nIII\n' | \
-    "${VSEARCH}" --fastx_filter - --fastq_minlen 2 --fastaout - &>/dev/null && \
-    success "${DESCRIPTION}"|| \
-            failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_filter --fastq_minlen is giving the correct result"
-OUTPUT=$(printf '@seq1\nAGA\n+\n!!!\n' | \
-		 "${VSEARCH}" --fastx_filter - --fastq_minlen 3 --fastqout - 2>/dev/null)
-[[ "${OUTPUT}" == \
-   $(printf '@seq1\nAGA\n+\n!!!\n') ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_filter --fastq_minlen is giving the correct result #2"
-OUTPUT=$(printf '@seq1\nAGA\n+\n!!\n' | \
-		 "${VSEARCH}" --fastx_filter - --fastq_minlen 2 --fastqout - 2>/dev/null)
-[[ "${OUTPUT}" == \
-   $(printf '') ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_filter --fastq_minlen fails if negative value"
-printf '@seq1\nAGA\n+\n!!!\n' | \
-    "${VSEARCH}" --fastx_filter - --fastq_minlen \-1 --fastqout - &>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -293,11 +287,18 @@ printf '@seq1\nAGA\n+\n!!!\n' | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_filter --fastq_qmin fails when negative"
+DESCRIPTION="--fastx_filter --fastq_qmax fails when negative"
 printf '@seq1\nAGA\n+\n!!!\n' | \
-    "${VSEARCH}" --fastx_filter - --fastq_qmin \-1 --fastqout - &>/dev/null && \
+    "${VSEARCH}" --fastx_filter - --fastq_qmax \-1 --fastqout - &>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                             fastq_stripleft                                 #
+#                                                                             #
+#*****************************************************************************#
 
 DESCRIPTION="--fastx_filter --fastq_stripleft is accepted"
 printf '@seq1\nAGA\n+\n!!!\n' | \
@@ -310,6 +311,14 @@ OUTPUT=$(printf '@seq1\nAGA\n+\n!!!\n' | \
 		 "${VSEARCH}" --fastx_filter - --fastq_stripleft 4 --fastqout - 2>/dev/null)
 [[ "${OUTPUT}" == \
    $(printf '') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --fastq_stripleft gives the correct result"
+OUTPUT=$(printf '@seq1\nAGA\n+\n!!!\n' | \
+		 "${VSEARCH}" --fastx_filter - --fastq_stripleft 1 --fastqout - 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '@seq1\nGA\n+\n!!\n') ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -376,13 +385,111 @@ OUTPUT=$(printf '@seq1\nAGA\n+\n!!!\n' | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_filter --fastqout_discarded shows the discarded sequence"
-OUTPUT=$(printf '@seq1\nAGA\n+\n!!!\n' | \
-		 "${VSEARCH}" --fastx_filter - --fastq_trunclen 4 --fastqout_discarded - 2>/dev/null)
+
+#*****************************************************************************#
+#                                                                             #
+#                                 relabel                                     #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastx_filter --relabel  gives the correct value"
+OUTPUT=$(printf '@seq1\nAGA\n+\n!!!\n@seq2\nA\n+\n!\n' | \
+		"${VSEARCH}" --fastx_filter - --fastqout - --relabel sequence 2>/dev/null)
 [[ "${OUTPUT}" == \
-   $(printf '@seq1\nAGA\n+\n!!!\n') ]] && \
+   $(printf '@sequence1\nAGA\n+\n!!!\n@sequence2\nA\n+\n!\n') ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --relabel --relabel_keep gives the correct value"
+OUTPUT=$(printf '>seq\nAGA\n>seq\nA\n' | \
+		"${VSEARCH}" --fastx_filter - --fastaout - --relabel_keep --relabel sequence 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '>sequence1 seq\nAGA\n>sequence2 seq\nA\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+DESCRIPTION="--fastx_filter --relabel --sizeout gives the correct value"
+OUTPUT=$(printf '>seq1;size=3\nAGA\n>seq2;size=2\nA\n' | \
+		"${VSEARCH}" --fastx_filter - --fastaout - --relabel sequence --sizeout 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '>sequence1;size=3;\nAGA\n>sequence2;size=2;\nA\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --relabel --sizeout gives the correct value #2"
+OUTPUT=$(printf '>seq1\nAGA\n>seq2\nA\n' | \
+		"${VSEARCH}" --fastx_filter - --fastaout - --relabel sequence --sizeout 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '>sequence1;size=1;\nAGA\n>sequence2;size=1;\nA\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --relabel --xsize gives the correct value"
+OUTPUT=$(printf '>seq1;size=3\nAGA\n>seq2;size=2\nA\n' | \
+		"${VSEARCH}" --fastx_filter - --fastaout - --xsize 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '>seq1\nAGA\n>seq2\nA\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --relabel --xsize gives the correct value #2"
+OUTPUT=$(printf '>seq1\nAGA\n>seq2\nA\n' | \
+		"${VSEARCH}" --fastx_filter - --fastaout - --xsize 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '>seq1\nAGA\n>seq2\nA\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --relabel --relabel_md5 gives the correct value"
+OUTPUT=$(printf '>seq\nAGA\n' | \
+		"${VSEARCH}" --fastx_filter - --fastaout - --relabel_md5 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '>b13b6429c6c3ddc1531b364fdfd82457\nAGA\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --relabel --relabel_sha1 gives the correct value"
+OUTPUT=$(printf '>seq\nAGA\n' | \
+		"${VSEARCH}" --fastx_filter - --fastaout - --relabel_sha1 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '>c9cd9df36dcce8254c5ccf410709b5213524ad76\nAGA\n') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    out                                      #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--fastx_filter --fastqout_discarded shows the name of the discarded sequence"
+OUTPUT=$(printf '@seq1\nAGA\n+\n!!!\n' | \
+		"${VSEARCH}" --fastx_filter - --fastq_trunclen 4 --fastqout_discarded - 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '@seq1') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --fastqout_discarded fails if fasta input"
+printf '>seq1\nAGA\n' | \
+		 "${VSEARCH}" --fastx_filter - --fastq_trunclen 4 --fastqout_discarded - 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --fastaout_discarded shows the name of the discarded sequence"
+OUTPUT=$(printf '>seq1\nAGA\n' | \
+		"${VSEARCH}" --fastx_filter - --fastq_trunclen 4 --fastaout_discarded - 2>/dev/null)
+[[ "${OUTPUT}" == \
+   $(printf '>seq1') ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --fastaout_discarded fails if fastq input"
+printf '@seq1\nAGA\n+\n!!!\n' | \
+		 "${VSEARCH}" --fastx_filter - --fastq_trunclen 4 --fastaout_discarded - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
