@@ -80,12 +80,13 @@ CLASSIC_OUTPUT=$("${VSEARCH}" --shuffle "${SEQx1000}" --randseed 666 \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
+unset CLASSIC_OUTPUT RANDSEED_OUTPUT
 
 ## --randseed 0 products different outputs (tiny chances of failure)
 OUTPUT=$(mktemp)
 DESCRIPTION="--randseed 0 products different outputs (tiny chances of failure)"
 [[ $("${VSEARCH}" --shuffle "${SEQx1000}" --randseed 0 --output "${OUTPUT}" 2>&1) == \
-$("${VSEARCH}" --shuffle "${SEQx1000}" --randseed 0 --output "${OUTPUT}" 2>&1) ]]
+   $("${VSEARCH}" --shuffle "${SEQx1000}" --randseed 0 --output "${OUTPUT}" 2>&1) ]]
 success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -110,7 +111,7 @@ rm "${OUTPUT}"
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel products correct labels #1"
 "${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel 'lab' \
-	     --output "${OUTPUT}" &> /dev/null
+	         --output "${OUTPUT}" &> /dev/null
 [[ $(sed "1q;d" "${OUTPUT}") == ">lab1" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -130,7 +131,7 @@ rm "${OUTPUT}"
 for OPTION in "--relabel_md5" "--relabel_sha1" ; do
     DESCRIPTION="--relabel should not be used with ${OPTION}"
     "${VSEARCH}" --shuffle <(printf ">a\nAAAA\n") --relabel 'lab' ${OPTION} \
-		 --output - &> /dev/null && \
+		         --output - &> /dev/null && \
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
 done
@@ -226,6 +227,7 @@ SHA1=$(printf "AAAA" | sha1sum - | awk '{printf $1}')
 [[ "${INPUT}" == "${SHA1}" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+unset SHA1
 
 ## --relabel_sha1 original labels are shuffled (1‰ chance of failure)
 OUTPUT=$(mktemp)
@@ -320,8 +322,7 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--xsize output is correct with --relabel"
 [[ $("${VSEARCH}" --shuffle <(printf '>a;size=5;\nAAAA\n') --xsize \
 		  --output - 2> /dev/null | \
-	    sed "1q;d") == \
-   ">a" ]] && \
+	    sed "1q;d") == ">a" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
