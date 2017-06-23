@@ -628,7 +628,7 @@ rm "${OUTPUT}"
 ## --sizeout is accepted
 DESCRIPTION="--sizeout is accepted"
 printf ">a\nAAAA\n" | \
-"${VSEARCH}" --rereplicate - --output --sizeout &> /dev/null && \
+"${VSEARCH}" --rereplicate - --output - --sizeout &> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
