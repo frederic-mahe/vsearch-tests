@@ -258,8 +258,6 @@ OUTPUT=$(printf '@a_1\nCCACCT\n+\n;CCCXC\n' | \
         failure "${DESCRIPTION}"
 unset OUTPUT
 
-unset PERCENTAGE
-
 ## --fastq_chars percentage of nucleotides is rounded to 1 digit of precison #2
 DESCRIPTION="--fastq_chars percentage of nucleotides is rounded to 1 digit of precison #2"
 OUTPUT=$(printf '@a_1\nCCACCTT\n+\n;CCCCXH\n' | \
@@ -274,7 +272,7 @@ unset OUTPUT
 DESCRIPTION="--fastq_chars number of tails is correct with default settings #1"
 OUTPUT=$(printf '@a_1\nAAAAA\n+\nHHHHH\n' | \
 	            "${VSEARCH}" --fastq_chars - 2>&1 | \
-	         awk -F "[ ]" 'NR == 16 {print $10}')
+	         awk 'NR == 16 {print $NF}')
 (( "${OUTPUT}" == 1 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
