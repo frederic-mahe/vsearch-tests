@@ -105,7 +105,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --abskew 2 --chimeras - 2>&1 | grep "Found" | awk '{print $2}' -)
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --abskew 2 --chimeras - 2>&1 | \
+	    awk '/Found/ {print $2}' -)
 [[ "${OUTPUT}" == "1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"   
@@ -116,7 +117,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --abskew 3 --chimeras - 2>&1 | grep "Found" | awk '{print $2}' -)
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --abskew 3 --chimeras - 2>&1 | \
+	    awk '/Found/ {print $2}' -)
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"   
@@ -127,7 +129,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=3\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --abskew 3 --chimeras - 2>&1 | grep "Found" | awk '{print $2}' -)
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --abskew 3 --chimeras - 2>&1 | \
+	    awk '/Found/ {print $2}' -)
 [[ "${OUTPUT}" == "1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"   
@@ -138,7 +141,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=3\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --abskew 0.9 --chimeras - 2>&1 | grep "Found" | awk '{print $2}' -)
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --abskew 0.9 --chimeras - 2>&1 | \
+	    awk '/Found/ {print $2}' -)
 [[ "${OUTPUT}" == "1" ]] && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"   
@@ -149,7 +153,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --mindiffs 5  --chimeras - 2>&1 | grep "Found" | awk '{print $2}' -)
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --mindiffs 5  --chimeras - 2>&1 | \
+	    awk '/Found/ {print $2}' -)
 [[ "${OUTPUT}" == "1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"   
@@ -160,7 +165,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --mindiffs 6  --chimeras - 2>&1 | grep "Found" | awk '{print $2}' -)
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --mindiffs 6  --chimeras - 2>&1 | \
+	    awk '/Found/ {print $2}' -)
 [[ "${OUTPUT}" == "0" ]] && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"   
@@ -171,7 +177,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAG"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAAaCTCTTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --dn 2 --xn 8 --minh 0.28  --chimeras - 2>&1 | grep "Found" | awk '{print $2}' -)
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --dn 2 --xn 8 --minh 0.28  --chimeras - 2>&1 | \
+	    awk '/Found/ {print $2}' -)
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"   
@@ -182,7 +189,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAG"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAAaCTCTTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --dn 1.8 --xn 8 --minh 0.28  --chimeras - 2>&1 | grep "Found" | awk '{print $2}' -)
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --dn 1.8 --xn 8 --minh 0.28  --chimeras - 2>&1 | \
+	     awk '/Found/ {print $2}' -)
 [[ "${OUTPUT}" == "1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"   
@@ -193,7 +201,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --minh 0.5  --chimeras - 2>&1 | grep "Found" | awk '/Found/ {print $2}' -)
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --minh 0.5  --chimeras - 2>&1 | \
+	     awk '/Found/ {print $2}' -)
 [[ "${OUTPUT}" == "0" ]] && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"   
@@ -204,7 +213,7 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --minh 0.4  --chimeras - 2>&1 | grep "Found" | awk '{print $2}' -)
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --minh 0.4  --chimeras - 2>&1 | grep "Found" | \awk '{print $2}' -)
     [[ "${OUTPUT}" == "1" ]] && \
      success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"   
@@ -234,7 +243,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $1}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $1}')
 [[ "${OUTPUT}" == "0.5123" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -244,7 +254,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $2}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $2}')
 [[ "${OUTPUT}" == "seq3;size=5" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -254,7 +265,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $3}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $3}')
 [[ "${OUTPUT}" == "seq1;size=10" || "${OUTPUT}" == "seq2;size=10" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -264,7 +276,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $4}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $4}')
 [[ "${OUTPUT}" == "seq1;size=10" || "${OUTPUT}" == "seq2;size=10" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -274,7 +287,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $5}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $5}')
 [[ "${OUTPUT}" == "seq2;size=10" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -284,7 +298,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $6}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $6}')
 [[ "${OUTPUT}" == "98.3" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -294,7 +309,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $7}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $7}')
 [[ "${OUTPUT}" == "75.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -304,7 +320,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $8}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $8}')
 [[ "${OUTPUT}" == "90.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -314,7 +331,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $9}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $9}')
 [[ "${OUTPUT}" == "68.3" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -324,7 +342,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $10}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $10}')
 [[ "${OUTPUT}" == "90.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -334,7 +353,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $11}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $11}')
 [[ "${OUTPUT}" == "5" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -344,7 +364,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $12}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $12}')
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -354,7 +375,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $13}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $13}')
 [[ "${OUTPUT}" == "1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -364,7 +386,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $14}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $14}')
 [[ "${OUTPUT}" == "14" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -374,7 +397,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $15}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $15}')
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -384,7 +408,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $16}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $16}')
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -394,7 +419,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $17}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $17}')
 [[ "${OUTPUT}" == "8.3" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -404,7 +430,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | awk '{print $18}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $18}')
 [[ "${OUTPUT}" == "Y" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -414,7 +441,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $1}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $1}')
 [[ "${OUTPUT}" == "0.5123" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -424,7 +452,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $2}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $2}')
 [[ "${OUTPUT}" == "seq3;size=5" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -434,7 +463,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $3}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $3}')
 [[ "${OUTPUT}" == "seq1;size=10" || "${OUTPUT}" == "seq2;size=10" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -444,7 +474,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $4}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $4}')
 [[ "${OUTPUT}" == "seq1;size=10" || "${OUTPUT}" == "seq2;size=10" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -454,7 +485,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $5}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $5}')
 [[ "${OUTPUT}" == "98.3" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -464,7 +496,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $6}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $6}')
 [[ "${OUTPUT}" == "75.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -474,7 +507,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $7}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $7}')
 [[ "${OUTPUT}" == "90.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -484,7 +518,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $8}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $8}')
 [[ "${OUTPUT}" == "68.3" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -494,7 +529,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $9}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $9}')
 [[ "${OUTPUT}" == "90.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -504,7 +540,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $10}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $10}')
 [[ "${OUTPUT}" == "5" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -514,7 +551,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $11}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $11}')
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -524,7 +562,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $12}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $12}')
 [[ "${OUTPUT}" == "1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -534,7 +573,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $13}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $13}')
 [[ "${OUTPUT}" == "14" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -544,7 +584,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $14}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $14}')
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -554,7 +595,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $15}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $15}')
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -564,7 +606,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $16}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $16}')
 [[ "${OUTPUT}" == "8.3" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -574,7 +617,8 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | awk '{print $17}')
+OUTPUT=$(vsearch --uchime_denovo <(printf "${chimera}") --uchimeout - --uchimeout5 2>&1 | grep "seq3;size=5" | \
+	     awk '{print $17}')
 [[ "${OUTPUT}" == "Y" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
