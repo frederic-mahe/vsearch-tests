@@ -264,12 +264,149 @@ unset "OUTPUT"
 #*****************************************************************************#
 
 DESCRIPTION="--uchime_ref --nonchimeras is accepted"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3;size=5\n%s\n'${seq3})
+database=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n' ${seq1} ${seq2})
 printf '>seq1\nAGC\n' | \
     vsearch --uchime_ref - --nonchimeras - --db <(printf "${database}") &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--uchime_ref --chimeras --self is accepted"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3;size=5\n%s\n'${seq3})
+database=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n' ${seq1} ${seq2})
+printf '>seq1\nAGC\n' | \
+    vsearch --uchime_ref - --nonchimeras - --db <(printf "${database}") --self &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+#identical names/different sequences
+DESCRIPTION="--uchime_ref --chimeras --self gives the correct result"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3\n%s\n'${seq3})
+database=$(printf '>seq1\n%s\n>seq3\n%s\n' ${seq1} ${seq2})
+OUTPUT=$(vsearch --uchime_ref <(printf "${chimera}") --nonchimeras - --db <(printf "${database}") --self 2>&1 | \
+	     awk 'NR == 10 {print $2}')
+(( "${OUTPUT}" == 0 )) && \
+      success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+#different names/different sequences
+DESCRIPTION="--uchime_ref --chimeras --self gives the correct result #2"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3\n%s\n'${seq3})
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' ${seq1} ${seq2})
+OUTPUT=$(vsearch --uchime_ref <(printf "${chimera}") --nonchimeras - --db <(printf "${database}") --self 2>&1 | \
+	     awk 'NR == 10 {print $2}')
+(( "${OUTPUT}" == 1 )) && \
+      success "${DESCRIPTION}" || \
+          failure "${DESCRIPTION}"
+
+#identical names/identical sequences
+DESCRIPTION="--uchime_ref --chimeras --self gives the correct result #3"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3\n%s\n'${seq3})
+database=$(printf '>seq1\n%s\n>seq3\n%s\n' ${seq1} ${seq3})
+OUTPUT=$(vsearch --uchime_ref <(printf "${chimera}") --nonchimeras - --db <(printf "${database}") --self 2>&1 | \
+	     awk 'NR == 10 {print $2}')
+(( "${OUTPUT}" == 0 )) && \
+      success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+#different names/identical sequences
+DESCRIPTION="--uchime_ref --chimeras --self gives the correct result #4"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3\n%s\n'${seq3})
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' ${seq1} ${seq3})
+OUTPUT=$(vsearch --uchime_ref <(printf "${chimera}") --nonchimeras - --db <(printf "${database}") --self 2>&1 | \
+	     awk 'NR == 10 {print $2}')
+(( "${OUTPUT}" == 1 )) && \
+      success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--uchime_ref --chimeras --selfid is accepted"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3;size=5\n%s\n'${seq3})
+database=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n' ${seq1} ${seq2})
+printf '>seq1\nAGC\n' | \
+    vsearch --uchime_ref - --nonchimeras - --db <(printf "${database}") --selfid &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+ 
+#identical names/identical sequences
+DESCRIPTION="--uchime_ref --chimeras --selfid gives the correct result"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3\n%s\n'${seq2})
+database=$(printf '>seq1\n%s\n>seq3\n%s\n' ${seq1} ${seq2})
+OUTPUT=$(vsearch --uchime_ref <(printf "${chimera}") --nonchimeras - --db <(printf "${database}") --selfid 2>&1 | \
+	     awk 'NR == 10 {print $2}')
+(( "${OUTPUT}" == 0 )) && \
+      success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+#identical names/different sequences
+DESCRIPTION="--uchime_ref --chimeras --selfid gives the correct result #2"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3\n%s\n'${seq3})
+database=$(printf '>seq1\n%s\n>seq3\n%s\n' ${seq1} ${seq2})
+OUTPUT=$(vsearch --uchime_ref <(printf "${chimera}") --nonchimeras - --db <(printf "${database}") --selfid 2>&1 | \
+	     awk 'NR == 10 {print $2}')
+(( "${OUTPUT}" == 1 )) && \
+      success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+ 
+#different names/identical sequences
+DESCRIPTION="--uchime_ref --chimeras --selfid gives the correct result #3"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3\n%s\n'${seq2})
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' ${seq1} ${seq2})
+OUTPUT=$(vsearch --uchime_ref <(printf "${chimera}") --nonchimeras - --db <(printf "${database}") --selfid 2>&1 | \
+	     awk 'NR == 10 {print $2}')
+(( "${OUTPUT}" == 0 )) && \
+      success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+#different names/different sequences
+DESCRIPTION="--uchime_ref --chimeras --selfid gives the correct result #4"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3\n%s\n'${seq3})
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' ${seq1} ${seq2})
+OUTPUT=$(vsearch --uchime_ref <(printf "${chimera}") --nonchimeras - --db <(printf "${database}") --selfid 2>&1 | \
+	     awk 'NR == 10 {print $2}')
+(( "${OUTPUT}" == 1 )) && \
+      success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+exit 0
 DESCRIPTION="--uchime_ref --uchimeout is accepted"
+seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
+seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+chimera=$(printf '>seq3;size=5\n%s\n'${seq3})
+database=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n' ${seq1} ${seq2})
 printf '>seq1\nAGC\n' | \
     vsearch --uchime_ref - --uchimeout - --db <(printf "${database}") &>/dev/null && \
     success "${DESCRIPTION}" || \
