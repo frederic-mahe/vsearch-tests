@@ -1174,9 +1174,6 @@ COLUMN_8=$(printf ">s1\nAA\n>s2\nAA\n" | \
 
 ## --uc query sequence's label is correct in 9th column with H
 DESCRIPTION="--uc query sequence's label is correct in 9th column with H"
-printf ">s1\nAA\n>s2\nAA\n" | \
-	"${VSEARCH}" --derep_fulllength - --uc - \
-				 --minseqlength 1 2> /dev/null
 QUERY_LABEL=$(printf ">s1\nAA\n>s2\nAA\n" | \
 		     "${VSEARCH}" --derep_fulllength - --uc - \
 				  --minseqlength 1 2> /dev/null | \
