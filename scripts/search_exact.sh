@@ -33,8 +33,8 @@ DESCRIPTION="check if vsearch is in the PATH"
 
 DESCRIPTION="--search_exact --userout is accepted"
 "${VSEARCH}" \
-    --search_exact <(printf '>seq1;size=5\n%s\n' "AAAA") \
-    --db <(printf '>seq2;size=5\n%s\n' "AAAA") \
+    --search_exact <(printf '>seq1\n%s\n' "AAAA") \
+    --db <(printf '>seq2\n%s\n' "AAAA") \
     --userout - &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -44,8 +44,8 @@ seq1="AAAA"
 seq2="TTTT"
 seq3="CCCC"
 seq3="GGGG"
-search_query=$(printf '>seq1;size=5\n%s\n' ${seq1})
-database=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq1\n%s\n' ${seq1})
+database=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact <(printf "${search_query}") --db <(printf "${database}") --alnout - &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -55,8 +55,8 @@ seq1="AAAA"
 seq2="TTTT"
 seq3="CCCC"
 seq3="GGGG"
-search_query=$(printf '>seq1;size=5\n%s\n' ${seq1})
-database=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq1\n%s\n' ${seq1})
+database=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact <(printf "${search_query}") --db <(printf "${database}") --biomout - &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -66,8 +66,8 @@ seq1="AAAA"
 seq2="TTTT"
 seq3="CCCC"
 seq3="GGGG"
-search_query=$(printf '>seq1;size=5\n%s\n' ${seq1})
-database=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq1\n%s\n' ${seq1})
+database=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact <(printf "${search_query}") --db <(printf "${database}") --blast6out - &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -77,8 +77,8 @@ seq1="AAAA"
 seq2="TTTT"
 seq3="CCCC"
 seq3="GGGG"
-search_query=$(printf '>seq1;size=5\n%s\n' ${seq1})
-database=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq1\n%s\n' ${seq1})
+database=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact <(printf "${search_query}") --db <(printf "${database}") --mothur_shared_out - &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -88,8 +88,8 @@ seq1="AAAA"
 seq2="TTTT"
 seq3="CCCC"
 seq3="GGGG"
-search_query=$(printf '>seq1;size=5\n%s\n' ${seq1})
-database=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq1\n%s\n' ${seq1})
+database=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact <(printf "${search_query}") --db <(printf "${database}") --otutabout - &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -99,8 +99,8 @@ seq1="AAAA"
 seq2="TTTT"
 seq3="CCCC"
 seq3="GGGG"
-search_query=$(printf '>seq1;size=5\n%s\n' ${seq1})
-database=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq1\n%s\n' ${seq1})
+database=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact <(printf "${search_query}") --db <(printf "${database}") --samout - &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -110,8 +110,8 @@ seq1="AAAA"
 seq2="TTTT"
 seq3="CCCC"
 seq3="GGGG"
-search_query=$(printf '>seq1;size=5\n%s\n' ${seq1})
-database=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq1\n%s\n' ${seq1})
+database=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact <(printf "${search_query}") --db <(printf "${database}") --uc - &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -121,8 +121,8 @@ seq1="AAAA"
 seq2="TTTT"
 seq3="CCCC"
 seq3="GGGG"
-search_query=$(printf '>seq1;size=5\n%s\n' ${seq1})
-database=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq1\n%s\n' ${seq1})
+database=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact <(printf "${search_query}") --db <(printf "${database}") --userout - &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -142,7 +142,7 @@ seq2="AAAT"
 seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
          --db <(printf "${database}") --alnout - 2>&1 1>/dev/null | \
     awk 'NR==9 {print $7}')
@@ -157,7 +157,7 @@ seq2="AAAT"
 seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
          --db <(printf "${database}") --alnout - 2>&1 1>/dev/null | \
     awk 'NR==9 {print $7}')
@@ -215,7 +215,7 @@ seq2="AAAT"
 seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact  \
          --db <(printf "${database}") --alnout - &>/dev/null && \
     failure "${DESCRIPTION}" || \
@@ -228,7 +228,7 @@ seq2="AAAT"
 seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
               --db <(printf "${database}") --biomout - 2>/dev/null | \
         awk -F "\"" 'NR==12 {print $4}')
@@ -243,7 +243,7 @@ seq2="AAAT"
 seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
               --db <(printf "${database}") --biomout - 2>/dev/null | \
         awk -F "\"" 'NR==15 {print $4}')
@@ -258,7 +258,7 @@ seq2="AAAT"
 seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
               --db <(printf "${database}") --biomout - 2>/dev/null | \
         awk -F "," 'NR==15 {print $4} ')
@@ -273,7 +273,7 @@ seq2="AAAT"
 seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
               --db <(printf "${database}") --biomout - 2>/dev/null | \
         awk -F "," 'NR==15 {print $4} ')
@@ -316,7 +316,7 @@ seq2="AAAT"
 seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact  \
          --db <(printf "${database}") --biomout - &>/dev/null && \
     failure "${DESCRIPTION}" || \
@@ -371,7 +371,7 @@ seq2="AAAT"
 seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2;size=5\n%s\n' ${seq1})
+search_query=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" --search_exact  \
          --db <(printf "${database}") --blast6out - &>/dev/null && \
     failure "${DESCRIPTION}" || \
