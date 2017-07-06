@@ -27,7 +27,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 
 #*****************************************************************************#
 #                                                                             #
-#                              Basic tests                                    #
+#                        accepted output options                              #
 #                                                                             #
 #*****************************************************************************#
 
@@ -128,13 +128,11 @@ database=$(printf '>seq2\n%s\n' ${seq1})
         failure "${DESCRIPTION}"
 
 
-
 #*****************************************************************************#
 #                                                                             #
-#                              Basic tests                                    #
+#                    alnout: test expected outputs                            #
 #                                                                             #
 #*****************************************************************************#
-
 
 DESCRIPTION="--search_exact --alnout finds the identical sequence"
 seq1="AAAA"
@@ -149,7 +147,7 @@ OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
 [[ "${OUTPUT}" == "(100.00%)" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT"
+unset OUTPUT database search_query seq{1..4}
 
 DESCRIPTION="--search_exact --alnout finds the identical sequence #2"
 seq1="AAAA"
@@ -172,11 +170,23 @@ seq2="AAAT"
 seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2%s\n' ${seq1})
+search_query=$(printf '>seq2%s\n' ${seq1})  # bad fasta sequence
+"${VSEARCH}" --search_exact <(printf "${search_query}") \
+             --db <(printf "${database}") --alnout - 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--search_exact --alnout fails if wrong input with error message"
+seq1="AAAA"
+seq2="AAAT"
+seq3="AATT"
+seq4="ATTT"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
+search_query=$(printf '>seq2%s\n' ${seq1})  # bad fasta sequence
 OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
               --db <(printf "${database}") --alnout - 2>&1 | \
       awk 'NR==10 {print $1 " " $2}')
-[[ "${OUTPUT}" == "Fatal error:" ]] && \
+[[ "${OUTPUT}" == "Fatal error: Invalid FASTA" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "OUTPUT"
@@ -221,6 +231,13 @@ search_query=$(printf '>seq2\n%s\n' ${seq1})
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 unset "OUTPUT"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                     biomout: test expected outputs                          #
+#                                                                             #
+#*****************************************************************************#
 
 DESCRIPTION="--search_exact --biomout finds the identical sequence"
 seq1="AAAA"
@@ -337,6 +354,13 @@ OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "OUTPUT"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                    blast6out: test expected outputs                         #
+#                                                                             #
+#*****************************************************************************#
 
 DESCRIPTION="--search_exact --blast6out fails if empty database"
 seq1="AAAA"
