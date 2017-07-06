@@ -890,14 +890,14 @@ unset "OUTPUT"
 ## --uc is accepted
 DESCRIPTION="--uc is accepted"
 printf ">a\nAAAA\n>b\nAAAC\n>c\nGGGG" | \
-    "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 &> /dev/null && \
+    "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## --uc fails if no filename given
 DESCRIPTION="--uc fails if no filename given"
 printf ">a\nAAAA\n>b\nAAAC\n>c\nGGGG" | \
-    "${VSEARCH}" --derep_fulllength - --minseqlength 1 --uc &> /dev/null && \
+    "${VSEARCH}" --derep_fulllength - --minseqlength 1 --uc &>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -905,110 +905,106 @@ printf ">a\nAAAA\n>b\nAAAC\n>c\nGGGG" | \
 DESCRIPTION="--uc creates and fills file given in argument"
 OUTPUT=$(printf '>a_1\nAAAA\n>b_1\nAAAC\n>c_1\nGGGG\n' | \
 		"${VSEARCH}" --derep_fulllength - --minseqlength 1 --uc - 2>/dev/null)
-echo "${OUTPUT}"
-[[ -s "${OUTPUT}" ]] && \
+[[ -n "${OUTPUT}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-exit 0
+
 ## --uc number of hits is correct in 1st column #1
 DESCRIPTION="--uc number of hits is correct in st column #1"
-OUTPUT=$(mktemp)
-printf ">a\nAA\n>b\nCC\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-NUMBER_OF_HITS=$(grep -c "^H" "${OUTPUT}")
+OUTPUT=$(printf ">a\nAA\n>b\nCC\n" | \
+    "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 2>/dev/null)
+NUMBER_OF_HITS=$(grep -c "^H" <<< "${OUTPUT}")
 (( "${NUMBER_OF_HITS}" == 0 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+unset "OUTPUT"
 
 ## --uc number of hits is correct in 1st column #2
 DESCRIPTION="--uc number of hits is correct in st column #2"
-OUTPUT=$(mktemp)
-printf ">s1\nGG\n>s2\nAA\n>s3\nAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-NUMBER_OF_HITS=$(grep -c "^H" "${OUTPUT}")
+OUTPUT=$(printf ">s1\nGG\n>s2\nAA\n>s3\nAA\n" | \
+    "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 2>/dev/null)
+NUMBER_OF_HITS=$(grep -c "^H" <<< "${OUTPUT}")
 (( "${NUMBER_OF_HITS}" == 1 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+unset "OUTPUT"
 
 ## --uc number of centroids is correct in 1st column
 DESCRIPTION="--uc number of centroids is correct in 1st column"
-OUTPUT=$(mktemp)
-printf ">s1\nAA\n>s2\nAA\n>s3\nGG\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-NUMBER_OF_CENTROIDS=$(grep -c "^S" "${OUTPUT}")
+
+OUTPUT=$(printf ">s1\nAA\n>s2\nAA\n>s3\nGG\n" | \
+    "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 2>&1)
+NUMBER_OF_CENTROIDS=$(grep -c "^S" <<< "${OUTPUT}")
 (( "${NUMBER_OF_CENTROIDS}" == 2 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+unset "OUTPUT"
 
 ## --uc number of cluster records is correct in 1st column
 DESCRIPTION="--uc number of cluster records is correct in 1st column"
-OUTPUT=$(mktemp)
-printf ">s1\nAA\n>s2\nAA\n>s3\nGG\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-NUMBER_OF_CLUSTERS=$(grep -c "^C" "${OUTPUT}")
+
+OUTPUT=$(printf ">s1\nAA\n>s2\nAA\n>s3\nGG\n" | \
+    "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 2>&1)
+NUMBER_OF_CLUSTERS=$(grep -c "^C" <<< "${OUTPUT}")
 (( "${NUMBER_OF_CLUSTERS}" == 2 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+unset "OUTPUT"
 
 ## --uc cluster number is correct in 2nd column #1
 DESCRIPTION="--uc cluster number is correct in 2nd column #1"
 
-OUTPUT=$(mktemp)
-printf ">s1\nGGGG\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-CLUSTER_NUMBER=$(awk '/^C/ {v = $2} END {print v}' "${OUTPUT}")
+
+OUTPUT=$(printf ">s1\nGGGG\n" | \
+    "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 2>&1)
+CLUSTER_NUMBER=$(awk '/^C/ {v = $2} END {print v}' <<< "${OUTPUT}")
 (( "${CLUSTER_NUMBER}" == 0 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+unset "OUTPUT"
 
 ## --uc cluster number is correct in 2nd column #2
 DESCRIPTION="--uc cluster number is correct in 2nd column #2"
-OUTPUT=$(mktemp)
-printf ">s1\nGG\n>s2\nAA\n>s3\nAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-CLUSTER_NUMBER=$(awk '/^C/ {v = $2} END {print v}' "${OUTPUT}")
+
+OUTPUT=$(printf ">s1\nGG\n>s2\nAA\n>s3\nAA\n" | \
+    "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 2>&1)
+CLUSTER_NUMBER=$(awk '/^C/ {v = $2} END {print v}' <<< "${OUTPUT}")
 (( "${CLUSTER_NUMBER}" == 1 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+unset "OUTPUT"
 
 ## --uc cluster size is correct in 3rd column
 DESCRIPTION="--uc cluster number is correct in 3rd column"
-OUTPUT=$(mktemp)
-printf ">s1\nAA\n>s2\nAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-CLUSTER_SIZE=$(awk '/^C/ {v = $3} END {print v}' "${OUTPUT}")
+
+OUTPUT=$(printf ">s1\nAA\n>s2\nAA\n" | \
+    "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 2>&1)
+CLUSTER_SIZE=$(awk '/^C/ {v = $3} END {print v}' <<< "${OUTPUT}")
 [[ "${CLUSTER_SIZE}" == "2" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+unset "OUTPUT"
 
 ## --uc centroid length is correct in 3rd column #1
 DESCRIPTION="--uc centroid length is correct in 3rd column #1"
-OUTPUT=$(mktemp)
-printf ">s1\nG\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-CENTROID_LENGTH=$(awk '/^S/ {v = $3} END {print v}' "${OUTPUT}")
+OUTPUT=$(printf ">s1\nG\n" | \
+		"${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 2>/dev/null)
+CENTROID_LENGTH=$(awk '/^S/ {v = $3} END {print v}' <<< "${OUTPUT}")
 (( "${CENTROID_LENGTH}" == 1 )) && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTIONz}"
-rm "${OUTPUT}"
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
 
 ## --uc centroid length is correct in 3rd column #2
 DESCRIPTION="--uc centroid length is correct in 3rd column #2"
-OUTPUT=$(mktemp)
-printf ">s1\nGG" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-CENTROID_LENGTH=$(awk '/^S/ {v = $3} END {print v}' "${OUTPUT}")
-[[ "${CENTROID_LENGTH}" == "2" ]] && \
+
+OUTPUT=$(printf ">s1\nGG" | \
+    "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 2>/dev/null)
+CENTROID_LENGTH=$(awk '/^S/ {v = $3} END {print v}' <<< "${OUTPUT}")
+(( "${CENTROID_LENGTH}" == 2 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+unset "OUTPUT"
 
 ## --uc hit length is correct in 3rd column #1
 DESCRIPTION="--uc hit length is correct in 3rd column #1"
@@ -1092,9 +1088,9 @@ COLUMN_6=$(printf ">s1\nAA\n" | \
 
 ## --uc 6th column is * with S
 DESCRIPTION="--uc 6th column is * with S"
-printf ">s1\nAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-COLUMN_6=$(awk '/^S/ {v = $6} END {print v}' "${OUTPUT}")
+COLUMN_6=$(printf ">s1\nAA\n" | \
+		  "${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 2>/dev/null | \
+	       awk '/^S/ {v = $6} END {print v}')
 [[ "${COLUMN_6}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1213,9 +1209,9 @@ CENTROID_LABEL=$(printf ">s1\nAA\n>s2\nAA\n" | \
 ## --uc 10th column is * with C
 DESCRIPTION="--uc 10th column is * with C"
 CENTROID_LABEL=$(printf ">s1\nAA\n" | \
-			"${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" \
+			"${VSEARCH}" --derep_fulllength - --uc - \
 				     --minseqlength 1 2> /dev/null | \
-			awk '/^C/ {v = $10} END {print v}' "${OUTPUT}")
+			awk '/^C/ {v = $10} END {print v}' -)
 [[ "${CENTROID_LABEL}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1719,7 +1715,7 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2}
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
 		      --db <(printf "${database}") --userout - --userfields raw 2>/dev/null)
-[[ "${OUTPUT}" == "seq2" ]] && \
+[[ "${OUTPUT}" == "8" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
