@@ -844,6 +844,12 @@ OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
         failure "${DESCRIPTION}"
 unset "OUTPUT"
 
+# According to the man page, rowlen is only used with alnout. Using
+# rowlen for anything else than an alignment or a fasta output file
+# does not make sense. vsearch should stop with a fatal error, if
+# rowlen is used with else anything than a fasta or alignment
+# output. In the test below, vsearch accepts the --biomout and the
+# rowlen options. It should not.
 DESCRIPTION="--search_exact --!alnout --rowlen is not accepted"
 seq1="AAAG"
 seq2="AAAA"
@@ -1168,11 +1174,14 @@ COLUMN_8=$(printf ">s1\nAA\n>s2\nAA\n" | \
 
 ## --uc query sequence's label is correct in 9th column with H
 DESCRIPTION="--uc query sequence's label is correct in 9th column with H"
+printf ">s1\nAA\n>s2\nAA\n" | \
+	"${VSEARCH}" --derep_fulllength - --uc - \
+				 --minseqlength 1 2> /dev/null
 QUERY_LABEL=$(printf ">s1\nAA\n>s2\nAA\n" | \
 		     "${VSEARCH}" --derep_fulllength - --uc - \
 				  --minseqlength 1 2> /dev/null | \
 		     awk '/^H/ {v = $9} END {print v}' -)
-[[ "${QUERY_LABEL}" == "s1" ]] && \
+[[ "${QUERY_LABEL}" == "s2" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

@@ -1100,7 +1100,7 @@ QUERY_LABEL=$(printf ">s1\nAA\n>s2\nAA\n" | \
 		     "${VSEARCH}" --derep_fulllength - --uc - \
 				  --minseqlength 1 2> /dev/null | \
 		     awk '/^H/ {v = $9} END {print v}' -)
-[[ "${QUERY_LABEL}" == "s1" ]] && \
+[[ "${QUERY_LABEL}" == "s2" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
