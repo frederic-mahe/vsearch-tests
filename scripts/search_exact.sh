@@ -1592,7 +1592,8 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields tcov 2>/dev/null)
+		      --db <(printf "${database}") --userout - \
+		      --userfields tcov 2>/dev/null)
 [[ "${OUTPUT}" == "100.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1620,7 +1621,8 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields thi 2>/dev/null)
+		      --db <(printf "${database}") --userout - \
+		      --userfields thi 2>/dev/null)
 [[ "${OUTPUT}" == "4" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1634,7 +1636,8 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields tihi 2>/dev/null)
+		      --db <(printf "${database}") --userout - \
+		      --userfields tihi 2>/dev/null)
 [[ "${OUTPUT}" == "4" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1648,7 +1651,8 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields tilo 2>/dev/null)
+		      --db <(printf "${database}") --userout - \
+		      --userfields tilo 2>/dev/null)
 [[ "${OUTPUT}" == "1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1690,7 +1694,8 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields trow 2>/dev/null)
+		      --db <(printf "${database}") --userout - \
+		      --userfields trow 2>/dev/null)
 [[ "${OUTPUT}" == "AAAG" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1704,7 +1709,8 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields ts 2>/dev/null)
+		      --db <(printf "${database}") --userout - \
+		      --userfields ts 2>/dev/null)
 [[ "${OUTPUT}" == "4" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
