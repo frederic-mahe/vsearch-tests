@@ -707,8 +707,7 @@ EXPECTED=$(printf '>seq1\n%s\n' ${seq1})
 [[ "${OUTPUT}" != "${EXPECTED}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT"
-unset "EXPECTED"
+unset "OUTPUT" "EXPECTED"
 
 DESCRIPTION="--search_exact --dbnotmatched displays the matched sequence #2"
 seq1="AAAG"
@@ -722,7 +721,6 @@ EXPECTED=$(printf '>seq1\n%s\n' ${seq1})
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "OUTPUT"
-unset "EXPECTED"
 
 DESCRIPTION="--search_exact --matched displays the correct sequences"
 seq1="AAAG"
