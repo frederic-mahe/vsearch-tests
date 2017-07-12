@@ -59,6 +59,7 @@ printf '>seq1\nAAAAA\n>seq2\nAAAAA\n' | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+
 #*****************************************************************************#
 #                                                                             #
 #                                    id tests                                 #    
@@ -214,10 +215,9 @@ printf '>seq1\nAAAAA\n>seq2\nAAAAA\n' | \
 #                          expected output tests                              #    
 #                                                                             #
 #*****************************************************************************#
-#alnout, blast6out, matched, notmatched, samout, uc, userout
+# alnout, blast6out, matched, notmatched, samout, uc, userout
 # printf '>seq1\nAAATTA\n>seq2\nAAAAAA\n' | "${VSEARCH}" --allpairs_global - \
 #                  --alnout - --id 0.6
-
 
 DESCRIPTION="--allpairs_global --alnout --id gives the correct result #1"
 OUTPUT=$(printf '>seq1\nAAATTA\n>seq2\nAAAAAA\n' | \
