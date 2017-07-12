@@ -59,7 +59,6 @@ printf '>seq1\nAAAAA\n>seq2\nAAAAA\n' | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-
 #*****************************************************************************#
 #                                                                             #
 #                                    id tests                                 #    
@@ -215,9 +214,10 @@ printf '>seq1\nAAAAA\n>seq2\nAAAAA\n' | \
 #                          expected output tests                              #    
 #                                                                             #
 #*****************************************************************************#
-# alnout, blast6out, matched, notmatched, samout, uc, userout
+#alnout, blast6out, matched, notmatched, samout, uc, userout
 # printf '>seq1\nAAATTA\n>seq2\nAAAAAA\n' | "${VSEARCH}" --allpairs_global - \
 #                  --alnout - --id 0.6
+
 
 DESCRIPTION="--allpairs_global --alnout --id gives the correct result #1"
 OUTPUT=$(printf '>seq1\nAAATTA\n>seq2\nAAAAAA\n' | \
@@ -719,4 +719,20 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --i
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT"
+unset "OUTPUT" "database" "seq1" "seq2" "seq3" "seq4"
+
+DESCRIPTION="--allpairs_global --acceptall --matched shows every sequences"
+seq1="AAAA"
+seq2="TTTT"
+seq3="GGGG"
+seq4="CCCC"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n>s4\n%s\n' \
+		  ${seq1} ${seq2} ${seq3} ${seq4})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --notmatched - 2>/dev/null | \
+		awk '/>s/' | tr '\n' ' ')
+echo $OUTPUT
+[[ "${OUTPUT}" == ">s1 >s2 >s3 >s4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT" "database" "seq1" "seq2" "seq3" "seq4"
