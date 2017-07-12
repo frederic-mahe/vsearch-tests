@@ -38,6 +38,13 @@ printf '>seq1\nAAAAA\n>seq2\nAAAAA\n' | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--allpairs_global --alnout --acceptall fails if only one sequence"
+printf '>seq1\nAAAAA\n' | \
+    "${VSEARCH}" --allpairs_global - \
+                 --alnout - --acceptall &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--allpairs_global --alnout --id is accepted"
 printf '>seq1\nAAAAA\n>seq2\nAAAAA\n' | \
     "${VSEARCH}" --allpairs_global - \
@@ -229,3 +236,487 @@ OUTPUT=$(printf '>seq1\nAAATTA\n>seq2\nAAAAAA\n' | \
 [[ "${OUTPUT}" == "" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --alnout --acceptall gives the correct result"
+OUTPUT=$(printf '>seq1\nAAACCA\n>seq2\nTTTGGT\n' | \
+		"${VSEARCH}" --allpairs_global - \
+			     --alnout - --acceptall 2>/dev/null | \
+		awk '/cols,/ {print $5}')
+[[ "${OUTPUT}" == "(0.0%)," ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                         blast6out: expected output                          #    
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct query"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+                --blast6out - 2>/dev/null | \
+      awk '{print $1}')
+[[ "${OUTPUT}" == "seq1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct target"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+                --blast6out - 2>/dev/null | \
+        awk '{print $2}')
+[[ "${OUTPUT}" == "seq2" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct similarity percentage"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $3}')
+[[ "${OUTPUT}" == "100.0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct alnlen"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $4}')
+[[ "${OUTPUT}" == "4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct mism"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $5}')
+[[ "${OUTPUT}" == "0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct opens"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $6}')
+[[ "${OUTPUT}" == "0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct qlo"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $7}')
+[[ "${OUTPUT}" == "1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct qhi"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $8}')
+[[ "${OUTPUT}" == "4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct tlo"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $9}')
+[[ "${OUTPUT}" == "1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct thi"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $10}')
+[[ "${OUTPUT}" == "4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct evalue"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $11}')
+[[ "${OUTPUT}" == "-1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --blast6out finds the correct bits"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $12}')
+[[ "${OUTPUT}" == "0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct query"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+                --blast6out - 2>/dev/null | \
+      awk '{print $1}')
+[[ "${OUTPUT}" == "seq1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct target"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+                --blast6out - 2>/dev/null | \
+        awk '{print $2}')
+[[ "${OUTPUT}" == "seq2" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct similarity percentage"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $3}')
+[[ "${OUTPUT}" == "100.0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct alnlen"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $4}')
+[[ "${OUTPUT}" == "4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct mism"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $5}')
+[[ "${OUTPUT}" == "0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct opens"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $6}')
+[[ "${OUTPUT}" == "0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct qlo"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $7}')
+[[ "${OUTPUT}" == "1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct qhi"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $8}')
+[[ "${OUTPUT}" == "4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct tlo"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $9}')
+[[ "${OUTPUT}" == "1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct thi"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $10}')
+[[ "${OUTPUT}" == "4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct evalue"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $11}')
+[[ "${OUTPUT}" == "-1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --id 0.5 --blast6out finds the correct bits"
+seq1="AAAA"
+seq2="AAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --id 0.5 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $12}')
+[[ "${OUTPUT}" == "0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0--blast6out finds the correct query"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+                --blast6out - 2>/dev/null | \
+      awk '{print $1}')
+[[ "${OUTPUT}" == "seq1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct target"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+                --blast6out - 2>/dev/null | \
+        awk '{print $2}')
+[[ "${OUTPUT}" == "seq2" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct similarity percentage"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $3}')
+[[ "${OUTPUT}" == "75.0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct alnlen"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $4}')
+[[ "${OUTPUT}" == "4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct mism"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $5}')
+[[ "${OUTPUT}" == "1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct opens"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $6}')
+[[ "${OUTPUT}" == "0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct qlo"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $7}')
+[[ "${OUTPUT}" == "1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct qhi"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $8}')
+[[ "${OUTPUT}" == "4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct tlo"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $9}')
+[[ "${OUTPUT}" == "1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct thi"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $10}')
+[[ "${OUTPUT}" == "4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct evalue"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $11}')
+[[ "${OUTPUT}" == "-1" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
+
+DESCRIPTION="--allpairs_global --acceptall --id 1.0 --blast6out finds the correct bits"
+seq1="AAAA"
+seq2="AAAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n' \
+		  ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --id 1.0 \
+		      --blast6out - 2>/dev/null | \
+		awk '{print $12}')
+[[ "${OUTPUT}" == "0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT"
