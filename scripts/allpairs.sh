@@ -721,7 +721,29 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --i
         failure "${DESCRIPTION}"
 unset "OUTPUT" "database" "seq1" "seq2" "seq3" "seq4"
 
+
+#*****************************************************************************#
+#                                                                             #
+#                       (not)matched: expected output                         #    
+#                                                                             #
+#*****************************************************************************#
+
 DESCRIPTION="--allpairs_global --acceptall --matched shows every sequences"
+seq1="AAAA"
+seq2="AAAA"
+seq3="AAAA"
+seq4="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n>s4\n%s\n' \
+		  ${seq1} ${seq2} ${seq3} ${seq4})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --notmatched - 2>/dev/null | \
+		awk '/>s/' | tr '\n' ' ')
+[[ "${OUTPUT}" == ">s1 >s2 >s3 >s4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT" "database" "seq1" "seq2" "seq3" "seq4"
+
+DESCRIPTION="--allpairs_global --acceptall --notmatched doesn't show any sequence"
 seq1="AAAA"
 seq2="TTTT"
 seq3="GGGG"
@@ -731,8 +753,280 @@ database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n>s4\n%s\n' \
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
 		      --notmatched - 2>/dev/null | \
 		awk '/>s/' | tr '\n' ' ')
-echo $OUTPUT
-[[ "${OUTPUT}" == ">s1 >s2 >s3 >s4" ]] && \
+[[ "${OUTPUT}" == " " ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "OUTPUT" "database" "seq1" "seq2" "seq3" "seq4"
+
+#*****************************************************************************#
+#                                                                             #
+#                           samout: expected output                           #    
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #1 "
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $1}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #2"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $2}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #3 "
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $3}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s2 s3 s3 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #4"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $4}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "1 1 1 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #5 "
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $5}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "255 255 255 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #6"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $6}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "4D4I 4D4I 4M " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #7 "
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $1}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #8"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $8}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "0 0 0 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #9 "
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $9}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "4 4 4 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #10"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $10}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "TTTT TTTT AAAA " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #11 "
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $11}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "* * * " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #12"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $12}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "AS:i:0 AS:i:100 AS:i:100 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #13 "
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $1}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #14"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $2}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #15 "
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $1}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #16"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $2}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #17 "
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $1}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #18"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $2}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #19"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2}} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+		      --samout - 2>/dev/null | \
+		awk '{print $2}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+#*****************************************************************************#
+#                                                                             #
+#                             uc: expected output                             #    
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--allpairs_global --uc --acceptall shows every sequences"
+seq1="AAAA"
+seq2="AAAT"
+seq3="AACC"
+seq4="AGGG"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n>s4\n%s\n' \
+		  ${seq1} ${seq2} ${seq3} ${seq4})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --uc --threads 1 \
+		      --notmatched - 2>/dev/null) | \
+[[ "${OUTPUT}" == ">s1 >s2 >s3 >s4" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+"${VSEARCH}" --allpairs_global  <(printf "${database}") --uc - --threads 1 --acceptall 1>/home/dylan/temp
