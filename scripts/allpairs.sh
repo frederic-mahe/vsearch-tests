@@ -894,7 +894,7 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #11 "
+DESCRIPTION="--allpairs_global --acceptall --samout is correct #11"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
