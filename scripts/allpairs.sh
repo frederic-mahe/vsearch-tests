@@ -1012,6 +1012,7 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "OUTPUT"
 
 #*****************************************************************************#
 #                                                                             #
@@ -1019,16 +1020,30 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
 #                                                                             #
 #*****************************************************************************#
 
-DESCRIPTION="--allpairs_global --uc --acceptall shows every sequences"
+DESCRIPTION="--allpairs_global --uc --acceptall #1 is always H"
 seq1="AAAA"
 seq2="AAAT"
 seq3="AACC"
-seq4="AGGG"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n>s4\n%s\n' \
-		          ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --uc --threads 1 \
-		              --notmatched - 2>/dev/null) | \
-    [[ "${OUTPUT}" == ">s1 >s2 >s3 >s4" ]] && \
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		          ${seq1} ${seq2} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --uc - --threads 1 \
+		      --acceptall 2>/dev/null | \
+    awk '{print $1}' | egrep -v "^H" | tr '\n' ' ')
+    [[ -z "${OUTPUT}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-"${VSEARCH}" --allpairs_global  <(printf "${database}") --uc - --threads 1 --acceptall 1>/home/dylan/temp
+
+DESCRIPTION="--allpairs_global --uc --acceptall #2 is correct"
+seq1="AAAA"
+seq2="AAAT"
+seq3="AACC"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		          ${seq1} ${seq2} ${seq3})
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --uc - --threads 1 \
+		      --acceptall 2>/dev/null | \
+		awk '{print $2}' | egrep -v "^\*" | \
+		egrep -vtr '\n' ' ')
+echo $OUTPUT
+    [[ "${OUTPUT}" == "" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
