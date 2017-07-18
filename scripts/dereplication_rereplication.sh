@@ -926,17 +926,19 @@ rm "${OUTPUT}"
 ## --uc centroid length is correct in 3rd column #2
 DESCRIPTION="--uc centroid length is correct in 3rd column #2"
 OUTPUT=$(mktemp)
-printf ">s1\nGG" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
+"${VSEARCH}" \
+    --derep_fulllength <(printf ">s1\nGG\n") \
+    --minseqlength 1 \
+    --uc "${OUTPUT}" &> /dev/null
 CENTROID_LENGTH=$(awk '/^S/ {v = $3} END {print v}' "${OUTPUT}")
-[[ "${CENTROID_LENGTH}" == "2" ]] && \
+(( "${CENTROID_LENGTH}" == 2 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --uc hit length is correct in 3rd column #1
 DESCRIPTION="--uc hit length is correct in 3rd column #1"
-HIT_LENGTH=$(printf ">s1\nAA\n>s2\nAA" | \
+HIT_LENGTH=$(printf ">s1\nAA\n>s2\nAA\n" | \
 		      "${VSEARCH}" --derep_fulllength - --uc - \
 				   --minseqlength 1 2> /dev/null | \
 		      awk '/^H/ {v = $3} END {print v}' -)
@@ -946,7 +948,7 @@ HIT_LENGTH=$(printf ">s1\nAA\n>s2\nAA" | \
 
 ## --uc hit length is correct in 3rd column #2
 DESCRIPTION="--uc hit length is correct in 3rd column #2"
-HIT_LENGTH=$(printf ">s1\nA\n>s2\nA" | "${VSEARCH}" --derep_fulllength - --uc - \
+HIT_LENGTH=$(printf ">s1\nA\n>s2\nA\n" | "${VSEARCH}" --derep_fulllength - --uc - \
 		    --minseqlength 1 2> /dev/null | \
 		    awk '/^H/ {v = $3} END {print v}' -)
 (( "${HIT_LENGTH}" == 1 )) && \
@@ -1015,6 +1017,7 @@ COLUMN_6=$(printf ">s1\nAA\n" | \
         failure "${DESCRIPTION}"
 
 ## --uc 6th column is * with S
+OUTPUT=$(mktemp)
 DESCRIPTION="--uc 6th column is * with S"
 printf ">s1\nAA\n" | \
     "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
@@ -1022,6 +1025,7 @@ COLUMN_6=$(awk '/^S/ {v = $6} END {print v}' "${OUTPUT}")
 [[ "${COLUMN_6}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm "${OUTPUT}"
 
 ## --uc 6th column is 0 with H
 DESCRIPTION="--uc 6th column is 0 with H"
@@ -1135,6 +1139,7 @@ CENTROID_LABEL=$(printf ">s1\nAA\n>s2\nAA\n" | \
         failure "${DESCRIPTION}"
 
 ## --uc 10th column is * with C
+OUTPUT=$(mktemp)
 DESCRIPTION="--uc 10th column is * with C"
 CENTROID_LABEL=$(printf ">s1\nAA\n" | \
 			"${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" \
@@ -1143,6 +1148,7 @@ CENTROID_LABEL=$(printf ">s1\nAA\n" | \
 [[ "${CENTROID_LABEL}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm "${OUTPUT}"
 
 ## --uc 10th column is * with S
 DESCRIPTION="--uc 10th column is * with S"
