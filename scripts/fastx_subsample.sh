@@ -179,6 +179,7 @@ OUTPUT=$(mktemp)
 		 --fastq_ascii 64 --sizein &> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+    rm "${OUTPUT}"
 
 
 #*****************************************************************************#
@@ -424,18 +425,15 @@ printf "@s1\nA\n+\nG" | \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --randseed x produces constant output"
-OUTPUT=$(mktemp)
 RANDSEED_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTAx1000}" --randseed 666 \
 			       --fastaout - --sample_size 1 2> /dev/null)
 CLASSIC_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTAx1000}" --randseed 666 \
 			       --fastaout - --sample_size 1 2> /dev/null)
 [[ "${RANDSEED_OUTPUT}" == "${CLASSIC_OUTPUT}" ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+	failure "${DESCRIPTION}"s
 
 DESCRIPTION="--fastx_subsample --randseed 0 produces different outputs (tiny chances of failure) (fasta)"
-OUTPUT=$(mktemp)
 FIRST_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTAx1000}" --randseed 0 \
 			    --fastaout - --sample_size 5 2> /dev/null)
 SECOND_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTAx1000}" --randseed 0 \
@@ -443,10 +441,9 @@ SECOND_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTAx1000}" --randseed 0 \
 [[ "${FIRST_OUTPUT}" == "${SECOND_OUTPUT}" ]] && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
-rm "${OUTPUT}"
+rm "${FASTAx1000}"
 
 DESCRIPTION="--fastx_subsample --randseed x produces constant output (fastq)"
-OUTPUT=$(mktemp)
 RANDSEED_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTQx1000}" --randseed 666 \
 			       --fastaout - --sample_size 1 2> /dev/null)
 CLASSIC_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTQx1000}" --randseed 666 \
@@ -454,10 +451,8 @@ CLASSIC_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTQx1000}" --randseed 666 \
 [[ "${RANDSEED_OUTPUT}" == "${CLASSIC_OUTPUT}" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 DESCRIPTION="--fastx_subsample --randseed 0 produces different outputs (tiny chances of failure) (fastq)"
-OUTPUT=$(mktemp)
 FIRST_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTQx1000}" --randseed 0 \
 			    --fastaout - --sample_size 5 2> /dev/null)
 SECOND_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTQx1000}" --randseed 0 \
@@ -465,7 +460,6 @@ SECOND_OUTPUT=$("${VSEARCH}" --fastx_subsample "${FASTQx1000}" --randseed 0 \
 [[ "${FIRST_OUTPUT}" == "${SECOND_OUTPUT}" ]] && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 
 #*****************************************************************************#
@@ -658,7 +652,7 @@ rm "${OUTPUT}"
 
 for OPTION in "--relabel_sha1" "--relabel 'lab'"; do
     DESCRIPTION="--fastx_subsample --relabel_md5 should not be used with ${OPTION} fasta"
-    "${VSEARCH}" --fastx_subsample <(printf ">a\nA\n")  "--relabel_md5" ${OPTION} \
+    "${VSEARCH}" --fastx_subsample <(printf ">a\nA\n")  "--relabel_md5" "${OPTION}" \
 		 --fastaout - --sample_size 1&> /dev/null && \
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
@@ -759,7 +753,7 @@ printf ">s1\nA\n" | \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_subsample --sample_pct poduces correct results #1 fasta"
+DESCRIPTION="--fastx_subsample --sample_pct produces correct results #1 fasta"
 OUTPUT=$(mktemp)
 printf ">s1\nA\n>s2\nA\n" | \
     "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --sample_pct 100.00 \
@@ -769,7 +763,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-DESCRIPTION="--fastx_subsample --sample_pct poduces correct results #2 fasta"
+DESCRIPTION="--fastx_subsample --sample_pct produces correct results #2 fasta"
 OUTPUT=$(mktemp)
 printf ">s1\nA\n>s2\nA\n" | \
     "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --sample_pct 50.00 \
@@ -777,6 +771,7 @@ printf ">s1\nA\n>s2\nA\n" | \
 [[ $(wc -l < "${OUTPUT}") == "2" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm "${OUTPUT}"
 
 DESCRIPTION="--fastx_subsample --sample_pct should fail with negative arguments"
 printf ">s1\nA\n" | \
@@ -817,6 +812,7 @@ printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" | \
 [[ $(wc -l < "${OUTPUT}") == "4" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm "${OUTPUT}"
 
 DESCRIPTION="--fastx_subsample --sample_pct should fail with negative arguments"
 printf "@s1\nA\n+\nG\n" | \
@@ -1016,5 +1012,6 @@ printf "@s1;size=1;\nA\n+\nG\n" | \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
+rm "${FASTQx1000}"
 
 exit

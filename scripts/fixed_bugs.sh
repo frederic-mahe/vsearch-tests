@@ -1724,7 +1724,6 @@ NOTMATCHED=$(mktemp)
 USEROUT=$(mktemp)
 ALN=$(mktemp)
 COVERAGE="0.90"
-
 cat > ${QUERY} <<'EOT'
 >query
 CTGGCTCAGG
@@ -1758,7 +1757,7 @@ echo "alignment"
 [[ -s ${ALN} ]] && cat ${ALN}
 
 ## Clean
-rm "${QUERY}" "${ALN}" "${NOTMATCHED}" "${USEROUT}"
+rm "${QUERY}" "${ALN}" "${NOTMATCHED}" "${USEROUT}" "${DATABASE}"
 
 
 #******************************************************************************#

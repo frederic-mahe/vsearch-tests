@@ -18,18 +18,6 @@ success () {
     printf "${GREEN}PASS${NO_COLOR}: ${1}\n"
 }
 
-## Constructing a test file
-FASTQx1000=$(mktemp)
-for ((i=1 ; i<=1000 ; i++)) ; do
-    printf "@%s%d\nA\n+\nG\n" "seq" ${i}
-done > "${FASTQx1000}"
-
-## Constructing a test file
-FASTAx1000=$(mktemp)
-for ((i=1 ; i<=1000 ; i++)) ; do
-    printf ">%s%d\nA\n" "seq" ${i}
-done > "${FASTAx1000}"
-
 ## Is vsearch installed?
 VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
