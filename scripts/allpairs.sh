@@ -737,8 +737,8 @@ seq3="AAAA"
 seq4="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n>s4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --notmatched - 2>/dev/null | \
+OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 --qmask none \
+		      --matched - 2>/dev/null | \
 		awk '/>s/' | tr '\n' ' ')
 [[ "${OUTPUT}" == ">s1 >s2 >s3 >s4" ]] && \
     success "${DESCRIPTION}" || \
@@ -1045,6 +1045,17 @@ seq2="AAAT"
 seq3="AACC"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
+"${VSEARCH}" \
+    --allpairs_global <(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+			       ${seq1} ${seq2} ${seq3}) \
+    --threads 1 \
+    --acceptall \
+    --quiet \
+    --uc - | \
+    grep -q "^[^H]" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --uc - --threads 1 \
 		      --acceptall 2>/dev/null | \
 		awk '{print $1}' | egrep -v "^H" | tr '\n' ' ')
@@ -1333,21 +1344,6 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --uc - --thread
 	        awk '{print $10}' | egrep -v "^\*" | \
 		tr '\n' ' ')
 [[ "${OUTPUT}" == "s3 s2 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
-
-DESCRIPTION="--allpairs_global --uc --id 0.7 #1 shows no N"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AACC"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --uc - --threads 1 \
-		      --id 0.7 2>/dev/null | \
-	        awk '{print $10}' | egrep -v "^N" | \
-		tr '\n' ' ')
-[[ -z "${OUTPUT}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"

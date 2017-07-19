@@ -80,7 +80,7 @@ IS_WARNING=$(grep -q "warning" "${OUTPUT}")
 [[ "${IS_WARNING}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+rm "${OUTPUT}" "${OFF_TOO_LARGE}"
 unset IS_WARNING
 
 ## --fastq_chars diplay correct number of sequences #1
