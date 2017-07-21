@@ -1038,7 +1038,6 @@ seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
     --db <(printf "${database}") \
@@ -1048,7 +1047,8 @@ search_query=$(printf '>seq2\n%s\n' ${seq1})
     --id 1.0 &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
+unset "seq1" "seq2" "seq3" "seq4" \
+      "database" "OUTPUT"
 DESCRIPTION="--usearch_global --userout --userfields accepts all fields #4"
 seq1="AAAG"
 seq2="AAAA"
@@ -1066,6 +1066,8 @@ search_query=$(printf '>seq2\n%s\n' ${seq1})
     --id 1.0 &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields aln is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC"
@@ -1085,6 +1087,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "DMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMI" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields alnlen is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC"
@@ -1104,6 +1108,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields bits is correct"
 seq1="AAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1122,6 +1128,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields caln is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1138,6 +1146,8 @@ OUTPUT=$("${VSEARCH}" --usearch_global \
 [[ "${OUTPUT}" == "2I30M2D" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields evalue is correct"
 seq1="AAAGAAAGAAAGAAAGAAAGAAAGAAAGAAAG"
@@ -1157,6 +1167,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "-1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields exts is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCC"
@@ -1175,6 +1187,29 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
+
+DESCRIPTION="--usearch_global --userout --userfields exts is correct #2"
+seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAACCCCAAAAA"
+seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+seq3="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+seq4="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
+		  ${seq1} ${seq2} ${seq3} ${seq4})
+OUTPUT=$("${VSEARCH}" \
+	     --usearch_global \
+	     <(printf '>seq1\n%s\n' "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") \
+	     --db <(printf "${database}") --userout - \
+	     --userfields exts \
+	     --id 0.5 2>/dev/null)
+echo $OUTPUT
+[[ "${OUTPUT}" == "3" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
+exit
 
 DESCRIPTION="--usearch_global --userout --userfields gaps is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1195,6 +1230,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "3" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields id is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1213,6 +1250,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "100.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields id0 is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1231,6 +1270,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "100.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields id1 is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1249,6 +1290,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "100.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields id2 is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1267,6 +1310,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "100.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields id3 is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1285,6 +1330,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "100.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields id4 is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1303,6 +1350,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "100.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields ids is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1321,6 +1370,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields mism is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1339,6 +1390,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields opens is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1357,6 +1410,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields pairs is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1375,6 +1430,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields pctgaps is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1393,6 +1450,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "0.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields pctpv is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1411,6 +1470,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "100.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields pv is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1429,6 +1490,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields qcov is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1447,6 +1510,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "100.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields qframe is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1465,6 +1530,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "+0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields qhi is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1483,6 +1550,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields qihi is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1501,6 +1570,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields qilo is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1519,6 +1590,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields ql is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1537,6 +1610,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields qlo is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1555,6 +1630,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields qrow is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1568,12 +1645,14 @@ OUTPUT=$("${VSEARCH}" \
 	     --usearch_global <(printf "${search_query}") \
              --db <(printf "${database}") \
 	     --userout - \
-	     --qmask none \
 	     --userfields qrow \
 	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" ]] && \
+[[ "${OUTPUT}" == "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
+exit 
 
 DESCRIPTION="--usearch_global --userout --userfields qs is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1592,6 +1671,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields qstrand is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1610,6 +1691,8 @@ OUTPUT=$("${VSEARCH}" \
 [[ "${OUTPUT}" == "+" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields query is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1643,8 +1726,7 @@ OUTPUT=$("${VSEARCH}" \
 	     --userout - \
 	     --userfields raw \
 	     --id 1.0 2>/dev/null)
-echo $OUTPUT
-[[ "${OUTPUT}" == "8" ]] && \
+[[ "${OUTPUT}" == "64" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
