@@ -1589,7 +1589,7 @@ OUTPUT=$("${VSEARCH}" \
 	     --userout - \
 	     --userfields qs \
 	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
+[[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1643,6 +1643,7 @@ OUTPUT=$("${VSEARCH}" \
 	     --userout - \
 	     --userfields raw \
 	     --id 1.0 2>/dev/null)
+echo $OUTPUT
 [[ "${OUTPUT}" == "8" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1715,7 +1716,7 @@ OUTPUT=$("${VSEARCH}" \
 	     --userout - \
 	     --userfields thi \
 	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
+[[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1733,7 +1734,7 @@ OUTPUT=$("${VSEARCH}" \
 	     --userout - \
 	     --userfields tihi \
 	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
+[[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1769,7 +1770,7 @@ OUTPUT=$("${VSEARCH}" \
 	     --userout - \
 	     --userfields tl \
 	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
+[[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1803,9 +1804,10 @@ OUTPUT=$("${VSEARCH}" \
 	     --usearch_global <(printf "${search_query}") \
 	     --db <(printf "${database}") \
 	     --userout - \
+	     --dbmask none \
 	     --userfields trow \
 	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "AAAG" ]] && \
+[[ "${OUTPUT}" == "${seq1}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1823,7 +1825,7 @@ OUTPUT=$("${VSEARCH}" \
 	     --userout - \
 	     --userfields ts \
 	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
+[[ "${OUTPUT}" == "32" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
