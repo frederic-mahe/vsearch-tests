@@ -929,7 +929,8 @@ OUTPUT=$("${VSEARCH}" \
 	     --mothur_shared_out - \
 	     --id 1.0 2>/dev/null | \
 		awk  \
-		    'NR==2 {print $4} NR==3 {print $5} NR==4 {print $6} NR==5 {print $7}' | \
+		    'NR==2 {print $4} NR==3 {print $5} 
+                     NR==4 {print $6} NR==5 {print $7}' | \
 		tr '\n' ' ')
 [[ "${OUTPUT}" == "1 1 1 1 " ]] && \
     success "${DESCRIPTION}" || \
@@ -1132,16 +1133,19 @@ unset "seq1" "seq2" "seq3" "seq4" \
       "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields caln is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+seq1="AAAAATTCCGAAAAAAAAAAAAAAAAAAAATGCG"
 seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 seq3="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 seq4="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
 OUTPUT=$("${VSEARCH}" --usearch_global \
-		      <(printf '>seq1\n%s\n' "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC") \
+		      <(printf '>seq1\n%s\n' "CAAAAATTCCGAAAAAAACCCCAAAAAAAAAAAAATGCGC") \
 		      --db <(printf "${database}") --userout - \
 		      --userfields caln \
+		      --alnout - \
+		      --dbmask none \
+		      --qmask none \
 		      --id 0.5 2>/dev/null)
 [[ "${OUTPUT}" == "2I30M2D" ]] && \
     success "${DESCRIPTION}" || \
@@ -1191,7 +1195,7 @@ unset "seq1" "seq2" "seq3" "seq4" \
       "search_query" "database" "OUTPUT"
 
 DESCRIPTION="--usearch_global --userout --userfields exts is correct #2"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAACCCCAAAAA"
+seq1="AAAAAAAAAAAAAAACCCAAAAAAAAAAAAAA"
 seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 seq3="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 seq4="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
@@ -1201,15 +1205,13 @@ OUTPUT=$("${VSEARCH}" \
 	     --usearch_global \
 	     <(printf '>seq1\n%s\n' "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") \
 	     --db <(printf "${database}") --userout - \
-	     --userfields exts \
+	     --userfields exts+aln \
 	     --id 0.5 2>/dev/null)
-echo $OUTPUT
 [[ "${OUTPUT}" == "3" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "seq1" "seq2" "seq3" "seq4" \
       "search_query" "database" "OUTPUT"
-exit
 
 DESCRIPTION="--usearch_global --userout --userfields gaps is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1277,17 +1279,17 @@ DESCRIPTION="--usearch_global --userout --userfields id1 is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields id1 \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
+seq4="AGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>query\n%s\n' ${seq4})
+"${VSEARCH}" \
+    --usearch_global <(printf "${search_query}") \
+    --db <(printf "${database}") \
+    --userout - \
+    --userfields id1 \
+    --id 0.4 2>/dev/null | \
+    grep -q "50.0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "seq1" "seq2" "seq3" "seq4" \
@@ -1297,17 +1299,17 @@ DESCRIPTION="--usearch_global --userout --userfields id2 is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields id2 \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
+seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>query\n%s\n' ${seq4})
+"${VSEARCH}" \
+    --usearch_global <(printf "${search_query}") \
+    --db <(printf "${database}") \
+    --userout - \
+    --userfields id2 \
+    --id 1.0 2>/dev/null | \
+grep -q "100.0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "seq1" "seq2" "seq3" "seq4" \
@@ -1317,17 +1319,17 @@ DESCRIPTION="--usearch_global --userout --userfields id3 is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
+seq4="AAAAAAAAAAAAGGGGAAAAAAAAAAAAAAAAAAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>seq2\n%s\n' ${seq4})
 OUTPUT=$("${VSEARCH}" \
 	     --usearch_global <(printf "${search_query}") \
              --db <(printf "${database}") \
 	     --userout - \
 	     --userfields id3 \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
+	     --id 0.7 2>/dev/null)
+[[ "${OUTPUT}" == "96.9" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "seq1" "seq2" "seq3" "seq4" \
@@ -1367,7 +1369,61 @@ OUTPUT=$("${VSEARCH}" \
 	     --userout - \
 	     --userfields ids \
 	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "32" ]] && \
+(( "${OUTPUT}" == 32 )) && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
+
+
+DESCRIPTION="--usearch_global --userout --userfields id1 is not id2 when terminal gaps"
+seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>query\n%s\n' ${seq4})
+OUTPUT1=$("${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+             --db <(printf "${database}") \
+	     --userout - \
+	     --userfields id1 \
+	     --id 0.5 2>/dev/null)
+OUTPUT2=$("${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+             --db <(printf "${database}") \
+	     --userout - \
+	     --userfields id2 \
+	     --id 0.5 2>/dev/null)
+[[ "${OUTPUT1}" != "${OUTPUT2}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
+
+
+DESCRIPTION="--usearch_global --userout --userfields id1 is not id3 when extended gaps"
+seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+seq4="AAAAAAAAAAAAAAAAAGGGGAAAAAAAAAAAAAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>query\n%s\n' ${seq4})
+OUTPUT1=$("${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+             --db <(printf "${database}") \
+	     --userout - \
+	     --userfields id1 \
+	     --id 0.5 2>/dev/null)
+OUTPUT2=$("${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+             --db <(printf "${database}") \
+	     --userout - \
+	     --userfields id3 \
+	     --id 0.5 2>/dev/null)
+[[ "${OUTPUT1}" != "${OUTPUT2}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "seq1" "seq2" "seq3" "seq4" \
@@ -1387,11 +1443,117 @@ OUTPUT=$("${VSEARCH}" \
 	     --userout - \
 	     --userfields mism \
 	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "0" ]] && \
+(( "${OUTPUT}" == 0 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "seq1" "seq2" "seq3" "seq4" \
       "search_query" "database" "OUTPUT"
+
+DESCRIPTION="--usearch_global --userout --userfields mism is correct #2"
+seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+seq4="ATATATATATATATATATATATATATATATAT"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>seq2\n%s\n' ${seq4})
+OUTPUT=$("${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+             --db <(printf "${database}") \
+	     --userout - \
+	     --userfields mism \
+	     --id 0.1 2>/dev/null)
+(( "${OUTPUT}" == 16 )) && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
+
+
+DESCRIPTION="--usearch_global --userout --userfields mism is correct #3"
+seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+seq4="TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>seq2\n%s\n' ${seq4})
+"${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+             --db <(printf "${database}") \
+	     --userout - \
+	     --userfields mism \
+	     --id 0.1 2>/dev/null | \
+		grep -q "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
+
+
+DESCRIPTION="--usearch_global --userout --userfields mism is correct #4"
+seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+seq4="TTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>seq2\n%s\n' ${seq4})
+"${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+             --db <(printf "${database}") \
+	     --userout - \
+	     --userfields mism \
+	     --id 0.1 2>/dev/null | \
+		grep -q "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
+
+
+DESCRIPTION="--usearch_global --userout --userfields mism is correct #5"
+seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>seq2\n%s\n' ${seq4})
+"${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+             --db <(printf "${database}") \
+	     --userout - \
+	     --userfields mism \
+	     --id 0.1 2>/dev/null | \
+		grep -q "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
+
+
+
+DESCRIPTION="--usearch_global --userout --userfields mism is correct #6"
+seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>seq2\n%s\n' ${seq4})
+"${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+             --db <(printf "${database}") \
+	     --userout - \
+	     --userfields mism \
+	     --id 0.1 2>/dev/null | \
+		grep -q "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "seq1" "seq2" "seq3" "seq4" \
+      "search_query" "database" "OUTPUT"
+
 
 DESCRIPTION="--usearch_global --userout --userfields opens is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1652,7 +1814,6 @@ OUTPUT=$("${VSEARCH}" \
         failure "${DESCRIPTION}"
 unset "seq1" "seq2" "seq3" "seq4" \
       "search_query" "database" "OUTPUT"
-exit 
 
 DESCRIPTION="--usearch_global --userout --userfields qs is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1701,14 +1862,21 @@ seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
 seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
+search_query=$(printf '>query\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" \
 	     --usearch_global <(printf "${search_query}") \
              --db <(printf "${database}") \
 	     --userout - \
 	     --userfields query \
 	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "seq1" ]] && \
+
+"${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+             --db <(printf "${database}") \
+	     --userout - \
+	     --userfields query \
+	     --id 1.0 2>/dev/null | \
+    grep -q "^seq1$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1737,7 +1905,7 @@ seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
 seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
+search_query=$(printf '>query\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" \
 	     --usearch_global <(printf "${search_query}") \
              --db <(printf "${database}") \
@@ -1788,9 +1956,9 @@ DESCRIPTION="--usearch_global --userout --userfields thi is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
 seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
+seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" \
 	     --usearch_global <(printf "${search_query}") \
@@ -1802,6 +1970,7 @@ OUTPUT=$("${VSEARCH}" \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+exit
 DESCRIPTION="--usearch_global --userout --userfields tihi is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
@@ -1817,6 +1986,24 @@ OUTPUT=$("${VSEARCH}" \
 	     --userfields tihi \
 	     --id 1.0 2>/dev/null)
 [[ "${OUTPUT}" == "32" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --userout --userfields tihi is correct #2"
+seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAATCCA"
+seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAACGAAGGG"
+database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+search_query=$(printf '>seq2\n%s\n' ${seq4})
+OUTPUT=$("${VSEARCH}" \
+	     --usearch_global <(printf "${search_query}") \
+	     --db <(printf "${database}") \
+	     --userout - \
+	     --userfields tihi \
+	     --id 0.4 2>/dev/null)
+(( "${OUTPUT}" == 28 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
