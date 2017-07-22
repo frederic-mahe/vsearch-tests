@@ -85,11 +85,10 @@ seq1="AAAG"
 seq2="AAAA"
 seq3="AATT"
 seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		          ${seq1} ${seq2} ${seq3} ${seq4})
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\n%s\n' ${seq1}) \
-    --db <(printf "${database}") \
+    --db <(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
+		          ${seq1} ${seq2} ${seq3} ${seq4}) \
     --samout - \
 	--id 1.0 &>/dev/null && \
     success "${DESCRIPTION}" || \
@@ -382,7 +381,7 @@ unset "OUTPUT"
 # According to the man page, rowlen is only used with alnout. Using
 # rowlen for anything else than an alignment or a fasta output file
 # does not make sense. vsearch should stop with a fatal error, if
-# rowlen is used with else anything than a fasta or alignment
+# rowlen is used with anything else than a fasta or alignment
 # output. In the test below, vsearch accepts the --biomout and the
 # rowlen options. It should not.
 DESCRIPTION="--usearch_global --!alnout --rowlen is not accepted"
@@ -1482,27 +1481,21 @@ OUTPUT=$("${VSEARCH}" \
 unset "seq1" "seq2" "seq3" "seq4" \
       "search_query" "database" "OUTPUT"
 
-
 DESCRIPTION="--usearch_global --userout --userfields mism is correct #3"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
-		          ${seq1} ${seq2} ${seq3})
-search_query=$(printf '>seq2\n%s\n' ${seq4})
+seq1="AAAA"
+seq2="TAAA"
 "${VSEARCH}" \
-	--usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-	--userout - \
-	--userfields mism \
-	--id 0.1 2>/dev/null | \
-	grep -q "1" && \
+	--usearch_global <(printf '>seq1\n%s\n' ${seq1}) \
+    --db <(printf '>seq2\n%s\n' ${seq2}) \
+    --minseqlength 1 \
+    --id 0.1 \
+    --quiet \
+    --userfields mism \
+	--userout - | \
+	grep -q "^1$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
+unset seq1 seq2 DESCRIPTION
 
 DESCRIPTION="--usearch_global --userout --userfields mism is correct #4"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1983,7 +1976,7 @@ OUTPUT=$("${VSEARCH}" \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-exit
+
 DESCRIPTION="--usearch_global --userout --userfields tihi is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
