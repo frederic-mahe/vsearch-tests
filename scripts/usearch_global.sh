@@ -33,16 +33,16 @@ DESCRIPTION="check if vsearch is in the PATH"
 
 DESCRIPTION="--usearch_global --userout is accepted"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
-    --db <(printf '>seq2\n%s\n' "AAAA") \
+    --usearch_global <(printf '>seq1\nAAAA\n') \
+    --db <(printf '>seq2\nAAAA\n') \
     --userout - --id 1.0 &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --alnout is accepted"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
-    --db <(printf '>seq2\n%s\n' "AAAA") --alnout - --id 1.0 &>/dev/null &&  \
+    --usearch_global <(printf '>seq1\nAAAA\n') \
+    --db <(printf '>seq2\nAAAA\n') --alnout - --id 1.0 &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -61,15 +61,15 @@ seq3="CCCC"
 seq3="GGGG"
 search_query=$(printf '>seq1\n%s\n' ${seq1})
 database=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
+"${VSEARCH}" --usearch_global <(printf '>seq1\nAAAA\n') \
 	     --db <(printf "${database}") --biomout - --id 1.0 &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --blast6out is accepted"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
-    --db <(printf '>seq2\n%s\n' "AAAA") --blast6out - --id 1.0 &>/dev/null &&  \
+    --usearch_global <(printf '>seq1\nAAAA\n') \
+    --db <(printf '>seq2\nAAAA\n') --blast6out - --id 1.0 &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -106,8 +106,8 @@ DESCRIPTION="--usearch_global --matched is accepted"
 
 DESCRIPTION="--usearch_global --mothur_shared_out is accepted"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
-    --db <(printf '>seq1\n%s\n' "AAAA") \
+    --usearch_global <(printf '>seq1\nAAAA\n') \
+    --db <(printf '>seq1\nAAAA\n') \
     --mothur_shared_out - \
     --id 1.0 &>/dev/null &&  \
     success "${DESCRIPTION}" || \
@@ -152,7 +152,7 @@ seq3="GGGG"
 search_query=$(printf '>seq1\n%s\n' ${seq1})
 database=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
+    --usearch_global <(printf '>seq1\nAAAA\n') \
     --db <(printf "${database}") \
     --otutabout - \
     --id 1.0 &>/dev/null &&  \
@@ -184,7 +184,7 @@ seq3="GGGG"
 search_query=$(printf '>seq1\n%s\n' ${seq1})
 database=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
+    --usearch_global <(printf '>seq1\nAAAA\n') \
     --db <(printf "${database}") \
     --samout - \
     --id 1.0 &>/dev/null &&  \
@@ -198,7 +198,7 @@ seq3="CCCC"
 seq3="GGGG"
 search_query=$(printf '>seq1\n%s\n' ${seq1})
 database=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAA") --db <(printf "${database}") --uc - --id 1.0 &>/dev/null &&  \
+"${VSEARCH}" --usearch_global <(printf '>seq1\nAAAA\n') --db <(printf "${database}") --uc - --id 1.0 &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -249,7 +249,7 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
+	     --usearch_global <(printf '>seq1\nAAAA\n') \
              --db <(printf "${database}") \
 	     --alnout - \
 	     --id 1.0 2>&1 1>/dev/null | \
@@ -268,7 +268,7 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq2} ${seq2} ${seq3} ${seq4})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
+	     --usearch_global <(printf '>seq1\nAAAA\n') \
              --db <(printf "${database}") \
 	     --alnout - \
 	     --id 1.0 2>&1 1>/dev/null | \
@@ -312,7 +312,7 @@ OUTPUT=$("${VSEARCH}" \
 unset "OUTPUT"
 
 DESCRIPTION="--usearch_global --alnout fails if empty database"
-"${VSEARCH}" --usearch_global <(printf '>seq2%s\n' "AAAA") \
+"${VSEARCH}" --usearch_global <(printf '>seq2AAAA\n') \
              --db <(printf '') \
 	     --alnout - \
 	     --id 1.0 &>/dev/null && \
@@ -322,7 +322,7 @@ unset "OUTPUT"
 
 DESCRIPTION="--usearch_global --alnout fails if no database"
 search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --usearch_global <(printf '>seq2\n%s\n' "AAAA") \
+"${VSEARCH}" --usearch_global <(printf '>seq2\nAAAA\n') \
              --alnout - \
 	     --id 1.0 &>/dev/null && \
     failure "${DESCRIPTION}" || \
@@ -425,7 +425,7 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq2\n%s\n' "AAAA") \
+	     --usearch_global <(printf '>seq2\nAAAA\n') \
              --db <(printf "${database}") \
 	     --biomout - \
 	     --id 1.0 2>/dev/null | \
@@ -444,7 +444,7 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq2} ${seq2} ${seq3} ${seq4})
 search_query=$(printf '>seq2\n%s\n' ${seq1})
 OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq2\n%s\n' "AAAA") \
+	     --usearch_global <(printf '>seq2\nAAAA\n') \
              --db <(printf "${database}") \
 	     --biomout - \
 	     --id 1.0 2>/dev/null | \
@@ -455,7 +455,7 @@ OUTPUT=$("${VSEARCH}" \
 unset "OUTPUT"
 
 DESCRIPTION="--usearch_global --biomout fails if empty database"
-"${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
+"${VSEARCH}" --usearch_global <(printf '>seq1\nAAAA\n') \
              --db <(printf '') \
 	     --biomout - \
 	     --id 1.0 &>/dev/null && \
@@ -465,7 +465,7 @@ unset "OUTPUT"
 
 DESCRIPTION="--usearch_global --biomout fails if no database"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
+    --usearch_global <(printf '>seq1\nAAAA\n') \
     --biomout - \
     --id 1.0 &>/dev/null && \
     failure "${DESCRIPTION}" || \
@@ -475,7 +475,7 @@ unset "OUTPUT"
 DESCRIPTION="--usearch_global --biomout fails if no input"
 "${VSEARCH}" \
     --usearch_global  \
-    --db <(printf '>seq1\n%s\n' "AAAA") \
+    --db <(printf '>seq1\nAAAA\n') \
     --biomout - \
     --id 1.0 &>/dev/null && \
     failure "${DESCRIPTION}" || \
@@ -498,7 +498,7 @@ unset "OUTPUT"
 #*****************************************************************************#
 
 DESCRIPTION="--usearch_global --blast6out fails if empty database"
-"${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
+"${VSEARCH}" --usearch_global <(printf '>seq1\nAAAA\n') \
              --db <(printf '') \
 	     --blast6out - \
 	     --id 1.0 &>/dev/null && \
@@ -507,7 +507,7 @@ DESCRIPTION="--usearch_global --blast6out fails if empty database"
 unset "OUTPUT"
 
 DESCRIPTION="--usearch_global --blast6out fails if no database"
-"${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAA") \
+"${VSEARCH}" --usearch_global <(printf '>seq1\nAAAA\n') \
              --blast6out - \
 	     --id 1.0 &>/dev/null && \
     failure "${DESCRIPTION}" || \
@@ -530,7 +530,7 @@ search_query=$(printf '>seq2\n%s\n' ${seq1})
 
 DESCRIPTION="--usearch_global --blast6out fails if wrong input"
 "${VSEARCH}" --usearch_global <(printf "echec") \
-             --db <(printf '>seq1\n%s\n' "AAAA") \
+             --db <(printf '>seq1\nAAAA\n') \
 	     --blast6out - --id 1.0 &>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -787,7 +787,7 @@ seq2="AAAA"
 database=$(printf '>seq1\n%s\n' ${seq1})
 search_query=$(printf '>seq2\n%s\n' ${seq2})
 OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq2\n%s\n' "AAAA") \
+	     --usearch_global <(printf '>seq2\nAAAA\n') \
              --db <(printf "${database}") \
 	     --dbmatched - \
 	     --id 1.0 2>/dev/null)
