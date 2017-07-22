@@ -56,13 +56,11 @@ printf ">a\nAAAA\n>b\nAAAC\n>c\nGGGG" | \
 
 DESCRIPTION="--usearch_global --biomout is accepted"
 seq1="AAAA"
-seq2="TTTT"
-seq3="CCCC"
-seq3="GGGG"
-search_query=$(printf '>seq1\n%s\n' ${seq1})
-database=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --usearch_global <(printf '>seq1\nAAAA\n') \
-	     --db <(printf "${database}") --biomout - --id 1.0 &>/dev/null &&  \
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\n%s\n' ${seq1}) \
+	--db <(printf '>seq1\n%s\n' ${seq1}) \
+    --id 1.0 \
+    --biomout - &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -80,9 +78,8 @@ seq3="AATT"
 seq4="ATTT"
 database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
 		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
+    --usearch_global <(printf '>seq1\n%s\n' ${seq1}) \
     --db <(printf "${database}") \
     --samout - \
 	     --id 1.0 &>/dev/null && \
