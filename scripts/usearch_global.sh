@@ -31,13 +31,6 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                                                             #
 #*****************************************************************************#
 
-DESCRIPTION="--usearch_global --userout is accepted"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nAAAA\n') \
-    --db <(printf '>seq2\nAAAA\n') \
-    --userout - --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --alnout is accepted"
 "${VSEARCH}" \
@@ -152,6 +145,14 @@ database=$(printf '>seq2\n%s\n' ${seq1})
     --db <(printf "${database}") \
     --otutabout - \
     --id 1.0 &>/dev/null &&  \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --userout is accepted"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nAAAA\n') \
+    --db <(printf '>seq2\nAAAA\n') \
+    --userout - --id 1.0 &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
