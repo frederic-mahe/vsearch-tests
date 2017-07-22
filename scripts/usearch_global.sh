@@ -189,12 +189,11 @@ database=$(printf '>seq2\n%s\n' ${seq1})
 
 DESCRIPTION="--usearch_global --uc is accepted"
 seq1="AAAA"
-seq2="TTTT"
-seq3="CCCC"
-seq3="GGGG"
-search_query=$(printf '>seq1\n%s\n' ${seq1})
-database=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --usearch_global <(printf '>seq1\nAAAA\n') --db <(printf "${database}") --uc - --id 1.0 &>/dev/null &&  \
+"${VSEARCH}" \
+    --usearch_global <(printf '>query\n%s\n' ${seq1}) \
+    --db <(printf '>target\n%s\n' ${seq1}) \
+    --id 1.0 \
+    --uc - &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
