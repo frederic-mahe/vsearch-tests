@@ -31,20 +31,35 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                                                             #
 #*****************************************************************************#
 
-
 DESCRIPTION="--usearch_global --alnout is accepted"
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nAAAA\n') \
-    --db <(printf '>seq2\nAAAA\n') --alnout - --id 1.0 &>/dev/null &&  \
+    --db <(printf '>seq2\nAAAA\n') \
+    --id 1.0 \
+    --alnout - &>/dev/null &&  \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --uc is accepted"
+DESCRIPTION="--usearch_global --alnout is accepted (warning for short sequences)"
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nAAAA\n') \
-	--minseqlength 1 --id 1.0 --uc - &>/dev/null && \
+    --db <(printf '>seq2\nAAAA\n') \
+    --id 1.0 \
+    --alnout /dev/null 2>&1 | \
+    grep -q "^WARNING" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --alnout --minseqlength is accepted (no warning)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nAAAA\n') \
+    --db <(printf '>seq2\nAAAA\n') \
+    --id 1.0 \
+    --minseqlength 1 \
+    --alnout /dev/null 2>&1 | \
+    grep -q "^WARNING" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --biomout is accepted"
 seq1="AAAA"
