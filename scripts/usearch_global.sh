@@ -46,11 +46,10 @@ DESCRIPTION="--usearch_global --alnout is accepted"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--uc is accepted"
-printf ">a\nAAAA\n>b\nAAAC\n>c\nGGGG" | \
-    "${VSEARCH}" \
-	--derep_fulllength - \
-	--uc - --minseqlength 1 --id 1.0 &>/dev/null && \
+DESCRIPTION="--usearch_global --uc is accepted"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nAAAA\n') \
+	--minseqlength 1 --id 1.0 --uc - &>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
