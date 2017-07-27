@@ -1864,7 +1864,7 @@ unset "seq1" "seq2" "seq3" "seq4" \
 
 DESCRIPTION="--usearch_global --userout --userfields qstrand is correct #2"
 seq1="ATCGATCGATCGATCGATCGATCGATCGATCG"
-seq4="GCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTA"
+seq4="$(rev <<< ${seq1} | tr 'ACGT' 'TGCA')"
 database=$(printf '>target\n%s\n' \
 		   ${seq4})
 search_query=$(printf '>query\n%s\n' ${seq1})
@@ -1872,15 +1872,15 @@ search_query=$(printf '>query\n%s\n' ${seq1})
     --usearch_global <(printf "${search_query}") \
     --db <(printf "${database}") \
     --userout - \
+    --strand both \
     --userfields qstrand \
     --id 0.1 | \
     grep -q "^-$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
+unset "seq1" "seq4" \
+      "search_query" "database"
 
-exit 
 DESCRIPTION="--usearch_global --userout --userfields query is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
