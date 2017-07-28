@@ -44,7 +44,7 @@ DESCRIPTION="--usearch_global --samout is accepted"
 
 #*****************************************************************************#
 #                                                                             #
-#                        basic tests                              #
+#                        basic tests                                          #
 #                                                                             #
 #*****************************************************************************#
  
@@ -94,17 +94,32 @@ DESCRIPTION="--usearch_global --samout --samheader displays @HD"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout --samheader is well formated"
+DESCRIPTION="--usearch_global --samout fails if sequence name starting with '@'"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --usearch_global <(printf '>@seq1\nA\n') \
+    --db <(printf '>@seq1\n%s\n' "A") \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
+    --quiet \
+    --samout - | \
+    grep -q "^@" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# use the regex definition of the header lines (avoid alignment lines
+# by using very dissimilar sequences)
+DESCRIPTION="--usearch_global --samout --samheader is well formated"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nC\n') \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - \
     --samheader | \
-    grep -E "^@[A-Z][A-Z]\t[A-Za-z][A-Za-z][A-Za-z0-9]:[ -~]++$" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    grep -vqP '^@[A-Z][A-Z](\t[A-Za-z][A-Za-z0-9]:[ -~]+)+|^@CO\t.*$' && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --samout --samheader @HD VN is correct"
 "${VSEARCH}" \
@@ -112,9 +127,10 @@ DESCRIPTION="--usearch_global --samout --samheader @HD VN is correct"
     --db <(printf '>seq1\n%s\n' "A") \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
-    --samheader | \
-    grep -q "VN:1.0"  && \
+    --quiet \
+    --samheader \
+    --samout - | \
+    grep -qP --color=auto "^@HD.*VN:[1-9]+\.[0-9]+"  && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -126,7 +142,7 @@ DESCRIPTION="--usearch_global --samout --samheader @HD SO is correct"
     --minseqlength 1 \
     --samout - 2>/dev/null \
     --samheader | \
-    grep -q "GO:query" && \
+    grep -Eq "^@HD.*SO:(queryname|unsorted|unknown|coordinate)" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -136,10 +152,10 @@ DESCRIPTION="--usearch_global --samout --samheader @HD GO is correct"
     --db <(printf '>seq1\n%s\n' "A") \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
-    --samheader | \
-    awk '/^@HD/ {print $4}' | \
-    grep -q "query"  && \
+    --samheader \
+    --quiet \
+    --samout - | \
+    grep -qE "^@HD.*GO:(query|none|reference)"  && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -163,8 +179,7 @@ DESCRIPTION="--usearch_global --samout --samheader @SQ SN is correct"
     --minseqlength 1 \
     --samout - 2>/dev/null \
     --samheader | \
-    awk '/^@SQ/ {print $2}' | \
-    grep -q "SN:seq1"  && \
+    grep -qP "^@SN.*:[!-)+-<>-~][!-~]*" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -185,30 +200,86 @@ DESCRIPTION="--usearch_global --samout --samheader @SQ displays as many lines as
 DESCRIPTION="--usearch_global --samout --samheader @SQ LN is correct"
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nA\n') \
-    --db <(printf '>seq1\nA\n>seq2\nAA\n>seq3\nAAA\n>seq4\nAAAA\n') \
+    --db <(printf '>seq1\nAAA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
-    --samheader | \
-    awk '/^@SQ/ {print $3}' | \
-    tr '\n' ' ' | \
-    grep -q "LN:1 LN:2 LN:3 LN:4"  && \
+    --quiet \
+    --samheader \
+    --samout - | \
+    awk '/^@SQ/ {exit $3 == "LN:3" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout --samheader @SQ M5 is correct"
-md5=$(printf "AAA" | md5sum | \
-   awk '{print $1}')
+DESCRIPTION="--usearch_global --samout --samheader @SQ LN is correct"
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nA\n') \
     --db <(printf '>seq1\nAAA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
-    --samheader | \
-    awk -F '[:]' '/^@SQ/ {print $4}' | \
-    tr '\n' ' ' | \
-    grep -q "${md5}"  && \
+    --quiet \
+    --samheader \
+    --samout - | \
+    awk '/^@SQ/ {exit $3 == "LN:3" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+#sequences not matching to only get the header
+DESCRIPTION="--usearch_global --samout --samheader starts with @"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nCCC\n') \
+    --db <(printf '>seq1\nAAA\n') \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samheader \
+    --samout - | \
+    grep -vq "^@" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"    
+
+DESCRIPTION="--usearch_global --samout --samheader @SQ LN shouldn't be zero"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\n\n') \
+    --id 1.0 \
+    --minseqlength 0 \
+    --quiet \
+    --samheader \
+    --samout - | \
+    awk '/^@SQ/ {exit $3 == "LN:0" ? 0 : 1}' && \
+    failure "${DESCRIPTION}" || \
+       success "${DESCRIPTION}"
+
+# DESCRIPTION="--usearch_global --samout --samheader @SQ LN shouldn't be more than 2^31"
+# TMP=$(mktemp)
+# (printf ">s\n"
+#  for ((i=1 ; i<=((2**31)-1) ; i++)) ; do
+#      printf "A"
+#  done ) | bzip -c > $TMP 
+# "${VSEARCH}" \
+#     --usearch_global <(printf '>seq1\nA\n') \
+#     --db <(printf '>seq1\n\n') \
+#     --id 1.0 \
+#     --minseqlength 0 \
+#     --quiet \
+#     --samheader \
+#     --samout - | \
+#     awk '/^@SQ/ {exit $3 == "LN:0" ? 0 : 1}' && \
+#     failure "${DESCRIPTION}" || \
+#        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout --samheader @SQ M5 is correct"
+SEQ="AAA"
+MD5=$(printf "%s" ${SEQ} | md5sum | awk '{print $1}')
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\n%s\n' ${SEQ}) \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samheader \
+    --samout - | \
+    awk -v M5="${MD5}" '/^@SQ/ {exit $4 == "M5:"M5 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
