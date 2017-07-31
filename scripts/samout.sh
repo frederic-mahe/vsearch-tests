@@ -44,17 +44,18 @@ DESCRIPTION="--usearch_global --samout is accepted"
 
 #*****************************************************************************#
 #                                                                             #
-#                        basic tests                                          #
+#                                basic tests                                  #
 #                                                                             #
 #*****************************************************************************#
- 
+
 DESCRIPTION="--usearch_global --samout output is not empty"
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null | \
+    --quiet \
+    --samout - | \
     grep -qE ".?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -62,21 +63,23 @@ DESCRIPTION="--usearch_global --samout output is not empty"
 DESCRIPTION="--usearch_global --samout fields are tab-separated"
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null | \
+    --quiet \
+    --samout - | \
     grep -q $'\t' && \
     success "${DESCRIPTION}" || \
-         failure "${DESCRIPTION}"
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --samout alignments have at least 11 fields"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null | \
+    --quiet \
+    --samout - | \
     awk -F '\t' '!/^@/ && (NF < 11) {exit 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -84,27 +87,30 @@ DESCRIPTION="--usearch_global --samout alignments have at least 11 fields"
 
 DESCRIPTION="--usearch_global --samout --samheader displays @HD"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
+    --quiet \
+    --samout - \
     --samheader | \
     grep -q "@HD" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout fails if sequence name starting with '@'"
+
+DESCRIPTION="--usearch_global --samout --samheader @HD is the first header line"
 "${VSEARCH}" \
-    --usearch_global <(printf '>@seq1\nA\n') \
-    --db <(printf '>@seq1\n%s\n' "A") \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
-    --minseqlength 1 \
     --quiet \
+    --minseqlength 1 \
+    --samheader \
     --samout - | \
-    grep -q "^@" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    awk "{exit NR == 1 && /^@HD/ ? 0 : 1}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 # use the regex definition of the header lines (avoid alignment lines
 # by using very dissimilar sequences)
@@ -123,24 +129,25 @@ DESCRIPTION="--usearch_global --samout --samheader is well formated"
 
 DESCRIPTION="--usearch_global --samout --samheader @HD VN is correct"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
     --quiet \
     --samheader \
     --samout - | \
-    grep -qP --color=auto "^@HD.*VN:[1-9]+\.[0-9]+"  && \
+    grep -qP "^@HD.*VN:[0-9]+\.[0-9]+"  && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --samout --samheader @HD SO is correct"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
+    --quiet \
+    --samout - \
     --samheader | \
     grep -Eq "^@HD.*SO:(queryname|unsorted|unknown|coordinate)" && \
     success "${DESCRIPTION}" || \
@@ -148,8 +155,8 @@ DESCRIPTION="--usearch_global --samout --samheader @HD SO is correct"
 
 DESCRIPTION="--usearch_global --samout --samheader @HD GO is correct"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
     --samheader \
@@ -161,39 +168,54 @@ DESCRIPTION="--usearch_global --samout --samheader @HD GO is correct"
 
 DESCRIPTION="--usearch_global --samout --samheader displays @SQ"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
+    --quiet \
+    --samout - \
     --samheader | \
-    grep -q "@SQ" && \
+    grep -q "^@SQ" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout --samheader @SQ contains SN and LN"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - \
+    --samheader | \
+    grep -Eq "^@SQ.*(SN:.*LN:)|(LN:.*SN:)" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --samout --samheader @SQ SN is correct"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
+    --quiet \
+    --samout - \
     --samheader | \
-    grep -qP "^@SN.*:[!-)+-<>-~][!-~]*" && \
+    grep -qP "^@SQ.*SN:[!-)+-<>-~][!-~]*" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# test with 2 references
 DESCRIPTION="--usearch_global --samout --samheader @SQ displays as many lines as references"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n') \
-    --db <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n>seq2\nA\n') \
     --id 0.1 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
+    --quiet \
+    --samout - \
     --samheader  | \
-    awk '/^@SQ.*seq/ {print $1}' | \
-    wc | \
-    grep -q "4"  && \
+    awk '/^@SQ/ {i++} END {exit i == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -224,16 +246,29 @@ DESCRIPTION="--usearch_global --samout --samheader @SQ LN is correct"
         failure "${DESCRIPTION}"
 
 #sequences not matching to only get the header
-DESCRIPTION="--usearch_global --samout --samheader starts with @"
+DESCRIPTION="--usearch_global --samout --samheader fails if starting with *"
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nCCC\n') \
-    --db <(printf '>seq1\nAAA\n') \
+    --db <(printf '>*seq1\nAAA\n') \
     --id 1.0 \
     --minseqlength 1 \
     --quiet \
     --samheader \
     --samout - | \
-    grep -vq "^@" && \
+    grep -vq "^*" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"    
+
+DESCRIPTION="--usearch_global --samout --samheader fails if starting with ="
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nCCC\n') \
+    --db <(printf '>=seq1\nAAA\n') \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samheader \
+    --samout - | \
+    grep -vq "^=" && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"    
 
@@ -248,26 +283,43 @@ DESCRIPTION="--usearch_global --samout --samheader @SQ LN shouldn't be zero"
     --samout - | \
     awk '/^@SQ/ {exit $3 == "LN:0" ? 0 : 1}' && \
     failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+# substitution process always gives 'fd/62' as 2nd input file"
+DESCRIPTION="--usearch_global --samout --samheader @SQ UR is correct"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
+    --id 1.0 \
+    --minseqlength 0 \
+    --quiet \
+    --samheader \
+    --samout - | \
+    awk '/^@SQ/ {exit $4 == "UR:file:/dev/fd/62" ? 0 : 1}' && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+#hardly testable because of the memory
+DESCRIPTION="--usearch_global --samout --samheader @SQ LN shouldn't be more than 2^31"
+TMP=$(mktemp)
+(printf ">s\n"
+ for ((i=1 ; i<=((2**4)-1) ; i++)) ; do
+     printf "A"
+ done ) | bzip2 -c > $TMP
+bzcat "${TMP}"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(zcat "${TMP}") \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samheader \
+    --samout - | \
+    awk '/^@SQ/ {exit $3 == "LN:0" ? 0 : 1}' && \
+    failure "${DESCRIPTION}" || \
        success "${DESCRIPTION}"
 
-# DESCRIPTION="--usearch_global --samout --samheader @SQ LN shouldn't be more than 2^31"
-# TMP=$(mktemp)
-# (printf ">s\n"
-#  for ((i=1 ; i<=((2**31)-1) ; i++)) ; do
-#      printf "A"
-#  done ) | bzip -c > $TMP 
-# "${VSEARCH}" \
-#     --usearch_global <(printf '>seq1\nA\n') \
-#     --db <(printf '>seq1\n\n') \
-#     --id 1.0 \
-#     --minseqlength 0 \
-#     --quiet \
-#     --samheader \
-#     --samout - | \
-#     awk '/^@SQ/ {exit $3 == "LN:0" ? 0 : 1}' && \
-#     failure "${DESCRIPTION}" || \
-#        success "${DESCRIPTION}"
-
+exit
 DESCRIPTION="--usearch_global --samout --samheader @SQ M5 is correct"
 SEQ="AAA"
 MD5=$(printf "%s" ${SEQ} | md5sum | awk '{print $1}')
@@ -285,35 +337,73 @@ MD5=$(printf "%s" ${SEQ} | md5sum | awk '{print $1}')
 
 DESCRIPTION="--usearch_global --samout --samheader displays @PG"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
+    --quiet \
+    --samout - \
     --samheader | \
     grep -q "@PG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout --samheader doesn't displays @RG"
+DESCRIPTION="--usearch_global --samout --samheader @PG contains ID"
 "${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-    --db <(printf '>seq1\n%s\n' "A") \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
     --id 1.0 \
     --minseqlength 1 \
-    --samout - 2>/dev/null \
+    --quiet \
+    --samout - \
+    --samheader | \
+    grep -q "^@PG.*ID:" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout --samheader @PG ID is correct"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - \
+    --samheader | \
+    grep -q "^@PG.*ID:" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout --samheader @PG VN is correct"
+VERSION=$(vsearch -v 2>&1 | grep -Eo "[0-9]+.[0-9]+.[0-9]+")
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - \
+    --samheader | \
+    grep -Eq "^@PG.*[[:blank:]]VN:${VERSION}"  && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# No need to test CL (command line)
+
+DESCRIPTION="--usearch_global --samout --samheader doesn't displays @RG"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - \
     --samheader | \
     grep -q "@RG" && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-# "${VSEARCH}" \
-#     --usearch_global <(printf '>seq1\nA\n>seq2\nA\n>seq3\nA\n>seq4\nA\n') \
-#     --db <(printf '>seq1\n%s\n' "A") \
-#     --id 1.0 \
-#     --minseqlength 1 \
-#     --samout - 2>/dev/null \
-#     --samheader
+
 exit
 DESCRIPTION="--allpairs_global --acceptall --samout is correct #1 "
 seq1="TTTT"
@@ -322,7 +412,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $1}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
@@ -336,7 +427,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $2}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
@@ -350,7 +442,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $3}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s2 s3 s3 " ]] && \
     success "${DESCRIPTION}" || \
@@ -364,7 +457,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $4}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "1 1 1 " ]] && \
     success "${DESCRIPTION}" || \
@@ -378,7 +472,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $5}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "255 255 255 " ]] && \
     success "${DESCRIPTION}" || \
@@ -392,7 +487,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $6}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "4D4I 4D4I 4M " ]] && \
     success "${DESCRIPTION}" || \
@@ -406,7 +502,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $1}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
@@ -420,7 +517,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $8}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "0 0 0 " ]] && \
     success "${DESCRIPTION}" || \
@@ -434,7 +532,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $9}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "4 4 4 " ]] && \
     success "${DESCRIPTION}" || \
@@ -448,7 +547,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $10}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "TTTT TTTT AAAA " ]] && \
     success "${DESCRIPTION}" || \
@@ -462,7 +562,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $11}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "* * * " ]] && \
     success "${DESCRIPTION}" || \
@@ -476,7 +577,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $12}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "AS:i:0 AS:i:100 AS:i:100 " ]] && \
     success "${DESCRIPTION}" || \
@@ -490,7 +592,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $1}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
@@ -504,7 +607,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $2}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
@@ -518,7 +622,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $1}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
@@ -532,7 +637,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $2}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
@@ -546,7 +652,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $1}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
@@ -560,7 +667,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $2}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
@@ -574,7 +682,8 @@ seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
-		      --samout - 2>/dev/null | \
+		      --quiet \
+		      --samout - | \
 		awk '{print $2}' | tr '\n' ' ')
 [[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
     success "${DESCRIPTION}" || \
