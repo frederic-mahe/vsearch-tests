@@ -72,17 +72,12 @@ DESCRIPTION="--usearch_global --samout fields are tab-separated"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout alignments have at least 11 fields"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n') \
-    --db <(printf '>seq1\nA\n') \
-    --id 1.0 \
-    --minseqlength 1 \
-    --quiet \
-    --samout - | \
-    awk -F '\t' '!/^@/ && (NF < 11) {exit 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+
+#*****************************************************************************#
+#                                                                             #
+#                        header section (samheader)                           #
+#                                                                             #
+#*****************************************************************************#
 
 
 DESCRIPTION="--usearch_global --samout --samheader displays @HD"
@@ -299,27 +294,27 @@ DESCRIPTION="--usearch_global --samout --samheader @SQ UR is correct"
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-#hardly testable because of the memory
-DESCRIPTION="--usearch_global --samout --samheader @SQ LN shouldn't be more than 2^31"
-TMP=$(mktemp)
-(printf ">s\n"
- for ((i=1 ; i<=((2**4)-1) ; i++)) ; do
-     printf "A"
- done ) | bzip2 -c > $TMP
-bzcat "${TMP}"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nA\n') \
-    --db <(zcat "${TMP}") \
-    --id 1.0 \
-    --minseqlength 1 \
-    --quiet \
-    --samheader \
-    --samout - | \
-    awk '/^@SQ/ {exit $3 == "LN:0" ? 0 : 1}' && \
-    failure "${DESCRIPTION}" || \
-       success "${DESCRIPTION}"
+## hardly testable because of the memory and processing time
+# DESCRIPTION="--usearch_global --samout --samheader @SQ LN shouldn't be more than 2^31"
+# TMP=$(mktemp)
+# (printf ">s\n"
+#  for ((i=1 ; i<=((2**31)) ; i++)) ; do
+#      printf "A"
+#  done
+#  printf "\n") | bzip2 -c > $TMP
+# "${VSEARCH}" \
+#     --usearch_global <(printf '>seq1\nA\n') \
+#     --db <(bzcat "${TMP}") \
+#     --id 1.0 \
+#     --minseqlength 1 \
+#     --maxseqlength $((2**31)) \
+#     --quiet \
+#     --samheader \
+#     --samout - | \
+#     awk '/^@SQ/ {exit $3 == "LN:2147483648" ? 0 : 1}' && \
+#     failure "${DESCRIPTION}" || \
+#        success "${DESCRIPTION}"
 
-exit
 DESCRIPTION="--usearch_global --samout --samheader @SQ M5 is correct"
 SEQ="AAA"
 MD5=$(printf "%s" ${SEQ} | md5sum | awk '{print $1}')
@@ -404,14 +399,171 @@ DESCRIPTION="--usearch_global --samout --samheader doesn't displays @RG"
 	success "${DESCRIPTION}"
 
 
-exit
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #1 "
+
+#*****************************************************************************#
+#                                                                             #
+#                      alignment section: mandatory fields                    #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--usearch_global --samout alignments have at least 11 fields"
+"${VSEARCH}" \
+    --usearch_global <(printf '>seq1\nA\n') \
+    --db <(printf '>seq1\nA\n') \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - | \
+    awk -F '\t' '!/^@/ && (NF < 11) {exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="--usearch_global --samout Qname is well-shaped (field #1)" 
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {print $1}' | \
+    grep -qP "^[!-?A-~]{1,254}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout Flag is well-shaped (field #2)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {exit $2>=0 && $2 < 2**16 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout Rname is well-shaped (field #3)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {print $3}' | \
+    grep -qP "^\*|^[!-()+-<>-~][!-~]*" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout Pos is well-shaped (field #4)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {exit $4>=0 && $4 < 2**31 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout Mapq is well-shaped (field #5)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {exit $5>=0 && $5 < 2**8 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout CIGAR is well-shaped (field #6)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {print $6}' | \
+    grep -qP "^\*|([0-9]+[MIDNSHPX=])+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout RNEXT is well-shaped (field #7)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n>s2\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {print $7}' | \
+    grep -qP "^\*|=|[!-()-+-<>-r][!-~]*" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout PNEXT is well-shaped (field #8)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n>s2\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {exit $8>=0 && $8 < 2**31 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout TLEN is well-shaped (field #9)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n>s2\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {exit $9 > -(2**31) && $9 < 2**31 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout SEQ is well-shaped (field #10)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n>s2\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {print $10}' | \
+    grep -qP "^\*|[A-Za-z=.]+" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout QUAL is well-shaped (field #11)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n>s2\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {print $10}' | \
+    grep -qP "[!-~]+" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #1 "
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $1}' | tr '\n' ' ')
@@ -420,13 +572,28 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #2"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #1 "
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
+		      --quiet \
+		      --samout - | \
+		awk '{print $1}' | tr '\n' ' ')
+[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset "OUTPUT" "seq1" "seq2" "seq3" "database"
+
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #2"
+seq1="TTTT"
+seq2="AAAA"
+seq3="AAAA"
+database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
+		  ${seq1} ${seq2} ${seq3})
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $2}' | tr '\n' ' ')
@@ -435,13 +602,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #3 "
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #3 "
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $3}' | tr '\n' ' ')
@@ -450,13 +617,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #4"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #4"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $4}' | tr '\n' ' ')
@@ -465,13 +632,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #5 "
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #5 "
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $5}' | tr '\n' ' ')
@@ -480,13 +647,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #6"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #6"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $6}' | tr '\n' ' ')
@@ -495,13 +662,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #7 "
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #7 "
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $1}' | tr '\n' ' ')
@@ -510,13 +677,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #8"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #8"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $8}' | tr '\n' ' ')
@@ -525,13 +692,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #9 "
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #9 "
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $9}' | tr '\n' ' ')
@@ -540,13 +707,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #10"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #10"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $10}' | tr '\n' ' ')
@@ -555,13 +722,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #11"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #11"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $11}' | tr '\n' ' ')
@@ -570,13 +737,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #12"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #12"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $12}' | tr '\n' ' ')
@@ -585,13 +752,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #13 "
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #13 "
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $1}' | tr '\n' ' ')
@@ -600,13 +767,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #14"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #14"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $2}' | tr '\n' ' ')
@@ -615,13 +782,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #15 "
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #15 "
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $1}' | tr '\n' ' ')
@@ -630,13 +797,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #16"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #16"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $2}' | tr '\n' ' ')
@@ -645,13 +812,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #17 "
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #17 "
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $1}' | tr '\n' ' ')
@@ -660,13 +827,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #18"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #18"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $2}' | tr '\n' ' ')
@@ -675,13 +842,13 @@ OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --t
         failure "${DESCRIPTION}"
 unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--allpairs_global --acceptall --samout is correct #19"
+DESCRIPTION="--usearch_global --id 1.0 --samout is correct #19"
 seq1="TTTT"
 seq2="AAAA"
 seq3="AAAA"
 database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
 		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --allpairs_global  <(printf "${database}") --acceptall --threads 1 \
+OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
 		      --quiet \
 		      --samout - | \
 		awk '{print $2}' | tr '\n' ' ')
