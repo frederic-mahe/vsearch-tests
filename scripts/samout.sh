@@ -406,6 +406,16 @@ DESCRIPTION="--usearch_global --samout --samheader doesn't displays @RG"
 #                                                                             #
 #*****************************************************************************#
 
+"${VSEARCH}" \
+    --usearch_global <(printf '>S1\nATGAGGCTCCTACCGTA\n') \
+    --db <(printf '>R1\nTACGGTAGGAGCCTCAT\n') \
+    --id 0.1 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - \
+    --dbnotmatched -
+    exit
+
 DESCRIPTION="--usearch_global --samout alignments have at least 11 fields"
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nA\n') \
@@ -557,305 +567,176 @@ DESCRIPTION="--usearch_global --samout QUAL is well-shaped (field #11)"
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #1 "
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $1}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+
+
+
+DESCRIPTION="--usearch_global --samout All"
+# Sortie
+^[!-?A-~]{1,254} [0-9]{1,5} ^\*|^[!-()+-<>-~][!-~]*
+# /Sortie
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n>s2\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {print $10}' | \
+    grep -qP "[!-~]+" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout Qname is correct (field #1)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.1 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    grep -q "^q1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #1 "
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $1}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+DESCRIPTION="--usearch_global --samout is correct (field #2)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.1 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{print $2}' | \
+    grep -q "^0$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #2"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $2}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+DESCRIPTION="--usearch_global --samout is correct (field #3)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{print $3}' | \
+    grep -q "^r1$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #3 "
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $3}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s2 s3 s3 " ]] && \
+DESCRIPTION="--usearch_global --samout is correct (field #4(non certain))"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{print $4}' | \
+    grep -q "^2$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #4"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $4}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "1 1 1 " ]] && \
+DESCRIPTION="--usearch_global --samout is correct (field #5)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{print $5}' | \
+    grep -q "^255$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #5 "
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $5}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "255 255 255 " ]] && \
+DESCRIPTION="--usearch_global --samout is correct (field #6(non certain))"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{print $6}' | \
+    grep -q "^4m$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #6"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $6}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "4D4I 4D4I 4M " ]] && \
+DESCRIPTION="--usearch_global --samout is correct (field #7)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{print $7}' | \
+    grep -q "^*$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #7 "
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $1}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
+DESCRIPTION="--usearch_global --samout is correct (field #8)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{print $8}' | \
+    grep -q "^0$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #8"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $8}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "0 0 0 " ]] && \
+DESCRIPTION="--usearch_global --samout is correct (field #9)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{print $9}' | \
+    grep -q "^0$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #9 "
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $9}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "4 4 4 " ]] && \
+DESCRIPTION="--usearch_global --samout is correct (field #10)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{print $10}' | \
+    grep -q "^GGGG$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #10"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $10}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "TTTT TTTT AAAA " ]] && \
+DESCRIPTION="--usearch_global --samout is correct (field #11)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{print $11}' | \
+    grep -q "^*$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
-
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #11"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $11}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "* * * " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
-
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #12"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $12}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "AS:i:0 AS:i:100 AS:i:100 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
-
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #13 "
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $1}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
-
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #14"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $2}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
-
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #15 "
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $1}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
-
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #16"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $2}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
-
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #17 "
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $1}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
-
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #18"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $2}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
-
-DESCRIPTION="--usearch_global --id 1.0 --samout is correct #19"
-seq1="TTTT"
-seq2="AAAA"
-seq3="AAAA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --usearch_global  <(printf "${database}") --id 1.0 --threads 1 \
-		      --quiet \
-		      --samout - | \
-		awk '{print $2}' | tr '\n' ' ')
-[[ "${OUTPUT}" == "s1 s1 s2 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "seq1" "seq2" "seq3" "database"
 
 
-exit 0
