@@ -405,16 +405,16 @@ DESCRIPTION="--usearch_global --samout --samheader doesn't displays @RG"
 #                      alignment section: mandatory fields                    #
 #                                                                             #
 #*****************************************************************************#
-
-"${VSEARCH}" \
-    --usearch_global <(printf '>S1\nATGAGGCTCCTACCGTA\n') \
-    --db <(printf '>R1\nTACGGTAGGAGCCTCAT\n') \
-    --id 0.1 \
-    --minseqlength 1 \
-    --quiet \
-    --samout - \
-    --dbnotmatched -
-    exit
+# tentative de reverse-complement
+# "${VSEARCH}" \
+#     --usearch_global <(printf '>S1\nATGAGGCTCCTACCGTA\n') \
+#     --db <(printf '>R1\nTACGGTAGGAGCCTCAT\n') \
+#     --id 0.1 \
+#     --minseqlength 1 \
+#     --quiet \
+#     --samout - \
+#     --dbnotmatched -
+#     exit
 
 DESCRIPTION="--usearch_global --samout alignments have at least 11 fields"
 "${VSEARCH}" \
@@ -571,9 +571,14 @@ DESCRIPTION="--usearch_global --samout QUAL is well-shaped (field #11)"
 
 
 DESCRIPTION="--usearch_global --samout All"
-# Sortie
-^[!-?A-~]{1,254} [0-9]{1,5} ^\*|^[!-()+-<>-~][!-~]*
-# /Sortie
+"${VSEARCH}" \
+    --usearch_global <(printf '>s1\nA\n') \
+    --db <(printf '>s1\nA\n>s2\nA\n') \
+    --id 1.0 \
+    --quiet \
+    --minseqlength 1 \
+    --samout -
+
 "${VSEARCH}" \
     --usearch_global <(printf '>s1\nA\n') \
     --db <(printf '>s1\nA\n>s2\nA\n') \
@@ -581,11 +586,10 @@ DESCRIPTION="--usearch_global --samout All"
     --quiet \
     --minseqlength 1 \
     --samout - | \
-    awk 'BEGIN {FS = "\t"} {print $10}' | \
-    grep -qP "[!-~]+" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    grep -P --color=auto \
+    "^[!-?A-~]{1,254}\t[0-9]{0,5}\t*|[!-()+-<>-~][!-~]*\t[0-9]{0,10}\t[0-9]{0,3}\t*|([0-9]+[MIDNSHPX=])+\t*|=|[!-()-+-<>-r][!-~]*\t*|=|[!-()-+-<>-r][!-~]*\t[0-9]{0,10}\t[\-9-9]{0,10}\t*|[A-Za-z=.]+\t[!-~]+$" 
 
+exit
 DESCRIPTION="--usearch_global --samout Qname is correct (field #1)"
 "${VSEARCH}" \
     --usearch_global  <(printf '>q1\nGGGG\n') \
