@@ -245,6 +245,19 @@ database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# acceptall should overide id or not be accepted
+DESCRIPTION="--usearch_global --samout --acceptall is not accepted"
+"${VSEARCH}" \
+    --usearch_global <(printf '>S1\nCCCC\n') \
+    --db <(printf '>R1\nGGGG\n') \
+    --acceptall \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #

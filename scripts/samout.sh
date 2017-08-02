@@ -398,6 +398,22 @@ DESCRIPTION="--usearch_global --samout --samheader doesn't displays @RG"
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
+# If @SQ header lines are present,
+# RNAME (if not ‘*’) must be present in one of the SQ-SN tag
+DESCRIPTION="--usearch_global --samout --samheader @HQ SN is equal to RNAME "
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nAAA\n') \
+    --db <(printf '>r1\nAAA\n') \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samheader \
+    --samout - | \
+    awk	'/^@SQ/ {VAR = $2}
+         !/^@/ {VAR2 = "SN:"$3}
+         END {exit VAR == VAR2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -405,16 +421,25 @@ DESCRIPTION="--usearch_global --samout --samheader doesn't displays @RG"
 #                      alignment section: mandatory fields                    #
 #                                                                             #
 #*****************************************************************************#
-# tentative de reverse-complement
-# "${VSEARCH}" \
-#     --usearch_global <(printf '>S1\nATGAGGCTCCTACCGTA\n') \
-#     --db <(printf '>R1\nTACGGTAGGAGCCTCAT\n') \
-#     --id 0.1 \
-#     --minseqlength 1 \
-#     --quiet \
-#     --samout - \
-#     --dbnotmatched -
-#     exit
+
+# example from official sam specs
+ref=$(printf "AGCATGTTAGATAAGATAGCTGTGCTAGTAGGCAGTCAGCGCCAT")
+r001=$(printf "TTAGATAAAGGATACTG")
+r002=$(printf "aaaAGATAAGGATA")
+r003=$(printf "gcctaAGCTAA")
+r004=$(printf "ATAGCTTCAGC")
+database=$(printf ">ref\n%s\n" $ref)
+query=$(printf ">ref\n%s\n>r001\n%s\n>r002\n%s\n>r003\n%s\n>r004\n%s\n" $ref $r001 $r002 $r003 $r004)
+"${VSEARCH}" \
+    --usearch_global <(printf "%s" "$query") \
+    --db <(printf "$database") \
+    --id 0.1 \
+    --minseqlength 1 \
+    --quiet \
+    --output_no_hits \
+    --strand both \
+    --samheader \
+    --samout - &>/dev/null
 
 DESCRIPTION="--usearch_global --samout alignments have at least 11 fields"
 "${VSEARCH}" \
@@ -567,9 +592,6 @@ DESCRIPTION="--usearch_global --samout QUAL is well-shaped (field #11)"
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-
-
-
 DESCRIPTION="--usearch_global --samout All"
 "${VSEARCH}" \
     --usearch_global <(printf '>s1\nA\n') \
@@ -577,19 +599,10 @@ DESCRIPTION="--usearch_global --samout All"
     --id 1.0 \
     --quiet \
     --minseqlength 1 \
-    --samout -
-
-"${VSEARCH}" \
-    --usearch_global <(printf '>s1\nA\n') \
-    --db <(printf '>s1\nA\n>s2\nA\n') \
-    --id 1.0 \
-    --quiet \
-    --minseqlength 1 \
     --samout - | \
-    grep -P --color=auto \
-    "^[!-?A-~]{1,254}\t[0-9]{0,5}\t*|[!-()+-<>-~][!-~]*\t[0-9]{0,10}\t[0-9]{0,3}\t*|([0-9]+[MIDNSHPX=])+\t*|=|[!-()-+-<>-r][!-~]*\t*|=|[!-()-+-<>-r][!-~]*\t[0-9]{0,10}\t[\-9-9]{0,10}\t*|[A-Za-z=.]+\t[!-~]+$" 
-
-exit
+     grep -Pq --color=auto \
+    "^[!-?A-~]{1,254}\t[0-9]{0,5}\t(\*|[!-()+-<>-~][!-~]*)\t[0-9]{0,10}\t[0-9]{0,3}\t(\*|([0-9]+[MIDNSHPX=])+)\t(\*|=|[!-()-+-<>-~][!-~]*)\t[0-9]{0,10}\t-?[0-9]{0,10}\t(\*|[A-Za-z=.]+)\t[!-~]+"
+    
 DESCRIPTION="--usearch_global --samout Qname is correct (field #1)"
 "${VSEARCH}" \
     --usearch_global  <(printf '>q1\nGGGG\n') \
@@ -603,7 +616,7 @@ DESCRIPTION="--usearch_global --samout Qname is correct (field #1)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout is correct (field #2)"
+DESCRIPTION="--usearch_global --samout FLAG is correct (field #2 default)"
 "${VSEARCH}" \
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
@@ -612,12 +625,64 @@ DESCRIPTION="--usearch_global --samout is correct (field #2)"
     --quiet \
     --minseqlength 1 \
     --samout - | \
-    awk '{print $2}' | \
-    grep -q "^0$" && \
+   awk -F "\t" '{exit $2 == 0 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout is correct (field #3)"
+DESCRIPTION="--usearch_global --samout FLAG is correct (field #2 rev-comp)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>S1\nCCCC\n') \
+    --db <(printf '>R1\nGGGG\n') \
+    --id 0.1 \
+    --minseqlength 1 \
+    --strand both \
+    --quiet \
+    --samout - | \
+    awk -F "\t" '{exit $2 == 16 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout FLAG is correct (field #2 unmapped)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>S1\nCCCC\n') \
+    --db <(printf '>R1\nGGGG\n') \
+    --output_no_hits \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - | \
+    awk -F "\t" '{exit $2 == 4 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout FLAG is correct (field #2 secondary align)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>S1\nGGGG\n') \
+    --db <(printf '>R1\nGGGG\n>R2\nCGGG\n') \
+    --id 0.5 \
+    --maxaccepts 2 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - | \
+    awk -F "\t" 'NR == 2 {exit $2 == 256 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# secondary align is the less-matching sequence"
+DESCRIPTION="--usearch_global --samout RNAME is correct for secondary align"
+"${VSEARCH}" \
+    --usearch_global <(printf '>S1\nGGGG\n') \
+    --db <(printf '>R1\nGGGG\n>R2\nCGGG\n') \
+    --id 0.5 \
+    --maxaccepts 2 \
+    --minseqlength 1 \
+    --quiet \
+    --samout - | \
+    awk -F "\t" 'NR == 2 {exit $3 == "R2" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout QNAME is correct (field #3)"
 "${VSEARCH}" \
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
@@ -631,20 +696,50 @@ DESCRIPTION="--usearch_global --samout is correct (field #3)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout is correct (field #4(non certain))"
+# An unmapped segment without coordinate has a ‘*’ at this field
+DESCRIPTION="--usearch_global --samout QNAME is correct when no_hits (field #3)"
 "${VSEARCH}" \
     --usearch_global  <(printf '>q1\nGGGG\n') \
-    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --db <(printf '>r1\nTTTT\n') \
     --id 0.5 \
-    --threads 1 \
+    --output_no_hits \
     --quiet \
     --minseqlength 1 \
     --samout - | \
-    awk '{print $4}' | \
-    grep -q "^2$" && \
+    awk '{exit $3 == "*" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# result should be 4: 1-based leftmost mapping POSition of the first
+# CIGAR operation that 'consumes' a reference base. The first base in
+# a reference sequence has coordinate 1.
+DESCRIPTION="--usearch_global --samout POS is correct (field #4)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCCCGGGG\n') \
+    --id 0.1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{exit $4 == 4 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# POS is set as 0 for an unmapped read without coordinate
+DESCRIPTION="--usearch_global --samout POS is correct when no match (field #4)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCCCC\n') \
+    --id 0.1 \
+    --output_no_hits \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{exit $4 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# A value 255 indicates that the mapping quality is not available.
 DESCRIPTION="--usearch_global --samout is correct (field #5)"
 "${VSEARCH}" \
     --usearch_global  <(printf '>q1\nGGGG\n') \
@@ -654,12 +749,39 @@ DESCRIPTION="--usearch_global --samout is correct (field #5)"
     --quiet \
     --minseqlength 1 \
     --samout - | \
-    awk '{print $5}' | \
-    grep -q "^255$" && \
+    awk '{exit $5 == 255 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout is correct (field #6(non certain))"
+DESCRIPTION="--usearch_global --samout is correct (field #6)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGGG\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{exit $6 == "1D4M" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# set ‘*’ if unavailable
+DESCRIPTION="--usearch_global --samout is correct when no hits (field #6)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nAAAA\n') \
+    --id 0.5 \
+    --output_no_hits \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{exit $6 == "*" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout RNEXT is correct (field #7)"
 "${VSEARCH}" \
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
@@ -668,40 +790,27 @@ DESCRIPTION="--usearch_global --samout is correct (field #6(non certain))"
     --quiet \
     --minseqlength 1 \
     --samout - | \
-    awk '{print $6}' | \
-    grep -q "^4m$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --samout is correct (field #7)"
-"${VSEARCH}" \
-    --usearch_global  <(printf '>q1\nGGGG\n') \
-    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
-    --id 0.5 \
-    --threads 1 \
-    --quiet \
-    --minseqlength 1 \
-    --samout - | \
-    awk '{print $7}' | \
+    awk -F "\t" '{print $7}' | \
     grep -q "^*$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout is correct (field #8)"
+# Sum of lengths of the M/I/S/=/X operations shall equal the length of SEQ
+DESCRIPTION="--usearch_global --samout CIGAR is correct (field #6 #2)"
 "${VSEARCH}" \
-    --usearch_global  <(printf '>q1\nGGGG\n') \
-    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
-    --id 0.5 \
-    --threads 1 \
+    --usearch_global  <(printf '>q1\nAAGGGGGGGGGCCC\n') \
+    --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
+    --id 0.1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
-    awk '{print $8}' | \
-    grep -q "^0$" && \
+    grep -Po "([0-9]+[MIS])+" | \
+    grep -Po "[0-9]+" | \
+    awk '{SUM += $1} END {exit SUM == 14 ? 0 : 1} '  && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout is correct (field #9)"
+DESCRIPTION="--usearch_global --samout PNEXT is correct (field #8)"
 "${VSEARCH}" \
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
@@ -710,8 +819,20 @@ DESCRIPTION="--usearch_global --samout is correct (field #9)"
     --quiet \
     --minseqlength 1 \
     --samout - | \
-    awk '{print $9}' | \
-    grep -q "^0$" && \
+    awk '{exit $8 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --samout TLEN is correct (field #9)"
+"${VSEARCH}" \
+    --usearch_global  <(printf '>q1\nGGGG\n') \
+    --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
+    --id 0.5 \
+    --threads 1 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - | \
+    awk '{exit $9 == 0 ? 0: 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
