@@ -651,7 +651,6 @@ DESCRIPTION="--usearch_global --samout FLAG is correct (field #2 default)"
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
     --id 0.1 \
-    --threads 1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
@@ -717,7 +716,6 @@ DESCRIPTION="--usearch_global --samout QNAME is correct (field #3)"
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
     --id 0.5 \
-    --threads 1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
@@ -775,7 +773,6 @@ DESCRIPTION="--usearch_global --samout is correct (field #5)"
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
     --id 0.5 \
-    --threads 1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
@@ -788,7 +785,6 @@ DESCRIPTION="--usearch_global --samout CIGAR is correct (field #6)"
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGGG\n') \
     --id 0.5 \
-    --threads 1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
@@ -803,7 +799,6 @@ DESCRIPTION="--usearch_global --samout CIGAR is correct when no hits (field #6)"
     --db <(printf '>r1\nAAAA\n') \
     --id 0.5 \
     --output_no_hits \
-    --threads 1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
@@ -816,7 +811,6 @@ DESCRIPTION="--usearch_global --samout RNEXT is correct (field #7)"
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
     --id 0.5 \
-    --threads 1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
@@ -848,7 +842,6 @@ DESCRIPTION="--usearch_global --samout PNEXT is correct (field #8)"
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
     --id 0.5 \
-    --threads 1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
@@ -863,7 +856,6 @@ DESCRIPTION="--usearch_global --samout TLEN is correct (field #9)"
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
     --id 0.5 \
-    --threads 1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
@@ -877,7 +869,6 @@ DESCRIPTION="--usearch_global --samout SEQ is correct (field #10)"
     --usearch_global  <(printf '>q1\nGGGG\n') \
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
     --id 0.5 \
-    --threads 1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
@@ -892,7 +883,6 @@ DESCRIPTION="--usearch_global --samout SEQ is correct when empty(field #10)"
     --db <(printf '>r1\nCGGG\n>r2\nTTTT\n') \
     --id 0.5 \
     --output_no_hits \
-    --threads 1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
