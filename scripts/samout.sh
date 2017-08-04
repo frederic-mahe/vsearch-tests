@@ -334,7 +334,7 @@ DESCRIPTION="--usearch_global --samout --samheader @SQ M5 is correct"
 MD5=$(printf "AAA" | md5sum | awk '{print $1}')
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nA\n') \
-    --db <(printf '>seq1\n%s\n' ${SEQ}) \
+    --db <(printf '>seq1\nAAA\n') \
     --id 1.0 \
     --quiet \
     --minseqlength 1 \
@@ -841,7 +841,7 @@ SEQ="AAGGGGGGGGGCCC"
     awk -v LENSEQ="${#SEQ}" '{SUM += $1} END {exit SUM == LENSEQ ? 0 : 1} ' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
- UNSET "SEQ"
+unset "SEQ"
 
 DESCRIPTION="--usearch_global --samout PNEXT is correct (field #8)"
 "${VSEARCH}" \
@@ -1041,7 +1041,7 @@ if [[ -n "${OUTPUT}" ]] ; then
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 fi
-UNSET "OUTPUT"
+unset "output"
 
 # when TYPE is i, value should be a signed integer
 DESCRIPTION="--usearch_global --samout optional fields TYPE i is well formated"
@@ -1098,7 +1098,7 @@ if [[ -n "${OUTPUT}" ]] ; then
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 fi
-UNSET "OUTPUT"
+unset "OUTPUT"
 
 # no optional field with H for now
 DESCRIPTION="--usearch_global --samout optional fields TYPE H is well formated"
@@ -1117,7 +1117,7 @@ if [[ -n "${OUTPUT}" ]] ; then
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 fi
- UNSET "OUTPUT"
+unset "OUTPUT"
 
 # no optional field with B for now
 DESCRIPTION="--usearch_global --samout optional fields TYPE B is well formated"
@@ -1136,7 +1136,7 @@ if [[ -n "${OUTPUT}" ]] ; then
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 fi
-UNSET "OUTPUT"
+unset "OUTPUT"
 
 # AS is the percentage similarity
 DESCRIPTION="--usearch_global --samout AS is correct (field #12-1)"
@@ -1276,5 +1276,5 @@ if [[ -n "${OUTPUT}" ]] ; then
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 fi
-
+unset OUTPUT
 exit 0
