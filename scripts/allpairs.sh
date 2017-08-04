@@ -123,6 +123,7 @@ printf '>seq1\nAAAAA\n>seq2\nAAAAA\n' | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# if fastapairs is not accepted, the man page should be updated
 DESCRIPTION="--allpairs_global --fastapairs --acceptall is accepted"
 printf '>seq1\nAAAAA\n>seq2\nAAAAA\n' | \
     "${VSEARCH}" --allpairs_global - \
