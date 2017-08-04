@@ -23,6 +23,12 @@ DESCRIPTION="check if vsearch is in the PATH"
 [[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
 
+## The tests listed below were designed using the reference
+## documentation for the SAM format
+## (https://github.com/samtools/hts-specs), and in particular
+## SAMv1.pdf (6 Apr 2017, 434cda9) and SAMtags.pdf (20 Jun 2016,
+## e087be0).
+
 #*****************************************************************************#
 #                                                                             #
 #                        accepted output options                              #
