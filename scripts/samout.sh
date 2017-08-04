@@ -821,9 +821,8 @@ DESCRIPTION="--usearch_global --samout RNEXT is correct (field #7)"
 
 # Sum of lengths of the M/I/S/=/X operations shall equal the length of SEQ
 DESCRIPTION="--usearch_global --samout CIGAR is correct (field #6 #2)"
-SEQ="AAGGGGGGGGGCCC"
 "${VSEARCH}" \
-    --usearch_global  <(printf '>q1\n%s\n' ${SEQ}) \
+    --usearch_global  <(printf '>q1\nAAGGGGGGGGGCCC\n') \
     --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
     --id 0.1 \
     --quiet \
@@ -1189,6 +1188,14 @@ DESCRIPTION="--usearch_global --samout X0 is correct (field #12-4)"
 	failure "${DESCRIPTION}"
 
 # XG is the number of gap opens
+# should be 3 in the example below
+
+# Qry  1 + ggggg----ggggggg 12
+#          |||||    |||||||
+# Tgt  1 + GGGGGCCCCGGGGGGG 16
+
+# 16 cols, 12 ids (75.0%), 4 gaps (25.0%)
+# AS:i:75	XN:i:0	XM:i:0	XO:i:1	XG:i:4	NM:i:4	MD:Z:5^CCCC7	YT:Z:UU
 DESCRIPTION="--usearch_global --samout XG is correct (field #12-5)"
 "${VSEARCH}" \
     --usearch_global  <(printf '>q1\nGGGGGGGGGGGG\n') \
@@ -1199,11 +1206,12 @@ DESCRIPTION="--usearch_global --samout XG is correct (field #12-5)"
     --samout - | \
     cut -f 12-  | \
     tr '\t' '\n' | \
-    awk -F ":" '/^X0/ {exit $3 == 4 ? 0 : 1}' && \
+    awk -F ":" '/^XG/ {exit $3 == 3 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    	failure "${DESCRIPTION}"
 
 # NM is the edit distance (sum of XM and XG)
+# should also sum XO
 DESCRIPTION="--usearch_global --samout NM is correct (field #12-6)"
 "${VSEARCH}" \
     --usearch_global  <(printf '>q1\nGGGGGGGGGGGG\n') \
