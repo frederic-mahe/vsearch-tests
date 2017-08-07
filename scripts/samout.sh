@@ -819,22 +819,20 @@ DESCRIPTION="--usearch_global --samout RNEXT is correct (field #7)"
 
 # Sum of lengths of the M/I/S/=/X operations shall equal the length of SEQ
 DESCRIPTION="--usearch_global --samout CIGAR is correct (field #6 #2)"
-SEQ=""
+SEQ="AAGGGGGGGGGCCC"
 "${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAGGGGGGGGGCCC\n') \
+    --usearch_global <(printf '>q1\n%s\n' ${SEQ}) \
     --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
     --id 0.1 \
     --quiet \
     --minseqlength 1 \
     --samout - | \
-    awk -F "\t" '{print $6}' | \
-    grep -Po "([0-9]+[MIS])+" | \
-    grep -Po "[0-9]+" | \
+    awk -F "\t" '{print $6}'  | \
+     grep -Po "([0-9]+[MIS])+"  | \
+     grep -Po "[0-9]+" | \
     awk -v LENSEQ="${#SEQ}" '{SUM += $1} END {exit SUM == LENSEQ ? 0 : 1} ' && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
-failure "${DESCRIPTION}"
-echo "missing SEQ declaration"
+    	    failure "${DESCRIPTION}"
 unset SEQ
 
 DESCRIPTION="--usearch_global --samout PNEXT is correct (field #8)"
