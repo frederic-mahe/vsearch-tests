@@ -2421,7 +2421,6 @@ DESCRIPTION="--usearch_global --iddef accept parameter 4"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
 DESCRIPTION="--usearch_global --iddef is 2 when not specified"
 SPECIFIED=$("${VSEARCH}" \
 		--usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
@@ -2445,7 +2444,8 @@ DEFAULT=$("${VSEARCH}" \
 		 awk 'NR==6 {print $1}')
 [[ "${SPECIFIED}" == "${DEFAULT}" ]] && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"    
+        failure "${DESCRIPTION}"
+unset "SPECIFIED" "DEFAULT"
 
 DESCRIPTION="--usearch_global --iddef fails if other parameter than 0-4"
 "${VSEARCH}" \
@@ -2473,6 +2473,7 @@ DESCRIPTION="--usearch_global --iddef fails if no parameter"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# sequence used gives almost a different for each 
 DESCRIPTION="--usearch_global --iddef 0 correct"
 SPECIFIED=$("${VSEARCH}" \
 		--usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
@@ -2496,8 +2497,9 @@ USERFIELD=$("${VSEARCH}" \
 USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc) 
 [[ "${SPECIFIED}" == "${USERFIELD}%" ]] && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"    
-
+        failure "${DESCRIPTION}"
+unset "SPECIFIED" "USERFIELD"
+    
 DESCRIPTION="--usearch_global --iddef 1 correct"
 SPECIFIED=$("${VSEARCH}" \
 		--usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
@@ -2521,7 +2523,8 @@ USERFIELD=$("${VSEARCH}" \
 USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc) 
 [[ "${SPECIFIED}" == "${USERFIELD}%" ]] && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"    
+        failure "${DESCRIPTION}"
+unset "SPECIFIED" "USERFIELD"    
 
 
 DESCRIPTION="--usearch_global --iddef 2 correct"
@@ -2547,7 +2550,8 @@ USERFIELD=$("${VSEARCH}" \
 USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc) 
 [[ "${SPECIFIED}" == "${USERFIELD}%" ]] && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"    
+        failure "${DESCRIPTION}"
+unset "SPECIFIED" "USERFIELD"    
 
 DESCRIPTION="--usearch_global --iddef 3 correct"
 SPECIFIED=$("${VSEARCH}" \
@@ -2572,7 +2576,8 @@ USERFIELD=$("${VSEARCH}" \
 USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc) 
 [[ "${SPECIFIED}" == "${USERFIELD}%" ]] && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"    
+        failure "${DESCRIPTION}"
+unset "SPECIFIED" "USERFIELD"    
 
 DESCRIPTION="--usearch_global --iddef 4 correct"
 SPECIFIED=$("${VSEARCH}" \
@@ -2597,4 +2602,5 @@ USERFIELD=$("${VSEARCH}" \
 USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc) 
 [[ "${SPECIFIED}" == "${USERFIELD}%" ]] && \
     success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"    
+        failure "${DESCRIPTION}"
+unset "SPECIFIED" "USERFIELD"    
