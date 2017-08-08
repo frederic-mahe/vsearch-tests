@@ -145,20 +145,19 @@ OUTPUT=$("${VSEARCH}" \
         failure "${DESCRIPTION}"   
 unset "OUTPUT"
 
+# the man page says value should be equal or greater than 1.0
 DESCRIPTION="--uchime_denovo --abskew fails if value under 1"
 seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=3\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$("${VSEARCH}" \
-	   --uchime_denovo <(printf "${chimera}") \
-	   --abskew 0.9 \
-	   --chimeras - 2>&1 | \
-	    awk '/Found/ {print $2}' -)
-[[ "${OUTPUT}" == "1" ]] && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"   
-unset "OUTPUT"
+"${VSEARCH}" \
+    --uchime_denovo <(printf "${chimera}") \
+    --abskew 0.9 \
+    --quiet \
+    --chimeras /dev/null && \
+failure "${DESCRIPTION}" || \
+    success "${DESCRIPTION}"
 
 DESCRIPTION="--uchime_denovo --mindiffs gives the correct result"
 seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
@@ -229,15 +228,13 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3}) 
-OUTPUT=$("${VSEARCH}" \
+"${VSEARCH}" \
 	   --uchime_denovo <(printf "${chimera}") \
 	   --minh 0.5  \
 	   --chimeras - 2>&1 | \
-	     awk '/Found/ {print $2}' -)
-[[ "${OUTPUT}" == "0" ]] && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"   
-unset "OUTPUT"
+    grep -q "^Found 1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"   
 
 DESCRIPTION="--uchime_denovo --minh gives the correct result #2"
 seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
@@ -765,12 +762,15 @@ seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaC
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
-OUTPUT=$("${VSEARCH}" --uchime_denovo <(printf "${chimera}") \
-	   --nonchimeras - 2>/dev/null)
-EXPECTED=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n' ${seq1} ${seq2})
+OUTPUT=$("${VSEARCH}" \
+	     --uchime_denovo <(printf "${chimera}") \
+	     --quiet \
+	     --nonchimeras -)
+EXPECTED=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n' ${seq1^^} ${seq2^^})
 [[ "${OUTPUT}" == "${EXPECTED}" ]] && \
     success "${DESCRIPTION}" || \
-       failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
+unset EXPECTED OUTPUT
 
 DESCRIPTION="--uchime_denovo --uchimealns is accepted"
 seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
@@ -973,7 +973,6 @@ chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${se
 OUTPUT=$("${VSEARCH}" \
 	     \
 	   --uchime_denovo <(printf "${chimera}") \
-	     \
 	   --uchimealns - \
 	   --alignwidth 95 2>&1 | \
 	     grep -n "Diffs" | grep 29:* | awk '{print $21}'  2>/dev/null)

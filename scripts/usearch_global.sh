@@ -2033,4 +2033,298 @@ search_query=$(printf '>seq2\n%s\n' ${seq1})
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                 Parameters                                  #
+#                                                                             #
+#*****************************************************************************#
+
+# --slots written in the vsearch --help but not the man
+DESCRIPTION="--usearch_global accept all man parameters"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --dbmask dust \
+	     --fulldp \
+	     --gapext 2I/1E \
+	     --gapopen 20I/1E \
+	     --hardmask \
+	     --id 1.0 \
+	     --iddef 2 \
+	     --idprefix 0 \
+	     --idsuffix 0 \
+	     --leftjust \
+	     --match 2 \
+	     --maxaccepts 1 \
+	     --maxdiffs 1 \
+	     --maxgaps 1 \
+	     --maxhits 1200 \
+	     --maxid 1.0 \
+	     --maxqsize 100 \
+	     --maxqt 2.0 \
+	     --maxrejects 32 \
+	     --maxsizeratio 20.0 \
+	     --maxsl 20.0 \
+	     --maxsubs 20 \
+	     --mid 0.1 \
+	     --mincols 1 \
+	     --minqt 1.0 \
+	     --minsizeratio 1.0 \
+	     --minsl 1.0 \
+	     --mintsize 1 \
+	     --minseqlength 1 \
+	     --minwordmatches 12 \
+	     --mismatch -4 \
+	     --pattern "test" \
+	     --qmask dust \
+	     --query_cov 1.0 \
+	     --rightjust \
+	     --sizein \
+	     --self \
+	     --selfid \
+	     --slots 1 \
+	     --strand plus \
+	     --target_cov 2.0 \
+	     --weak_id 1.0 \
+	     --wordlength 8 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# masking option tested in fastx_mask
+
+#*****************************************************************************#
+#                                                                             #
+#                                 gapopen/ext                                 #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--usearch_global --gapopen parameters fails if not slash separated"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "10I2E" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# associations
+DESCRIPTION="--usearch_global --gapopen accept all the context letter given"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "1QL/1QI/1QR/1TL/1TI/1TR/1TE/1QE" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# alone
+DESCRIPTION="--usearch_global --gapopen accept all the context characters given"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "1L/1I/1R/1T/1Q/1E" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapopen fails if other characters"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "1X" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapopen fails if character first"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "L1" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapopen fails if starting with a slash"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "/1L" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapopen fails if ending with a slash"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "1L/" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapopen accept number only"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "1" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapopen accept * symbol"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "*" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# man page says zero or positive integer
+DESCRIPTION="--usearch_global --gapopen fails if negative number"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "-1" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapopen fails if REAL number instead of INT"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapopen "1.5" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapext parameters fails if not slash separated"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "10I2E" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# associations
+DESCRIPTION="--usearch_global --gapext accept all the context characters given"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "1QL/1QI/1QR/1TL/1TI/1TR/1TE/1QE" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# alone
+DESCRIPTION="--usearch_global --gapext accept all the context characters given #2"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "1L/1I/1R/1T/1Q/1E" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapext fails if other characters"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "1X" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapext fails if character first"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "L1" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapext fails if starting with a slash"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "/1L" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapext fails if ending with a slash"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "1L/" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapext accept number only"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "1" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapext accept * symbol"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "*" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# man page says zero or positive integer
+DESCRIPTION="--usearch_global --gapext fails if negative number"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "-1" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --gapext fails if REAL number instead of INT"
+"${VSEARCH}" --search_exact <(printf '>q1\nA\n') \
+	     --db <(printf '>r1\nA\n') \
+	     --gapext "1.5" \
+	     --minseqlength 1 \
+	     --quiet \
+	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 exit 0
