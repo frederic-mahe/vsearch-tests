@@ -1395,25 +1395,17 @@ seq2="TAAA"
 unset seq1 seq2 DESCRIPTION
 
 DESCRIPTION="--usearch_global --userout --userfields mism is correct #4"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="TTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-search_query=$(printf '>seq2\n%s\n' ${seq4})
 "${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
+    --usearch_global <(printf ">q1\nGGGG\n") \
+    --db <(printf ">r1\nGCCG\n") \
+    --quiet \
+    --minseqlength 1 \
+    --id 0.1 \
     --userfields mism \
-    --id 0.1 2>/dev/null | \
+    --userout - | \
     grep -q "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
 
 DESCRIPTION="--usearch_global --userout --userfields mism is correct #5"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1434,29 +1426,6 @@ search_query=$(printf '>seq2\n%s\n' ${seq4})
         failure "${DESCRIPTION}"
 unset "seq1" "seq2" "seq3" "seq4" \
       "search_query" "database" "OUTPUT"
-
-
-
-DESCRIPTION="--usearch_global --userout --userfields mism is correct #6"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-search_query=$(printf '>seq2\n%s\n' ${seq4})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields mism \
-    --id 0.1 2>/dev/null | \
-    grep -q "2" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
 
 DESCRIPTION="--usearch_global --userout --userfields opens is correct"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -1780,20 +1749,15 @@ unset "seq1" "seq4" \
       "search_query" "database"
 
 DESCRIPTION="--usearch_global --userout --userfields query is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>query\n%s\n' ${seq1})
 "${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
+    --usearch_global <(printf ">q1\nGT\n") \
+    --db <(printf ">r1\nGT\n") \
     --userout - \
+    --quiet \
+    --minseqlength 1 \
     --userfields query \
-    --id 1.0 2>/dev/null | \
-    grep -q "^seq1$" && \
+    --id 1.0 | \
+    grep -q "^q1$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1907,20 +1871,15 @@ search_query=$(printf '>seq2\n%s\n' ${seq1})
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --userout --userfields tihi is correct #2"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAATCCA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAACGAAGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-search_query=$(printf '>seq2\n%s\n' ${seq4})
 "${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
+    --usearch_global <(printf ">q1\nGGCGCGCGATT\n") \
+                --db <(printf ">r1\nAGGCGCGCGATTCGAGGC\n") \
     --userout - \
+    --quiet \
+    --minseqlength 1 \
     --userfields tihi \
-    --id 0.4 2>/dev/null | \
-    grep -q "^28$" && \
+    --id 0.4 | \
+    grep -q "^12$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2222,6 +2181,22 @@ DESCRIPTION="--usearch_global --gapopen fails if REAL number instead of INT"
 	     --id 0.1 \
 	     --quiet \
 	     --alnout - &>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# Qry  1 + ATTTccccccaacccccccccACTTGATCCGCTC 34
+#           || ||||||  ||||||||   |    |    |
+# Tgt  1 + TTTccccccc--ccccccccACTTGATCCGCTCC 32
+DESCRIPTION="--usearch_global --gapopen * forbids gaps opening"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
+    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
+    --minseqlength 1 \
+    --gapopen "*" \
+    --id 0.1 \
+    --quiet \
+    --alnout - | \
+    grep -q "^Query >q1$" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -2766,28 +2741,28 @@ DESCRIPTION="--usearch_global --match is correct #1"
     --db <(printf '>r1\nAAAA\n') \
     --minseqlength 1 \
     --match 4 \
-    --mismatch -4 \
     --id 0.1 \
     --userfield raw \
-    --userout - \
-    --quiet | \
+    --quiet \
+    --userout - | \
     grep -q "^16$" && \
     success "${DESCRIPTION}" || \
     failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --mismatch is correct #1"
 "${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAACAAAATGGTGTAGGTAGCTAC\n') \
-                --db <(printf '>r1\nAAACAAAATGGTGTAGGTAGCTCC\n') \
+    --usearch_global <(printf '>q1\nGGCG\n') \
+    --db <(printf '>r1\nGGGG\n') \
     --minseqlength 1 \
-    --match 2 \
-    --mismatch -4 \
+    --match 1 \
+    --mismatch -1 \
+    --userfield raw \
     --id 0.1 \
     --quiet \
-    --alnout - | \
-    grep -qv "ne sait pas encore comment tester" && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+    --userout - | \
+    grep -q "^2$" && \
+    success "${DESCRIPTION}" || \
+    	failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -2863,6 +2838,7 @@ DESCRIPTION="--usearch_global --maxdiffs is correct #1"
     success "${DESCRIPTION}" || \
     	failure "${DESCRIPTION}"
 
+# positive integer
 DESCRIPTION="--usearch_global --maxdiffs fails if zero"
 "${VSEARCH}" \
     --usearch_global <(printf '>q1\nATCTAG\n') \
@@ -2997,7 +2973,7 @@ DESCRIPTION="--usearch_global --maxid is correct #3"
      success "${DESCRIPTION}" || \
     	 failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --maxid uses the formula of choosen iddef #1"
+DESCRIPTION="--usearch_global --maxid uses the formula of chosen iddef #1"
 "${VSEARCH}" \
     --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
     --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
@@ -3012,7 +2988,7 @@ DESCRIPTION="--usearch_global --maxid uses the formula of choosen iddef #1"
     success "${DESCRIPTION}" || \
     	failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --maxid uses the formula of choosen iddef #2"
+DESCRIPTION="--usearch_global --maxid uses the formula of chosen iddef #2"
 "${VSEARCH}" \
     --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
     --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
@@ -3052,7 +3028,23 @@ DESCRIPTION="--usearch_global --maxid gives a warning if greater than one"
     --alnout - | \
     grep -qEi "warning|Fatal Error" && \
      success "${DESCRIPTION}" || \
-    	failure "${DESCRIPTION}"
+    	 failure "${DESCRIPTION}"
+
+# objective is to find 2 k-mers profiles to test the maxrejects option
+DESCRIPTION="--usearch_global --maxrejects"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nGGCCCCCCCCCCGGGGGGGGGG\n') \
+    --db <(printf '>r1\nCCGGGGGGGGGGCCCCCCCCCC\n>r2\nGGCCCCCCCCCAGGGGGTGGGG\n') \
+    --id 0.1 \
+    --minseqlength 1 \
+    --id 0.1 \
+    --maxrejects 1 \
+    --wordlength 3 \
+    --quiet \
+    --alnout - # | \
+    # grep -qEi "warning|Fatal Error" && \
+    #  success "${DESCRIPTION}" || \
+    # 	 failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --maxid fails if negative"
 "${VSEARCH}" \
@@ -3141,35 +3133,47 @@ DESCRIPTION="--usearch_global --maxqsize is correct #3"
      success "${DESCRIPTION}" || \
     	 failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --maxqt is correct # 1"
+DESCRIPTION="--usearch_global --maxqt when query/target ratio > 1"
 "${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAAAAAAAA\n') \
-                --db <(printf '>r1\nAAAAAAAAAA\n>r2;size=3\nAAAAAAAA\n') \
+    --usearch_global <(printf '>q1\nAGTCGGGATCGTGCCCACGA\n') \
+                --db <(printf '>r1\nAGTCGGGATCGTGCCCACGAA\n') \
     --minseqlength 1 \
     --leftjust \
     --id 0.1 \
     --quiet \
     --maxqt 1.0 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^1$" && \
+    --matched - | \
+    grep -q "^>q1$" && \
      success "${DESCRIPTION}" || \
     	 failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --maxqt is correct #2"
+DESCRIPTION="--usearch_global --maxqt when query/target ratio < 1"
 "${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAAAAAAAAAAA\n') \
-                --db <(printf '>r1\nAAAAAAAAAAAAAA\n>r2\nAAAAAAAAAAAAA\n') \
+    --usearch_global <(printf '>q1\nAGTCGGGATCGTGCCCACGAA\n') \
+                --db <(printf '>r1\nAGTCGGGATCGTGCCCACGA\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --maxqt 1.0 \
+    --matched - | \
+    grep -q "^>q1$" && \
+      failure "${DESCRIPTION}" || \
+    	  success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --maxqt is zero returns no match"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nAAAAAAAAAAAAAAAA\n') \
+                --db <(printf '>r1\nAAAAAAAAAAAAAAAA\n') \
     --minseqlength 1 \
     --leftjust \
     --id 0.1 \
     --quiet \
     --maxqt 0 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^0$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
+    --matched - | \
+    grep -q "^>q1$" && \
+      failure "${DESCRIPTION}" || \
+    	 success "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --maxqt is correct #3"
 "${VSEARCH}" \
@@ -3180,11 +3184,87 @@ DESCRIPTION="--usearch_global --maxqt is correct #3"
     --id 0.1 \
     --maxaccepts 0 \
     --quiet \
-    --maxqt 0.4 \
+    --maxqt 1 \
     --alnout - | \
     grep -cE "Target .* (>r[12]|>r[12];size=3)$" | \
     grep -q "^2$" && \
      success "${DESCRIPTION}" || \
     	 failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --maxsl is correct # 1"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nAAAAAAAAAA\n') \
+                --db <(printf '>r1\nAAAAAAAAAA\n>r2;size=3\nAAAAAAAA\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --maxsl 1.0 \
+    --alnout - | \
+    grep -c "Target .* >r[12]$" | \
+    grep -q "^1$" && \
+     success "${DESCRIPTION}" || \
+    	 failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --maxsl is correct #2"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nAAAAAAAAAAAAA\n') \
+                --db <(printf '>r1\nAAAAAAAAAAAAAA\n>r2\nAAAAAAAAAAAAA\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --maxsl 0 \
+    --alnout - | \
+    grep -c "Target .* >r[12]$" | \
+    grep -q "^0$" && \
+     success "${DESCRIPTION}" || \
+    	 failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --maxsl is correct #3"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nAAAA\n') \
+                --db <(printf '>r1\nAAAC\n>r2;size=3\nAAAA\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --maxaccepts 0 \
+    --quiet \
+    --maxsl 1 \
+    --alnout - | \
+    grep -cE "Target .* (>r[12]|>r[12];size=3)$" | \
+    grep -q "^2$" && \
+     success "${DESCRIPTION}" || \
+    	 failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --maxsubs is correct #1"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --maxsubs 1 \
+    --alnout - | \
+    grep -c "Target .* >r1$" | \
+    grep -q "^1$" && \
+     success "${DESCRIPTION}" || \
+    	 failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --maxsubs is correct #2"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --maxsubs 0 \
+    --alnout - | \
+    grep -c "Target .* >r1$" | \
+    grep -q "^1$" && \
+     failure "${DESCRIPTION}" || \
+    	 success "${DESCRIPTION}"
 
 exit 0
