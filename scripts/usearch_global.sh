@@ -3041,10 +3041,10 @@ DESCRIPTION="--usearch_global --maxrejects"
     --maxrejects 1 \
     --wordlength 3 \
     --quiet \
-    --alnout - # | \
-    # grep -qEi "warning|Fatal Error" && \
-    #  success "${DESCRIPTION}" || \
-    # 	 failure "${DESCRIPTION}"
+    --alnout - | \
+    grep -qEi "warning|Fatal Error" && \
+     success "${DESCRIPTION}" || \
+    	 failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --maxid fails if negative"
 "${VSEARCH}" \
@@ -3266,5 +3266,215 @@ DESCRIPTION="--usearch_global --maxsubs is correct #2"
     grep -q "^1$" && \
      failure "${DESCRIPTION}" || \
     	 success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --mid is correct #1"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --mid 96.2 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    success "${DESCRIPTION}" || \
+     	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --mid is correct #2"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --mid 96.3 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    failure "${DESCRIPTION}" || \
+     	success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --mincols is correct #1"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --mincols 27 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    success "${DESCRIPTION}" || \
+     	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --mincols is correct #2"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --mincols 28 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    failure "${DESCRIPTION}" || \
+     	success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --minqt is correct #1"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --minqt 1 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    success "${DESCRIPTION}" || \
+     	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --minqt is correct #2"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --minqt 1.1 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    failure "${DESCRIPTION}" || \
+     	success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --minsizeratio is correct #1"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1;size=10\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1;size=5\nATTGCGCAATGGCATGCGCAATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --minsizeratio 2.0 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1;size=10$" && \
+    success "${DESCRIPTION}" || \
+     	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --minsizeratio is correct #2"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1;size=10\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1;size=5\nATTGCGCAATGGCATGCGCAATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --minsizeratio 2.1 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1;size=10$" && \
+    failure "${DESCRIPTION}" || \
+     	success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --minsl is correct when query shorter #1"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCAATAATG\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --minsl 0.96 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    success "${DESCRIPTION}" || \
+     	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --minsl is correct when query shorter #2"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCAATAATG\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --minsl 0.97 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    failure "${DESCRIPTION}" || \
+     	success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --minsl is correct when target shorter #1"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATG\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --minsl 0.96 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    success "${DESCRIPTION}" || \
+     	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --minsl is correct when target shorter #2"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATG\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --minsl 0.97 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    failure "${DESCRIPTION}" || \
+     	success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --mintsize is correct #1"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1;size=2\nATTGCGCAATGGCATGCGCAATAATG\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --mintsize 2 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    success "${DESCRIPTION}" || \
+     	failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --mintsize is correct #2"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
+                --db <(printf '>r1;size=2\nATTGCGCAATGGCATGCGCAATAATG\n') \
+    --minseqlength 1 \
+    --leftjust \
+    --id 0.1 \
+    --quiet \
+    --mintsize 3 \
+    --userfield query \
+    --userout - | \
+    grep -q "^q1$" && \
+    failure "${DESCRIPTION}" || \
+     	success "${DESCRIPTION}"
 
 exit 0
