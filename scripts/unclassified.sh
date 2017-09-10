@@ -313,28 +313,4 @@ DESCRIPTION="entries equal or longer than the --fastq_trunclength value are kept
         failure "${DESCRIPTION}"
 
 
-#*****************************************************************************#
-#                                                                             #
-#     fastx_filter ignores sizein when relabeling fasta input (issue #204)    #
-#                                                                             #
-#*****************************************************************************#
-
-# https://github.com/torognes/vsearch/issues/204
-#
-# --fastx_filter ignores input sequence abundances when relabeling
-# with fasta input, --sizein and --sizeout options
-DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue #204)"
-"${VSEARCH}" \
-    --fastx_filter <(printf ">seq1;size=5;\nACGT\n") \
-    --sizein \
-    --relabel_md5 \
-    --sizeout \
-    --quiet \
-    --fastaout - \
-    2> /dev/null | \
-    grep -q ";size=5;" && \
-    success  "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
 exit 0
