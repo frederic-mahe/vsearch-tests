@@ -1728,38 +1728,17 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                                                                             #
 #*****************************************************************************#
 
-DESCRIPTION="N-tails are preserved in consensus sequences (issue 181)"
-USEARCH8="$(which usearch8)"
-INPUT=$(mktemp)
-PADDED=$(mktemp)
-CENTROIDS=$(mktemp)
-CONSENSUS=$(mktemp)
-cat > ${INPUT} <<'EOT'
->seq1;size=1;
-CGCCCGTCGCTACTACCGATTGAATGGCTTAGTGAGACCT
-EOT
-
-"${USEARCH8}" \
-    -fastx_truncate ${INPUT}  \
-    -trunclen 50 \
-    -padlen 50 \
-    -fastaout ${PADDED} > /dev/null 2> /dev/null
-
-"${VSEARCH}" \
-  --cluster_fast ${PADDED} \
-  --id 0.97 \
-  --centroids ${CENTROIDS} \
-  --consout ${CONSENSUS} \
-  --sizein \
-  --sizeout \
-  --fasta_width 0 > /dev/null 2> /dev/null
-
-tail -n 1 ${CONSENSUS} | grep -E "N{10}$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## Clean
-rm "${INPUT}" "${PADDED}" "${CENTROIDS}" "${CONSENSUS}"
+# DESCRIPTION="N-tails are preserved in consensus sequences (issue 181)"
+# "${VSEARCH}" \
+#   --cluster_fast <(printf ">s1\nACGTNNN\n>s2\nACGT\n") \
+#   --id 0.50 \
+#   --minseqlength 1 \
+#   --fasta_width 0 \
+#   --quiet \
+#   --consout - | \
+#     grep -qE "N{3}$" && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
