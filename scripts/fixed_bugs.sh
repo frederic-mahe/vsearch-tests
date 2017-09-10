@@ -1630,23 +1630,14 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #*****************************************************************************#
 
 DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
-QUERY=$(mktemp)
-DATABASE=$(mktemp)
-ALNOUT=$(mktemp)
-SEQ="GTCGCTACTACCGATTGAACGTTTTAGTGAGGTCCTCGGACTGTTTGGTAGTCGGATCACTCTGACTGCCTGG"
-printf ">seq1\n\n" ${SEQ} > "${QUERY}"
-printf ">ref1\n%s\n" ${SEQ} > "${DATABASE}"
-
 "${VSEARCH}" \
-    --usearch_global "${QUERY}" \
-    -db "${DATABASE}" \
-    --alnout "${ALNOUT}" \
-    --id 0.97 --quiet && \
+    --usearch_global <(printf ">seq1\n\n") \
+    -db <(printf ">ref1\nACGT\n") \
+    --id 0.97 \
+    --quiet \
+    --alnout - &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
-# Clean
-rm "${QUERY}" "${DATABASE}" "${ALNOUT}"
 
 
 #******************************************************************************#
