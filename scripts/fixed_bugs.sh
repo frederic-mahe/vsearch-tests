@@ -1941,13 +1941,35 @@ rm "${QUERY}" "${ALN}" "${NOTMATCHED}" "${USEROUT}" "${DATABASE}"
 ## https://github.com/torognes/vsearch/issues/202
 
 
-#******************************************************************************#
-#                                                                              #
-#                   --fastq_trunclen and discarded sequences                   #
-#                                                                              #
-#******************************************************************************#
+#*****************************************************************************#
+#                                                                             #
+#         fastq_trunclen and discarded short sequences (issue 203)            #
+#                                                                             #
+#*****************************************************************************#
 ## 
 ## https://github.com/torognes/vsearch/issues/203
+
+DESCRIPTION="discard entries shorter than --fastq_trunclength value (issue 203)"
+"${VSEARCH}" \
+    --fastq_filter <(printf "@seq1\nACGT\n+\nIIII\n") \
+    --fastq_trunclen 5 \
+    --quiet \
+    --fastqout - \
+    2> /dev/null | \
+    grep -q "seq1" && \
+    failure "${DESCRIPTION}" || \
+        success  "${DESCRIPTION}"
+
+DESCRIPTION="keep entries equal or longer than --fastq_trunclength value (issue 203)"
+"${VSEARCH}" \
+    --fastq_filter <(printf "@seq1\nACGT\n+\nIIII\n") \
+    --fastq_trunclen 4 \
+    --quiet \
+    --fastqout - \
+    2> /dev/null | \
+    grep -q "seq1" && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#

@@ -284,33 +284,4 @@ DESCRIPTION="do not output progress when log is a process substitution (named pi
         success  "${DESCRIPTION}"
 
 
-#*****************************************************************************#
-#                                                                             #
-#         fastq_trunclen and discarded short sequences (issue 203)            #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="entries shorter than the --fastq_trunclength value are discarded"
-"${VSEARCH}" \
-    --fastq_filter <(printf "@seq1\nACGT\n+\nIIII\n") \
-    --fastq_trunclen 5 \
-    --quiet \
-    --fastqout - \
-    2> /dev/null | \
-    grep -q "seq1" && \
-    failure "${DESCRIPTION}" || \
-        success  "${DESCRIPTION}"
-
-DESCRIPTION="entries equal or longer than the --fastq_trunclength value are kept"
-"${VSEARCH}" \
-    --fastq_filter <(printf "@seq1\nACGT\n+\nIIII\n") \
-    --fastq_trunclen 4 \
-    --quiet \
-    --fastqout - \
-    2> /dev/null | \
-    grep -q "seq1" && \
-    success  "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
 exit 0
