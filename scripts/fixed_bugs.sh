@@ -1747,47 +1747,47 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                                                                             #
 #*****************************************************************************#
 
-DESCRIPTION="query coverage filtering works (issue 182)"
-QUERY=$(mktemp)
-DATABASE=$(mktemp)
-NOTMATCHED=$(mktemp)
-USEROUT=$(mktemp)
-ALN=$(mktemp)
-COVERAGE="0.90"
-cat > ${QUERY} <<'EOT'
->query
-CTGGCTCAGG
-EOT
+# DESCRIPTION="query coverage filtering works (issue 182)"
+# QUERY=$(mktemp)
+# DATABASE=$(mktemp)
+# NOTMATCHED=$(mktemp)
+# USEROUT=$(mktemp)
+# ALN=$(mktemp)
+# COVERAGE="0.90"
+# cat > ${QUERY} <<'EOT'
+# >query
+# CTGGCTCAGG
+# EOT
 
-cat > ${DATABASE} <<'EOT'
->target
-CTGGCTCAGG
-EOT
+# cat > ${DATABASE} <<'EOT'
+# >target
+# CTGGCTCAGG
+# EOT
 
-"${VSEARCH}" \
-    --usearch_global ${QUERY} \
-    --db ${DATABASE} \
-    --notmatched ${NOTMATCHED} \
-    --userout ${USEROUT} \
-    --query_cov ${COVERAGE} \
-    --alnout ${ALN} \
-    --id 0.7 \
-    --minseqlength 1 \
-    --rowlen 80 \
-    --output_no_hits \
-    --userfields query+target+id+qcov > /dev/null 2> /dev/null
+# "${VSEARCH}" \
+#     --usearch_global ${QUERY} \
+#     --db ${DATABASE} \
+#     --notmatched ${NOTMATCHED} \
+#     --userout ${USEROUT} \
+#     --query_cov ${COVERAGE} \
+#     --alnout ${ALN} \
+#     --id 0.7 \
+#     --minseqlength 1 \
+#     --rowlen 80 \
+#     --output_no_hits \
+#     --userfields query+target+id+qcov > /dev/null 2> /dev/null
 
-## query_cov: (matches + mismatches) / query sequence length. Internal or terminal gaps are not taken into account.
+# ## query_cov: (matches + mismatches) / query sequence length. Internal or terminal gaps are not taken into account.
 
-echo "userout"
-[[ -s ${USEROUT} ]] && cat ${USEROUT}
-echo "not matched"
-[[ -s ${NOTMATCHED} ]] && cat ${NOTMATCHED}
-echo "alignment"
-[[ -s ${ALN} ]] && cat ${ALN}
+# echo "userout"
+# [[ -s ${USEROUT} ]] && cat ${USEROUT}
+# echo "not matched"
+# [[ -s ${NOTMATCHED} ]] && cat ${NOTMATCHED}
+# echo "alignment"
+# [[ -s ${ALN} ]] && cat ${ALN}
 
-## Clean
-rm "${QUERY}" "${ALN}" "${NOTMATCHED}" "${USEROUT}" "${DATABASE}"
+# ## Clean
+# rm "${QUERY}" "${ALN}" "${NOTMATCHED}" "${USEROUT}" "${DATABASE}"
 
 
 #******************************************************************************#
@@ -2443,6 +2443,19 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 ## 
 ## https://github.com/torognes/vsearch/issues/250
 
+
+#******************************************************************************#
+#                                                                              #
+#   For the fastq_eestats2 option the argument "-" is not treated as stdin     #
+#                                                                              #
+#******************************************************************************#
+## 
+## https://github.com/torognes/vsearch/issues/273
+
+DESCRIPTION="fastq_eestats2 treats \"-\" as stdin (issue 273)"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" --fastq_eestats2 - --output - &> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 exit 0
-
-
