@@ -1292,6 +1292,35 @@ DESCRIPTION="check if vsearch is in the PATH"
 ## 
 ## https://github.com/torognes/vsearch/issues/140
 
+## vsearch truncates at the first space or tab by default, similar to
+## usearch. If the --notrunclabels option is specified, the entire
+## line will be read.
+
+## vsearch truncates after a tab
+DESCRIPTION="truncate headers after a tab (issue 141)"
+"${VSEARCH}" \
+    --cluster_fast <(printf ">s1\theader\nA\n") \
+    --id 0.97 \
+    --quiet \
+    --minseqlength 1 \
+    --uc - | \
+    awk -F "\t" '{exit /^S/ && $9 == "s1" && $10 == "*" ? 0 : 1}' && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## vsearch does not truncate after a tab with --notrunclabels
+DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
+"${VSEARCH}" \
+    --cluster_fast <(printf ">s1\theader\nA\n") \
+    --id 0.97 \
+    --quiet \
+    --notrunclabels \
+    --minseqlength 1 \
+    --uc - | \
+    awk -F "\t" '{exit /^S/ && $9 == "s1" && $10 == "header" ? 0 : 1}' && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -2457,5 +2486,16 @@ printf "@s1\nA\n+\nI\n" | \
     "${VSEARCH}" --fastq_eestats2 - --output - &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#                      utax reference dataset vsearch                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/274
+
+## this is a question, not a bug
 
 exit 0
