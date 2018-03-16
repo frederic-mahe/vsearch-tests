@@ -106,8 +106,9 @@ unset "OUTPUT" "EXPECTED"
 DESCRIPTION="--maskfasta --qmask dust output is correct"
 HEAD="ACCTGCACATTGTGCACATGTACCC"
 MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"
+MIDDLE_LC=$(echo $MIDDLE | tr [:upper:] [:lower:])
 TAIL="TGCTACAGTATGACCCCACTCCTGG"
-EXPECTED=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE,,} ${TAIL})
+EXPECTED=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE_LC} ${TAIL})
 OUTPUT=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL} | \
                 "${VSEARCH}" --maskfasta - --qmask dust --output - --fasta_width 0 2> /dev/null)
 [[ "${OUTPUT}" == "${EXPECTED}" ]] && \

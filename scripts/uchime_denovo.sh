@@ -759,14 +759,16 @@ chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${se
 
 DESCRIPTION="--uchime_denovo --nonchimeras is showing the nonchimerics inputs"
 seq1="CCTTGGTAGGCCGtTGCCCTGCCAACTAGCTAATCAGACGCgggtCCATCtcaCACCaccggAgtTTTtcTCaCTgTacc"
+seq1_uc=$(echo $seq1 | tr [:lower:] [:upper:])
 seq3="CCTTGGTAGGCCGCTGCCCTGCAACTAGCTAATCAGACGCATCCCCATCCATCACCGATAAATCTTTAATCTCTTTCAGc"
 seq2="TCTTGGTgGGCCGtTaCCCcGCCAACaAGCTAATCAGACGCATAATCAGACGCATCCCCATCCATCACCGATAATTTCAG"
+seq2_uc=$(echo $seq2 | tr [:lower:] [:upper:])
 chimera=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n>seq3;size=5\n%s\n' ${seq1} ${seq2} ${seq3})
 OUTPUT=$("${VSEARCH}" \
 	     --uchime_denovo <(printf "${chimera}") \
 	     --quiet \
 	     --nonchimeras -)
-EXPECTED=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n' ${seq1^^} ${seq2^^})
+EXPECTED=$(printf '>seq1;size=10\n%s\n>seq2;size=10\n%s\n' ${seq1_uc} ${seq2_uc})
 [[ "${OUTPUT}" == "${EXPECTED}" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"

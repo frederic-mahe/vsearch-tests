@@ -29,6 +29,10 @@ VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
 [[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
+if [[ ${OSTYPE} =~ darwin ]] ; then
+    md5sum() { md5 -r ; }
+    sha1sum() { shasum ; }
+fi
 
 #*****************************************************************************#
 #                                                                             #
@@ -298,7 +302,7 @@ DESCRIPTION="--relabel_md5 products correct labels #1"
 "${VSEARCH}" --sortbysize <(printf ">a\nA\n") --output "${OUTPUT}" \
 	     --relabel_md5 &> /dev/null
 [[ $(sed "1q;d" "${OUTPUT}" | awk -F "[>]" '{print $2}') == \
-							 $(md5sum <(printf "A") | awk '{print $1}') ]] && \
+    $(printf "A" | md5sum | awk '{print $1}') ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -309,7 +313,7 @@ DESCRIPTION="--relabel_md5 products correct labels #2"
 "${VSEARCH}" --sortbylength <(printf ">a\nAA\n>b\nAAA\n>c\nAAAA\n") \
 	     --output "${OUTPUT}" --relabel_md5 &> /dev/null
 [[ $(sed "5q;d" "${OUTPUT}" | awk -F "[>]" '{print $2}') == \
-							 $(md5sum <(printf "AA") | awk '{print $1}') ]] && \
+    $(printf "AA" | md5sum | awk '{print $1}') ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -343,7 +347,7 @@ DESCRIPTION="--relabel_sha1 products correct labels #1"
 "${VSEARCH}" --sortbysize <(printf ">a\nA\n") --output "${OUTPUT}" \
 	     --relabel_sha1 &> /dev/null
 [[ $(sed "1q;d" "${OUTPUT}" | awk -F "[>]" '{print $2}') == \
-							 $(sha1sum <(printf "A") | awk '{print $1}') ]] && \
+    $(printf "A" | sha1sum | awk '{print $1}') ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -354,7 +358,7 @@ DESCRIPTION="--relabel_sha1 products correct labels #2"
 "${VSEARCH}" --sortbylength <(printf ">a\nAA\n>b\nAAA\n>c\nAAAA\n") \
 	     --output "${OUTPUT}" --relabel_sha1 &> /dev/null
 [[ $(sed "5q;d" "${OUTPUT}" | awk -F "[>]" '{print $2}') == \
-							 $(sha1sum <(printf "AA") | awk '{print $1}') ]] && \
+    $(printf "AA" | sha1sum | awk '{print $1}') ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm "${OUTPUT}"

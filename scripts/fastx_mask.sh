@@ -143,9 +143,10 @@ unset "EXPECTED" "OUTPUT"
 DESCRIPTION="--fastx_mask --qmask dust output is correct for a fastq input"
 HEAD="ACCTGCACATTGTGCACATGTACCC"
 MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"
+MIDDLE_LC=$(echo $MIDDLE | tr [:upper:] [:lower:])
 TAIL="TGCTACAGTATGACCCCACTCCTGG"
 QUALITY=$(printf "!%.0s" {1..89})
-EXPECTED=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE,,} ${TAIL} ${QUALITY})
+EXPECTED=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE_LC} ${TAIL} ${QUALITY})
 OUTPUT=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY}| "${VSEARCH}" --fastx_mask - --qmask dust --fastqout - --fasta_width 0 2> /dev/null)
 [[ "${OUTPUT}" == \
               "${EXPECTED}" ]] && \
@@ -174,8 +175,9 @@ unset "OUTPUT" "EXPECTED"
 DESCRIPTION="--fastx_mask --qmask dust --hardmask output is correct for a fasta input"
 HEAD="ACCTGCACATTGTGCACATGTACCC"
 MIDDLE="nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"        
+MIDDLE_UC=$(echo $MIDDLE | tr [:lower:] [:upper:])
 TAIL="TGCTACAGTATGACCCCACTCCTGG"
-EXPECTED=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE^^} ${TAIL})
+EXPECTED=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE_UC} ${TAIL})
 OUTPUT=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL} | "${VSEARCH}" --fastx_mask - --qmask dust --hardmask --fastaout - --fasta_width 0 2> /dev/null)
 [[ "${OUTPUT}" == \
                "${EXPECTED}" ]] && \

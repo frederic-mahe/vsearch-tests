@@ -23,6 +23,10 @@ VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
 [[ "${VSEARCH}" ]] &> /dev/null && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
+if [[ ${OSTYPE} =~ darwin ]] ; then
+    md5sum() { md5 -r ; }
+    sha1sum() { shasum ; }
+fi
 
 #*****************************************************************************#
 #                                                                             #
@@ -421,7 +425,7 @@ DESCRIPTION="--relabel_md5 products correct labels"
 [[ $("${VSEARCH}" --derep_prefix <(printf '>a\nAAAA\n') --relabel_md5 \
 		  --output - --minseqlength 1 2> /dev/null \
 	    | awk -F "[>]" '{printf $2}') == \
-   $(printf "AAAA" | md5sum - | awk '{printf $1}') ]] && \
+   $(printf "AAAA" | md5sum | awk '{printf $1}') ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -465,7 +469,7 @@ DESCRIPTION="--relabel_sha1 products correct labels"
 INPUT=$("${VSEARCH}" --derep_prefix <(printf '>a\nAAAA\n') --relabel_sha1 \
 		     --minseqlength 1 --output - 2> /dev/null | \
 	       awk -F "[>]" '{printf $2}')
-SHA1=$(printf "AAAA" | sha1sum - | awk '{printf $1}')
+SHA1=$(printf "AAAA" | sha1sum | awk '{printf $1}')
 [[ "${INPUT}" == "${SHA1}" ]] && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"

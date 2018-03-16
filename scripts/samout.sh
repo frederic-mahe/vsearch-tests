@@ -22,6 +22,28 @@ VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
 [[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
+# macOS adaptations
+
+if [[ ${OSTYPE} =~ darwin ]] ; then
+    md5sum() { md5 -r ; }
+    sha1sum() { shasum ; }
+fi
+
+# macOS 10.8 uses BSD grep instead of GNU grep and lacks the -P option
+
+# Should be equivalent to grep -qP
+# return true as soon as we find a matching line, otherwise return false
+function perlgrep ()
+{
+    if perl -nle "exit 1 if m\"$1\"" ; then false ; else true ; fi
+}
+
+# Should be equivalent to grep -vqP
+# return true as soon as we find a non-matching line, otherwise return false
+function perlgrep_v ()
+{
+    if perl -nle "exit 1 if ! m\"$1\"" ; then false ; else true ; fi
+}
 
 ## The tests listed below were designed using the reference
 ## documentation for the SAM format
@@ -121,7 +143,7 @@ DESCRIPTION="--usearch_global --samout --samheader is well formated"
     --quiet \
     --samout - \
     --samheader | \
-    grep -vqP '^@[A-Z][A-Z](\t[A-Za-z][A-Za-z0-9]:[ -~]+)+|^@CO\t.*$' && \
+    perlgrep_v '^@[A-Z][A-Z](\t[A-Za-z][A-Za-z0-9]:[ -~]+)+|^@CO\t.*$' && \
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
 
@@ -134,7 +156,7 @@ DESCRIPTION="--usearch_global --samout --samheader @HD VN is correct"
     --quiet \
     --samheader \
     --samout - | \
-    grep -qP "^@HD.*VN:[0-9]+\.[0-9]+" && \
+    perlgrep "^@HD.*VN:[0-9]+\.[0-9]+" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -214,7 +236,7 @@ DESCRIPTION="--usearch_global --samout --samheader @SQ SN is correct"
     --quiet \
     --samout - \
     --samheader | \
-    grep -qP "^@SQ.*SN:[!-)+-<>-~][!-~]*" && \
+    perlgrep "^@SQ.*SN:[!-)+-<>-~][!-~]*" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -477,7 +499,7 @@ DESCRIPTION="--usearch_global --samout Qname is well-shaped (field #1)"
     --minseqlength 1 \
     --samout - | \
     awk 'BEGIN {FS = "\t"} {print $1}' | \
-    grep -qP "^[!-?A-~]{1,254}" && \
+    perlgrep "^[!-?A-~]{1,254}" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -502,7 +524,7 @@ DESCRIPTION="--usearch_global --samout Rname is well-shaped (field #3)"
     --minseqlength 1 \
     --samout - | \
     awk 'BEGIN {FS = "\t"} {print $3}' | \
-    grep -qP "^\*|^[!-()+-<>-~][!-~]*" && \
+    perlgrep "^\*|^[!-()+-<>-~][!-~]*" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -539,7 +561,7 @@ DESCRIPTION="--usearch_global --samout CIGAR is well-shaped (field #6)"
     --minseqlength 1 \
     --samout - | \
     awk 'BEGIN {FS = "\t"} {print $6}' | \
-    grep -qP "^\*|([0-9]+[MIDNSHPX=])+" && \
+    perlgrep "^\*|([0-9]+[MIDNSHPX=])+" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -567,7 +589,7 @@ DESCRIPTION="--usearch_global --samout RNEXT is well-shaped (field #7)"
     --minseqlength 1 \
     --samout - | \
     awk 'BEGIN {FS = "\t"} {print $7}' | \
-    grep -qP "^\*|=|[!-()-+-<>-r][!-~]*" && \
+    perlgrep "^\*|=|[!-()-+-<>-r][!-~]*" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -604,7 +626,7 @@ DESCRIPTION="--usearch_global --samout SEQ is well-shaped (field #10)"
     --minseqlength 1 \
     --samout - | \
     awk 'BEGIN {FS = "\t"} {print $10}' | \
-    grep -qP "^\*|[A-Za-z=.]+" && \
+    perlgrep "^\*|[A-Za-z=.]+" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -617,7 +639,7 @@ DESCRIPTION="--usearch_global --samout QUAL is well-shaped (field #11)"
     --minseqlength 1 \
     --samout - | \
     awk 'BEGIN {FS = "\t"} {print $10}' | \
-    grep -qP "[!-~]+" && \
+    perlgrep "[!-~]+" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -629,8 +651,9 @@ DESCRIPTION="--usearch_global --samout All"
     --quiet \
     --minseqlength 1 \
     --samout - | \
-    grep -Pq \
-	     "^[!-?A-~]{1,254}\t[0-9]{0,5}\t(\*|[!-()+-<>-~][!-~]*)\t[0-9]{0,10}\t[0-9]{0,3}\t(\*|([0-9]+[MIDNSHPX=])+)\t(\*|=|[!-()-+-<>-~][!-~]*)\t[0-9]{0,10}\t-?[0-9]{0,10}\t(\*|[A-Za-z=.]+)\t[!-~]+"
+    perlgrep "^[!-?A-~]{1,254}\t[0-9]{0,5}\t(\*|[!-()+-<>-~][!-~]*)\t[0-9]{0,10}\t[0-9]{0,3}\t(\*|([0-9]+[MIDNSHPX=])+)\t(\*|=|[!-()-+-<>-~][!-~]*)\t[0-9]{0,10}\t-?[0-9]{0,10}\t(\*|[A-Za-z=.]+)\t[!-~]+" && \
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
 
 DESCRIPTION="--usearch_global --samout Qname is correct (field #1)"
 "${VSEARCH}" \
@@ -828,8 +851,8 @@ SEQ="AAGGGGGGGGGCCC"
     --minseqlength 1 \
     --samout - | \
     awk -F "\t" '{print $6}'  | \
-     grep -Po "([0-9]+[MIS])+"  | \
-     grep -Po "[0-9]+" | \
+     grep -Eo "([0-9]+[MIS])+"  | \
+     grep -Eo "[0-9]+" | \
     awk -v LENSEQ="${#SEQ}" '{SUM += $1} END {exit SUM == LENSEQ ? 0 : 1} ' && \
     success "${DESCRIPTION}" || \
     	    failure "${DESCRIPTION}"
@@ -994,7 +1017,7 @@ DESCRIPTION="--usearch_global --samout optional fields have a NM field (recommen
     --quiet \
     --minseqlength 1 \
     --samout - | \
-    grep -qP "\tNM:i:" && \
+    perlgrep "\tNM:i:" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
