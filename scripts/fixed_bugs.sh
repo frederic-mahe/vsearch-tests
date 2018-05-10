@@ -2498,4 +2498,14 @@ printf "@s1\nA\n+\nI\n" | \
 
 ## this is a question, not a bug
 
+
+#******************************************************************************#
+#                                                                              #
+#                    Compilation warnings with GCC 8.0                         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/304
+
+
 exit 0
