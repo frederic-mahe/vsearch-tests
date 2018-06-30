@@ -61,6 +61,18 @@ printf ">s\nA\n>d\nA\n" | \
 	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
+## --derep_fulllength takes terminal gaps into account (substring aren't merged)
+DESCRIPTION="--derep_fulllength takes terminal gaps into account"
+printf ">s1\nAA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --derep_fulllength outputs expected results (alphabetical order)
 ## Sort by alphabet but only takes order in account when dereplecating
 ## (first will be the remaining)
