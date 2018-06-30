@@ -811,6 +811,19 @@ printf ">a\nAAAA\n" | \
 #                                                                             #
 #*****************************************************************************#
 
+# Ten tab-separated columns.
+# Column content varies with the type of entry (S, H or C):
+# 1. Record type: S, H, or C.
+# 2. Cluster number (zero-based).
+# 3. Sequence length (S, H), or cluster size (C).
+# 4. % of similarity with the centroid sequence (H), or set to ’*’ (S, C).
+# 5. Match orientation + or - (H), or set to ’*’ (S, C).
+# 6. Not used, always set to ’*’ (S, C) or 0 (H).
+# 7. Not used, always set to ’*’ (S, C) or 0 (H).
+# 8. Not used, always set to ’*’.
+# 9. Label of the query sequence (H), or of the centroid sequence (S, C).
+# 10. Label of the centroid sequence (H), or set to ’*’ (S, C).
+
 ## --uc is accepted
 DESCRIPTION="--uc is accepted"
 printf ">s\nA\n" | \
