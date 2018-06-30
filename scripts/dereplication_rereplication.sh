@@ -37,9 +37,9 @@ fi
 ## --derep_fulllength is accepted
 DESCRIPTION="--derep_fulllength is accepted"
 printf ">s\nA\n" | \
-"${VSEARCH}" --derep_fulllength - --output - &> /dev/null && \
+    "${VSEARCH}" --derep_fulllength - --output - &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 ## --derep_fulllength fill a file
 DESCRIPTION="--derep_fulllength fill a file"
@@ -48,7 +48,7 @@ printf ">s\nA\n" | \
     "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ -s "${OUTPUT}" ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_fulllength outputs expected results
@@ -58,7 +58,7 @@ printf ">s\nA\n>d\nA\n" | \
     "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s\nA") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_fulllength outputs expected results (alphabetical order)
@@ -70,7 +70,7 @@ printf ">c\nA\n>b\nG\n>a\nG\n" | \
     "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">b\nG\n>c\nA\n") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_fulllength outputs expected results (case insensitive)
@@ -80,7 +80,7 @@ printf ">s\nA\n>d\ng\n>f\nA\n>h\nG\n" | \
     "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">d\ng\n>s\nA") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_fulllength outputs expected results (T = U)
@@ -90,7 +90,7 @@ printf ">s\nT\n>d\nu\n" | \
     "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s\nT") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 
@@ -103,9 +103,9 @@ rm "${OUTPUT}"
 ## --derep_prefix is accepted
 DESCRIPTION="--derep_prefix is accepted"
 printf ">s\nA\n" | \
-"${VSEARCH}" --derep_prefix - --output - &> /dev/null && \
+    "${VSEARCH}" --derep_prefix - --output - &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 ## --derep_prefix fill a file
 DESCRIPTION="--derep_prefix fill a file"
@@ -114,7 +114,7 @@ printf ">s\nA\n" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ -s "${OUTPUT}" ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_prefix outputs expected results
@@ -124,7 +124,7 @@ printf ">s\nACGTAAA\n>d\nACGT\n" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s\nACGTAAA") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_prefix outputs expected results (alphabetical order)
@@ -136,7 +136,7 @@ printf ">c\nACGTAAA\n>b\nACGT\n>a\nCCC" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a\nCCC\n>c\nACGTAAA") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_prefix clusters prefix with the shortest prefixed sequence
@@ -144,10 +144,10 @@ DESCRIPTION="--derep_prefix clusters prefix with the shortest prefixed sequence"
 OUTPUT=$(mktemp)
 printf ">a;size=1;\nCCAA\n>b;size=3;\nCCGAA\n>c;size=1;\nCC" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizein --sizeout &> /dev/null
+		         --minseqlength 1 --sizein --sizeout &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=2;\nCCAA\n>b;size=3;\nCCGAA\n") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_prefix then clusters prefix with the most abundant sequence
@@ -155,10 +155,10 @@ DESCRIPTION="--derep_prefix then clusters prefix with the most abundant sequence
 OUTPUT=$(mktemp)
 printf ">a;size=1;\nCCGG\n>b;size=2;\nCCAA\n>c;size=1;\nCC" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizein --sizeout &> /dev/null
+		         --minseqlength 1 --sizein --sizeout &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=1;\nCCGG\n>b;size=3;\nCCAA\n") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_prefix then clusters prefix with the first sequence in alphabetical order
@@ -166,10 +166,10 @@ DESCRIPTION="--derep_prefix then clusters prefix with the first sequence in alph
 OUTPUT=$(mktemp)
 printf ">b;size=1;\nCCAA\n>a;size=1;\nCCGG\n>c;size=1;\nCC" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizein --sizeout &> /dev/null
+		         --minseqlength 1 --sizein --sizeout &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=2;\nCCGG\n>b;size=1;\nCCAA\n") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_prefix finally clusters prefix with the first sequence in file
@@ -177,10 +177,10 @@ DESCRIPTION="--derep_prefix finally clusters prefix with the first sequence in f
 OUTPUT=$(mktemp)
 printf ">a;size=1;\nCCGG\n>a;size=1;\nCCAA\n>a;size=1;\nCC" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizein --sizeout &> /dev/null
+		         --minseqlength 1 --sizein --sizeout &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=2;\nCCGG\n>a;size=1;\nCCAA\n") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_prefix outputs expected results (case insensitive)
@@ -190,7 +190,7 @@ printf ">b\nACGTAAA\n>a\nacgt\n" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">b\nACGTAAA") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --derep_prefix outputs expected results (T = U)
@@ -200,7 +200,7 @@ printf ">s\nTUTUTT\n>d\nTUTU\n" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s\nTUTUTT") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 #*****************************************************************************#
@@ -212,19 +212,19 @@ rm "${OUTPUT}"
 ## --maxuniquesize is accepted
 DESCRIPTION="--maxuniquesize is accepted"
 printf ">s\nA\n" | \
-"${VSEARCH}" --derep_prefix - --output - --maxuniquesize 2 &> /dev/null && \
+    "${VSEARCH}" --derep_prefix - --output - --maxuniquesize 2 &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 ## --maxuniquesize outputs expected results
 DESCRIPTION="--maxuniquesize outputs expected results"
 OUTPUT=$(mktemp)
 printf ">s;size=3;\nAAAA\n>d;size=2;\nGG" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --sizein --maxuniquesize 2 --minseqlength 1 &> /dev/null
+		         --sizein --maxuniquesize 2 --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">d;size=2;\nGG") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --maxuniquesize discard sequence after (de)replication is made
@@ -235,7 +235,7 @@ printf ">s;size=5;\nAAGT\n>d;size=2;\nAA>f;size=4;\nACGT" | \
                  --sizein --maxuniquesize 4 --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">f;size=4;\nACGT") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --maxuniquesize discard sequence after (de)replication is made
@@ -243,25 +243,25 @@ DESCRIPTION="--maxuniquesize discard sequence after (de)replication is made"
 OUTPUT=$(mktemp)
 printf ">s;size=5;\nAAGT\n>d;size=2;\nAA\n>f;size=4;\nACGT" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --sizein --sizeout --maxuniquesize 4 --minseqlength 1 &> /dev/null
+		         --sizein --sizeout --maxuniquesize 4 --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">f;size=4;\nACGT") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --maxuniquesize fails if negative argument
 DESCRIPTION="--maxuniquesize fails if negative argument"
 printf ">s\nA\n" | \
-"${VSEARCH}" --derep_prefix - --output - --maxuniquesize -1 &> /dev/null && \
+    "${VSEARCH}" --derep_prefix - --output - --maxuniquesize -1 &> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+	    success "${DESCRIPTION}"
 
 ## --maxuniquesize fails if 0 given
 DESCRIPTION="--maxuniquesize fails if 0 given"
 printf ">s\nA\n" | \
-"${VSEARCH}" --derep_prefix - --output - --maxuniquesize 0 &> /dev/null && \
+    "${VSEARCH}" --derep_prefix - --output - --maxuniquesize 0 &> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+	    success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -273,19 +273,19 @@ printf ">s\nA\n" | \
 ## --minuniquesize is accepted
 DESCRIPTION="--minuniquesize is accepted"
 printf ">s\nA\n" | \
-"${VSEARCH}" --derep_prefix - --output - --minuniquesize 2 &> /dev/null && \
+    "${VSEARCH}" --derep_prefix - --output - --minuniquesize 2 &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 ## --minuniquesize outputs expected results
 DESCRIPTION="--minuniquesize outputs expected results"
 OUTPUT=$(mktemp)
 printf ">s;size=3;\nAAAA\n>d;size=2;\nGG" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --sizein --minuniquesize 3 --minseqlength 1 &> /dev/null
+		         --sizein --minuniquesize 3 --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s;size=3;\nAAAA") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --minuniquesize discard sequence after (de)replication is made
@@ -293,25 +293,25 @@ DESCRIPTION="--minuniquesize discard sequence after (de)replication is made"
 OUTPUT=$(mktemp)
 printf ">s;size=4;\nAAGT\n>d;size=2;\nAA" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --sizein --sizeout --minuniquesize 3 --minseqlength 1 &> /dev/null
+		         --sizein --sizeout --minuniquesize 3 --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s;size=6;\nAAGT") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --minuniquesize fails if negative argument
 DESCRIPTION="--minuniquesize fails if negative argument"
 printf ">s\nA\n" | \
-"${VSEARCH}" --derep_prefix - --output - --minuniquesize -1 &> /dev/null && \
+    "${VSEARCH}" --derep_prefix - --output - --minuniquesize -1 &> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+	    success "${DESCRIPTION}"
 
 ## --minuniquesize fails if 0 given
 DESCRIPTION="--minuniquesize fails if 0 given"
 printf ">s\nA\n" | \
-"${VSEARCH}" --derep_prefix - --output - --minuniquesize 0 &> /dev/null && \
+    "${VSEARCH}" --derep_prefix - --output - --minuniquesize 0 &> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+	    success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -323,9 +323,9 @@ printf ">s\nA\n" | \
 ## --output is accepted
 DESCRIPTION="--output is accepted"
 printf ">s\nA\n" | \
-"${VSEARCH}" --derep_prefix - --output - &> /dev/null && \
+    "${VSEARCH}" --derep_prefix - --output - &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -344,40 +344,40 @@ done > "${SEQx1000}"
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel is accepted"
 "${VSEARCH}" --derep_prefix <(printf ">a\nAAAA\n") --relabel 'lab' \
-	     --output "${OUTPUT}" &> /dev/null && \
+	         --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --relabel products correct labels #1
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel products correct labels #1"
 printf ">a\nAAAA\n" |\
-"${VSEARCH}" --derep_prefix - --relabel 'lab' \
-	     --output "${OUTPUT}" --minseqlength 1 &> /dev/null
+    "${VSEARCH}" --derep_prefix - --relabel 'lab' \
+	             --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(sed "1q;d" "${OUTPUT}") == ">lab1" ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --relabel products correct labels #2
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel products correct labels #2"
 printf ">s\nACGT\n>s\nCGTA\n>s\nGTAC\n" | \
-"${VSEARCH}" --derep_prefix - --relabel 'lab' \
-	     --output "${OUTPUT}" --minseqlength 1 &> /dev/null
+    "${VSEARCH}" --derep_prefix - --relabel 'lab' \
+	             --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(sed "5q;d" "${OUTPUT}") == ">lab3" ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --relabel should not be used with other labelling options
 for OPTION in "--relabel_md5" "--relabel_sha1" ; do
     DESCRIPTION="--relabel should not be used with ${OPTION}"
     "${VSEARCH}" --derep_prefix <(printf ">a\nAAAA\n") --relabel 'lab' ${OPTION} \
-		 --output - --minseqlength 1 &> /dev/null && \
-    failure "${DESCRIPTION}" || \
-	    success "${DESCRIPTION}"
+		         --output - --minseqlength 1 &> /dev/null && \
+        failure "${DESCRIPTION}" || \
+	        success "${DESCRIPTION}"
 done
 
 #*****************************************************************************#
@@ -390,19 +390,19 @@ done
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_keep is accepted"
 "${VSEARCH}" --derep_prefix <(printf ">a\nAAAA\n") --relabel 'lab' --relabel_keep \
-	     --output "${OUTPUT}" &> /dev/null && \
+	         --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --relabel_keep products correct labels
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_keep products correct labels"
 "${VSEARCH}" --derep_prefix <(printf ">a\nAAAA\n") --relabel 'lab' --relabel_keep \
-	     --output "${OUTPUT}" --minseqlength 1 &> /dev/null
+	         --output "${OUTPUT}" --minseqlength 1 &> /dev/null
 [[ $(sed "1q;d" "${OUTPUT}") == ">lab1 a" ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 #*****************************************************************************#
@@ -415,37 +415,37 @@ rm "${OUTPUT}"
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_md5 is accepted"
 "${VSEARCH}" --derep_prefix <(printf ">a\nAAAA\n") --relabel_md5 \
-	     --output "${OUTPUT}" &> /dev/null && \
+	         --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --relabel_md5 products correct labels
 DESCRIPTION="--relabel_md5 products correct labels"
 [[ $("${VSEARCH}" --derep_prefix <(printf '>a\nAAAA\n') --relabel_md5 \
-		  --output - --minseqlength 1 2> /dev/null \
-	    | awk -F "[>]" '{printf $2}') == \
-   $(printf "AAAA" | md5sum | awk '{printf $1}') ]] && \
+		          --output - --minseqlength 1 2> /dev/null \
+	        | awk -F "[>]" '{printf $2}') == \
+                                          $(printf "AAAA" | md5sum | awk '{printf $1}') ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 ## --relabel_md5 original labels are shuffled (1‰ chance of failure)
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_md5 original labels are shuffled (1‰ chance of failure)"
 "${VSEARCH}" --derep_prefix "${SEQx1000}" --relabel_md5 --minseqlength 1 \
-	     --output "${OUTPUT}" &> /dev/null
+	         --output "${OUTPUT}" &> /dev/null
 [[ $(awk 'NR==1 {print $2}' "${OUTPUT}") != "seq1" ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --relabel_md5 should not be used with other labelling options
 for OPTION in "--relabel 'lab'" "--relabel_sha1" ; do
     DESCRIPTION="--relabel_keep should not be used with ${OPTION}"
     "${VSEARCH}" --derep_prefix <(printf ">a\nAAAA\n") --relabel_md5 ${OPTION} \
-		 --output - &> /dev/null && \
-    failure "${DESCRIPTION}" || \
-	    success "${DESCRIPTION}"
+		         --output - &> /dev/null && \
+        failure "${DESCRIPTION}" || \
+	        success "${DESCRIPTION}"
 done
 
 
@@ -459,38 +459,38 @@ done
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_sha1 is accepted"
 "${VSEARCH}" --derep_prefix <(printf ">a\nAAAA\n") --relabel_sha1 \
-	     --output "${OUTPUT}" &> /dev/null && \
+	         --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --relabel_sha1 products correct labels
 DESCRIPTION="--relabel_sha1 products correct labels"
 INPUT=$("${VSEARCH}" --derep_prefix <(printf '>a\nAAAA\n') --relabel_sha1 \
-		     --minseqlength 1 --output - 2> /dev/null | \
-	       awk -F "[>]" '{printf $2}')
+		             --minseqlength 1 --output - 2> /dev/null | \
+	           awk -F "[>]" '{printf $2}')
 SHA1=$(printf "AAAA" | sha1sum | awk '{printf $1}')
 [[ "${INPUT}" == "${SHA1}" ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 ## --relabel_sha1 original labels are shuffled (1‰ chance of failure)
 OUTPUT=$(mktemp)
 DESCRIPTION="--relabel_sha1 original labels are shuffled (1‰ chance of failure)"
 "${VSEARCH}" --derep_prefix "${SEQx1000}" --relabel_sha1 \
-	     --minseqlength 1 --output "${OUTPUT}" &> /dev/null
+	         --minseqlength 1 --output "${OUTPUT}" &> /dev/null
 [[ $(awk 'NR==1 {print $2}' "${OUTPUT}") != "seq1" ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --relabel_sha1 should not be used with other labelling options
 for OPTION in "--relabel 'lab'" "--relabel_md5" ; do
     DESCRIPTION="--relabel_keep should not be used with ${OPTION}"
     "${VSEARCH}" --derep_prefix <(printf ">a\nAAAA\n") --relabel_sha1 ${OPTION} \
-		 --output - &> /dev/null && \
-    failure "${DESCRIPTION}" || \
-	    success "${DESCRIPTION}"
+		         --output - &> /dev/null && \
+        failure "${DESCRIPTION}" || \
+	        success "${DESCRIPTION}"
 done
 
 rm "${SEQx1000}"
@@ -506,9 +506,9 @@ rm "${SEQx1000}"
 OUTPUT=$(mktemp)
 DESCRIPTION="--rereplicate is accepted"
 printf ">a\nAAAA\n" | \
-"${VSEARCH}" --rereplicate - --output "${OUTPUT}" &> /dev/null && \
+    "${VSEARCH}" --rereplicate - --output "${OUTPUT}" &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --rereplicate correctly rereplicate
@@ -518,7 +518,7 @@ printf ">a;size=2;\nAAAA\n" | \
     "${VSEARCH}" --rereplicate - --output "${OUTPUT}" &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a\nAAAA\n>a\nAAAA") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --rereplicate correctly rereplicate #1
@@ -528,7 +528,7 @@ printf ">a;size=2;\nAAAA\n" | \
     "${VSEARCH}" --rereplicate - --output "${OUTPUT}" &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a\nAAAA\n>a\nAAAA") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --rereplicate correctly rereplicate #2
@@ -538,7 +538,7 @@ printf ">a\nAAAA\n" | \
     "${VSEARCH}" --rereplicate - --output "${OUTPUT}" &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a\nAAAA") ]] &&
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 
@@ -552,9 +552,9 @@ rm "${OUTPUT}"
 OUTPUT=$(mktemp)
 DESCRIPTION="--rereplicate is accepted"
 printf ">a\nAAAA\n" | \
-"${VSEARCH}" --rereplicate - --output "${OUTPUT}" --sizein &> /dev/null && \
+    "${VSEARCH}" --rereplicate - --output "${OUTPUT}" --sizein &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizein is mandatory to process abundance with --rereplicate
@@ -564,7 +564,7 @@ printf ">a;size=3;\nAAAA\n" | \
     "${VSEARCH}" --rereplicate - --output "${OUTPUT}" &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=3;\nAAAA\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizein allow to take abundance in account with --rereplicate
@@ -573,9 +573,9 @@ DESCRIPTION="--sizein allow to take abundance in account with --rereplicate"
 printf ">a;size=3;\nAAAA\n" | \
     "${VSEARCH}" --rereplicate - --output "${OUTPUT}" --sizein &> /dev/null
 [[ $(cat "${OUTPUT}") == \
-   $(printf ">a\nAAAA\n>a\nAAAA\n>a\nAAAA\n") ]] && \
+                      $(printf ">a\nAAAA\n>a\nAAAA\n>a\nAAAA\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizein is mandatory to process abundance with --derep_prefix
@@ -583,10 +583,10 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--sizein is mandatory to process abundance --derep_prefix"
 printf ">a;size=3;\nAACC\n>a;size=2;\nAA" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizeout &> /dev/null
+		         --minseqlength 1 --sizeout &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=3;\nAACC\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizein sizein allow to take abundance in account with --derep_prefix
@@ -594,10 +594,10 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--sizein sizein allow to take abundance in account with --derep_prefix"
 printf ">a;size=3;\nAACC\n>a;size=2;\nAA" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizein --sizeout &> /dev/null
+		         --minseqlength 1 --sizein --sizeout &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=5;\nAACC\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizein is mandatory to process abundance with --derep_fullength
@@ -605,10 +605,10 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--sizein is mandatory to process abundance --derep_fulllength"
 printf ">a;size=3;\nAA\n>b;size=2;\nAA" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizeout &> /dev/null
+		         --minseqlength 1 --sizeout &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=3;\nAA\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizein allow to take abundance in account with --derep_fullength
@@ -616,10 +616,10 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--sizein allow to take abundance in account with --derep_fulllength"
 printf ">a;size=3;\nAA\n>a;size=2;\nAA" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizein --sizeout &> /dev/null
+		         --minseqlength 1 --sizein --sizeout &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=5;\nAA\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 
@@ -632,19 +632,19 @@ rm "${OUTPUT}"
 ## --sizeout is accepted
 DESCRIPTION="--sizeout is accepted"
 printf ">a\nAAAA\n" | \
-"${VSEARCH}" --rereplicate - --output - --sizeout &> /dev/null && \
+    "${VSEARCH}" --rereplicate - --output - --sizeout &> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 ## --sizeout completes missing abundance scores
 OUTPUT=$(mktemp)
 DESCRIPTION="--sizeout completes missing abundance scores"
 printf ">a;size=3;\nAAAA\n>b\nCCCC\n" | \
     "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" \
-		 --sizein --sizeout --minseqlength 1 &> /dev/null
+		         --sizein --sizeout --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=3;\nAAAA\n>b;size=1;\nCCCC\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizeout is mandatory to write down abundance with --derep_prefix
@@ -652,10 +652,10 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--sizeout is mandatory to write down abundance --derep_prefix"
 printf ">a;size=3;\nAACC\n>a;size=2;\nAA" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizein &> /dev/null
+		         --minseqlength 1 --sizein &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=3;\nAACC\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizeout allow to take abundance in account with --derep_prefix
@@ -663,10 +663,10 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--sizeout allow to take abundance in account with --derep_prefix"
 printf ">a;size=3;\nAACC\n>a;size=2;\nAA" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizein --sizeout &> /dev/null
+		         --minseqlength 1 --sizein --sizeout &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=5;\nAACC\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizeout is mandatory to write down abundance with --derep_fullength
@@ -674,10 +674,10 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--sizeout is mandatory to write down abundance --derep_fulllength"
 printf ">a;size=3;\nAA\n>b;size=2;\nAA" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizein &> /dev/null
+		         --minseqlength 1 --sizein &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=3;\nAA\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --sizeout allow to take abundance in account with --derep_fullength
@@ -685,10 +685,10 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--sizeout allow to take abundance in account with --derep_fulllength"
 printf ">a;size=3;\nAA\n>a;size=2;\nAA" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" \
-		 --minseqlength 1 --sizein --sizeout &> /dev/null
+		         --minseqlength 1 --sizein --sizeout &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">a;size=5;\nAA\n") ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 
@@ -701,19 +701,19 @@ rm "${OUTPUT}"
 ## --strand is accepted
 DESCRIPTION="--strand is accepted"
 printf ">a\nAAAA\n" | \
-"${VSEARCH}" --derep_fulllength - --output - --strand both &> /dev/null &&\
+    "${VSEARCH}" --derep_fulllength - --output - --strand both &> /dev/null &&\
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 ## --strand both allow dereplication of strand plus and minus (--derep_fulllength)
 OUTPUT=$(mktemp)
 DESCRIPTION="--strand allow dereplication of strand plus and minus (--derep_fulllength)"
 printf ">s1;size=1;\nTAGC\n>s2;size=1;\nGCTA" | \
     "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --strand both \
-		 --sizein --sizeout --minseqlength 1 &> /dev/null
+		         --sizein --sizeout --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s1;size=2;\nTAGC\n") ]] &&\
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --strand plus does not change default behaviour
@@ -721,10 +721,10 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--strand plus does not change default behaviour"
 printf ">s1;size=1;\nTAGC\n>s2;size=1;\nGCTA" | \
     "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --strand plus \
-		 --sizein --sizeout --minseqlength 1 &> /dev/null
+		         --sizein --sizeout --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s1;size=1;\nTAGC\n>s2;size=1;\nGCTA") ]] &&\
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --strand allow dereplication of strand plus and minus (--derep_prefix)
@@ -732,18 +732,18 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--strand allow dereplication of strand plus and minus (--derep_prefix)"
 printf ">s1;size=1;\nTAGCAA\n>s2;size=1;\nGCTA" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" --strand both \
-		 --sizein --sizeout --minseqlength 1 &> /dev/null
+		         --sizein --sizeout --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s1;size=2;\nTAGCAA\n") ]] &&\
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --strand fails if unknown argument is given
 DESCRIPTION="--strand fails if unknown argument is given"
 printf ">a\nAAAA\n" | \
-"${VSEARCH}" --derep_fulllength - --output - --strand bonjour &> /dev/null &&\
+    "${VSEARCH}" --derep_fulllength - --output - --strand bonjour &> /dev/null &&\
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+	    success "${DESCRIPTION}"
 
 #*****************************************************************************#
 #                                                                             #
@@ -754,19 +754,19 @@ printf ">a\nAAAA\n" | \
 ## --topn is accepted
 DESCRIPTION="--topn is accepted"
 printf ">a\nAAAA\n" | \
-"${VSEARCH}" --derep_fulllength - --output - --topn 2 &> /dev/null &&\
+    "${VSEARCH}" --derep_fulllength - --output - --topn 2 &> /dev/null &&\
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 
 ## --topn discard sequences
 OUTPUT=$(mktemp)
 DESCRIPTION="--topn discard sequences"
 printf ">s1;size=1;\nAAAA\n>s2;size=2;\nCCCC\n>s3;size=3;\nGGGG\n" | \
     "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --topn 2 \
-		 --sizein --minseqlength 1 &> /dev/null
+		         --sizein --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s3;size=3;\nGGGG\n>s2;size=2;\nCCCC\n") ]] &&\
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --topn discard sequences after processings (derep_fulllength)
@@ -774,10 +774,10 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--topn discard sequences after processings (derep_fulllength)"
 printf ">s1;size=5;\nAAAA\n>s2;size=3;\nCCCC\n>s3;size=3;\nCCCC\n" | \
     "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --topn 1 \
-		 --sizein --sizeout --minseqlength 1 &> /dev/null
+		         --sizein --sizeout --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s2;size=6;\nCCCC") ]] &&\
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --topn discard sequences after processings (derep_prefix)
@@ -785,25 +785,25 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--topn discard sequences after processings (derep_prefix)"
 printf ">s1;size=5;\nAAAA\n>s2;size=3;\nCCCC\n>s3;size=3;\nCC\n" | \
     "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" --topn 1 \
-		 --sizein --sizeout --minseqlength 1 &> /dev/null
+		         --sizein --sizeout --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s2;size=6;\nCCCC") ]] &&\
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 ## --topn fails with negative arguments
 DESCRIPTION="--topn fails with negative arguments"
 printf ">a\nAAAA\n" | \
-"${VSEARCH}" --derep_fulllength - --output - --topn -1 &> /dev/null &&\
+    "${VSEARCH}" --derep_fulllength - --output - --topn -1 &> /dev/null &&\
     failure "${DESCRIPTION}" || \
-	succes "${DESCRIPTION}"
+	    succes "${DESCRIPTION}"
 
 ## --topn fails with null arguments
 DESCRIPTION="--topn fails with null arguments"
 printf ">a\nAAAA\n" | \
-"${VSEARCH}" --derep_fulllength - --output - --topn 0 &> /dev/null &&\
+    "${VSEARCH}" --derep_fulllength - --output - --topn 0 &> /dev/null &&\
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+	    success "${DESCRIPTION}"
 
 #*****************************************************************************#
 #                                                                             #
@@ -943,9 +943,9 @@ rm "${OUTPUT}"
 ## --uc hit length is correct in 3rd column #1
 DESCRIPTION="--uc hit length is correct in 3rd column #1"
 HIT_LENGTH=$(printf ">s1\nAA\n>s2\nAA\n" | \
-		      "${VSEARCH}" --derep_fulllength - --uc - \
-				   --minseqlength 1 2> /dev/null | \
-		      awk '/^H/ {v = $3} END {print v}' -)
+		            "${VSEARCH}" --derep_fulllength - --uc - \
+				                 --minseqlength 1 2> /dev/null | \
+		            awk '/^H/ {v = $3} END {print v}' -)
 [[ "${HIT_LENGTH}" == "2" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -953,8 +953,8 @@ HIT_LENGTH=$(printf ">s1\nAA\n>s2\nAA\n" | \
 ## --uc hit length is correct in 3rd column #2
 DESCRIPTION="--uc hit length is correct in 3rd column #2"
 HIT_LENGTH=$(printf ">s1\nA\n>s2\nA\n" | "${VSEARCH}" --derep_fulllength - --uc - \
-		    --minseqlength 1 2> /dev/null | \
-		    awk '/^H/ {v = $3} END {print v}' -)
+		                                              --minseqlength 1 2> /dev/null | \
+		            awk '/^H/ {v = $3} END {print v}' -)
 (( "${HIT_LENGTH}" == 1 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -962,9 +962,9 @@ HIT_LENGTH=$(printf ">s1\nA\n>s2\nA\n" | "${VSEARCH}" --derep_fulllength - --uc 
 ## --uc similarity percentage is correct in 4th column
 DESCRIPTION="--uc similarity percentage is correct in 4th column"
 SIMILARITY_PERCENTAGE=$(printf ">s2\nAA\n>s3\nAA\n" | \
-			       "${VSEARCH}" --derep_fulllength - --uc - \
-					    --minseqlength 1 2> /dev/null | \
-			       awk '/^H/ {v = $4} END {print v}' -)
+			                   "${VSEARCH}" --derep_fulllength - --uc - \
+					                        --minseqlength 1 2> /dev/null | \
+			                   awk '/^H/ {v = $4} END {print v}' -)
 [[ "${SIMILARITY_PERCENTAGE}" == "100.0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -972,9 +972,9 @@ SIMILARITY_PERCENTAGE=$(printf ">s2\nAA\n>s3\nAA\n" | \
 ## --uc match orientation is correct in 5th column with H (+)
 DESCRIPTION="--uc match orientation is correct in 5th column with H (+)"
 MATCH_ORIENTATION=$(printf ">s1;size=1;\nAA\n>s2;size=1;\nAA\n" | \
-			   "${VSEARCH}" --derep_fulllength - --uc - \
-					--minseqlength 1 2> /dev/null | \
-			   awk '/^H/ {v = $5} END {print v}' -)
+			               "${VSEARCH}" --derep_fulllength - --uc - \
+					                    --minseqlength 1 2> /dev/null | \
+			               awk '/^H/ {v = $5} END {print v}' -)
 [[ "${MATCH_ORIENTATION}" == "+" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -982,9 +982,9 @@ MATCH_ORIENTATION=$(printf ">s1;size=1;\nAA\n>s2;size=1;\nAA\n" | \
 ## --uc match orientation is correct in 5th column with H (-)
 DESCRIPTION="--uc match orientation is correct in 5th column with H (-)"
 MATCH_ORIENTATION=$(printf ">s1;size=1;\nGACT\n>s2;size=1;\nAGTC\n" | \
-			   "${VSEARCH}" --derep_fulllength - --uc - --strand both \
-					--minseqlength 1 2> /dev/null | \
-			   awk '/^H/ {v = $5} END {print v}' -)
+			               "${VSEARCH}" --derep_fulllength - --uc - --strand both \
+					                    --minseqlength 1 2> /dev/null | \
+			               awk '/^H/ {v = $5} END {print v}' -)
 
 [[ "${MATCH_ORIENTATION}" == "-" ]] && \
     success "${DESCRIPTION}" || \
@@ -993,8 +993,8 @@ MATCH_ORIENTATION=$(printf ">s1;size=1;\nGACT\n>s2;size=1;\nAGTC\n" | \
 ## --uc match orientation is * in 5th column with S
 DESCRIPTION="--uc match orientation is correct in 5th column with S"
 MATCH_ORIENTATION=$(printf ">s1;size=1;\nGA" | \
-			   "${VSEARCH}" --derep_fulllength - --uc - \
-			   --minseqlength 1 2> /dev/null | \
+			               "${VSEARCH}" --derep_fulllength - --uc - \
+			                            --minseqlength 1 2> /dev/null | \
                            awk '/^S/ {v = $5} END {print v}' -)
 [[ "${MATCH_ORIENTATION}" == "*" ]] && \
     success "${DESCRIPTION}" || \
@@ -1003,9 +1003,9 @@ MATCH_ORIENTATION=$(printf ">s1;size=1;\nGA" | \
 ## --uc match orientation is * in 5th column with C
 DESCRIPTION="--uc match orientation is correct in 5th column with C"
 MATCH_ORIENTATION=$(printf ">s1\nAA\n" | \
-			   "${VSEARCH}" --derep_fulllength - --uc - \
-					--minseqlength 1 2> /dev/null | \
-			   awk '/^C/ {v = $5} END {print v}' -)
+			               "${VSEARCH}" --derep_fulllength - --uc - \
+					                    --minseqlength 1 2> /dev/null | \
+			               awk '/^C/ {v = $5} END {print v}' -)
 [[ "${MATCH_ORIENTATION}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1013,9 +1013,9 @@ MATCH_ORIENTATION=$(printf ">s1\nAA\n" | \
 ## --uc 6th column is * with C
 DESCRIPTION="--uc 6th column is * with C"
 COLUMN_6=$(printf ">s1\nAA\n" | \
-		  "${VSEARCH}" --derep_fulllength - --uc - \
-			       --minseqlength 1 2> /dev/null | \
-		  awk '/^C/ {v = $6} END {print v}' -)
+		          "${VSEARCH}" --derep_fulllength - --uc - \
+			                   --minseqlength 1 2> /dev/null | \
+		          awk '/^C/ {v = $6} END {print v}' -)
 [[ "${COLUMN_6}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1034,9 +1034,9 @@ rm "${OUTPUT}"
 ## --uc 6th column is 0 with H
 DESCRIPTION="--uc 6th column is 0 with H"
 COLUMN_6=$(printf ">s1\nAA\n>s2\nAA\n" | \
-		  "${VSEARCH}" --derep_fulllength - --uc - \
-			       --minseqlength 1 2> /dev/null | \
-		  awk '/^H/ {v = $6} END {print v}' -)
+		          "${VSEARCH}" --derep_fulllength - --uc - \
+			                   --minseqlength 1 2> /dev/null | \
+		          awk '/^H/ {v = $6} END {print v}' -)
 (( "${COLUMN_6}" == 0 )) && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1044,9 +1044,9 @@ COLUMN_6=$(printf ">s1\nAA\n>s2\nAA\n" | \
 ## --uc 7th column is * with C
 DESCRIPTION="--uc 7th column is * with C"
 COLUMN_7=$(printf ">s1\nAA\n" | \
-		  "${VSEARCH}" --derep_fulllength - --uc - \
-			       --minseqlength 1 2> /dev/null | \
-		  awk '/^C/ {v = $7} END {print v}' -)
+		          "${VSEARCH}" --derep_fulllength - --uc - \
+			                   --minseqlength 1 2> /dev/null | \
+		          awk '/^C/ {v = $7} END {print v}' -)
 [[ "${COLUMN_7}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1054,9 +1054,9 @@ COLUMN_7=$(printf ">s1\nAA\n" | \
 ## --uc 7th column is * with S
 DESCRIPTION="--uc 7th column is * with S"
 COLUMN_7=$(printf ">s1\nAA\n" | \
-		  "${VSEARCH}" --derep_fulllength - --uc - \
-			       --minseqlength 1 2> /dev/null | \
-		  grep "^S" - | \
+		          "${VSEARCH}" --derep_fulllength - --uc - \
+			                   --minseqlength 1 2> /dev/null | \
+		          grep "^S" - | \
                   awk -F "\t" '{if (NR == 1) {print $7}}')
 [[ "${COLUMN_7}" == "*" ]] && \
     success "${DESCRIPTION}" || \
@@ -1065,9 +1065,9 @@ COLUMN_7=$(printf ">s1\nAA\n" | \
 ## --uc 7th column is 0 with H
 DESCRIPTION="--uc 7th column is 0 with H"
 COLUMN_7=$(printf ">s1\nAA\n>s2\nAA\n" | \
-		  "${VSEARCH}" --derep_fulllength - --uc - \
-			       --minseqlength 1 2> /dev/null | \
-		  awk '/^H/ {v = $7} END {print v}' -)
+		          "${VSEARCH}" --derep_fulllength - --uc - \
+			                   --minseqlength 1 2> /dev/null | \
+		          awk '/^H/ {v = $7} END {print v}' -)
 [[ "${COLUMN_7}" == "0" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1075,9 +1075,9 @@ COLUMN_7=$(printf ">s1\nAA\n>s2\nAA\n" | \
 ## --uc 8th collumn is * with S
 DESCRIPTION="--uc 8th collumn is * with S"
 COLUMN_8=$(printf ">s1\nAA\n" | \
-		  "${VSEARCH}" --derep_fulllength - --uc - \
-			       --minseqlength 1 2> /dev/null | \
-		  awk '/^S/ {v = $8} END {print v}' -)
+		          "${VSEARCH}" --derep_fulllength - --uc - \
+			                   --minseqlength 1 2> /dev/null | \
+		          awk '/^S/ {v = $8} END {print v}' -)
 [[ "${COLUMN_8}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1085,9 +1085,9 @@ COLUMN_8=$(printf ">s1\nAA\n" | \
 ## --uc 8th collumn is * with C
 DESCRIPTION="--uc 8th collumn is * with C"
 COLUMN_8=$(printf ">s1\nAA\n" | \
-		  "${VSEARCH}" --derep_fulllength - --uc - \
-			       --minseqlength 1 2> /dev/null | \
-		  awk '/^C/ {v = $8} END {print v}' -)
+		          "${VSEARCH}" --derep_fulllength - --uc - \
+			                   --minseqlength 1 2> /dev/null | \
+		          awk '/^C/ {v = $8} END {print v}' -)
 [[ "${COLUMN_8}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1095,9 +1095,9 @@ COLUMN_8=$(printf ">s1\nAA\n" | \
 ## --uc 8th collumn is * with H
 DESCRIPTION="--uc 8th collumn is * with H"
 COLUMN_8=$(printf ">s1\nAA\n>s2\nAA\n" | \
-		  "${VSEARCH}" --derep_fulllength - --uc - \
-			       --minseqlength 1 2> /dev/null | \
-		  awk '/^H/ {v = $8} END {print v}' -)
+		          "${VSEARCH}" --derep_fulllength - --uc - \
+			                   --minseqlength 1 2> /dev/null | \
+		          awk '/^H/ {v = $8} END {print v}' -)
 [[ "${COLUMN_8}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1105,9 +1105,9 @@ COLUMN_8=$(printf ">s1\nAA\n>s2\nAA\n" | \
 ## --uc query sequence's label is correct in 9th column with H
 DESCRIPTION="--uc query sequence's label is correct in 9th column with H"
 QUERY_LABEL=$(printf ">s1\nAA\n>s2\nAA\n" | \
-		     "${VSEARCH}" --derep_fulllength - --uc - \
-				  --minseqlength 1 2> /dev/null | \
-		     awk '/^H/ {v = $9} END {print v}' -)
+		             "${VSEARCH}" --derep_fulllength - --uc - \
+				                  --minseqlength 1 2> /dev/null | \
+		             awk '/^H/ {v = $9} END {print v}' -)
 [[ "${QUERY_LABEL}" == "s2" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1115,9 +1115,9 @@ QUERY_LABEL=$(printf ">s1\nAA\n>s2\nAA\n" | \
 ## --uc centroid sequence's label is correct in 9th column with S
 DESCRIPTION="--uc centroid sequence's label is correct in 9th column with S"
 CENTROID_LABEL=$(printf ">s1\nAA\n" | \
-			"${VSEARCH}" --derep_fulllength - --uc - \
-				     --minseqlength 1 2> /dev/null | \
-			awk '/^S/ {v = $9} END {print v}' -)
+			            "${VSEARCH}" --derep_fulllength - --uc - \
+				                     --minseqlength 1 2> /dev/null | \
+			            awk '/^S/ {v = $9} END {print v}' -)
 [[ "${CENTROID_LABEL}" == "s1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1125,9 +1125,9 @@ CENTROID_LABEL=$(printf ">s1\nAA\n" | \
 ## --uc centroid sequence's label is correct in 9th column with C
 DESCRIPTION="--uc centroid sequence's label is correct in 9th column with C"
 CENTROID_LABEL=$(printf ">s1\nAA\n" | \
-			"${VSEARCH}" --derep_fulllength - --uc - \
-				     --minseqlength 1 2> /dev/null | \
-			awk '/^C/ {v = $9} END {print v}' -)
+			            "${VSEARCH}" --derep_fulllength - --uc - \
+				                     --minseqlength 1 2> /dev/null | \
+			            awk '/^C/ {v = $9} END {print v}' -)
 [[ "${CENTROID_LABEL}" == "s1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1135,9 +1135,9 @@ CENTROID_LABEL=$(printf ">s1\nAA\n" | \
 ## --uc centroid sequence's label is correct in 10th column with H
 DESCRIPTION="--uc centroid sequence's label is correct in 10th column with H"
 CENTROID_LABEL=$(printf ">s1\nAA\n>s2\nAA\n" | \
-			"${VSEARCH}" --derep_fulllength - --uc - \
-				     --minseqlength 1 2> /dev/null | \
-			awk '/^H/ {v = $10} END {print v}' -)
+			            "${VSEARCH}" --derep_fulllength - --uc - \
+				                     --minseqlength 1 2> /dev/null | \
+			            awk '/^H/ {v = $10} END {print v}' -)
 [[ "${CENTROID_LABEL}" == "s1" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1153,9 +1153,9 @@ printf ">s1\nA\n" | \
 ## --uc 10th column is * with S
 DESCRIPTION="--uc 10th column is * with S"
 CENTROID_LABEL=$(printf ">a_3\nAAAA\n>b_3\nAAAC\n>c_3\nAACC\n>d_3\nAGCC\n" | \
-			"${VSEARCH}" --derep_fulllength - --uc - \
-				     --minseqlength 1 2> /dev/null | \
-			awk '/^S/ {v = $10} END {print v}' -)
+			            "${VSEARCH}" --derep_fulllength - --uc - \
+				                     --minseqlength 1 2> /dev/null | \
+			            awk '/^S/ {v = $10} END {print v}' -)
 [[ "${CENTROID_LABEL}" == "*" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1171,7 +1171,7 @@ CENTROID_LABEL=$(printf ">a_3\nAAAA\n>b_3\nAAAC\n>c_3\nAACC\n>d_3\nAGCC\n" | \
 DESCRIPTION="--xsize is accepted"
 printf ">a\nAAAA\n" | \
     "${VSEARCH}" --derep_fulllength - --xsize --output - \
-		 --minseqlength 1 &> /dev/null && \
+		         --minseqlength 1 &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1180,7 +1180,7 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--xsize strips abundance values"
 printf ">s1;size=1;\nAA\n" | \
     "${VSEARCH}" --derep_fulllength - --sizein --xsize --output "${OUTPUT}" \
-		 --minseqlength 1 &> /dev/null
+		         --minseqlength 1 &> /dev/null
 [[ $(cat "${OUTPUT}") == $(printf ">s1\nAA\n") ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
