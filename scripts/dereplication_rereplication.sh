@@ -879,16 +879,17 @@ printf ">s1\nA\n>s2\nA\n>s3\nG\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc number of cluster records is correct in 1st column
-DESCRIPTION="--uc number of cluster records is correct in 1st column"
-OUTPUT=$(mktemp)
-printf ">s1\nAA\n>s2\nAA\n>s3\nGG\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-NUMBER_OF_CLUSTERS=$(grep -c "^C" "${OUTPUT}")
-(( "${NUMBER_OF_CLUSTERS}" == 2 )) && \
+## --uc returns the expected number of C lines (clusters)
+DESCRIPTION="--uc returns the expected number of C lines (clusters)"
+printf ">s1\nA\n>s2\nA\n>s3\nG\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '/^C/ {c += 1} END {exit c == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --uc cluster number is correct in 2nd column #1
 DESCRIPTION="--uc cluster number is correct in 2nd column #1"
