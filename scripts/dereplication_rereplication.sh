@@ -978,29 +978,29 @@ printf ">s1\nA\n>s2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc centroid length is correct in 3rd column #1
-DESCRIPTION="--uc centroid length is correct in 3rd column #1"
-OUTPUT=$(mktemp)
-printf ">s1\nG\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-CENTROID_LENGTH=$(awk '/^S/ {v = $3} END {print v}' "${OUTPUT}")
-(( "${CENTROID_LENGTH}" == 1 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTIONz}"
-rm "${OUTPUT}"
-
-## --uc centroid length is correct in 3rd column #2
-DESCRIPTION="--uc centroid length is correct in 3rd column #2"
-OUTPUT=$(mktemp)
-"${VSEARCH}" \
-    --derep_fulllength <(printf ">s1\nGG\n") \
-    --minseqlength 1 \
-    --uc "${OUTPUT}" &> /dev/null
-CENTROID_LENGTH=$(awk '/^S/ {v = $3} END {print v}' "${OUTPUT}")
-(( "${CENTROID_LENGTH}" == 2 )) && \
+## --uc centroid length is correct for S line (3rd column)
+DESCRIPTION="--uc centroid length is correct for S line (3rd column) #1"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '/^S/ {exit $3 == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+
+## --uc centroid length is correct for S line (3rd column)
+DESCRIPTION="--uc centroid length is correct for S line (3rd column) #2"
+printf ">s1\nAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '/^S/ {exit $3 == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## --uc hit length is correct in 3rd column #1
 DESCRIPTION="--uc hit length is correct in 3rd column #1"
