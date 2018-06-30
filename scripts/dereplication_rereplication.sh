@@ -1176,14 +1176,16 @@ printf ">a\nAAAA\n" | \
         failure "${DESCRIPTION}"
 
 ## --xsize strips abundance values
-OUTPUT=$(mktemp)
 DESCRIPTION="--xsize strips abundance values"
-printf ">s1;size=1;\nAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --sizein --xsize --output "${OUTPUT}" \
-		         --minseqlength 1 &> /dev/null
-[[ $(cat "${OUTPUT}") == $(printf ">s1\nAA\n") ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+printf ">s;size=1;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein --xsize \
+        --quiet \
+        --output - | \
+    grep -q "^>s;size=1" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 exit 0
