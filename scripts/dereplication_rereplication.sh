@@ -917,7 +917,7 @@ printf ">a\nA\n>b\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc returns the expected number of S lines (centroids)
+## --uc returns the expected number of S lines (two centroids)
 DESCRIPTION="--uc returns the expected number of S lines (centroids)"
 printf ">s1\nA\n>s2\nA\n>s3\nG\n" | \
     "${VSEARCH}" \
@@ -929,7 +929,7 @@ printf ">s1\nA\n>s2\nA\n>s3\nG\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc returns the expected number of C lines (clusters)
+## --uc returns the expected number of C lines (two clusters)
 DESCRIPTION="--uc returns the expected number of C lines (clusters)"
 printf ">s1\nA\n>s2\nA\n>s3\nG\n" | \
     "${VSEARCH}" \
