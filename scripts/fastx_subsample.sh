@@ -896,14 +896,14 @@ printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" | \
 rm "${OUTPUT}"
 
 DESCRIPTION="--fastx_subsample --sample_size discard correct number of sequences #2 fastq"
-OUTPUT=$(mktemp)
 printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" | \
-    "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --sample_size 2 \
-	&> /dev/null
-    [[ $(echo $(wc -l < "${OUTPUT}")) == "8" ]] && \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 2 \
+        --fastqout - 2> /dev/null | \
+    awk 'END {exit NR == 8 ? 0 : 1}' && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 DESCRIPTION="--fastx_subsample --sample_size should fail with negative arguments fastq"
 printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" | \
