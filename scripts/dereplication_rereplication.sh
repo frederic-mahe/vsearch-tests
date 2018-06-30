@@ -843,6 +843,19 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --uc returns a S line (centroid) and a C lines (cluster) for each input sequence
+DESCRIPTION="--uc returns a S line (centroid) and a C lines (cluster) for each sequence"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '{if (/^S/) {s += 1} ; if (/^C/) {c += 1}}
+         END {exit NR == 2 && c == 1 && s == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --uc returns no H line (first column) when there is no hit
 DESCRIPTION="--uc returns no H line when there is no hit"
 printf ">a\nA\n>b\nG\n" | \
@@ -903,16 +916,18 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc cluster number is correct in 2nd column #2
-DESCRIPTION="--uc cluster number is correct in 2nd column #2"
-OUTPUT=$(mktemp)
-printf ">s1\nGG\n>s2\nAA\n>s3\nAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-CLUSTER_NUMBER=$(awk '/^C/ {v = $2} END {print v}' "${OUTPUT}")
-(( "${CLUSTER_NUMBER}" == 1 )) && \
+## --uc cluster numbering is zero-based: with two clusters, the
+## highest cluster number (n) is 1
+DESCRIPTION="--uc cluster numbering is zero-based (2nd C line, 2nd column = 1)"
+printf ">s1\nG\n>s2\nA\n>s3\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '/^C/ && $2 > n {n = $2} END {exit n == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --uc cluster size is correct in 3rd column
 DESCRIPTION="--uc cluster number is correct in 3rd column"
