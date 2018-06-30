@@ -891,16 +891,17 @@ printf ">s1\nA\n>s2\nA\n>s3\nG\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc cluster number is correct in 2nd column #1
-DESCRIPTION="--uc cluster number is correct in 2nd column #1"
-OUTPUT=$(mktemp)
-printf ">s1\nGGGG\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-CLUSTER_NUMBER=$(awk '/^C/ {v = $2} END {print v}' "${OUTPUT}")
-(( "${CLUSTER_NUMBER}" == 0 )) && \
+## --uc cluster numbering is zero-based (first cluster is number zero)
+DESCRIPTION="--uc cluster numbering is zero-based (C lines, 2nd column)"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '/^C/ {exit $2 == 0 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --uc cluster number is correct in 2nd column #2
 DESCRIPTION="--uc cluster number is correct in 2nd column #2"
