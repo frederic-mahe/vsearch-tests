@@ -1038,6 +1038,8 @@ printf ">s1\nAA\n>s2\nAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## uc tests below were not reviewed
+
 ## --uc similarity percentage is correct in 4th column
 DESCRIPTION="--uc similarity percentage is correct in 4th column"
 SIMILARITY_PERCENTAGE=$(printf ">s2\nAA\n>s3\nAA\n" | \
