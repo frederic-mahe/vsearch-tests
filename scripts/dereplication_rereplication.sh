@@ -821,14 +821,15 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc fails if no filename given
-OUTPUT=$(mktemp)
-DESCRIPTION="--uc fails if no filename given"
-printf ">a\nAAAA\n>b\nAAAC\n>c\nGGGG" | \
-    "${VSEARCH}" --derep_fulllength - --minseqlength 1 --uc &> /dev/null && \
+## --uc fails if no output redirection is given (filename, device or -)
+DESCRIPTION="--uc fails if no output redirection is given"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --uc &> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --uc creates and fills file given in argument
 OUTPUT=$(mktemp)
