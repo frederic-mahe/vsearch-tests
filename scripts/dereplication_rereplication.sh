@@ -1014,22 +1014,27 @@ printf ">s1\nAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc hit length is correct in 3rd column #1
-DESCRIPTION="--uc hit length is correct in 3rd column #1"
-HIT_LENGTH=$(printf ">s1\nAA\n>s2\nAA\n" | \
-		            "${VSEARCH}" --derep_fulllength - --uc - \
-				                 --minseqlength 1 2> /dev/null | \
-		            awk '/^H/ {v = $3} END {print v}' -)
-[[ "${HIT_LENGTH}" == "2" ]] && \
+## --uc hit length is correct in (H line, 3rd column)
+DESCRIPTION="--uc hit length is correct in (H line, 3rd column) #1"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '/^H/ {exit $3 == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc hit length is correct in 3rd column #2
-DESCRIPTION="--uc hit length is correct in 3rd column #2"
-HIT_LENGTH=$(printf ">s1\nA\n>s2\nA\n" | "${VSEARCH}" --derep_fulllength - --uc - \
-		                                              --minseqlength 1 2> /dev/null | \
-		            awk '/^H/ {v = $3} END {print v}' -)
-(( "${HIT_LENGTH}" == 1 )) && \
+## --uc hit length is correct in (H line, 3rd column)
+DESCRIPTION="--uc hit length is correct in (H line, 3rd column) #2"
+printf ">s1\nAA\n>s2\nAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '/^H/ {exit $3 == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
