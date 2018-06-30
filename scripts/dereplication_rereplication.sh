@@ -942,14 +942,14 @@ printf ">s1\nA\n>s2\nA\n>s3\nG\n" | \
         failure "${DESCRIPTION}"
 
 ## --uc cluster numbering is zero-based (first cluster is number zero)
-DESCRIPTION="--uc cluster numbering is zero-based (C lines, 2nd column)"
-printf ">s1\nA\n" | \
+DESCRIPTION="--uc cluster numbering is zero-based (2nd column = 0)"
+printf ">s1\nA\n>s2\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
         --quiet \
         --uc - | \
-    awk '/^C/ {exit $2 == 0 ? 0 : 1}' && \
+    awk '$2 != 0 {c += 1} END {exit c > 0 ? 1 : 0}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
