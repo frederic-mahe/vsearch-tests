@@ -843,16 +843,17 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc number of hits is correct in 1st column #1
-DESCRIPTION="--uc number of hits is correct in st column #1"
-OUTPUT=$(mktemp)
-printf ">a\nAA\n>b\nCC\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-NUMBER_OF_HITS=$(grep -c "^H" "${OUTPUT}")
-(( "${NUMBER_OF_HITS}" == 0 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+## --uc returns no H line (first column) when there is no hit
+DESCRIPTION="--uc returns no H line when there is no hit"
+printf ">a\nA\n>b\nG\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## --uc number of hits is correct in 1st column #2
 DESCRIPTION="--uc number of hits is correct in st column #2"
