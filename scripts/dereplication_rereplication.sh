@@ -831,15 +831,17 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-## --uc creates and fills file given in argument
-OUTPUT=$(mktemp)
-DESCRIPTION="--uc creates and fills file given in argument"
-printf ">a_1\nAAAA\n>b_1\nAAAC\n>c_1\nGGGG" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-[[ -s "${OUTPUT}" ]] && \
+## --uc outputs data
+DESCRIPTION="--uc outputs data"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    grep -q "." && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"  
 
 ## --uc number of hits is correct in 1st column #1
 DESCRIPTION="--uc number of hits is correct in st column #1"
