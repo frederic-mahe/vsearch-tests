@@ -954,15 +954,15 @@ printf ">s1\nA\n>s2\nA\n" | \
         failure "${DESCRIPTION}"
 
 ## --uc cluster numbering is zero-based: with two clusters, the
-## highest cluster number (n) is 1
-DESCRIPTION="--uc cluster numbering is zero-based (2nd C line, 2nd column = 1)"
+## highest cluster number (n) is 1, for any line
+DESCRIPTION="--uc cluster numbering is zero-based (2nd cluster, 2nd column = 1)"
 printf ">s1\nG\n>s2\nA\n>s3\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
         --quiet \
         --uc - | \
-    awk '/^C/ && $2 > n {n = $2} END {exit n == 1 ? 0 : 1}' && \
+    awk '$2 > n {n = $2} END {exit n == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
