@@ -867,16 +867,17 @@ printf ">a\nA\n>b\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc number of centroids is correct in 1st column
-DESCRIPTION="--uc number of centroids is correct in 1st column"
-OUTPUT=$(mktemp)
-printf ">s1\nAA\n>s2\nAA\n>s3\nGG\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-NUMBER_OF_CENTROIDS=$(grep -c "^S" "${OUTPUT}")
-(( "${NUMBER_OF_CENTROIDS}" == 2 )) && \
+## --uc returns the expected number of S lines (centroids)
+DESCRIPTION="--uc returns the expected number of S lines (centroids)"
+printf ">s1\nA\n>s2\nA\n>s3\nG\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '/^S/ {c += 1} END {exit c == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --uc number of cluster records is correct in 1st column
 DESCRIPTION="--uc number of cluster records is correct in 1st column"
