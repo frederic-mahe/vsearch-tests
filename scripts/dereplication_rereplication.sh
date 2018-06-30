@@ -1169,9 +1169,12 @@ CENTROID_LABEL=$(printf ">a_3\nAAAA\n>b_3\nAAAC\n>c_3\nAACC\n>d_3\nAGCC\n" | \
 
 ## --xsize is accepted
 DESCRIPTION="--xsize is accepted"
-printf ">a\nAAAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --xsize --output - \
-		         --minseqlength 1 &> /dev/null && \
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xsize \
+        --output - &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
