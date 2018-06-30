@@ -812,13 +812,14 @@ printf ">a\nAAAA\n" | \
 #*****************************************************************************#
 
 ## --uc is accepted
-OUTPUT=$(mktemp)
 DESCRIPTION="--uc is accepted"
-printf ">a\nAAAA\n>b\nAAAC\n>c\nGGGG" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null && \
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --uc - &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --uc fails if no filename given
 OUTPUT=$(mktemp)
