@@ -47,16 +47,16 @@ printf '@s1\nA\n+\nH\n' | \
 DESCRIPTION="--fastq_eestats Pos is correct #1"
 POS=$(printf '@s1\nA\n+\nH\n' | \
 		     "${VSEARCH}" --fastq_eestats - --output - 2> /dev/null | \
-             wc -l -)
-[[ $(echo "${POS}") == "2 -" ]] &&
+             wc -l)
+[[ $(echo ${POS}) == 2 ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_eestats Pos is correct #2"
 POS=$(printf '@s1\nAA\n+\nHH\n' | \
 		     "${VSEARCH}" --fastq_eestats - --output - 2> /dev/null | \
-             wc -l -)
-[[ $(echo "${POS}") == "3 -" ]] &&
+             wc -l)
+[[ $(echo ${POS}) == 3 ]] &&
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

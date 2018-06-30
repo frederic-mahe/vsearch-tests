@@ -35,6 +35,10 @@ VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
 [[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
+if [[ ${OSTYPE} =~ darwin ]] ; then
+    md5sum() { md5 -r ; }
+    sha1sum() { shasum ; }
+fi
 
 #*****************************************************************************#
 #                                                                             #
@@ -167,19 +171,18 @@ printf ">s1\nA\n" | \
 ## those 2 tests should fail because Qscores are outside 0-41 range specified by default
 ## see fastq_qmax
 DESCRIPTION="--fastx_subsample --fastq_ascii fails when Qscore is outside specified range +64"
-printf "@s1\nA\n+\na\n" | \
-    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
-		 --fastq_ascii 33 --sizein &> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_subsample --fastq_ascii fails when Qscore is outside specified range +33"
-OUTPUT=$(mktemp)
+printf "@s1\nA\n+\nj\n" | \
     "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
 		 --fastq_ascii 64 --sizein &> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-    rm "${OUTPUT}"
+
+DESCRIPTION="--fastx_subsample --fastq_ascii fails when Qscore is outside specified range +33"
+printf "@s1\nA\n+\nK\n" | \
+    "${VSEARCH}" --fastx_subsample - --sample_size 1 --fastaout - \
+		 --fastq_ascii 33 --sizein &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -612,7 +615,7 @@ printf ">s1\nA\n" | \
     "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --relabel_md5 \
 		 --sample_size 1 &> /dev/null
 [[ $(awk -F '>' 'NR==1 {print $2}' "${OUTPUT}") == \
-   $(printf "A" | md5sum - | awk '{printf $1}') ]] && \
+   $(printf "A" | md5sum | awk '{printf $1}') ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"       
@@ -623,7 +626,7 @@ printf ">s1\nA\n>s2\nC\n" | \
     "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --relabel_md5 \
 		 --sample_size 2 &> /dev/null
 [[ $(awk -F '>' 'NR==3 {print $2}' "${OUTPUT}") == \
-   $(printf "C" | md5sum - | awk '{printf $1}') ]] && \
+   $(printf "C" | md5sum | awk '{printf $1}') ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"       
@@ -634,7 +637,7 @@ printf "@s1\nA\n+\nG\n" | \
     "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --relabel_md5 \
 		 --sample_size 1 &> /dev/null
 [[ $(awk -F '@' 'NR==1 {print $2}' "${OUTPUT}") == \
-   $(printf "A" | md5sum - | awk '{printf $1}') ]] && \
+   $(printf "A" | md5sum | awk '{printf $1}') ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -645,7 +648,7 @@ printf "@s1\nA\n+\nG\n@s2\nC\n+\nG\n" | \
     "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --relabel_md5 \
 		 --sample_size 2 &> /dev/null
 [[ $(awk -F '@' 'NR==5 {print $2}' "${OUTPUT}") == \
-   $(printf "C" | md5sum - | awk '{printf $1}') ]] && \
+   $(printf "C" | md5sum | awk '{printf $1}') ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"       
@@ -686,7 +689,7 @@ printf ">s1\nA\n" | \
     "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --relabel_sha1 \
 		 --sample_size 1 &> /dev/null
 [[ $(awk -F '>' 'NR==1 {print $2}' "${OUTPUT}") == \
-   $(printf "A" | sha1sum - | awk '{printf $1}') ]] && \
+   $(printf "A" | sha1sum | awk '{printf $1}') ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"       
@@ -697,7 +700,7 @@ printf ">s1\nA\n>s2\nC\n" | \
     "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --relabel_sha1 \
 		 --sample_size 2 &> /dev/null
 [[ $(awk -F '>' 'NR==3 {print $2}' "${OUTPUT}") == \
-   $(printf "C" | sha1sum - | awk '{printf $1}') ]] && \
+   $(printf "C" | sha1sum | awk '{printf $1}') ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"       
@@ -708,7 +711,7 @@ printf "@s1\nA\n+\nG\n" | \
     "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --relabel_sha1 \
 		 --sample_size 1 &> /dev/null
 [[ $(awk -F '@' 'NR==1 {print $2}' "${OUTPUT}") == \
-   $(printf "A" | sha1sum - | awk '{printf $1}') ]] && \
+   $(printf "A" | sha1sum | awk '{printf $1}') ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"       
@@ -719,7 +722,7 @@ printf "@s1\nA\n+\nG\n@s2\nC\n+\nG\n" | \
     "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --relabel_sha1 \
 		 --sample_size 2 &> /dev/null
 [[ $(awk -F '@' 'NR==5 {print $2}' "${OUTPUT}") == \
-   $(printf "C" | sha1sum - | awk '{printf $1}') ]] && \
+   $(printf "C" | sha1sum | awk '{printf $1}') ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"       
@@ -768,7 +771,7 @@ OUTPUT=$(mktemp)
 printf ">s1\nA\n>s2\nA\n" | \
     "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --sample_pct 50.00 \
        &> /dev/null
-[[ $(wc -l < "${OUTPUT}") == "2" ]] && \
+[[ $(echo $(wc -l < "${OUTPUT}")) == "2" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -794,7 +797,7 @@ printf "@s1\nA\n+\nG\n" | \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_subsample --sample_pct poduces correct results #1 fastq"
+DESCRIPTION="--fastx_subsample --sample_pct produces correct results #1 fastq"
 OUTPUT=$(mktemp)
 printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" | \
     "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --sample_pct 100.00 \
@@ -804,12 +807,12 @@ printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" | \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
-DESCRIPTION="--fastx_subsample --sample_pct poduces correct results #2 fastq"
+DESCRIPTION="--fastx_subsample --sample_pct produces correct results #2 fastq"
 OUTPUT=$(mktemp)
 printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" | \
     "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --sample_pct 50.00 \
        &> /dev/null
-[[ $(wc -l < "${OUTPUT}") == "4" ]] && \
+[[ $(echo $(wc -l < "${OUTPUT}")) == "4" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -847,7 +850,7 @@ OUTPUT=$(mktemp)
 printf ">s1\nA\n>s2\nA\n" | \
     "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --sample_size 1 \
 	&> /dev/null
-    [[ $(wc -l < "${OUTPUT}") == "2" ]] && \
+    [[ $(echo $(wc -l < "${OUTPUT}")) == "2" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -857,7 +860,7 @@ OUTPUT=$(mktemp)
 printf ">s1\nA\n>s2\nA\n" | \
     "${VSEARCH}" --fastx_subsample - --fastaout "${OUTPUT}" --sample_size 2 \
 	&> /dev/null
-    [[ $(wc -l < "${OUTPUT}") == "4" ]] && \
+    [[ $(echo $(wc -l < "${OUTPUT}")) == "4" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -887,7 +890,7 @@ OUTPUT=$(mktemp)
 printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" | \
     "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --sample_size 1 \
 	&> /dev/null
-    [[ $(wc -l < "${OUTPUT}") == "4" ]] && \
+    [[ $(echo $(wc -l < "${OUTPUT}")) == "4" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
@@ -897,7 +900,7 @@ OUTPUT=$(mktemp)
 printf "@s1\nA\n+\nG\n@s2\nA\n+\nG\n" | \
     "${VSEARCH}" --fastx_subsample - --fastqout "${OUTPUT}" --sample_size 2 \
 	&> /dev/null
-    [[ $(wc -l < "${OUTPUT}") == "8" ]] && \
+    [[ $(echo $(wc -l < "${OUTPUT}")) == "8" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
