@@ -856,6 +856,30 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --uc returns a tab-delimited table with 10 fields
+DESCRIPTION="--uc returns a tab-delimited table with 10 fields"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk 'NF != 10 {c += 1} END {exit c == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --uc returns only lines starting with S, C or H
+DESCRIPTION="--uc returns only lines starting with S, C or H"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    grep -q "^[^HCS]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --uc returns a S line (centroid) and a C lines (cluster) for each input sequence
 DESCRIPTION="--uc returns a S line (centroid) and a C lines (cluster) for each sequence"
 printf ">s1\nA\n" | \
