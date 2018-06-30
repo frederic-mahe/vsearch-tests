@@ -1142,17 +1142,13 @@ CENTROID_LABEL=$(printf ">s1\nAA\n>s2\nAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc 10th column is * with C
-OUTPUT=$(mktemp)
+## --uc 10th column is * with C (it is different than * only for H records)
 DESCRIPTION="--uc 10th column is * with C"
-CENTROID_LABEL=$(printf ">s1\nAA\n" | \
-			"${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" \
-				     --minseqlength 1 2> /dev/null | \
-			awk '/^C/ {v = $10} END {print v}' "${OUTPUT}")
-[[ "${CENTROID_LABEL}" == "*" ]] && \
+printf ">s1\nA\n" | \
+	"${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 --quiet | \
+    awk '/^C/ {v = $10} END {exit v ~ "*" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --uc 10th column is * with S
 DESCRIPTION="--uc 10th column is * with S"
