@@ -966,16 +966,17 @@ printf ">s1\nG\n>s2\nA\n>s3\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --uc cluster size is correct in 3rd column
-DESCRIPTION="--uc cluster number is correct in 3rd column"
-OUTPUT=$(mktemp)
-printf ">s1\nAA\n>s2\nAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-CLUSTER_SIZE=$(awk '/^C/ {v = $3} END {print v}' "${OUTPUT}")
-[[ "${CLUSTER_SIZE}" == "2" ]] && \
+## --uc cluster size is correct for C line (3rd column)
+DESCRIPTION="--uc cluster size is correct for C line (3rd column)"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '/^C/ {exit $3 == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --uc centroid length is correct in 3rd column #1
 DESCRIPTION="--uc centroid length is correct in 3rd column #1"
