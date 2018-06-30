@@ -1178,7 +1178,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --xsize strips abundance values
+## --xsize strips abundance values (removes the ";size=INT[;]" annotations)
 DESCRIPTION="--xsize strips abundance values"
 printf ">s;size=1;\nA\n" | \
     "${VSEARCH}" \
