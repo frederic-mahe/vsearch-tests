@@ -855,16 +855,17 @@ printf ">a\nA\n>b\nG\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-## --uc number of hits is correct in 1st column #2
-DESCRIPTION="--uc number of hits is correct in st column #2"
-OUTPUT=$(mktemp)
-printf ">s1\nGG\n>s2\nAA\n>s3\nAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --uc "${OUTPUT}" --minseqlength 1 &> /dev/null
-NUMBER_OF_HITS=$(grep -c "^H" "${OUTPUT}")
-(( "${NUMBER_OF_HITS}" == 1 )) && \
+## --uc returns a H line (first column) when there is a hit
+DESCRIPTION="--uc returns a H line when there is a hit"
+printf ">a\nA\n>b\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --uc number of centroids is correct in 1st column
 DESCRIPTION="--uc number of centroids is correct in 1st column"
