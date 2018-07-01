@@ -96,6 +96,34 @@ printf ">s2\nA\n>s1\nA\n" | \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
+## --derep_fulllength distinct sequences are sorted by
+## alphabetical order of headers (s1 before s2)
+DESCRIPTION="--derep_fulllength distinct sequences are sorted by header alphabetical order"
+printf ">s2\nA\n>s1\nG\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s1@G@>s2@A@$" && \
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
+
+## --derep_fulllength distinct sequences are not sorted by
+## alphabetical order of DNA strings (G before A)
+DESCRIPTION="--derep_fulllength distinct sequences are not sorted by DNA alphabetical order"
+printf ">s2\nA\n>s1\nG\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s1@G@>s2@A@$" && \
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
+
 ## --derep_fulllength outputs expected results (alphabetical order)
 ## Sort by alphabet but only takes order in account when dereplecating
 ## (first will be the remaining)
