@@ -84,8 +84,9 @@ printf ">s1\nAA\n>s2\nA\n" | \
         success "${DESCRIPTION}"
 
 ## --derep_fulllength replicate sequences are not sorted by
-## alphabetical order of headers (s2 before s1)
-DESCRIPTION="--derep_fulllength replicate sequences are not sorted by header alphabetical order"
+## alphabetical order of headers. Identical sequences receive the
+## header of the first sequence of their group (s2 before s1)
+DESCRIPTION="--derep_fulllength identical seqs receive the header of the first seq of the group"
 printf ">s2\nA\n>s1\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
