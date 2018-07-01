@@ -839,57 +839,118 @@ printf ">a\nAAAA\n" | \
 
 ## --topn is accepted
 DESCRIPTION="--topn is accepted"
-printf ">a\nAAAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --output - --topn 2 &> /dev/null &&\
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --topn 1 \
+        --output - &> /dev/null &&\
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
-## --topn discard sequences
-OUTPUT=$(mktemp)
-DESCRIPTION="--topn discard sequences"
-printf ">s1;size=1;\nAAAA\n>s2;size=2;\nCCCC\n>s3;size=3;\nGGGG\n" | \
-    "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --topn 2 \
-		         --sizein --minseqlength 1 &> /dev/null
-[[ $(cat "${OUTPUT}") == $(printf ">s3;size=3;\nGGGG\n>s2;size=2;\nCCCC\n") ]] &&\
+## --topn keeps only n sequences
+DESCRIPTION="--topn keeps only n sequences"
+printf ">s1\nA\n>s2\nG\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --topn 1 \
+        --output - | \
+    awk '/^>/ {c += 1} END {exit c == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
-## --topn discard sequences after processings (derep_fulllength)
-OUTPUT=$(mktemp)
-DESCRIPTION="--topn discard sequences after processings (derep_fulllength)"
-printf ">s1;size=5;\nAAAA\n>s2;size=3;\nCCCC\n>s3;size=3;\nCCCC\n" | \
-    "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --topn 1 \
-		         --sizein --sizeout --minseqlength 1 &> /dev/null
-[[ $(cat "${OUTPUT}") == $(printf ">s2;size=6;\nCCCC") ]] &&\
+## --topn returns only the n most abundant sequences (s2 in this example)
+DESCRIPTION="--topn returns only the n most abundant sequences"
+printf ">s1;size=1;\nA\n>s2;size=2;\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --topn 1 \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s2;size=2;@C@$" &&\
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
-## --topn discard sequences after processings (derep_prefix)
-OUTPUT=$(mktemp)
-DESCRIPTION="--topn discard sequences after processings (derep_prefix)"
-printf ">s1;size=5;\nAAAA\n>s2;size=3;\nCCCC\n>s3;size=3;\nCC\n" | \
-    "${VSEARCH}" --derep_prefix - --output "${OUTPUT}" --topn 1 \
-		         --sizein --sizeout --minseqlength 1 &> /dev/null
-[[ $(cat "${OUTPUT}") == $(printf ">s2;size=6;\nCCCC") ]] &&\
+## --topn returns only the n most abundant sequences after full length
+## dereplication (s1 in this example)
+DESCRIPTION="--topn returns the n most abundant sequences after full-length dereplication"
+printf ">s1;size=1;\nA\n>s2;size=2;\nC\n>s3;size=2;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --topn 1 \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s1;size=3;@A@$" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+
+## --topn returns only the n most abundant sequences after prefix
+## dereplication (s1 in this example)
+DESCRIPTION="--topn returns the n most abundant sequences after prefix dereplication"
+printf ">s1;size=1;\nAA\n>s2;size=2;\nC\n>s3;size=2;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --topn 1 \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s1;size=3;@AA@$" && \
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
 
 ## --topn fails with negative arguments
 DESCRIPTION="--topn fails with negative arguments"
-printf ">a\nAAAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --output - --topn -1 &> /dev/null &&\
-    failure "${DESCRIPTION}" || \
-	    succes "${DESCRIPTION}"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --topn "-1" \
+        --output - &> /dev/null &&\
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
 
-## --topn fails with null arguments
-DESCRIPTION="--topn fails with null arguments"
-printf ">a\nAAAA\n" | \
-    "${VSEARCH}" --derep_fulllength - --output - --topn 0 &> /dev/null &&\
+## --topn zero should return no sequences (or fail: only values >= 1 should be accepted)
+DESCRIPTION="--topn zero should return no sequences (or fail)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --topn 0 \
+        --quiet \
+        --output - | \
+    grep -q "." && \
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
+
+## --topn fails with non-numerical argument
+DESCRIPTION="--topn fails with non-numerical argument"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --topn A \
+        --output - &> /dev/null &&\
+    failure "${DESCRIPTION}" || \
+	    success "${DESCRIPTION}"
+
+## --topn accepts abundance values equal to 2^32
+DESCRIPTION="--topn accepts abundance values equal to 2^32"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --topn $(( 1 << 32 )) \
+        --output - &> /dev/null &&\
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
