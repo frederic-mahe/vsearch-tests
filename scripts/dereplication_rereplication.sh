@@ -124,15 +124,18 @@ printf ">s2\nA\n>s1\nG\n" | \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
-## --derep_fulllength outputs expected results (case insensitive)
-DESCRIPTION="--derep_fulllength outputs expected results (case insensitive)"
-OUTPUT=$(mktemp)
-printf ">s\nA\n>d\ng\n>f\nA\n>h\nG\n" | \
-    "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
-[[ $(cat "${OUTPUT}") == $(printf ">d\ng\n>s\nA") ]] &&
+## --derep_fulllength is case insensitive
+DESCRIPTION="--derep_fulllength is case insensitive"
+printf ">s1\nA\n>s2\na\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s1@A@$" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --derep_fulllength outputs expected results (T = U)
 DESCRIPTION="--derep_fulllength outputs expected results (T = U)"
