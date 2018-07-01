@@ -82,6 +82,20 @@ printf ">s1\nAA\n>s2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --derep_fulllength replicate sequences are not sorted by
+## alphabetical order of headers (s2 before s1)
+DESCRIPTION="--derep_fulllength replicate sequences are not sorted by header alphabetical order"
+printf ">s2\nA\n>s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s2@A@$" && \
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
+
 ## --derep_fulllength outputs expected results (alphabetical order)
 ## Sort by alphabet but only takes order in account when dereplecating
 ## (first will be the remaining)
@@ -114,6 +128,7 @@ printf ">s\nT\n>d\nu\n" | \
 	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
+## TODO: impact of sizein on seed selection
 
 #*****************************************************************************#
 #                                                                             #
