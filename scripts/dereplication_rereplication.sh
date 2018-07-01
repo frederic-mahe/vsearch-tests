@@ -124,18 +124,6 @@ printf ">s2\nA\n>s1\nG\n" | \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
-## --derep_fulllength outputs expected results (alphabetical order)
-## Sort by alphabet but only takes order in account when dereplecating
-## (first will be the remaining)
-DESCRIPTION="--derep_fulllength outputs expected results (alphabetical order)"
-OUTPUT=$(mktemp)
-printf ">c\nA\n>b\nG\n>a\nG\n" | \
-    "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
-[[ $(cat "${OUTPUT}") == $(printf ">b\nG\n>c\nA\n") ]] &&
-    success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
-rm "${OUTPUT}"
-
 ## --derep_fulllength outputs expected results (case insensitive)
 DESCRIPTION="--derep_fulllength outputs expected results (case insensitive)"
 OUTPUT=$(mktemp)
