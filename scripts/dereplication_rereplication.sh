@@ -57,15 +57,18 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --derep_fulllength outputs expected results
+## --derep_fulllength outputs expected results (trick to check a multiline pattern)
 DESCRIPTION="--derep_fulllength outputs expected results"
-OUTPUT=$(mktemp)
-printf ">s\nA\n>d\nA\n" | \
-    "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
-[[ $(cat "${OUTPUT}") == $(printf ">s\nA") ]] &&
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s1@A@$" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
-rm "${OUTPUT}"
 
 ## --derep_fulllength takes terminal gaps into account (substring aren't merged)
 DESCRIPTION="--derep_fulllength takes terminal gaps into account"
