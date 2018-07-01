@@ -21,7 +21,9 @@ success () {
 ## Is vsearch installed?
 VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
-[[ "${VSEARCH}" ]] &> /dev/null && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
+[[ "${VSEARCH}" ]] &> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 if [[ ${OSTYPE} =~ darwin ]] ; then
     md5sum() { md5 -r ; }
@@ -37,19 +39,23 @@ fi
 ## --derep_fulllength is accepted
 DESCRIPTION="--derep_fulllength is accepted"
 printf ">s\nA\n" | \
-    "${VSEARCH}" --derep_fulllength - --output - &> /dev/null && \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output - &> /dev/null && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
-## --derep_fulllength fill a file
-DESCRIPTION="--derep_fulllength fill a file"
-OUTPUT=$(mktemp)
+## --derep_fulllength outputs data
+DESCRIPTION="--derep_fulllength outputs data"
 printf ">s\nA\n" | \
-    "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
-[[ -s "${OUTPUT}" ]] &&
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --quiet \
+        --minseqlength 1 \
+        --output - | \
+    grep -q "." && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+        failure "${DESCRIPTION}"
 
 ## --derep_fulllength outputs expected results
 DESCRIPTION="--derep_fulllength outputs expected results"
