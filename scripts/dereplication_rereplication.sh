@@ -176,7 +176,6 @@ printf ">s1\nU\n" | \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
-
 #*****************************************************************************#
 #                                                                             #
 #                                --derep_prefix                               #
@@ -639,6 +638,19 @@ printf ">a\nAAAA\n" | \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
+
+## --sizein does not strip abundance values (keeps the ;size=INT[;] annotation)
+DESCRIPTION="--sizein does not strip abundance values"
+printf ">s;size=1;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output - | \
+    grep -q "^>s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## --sizein is mandatory to process abundance with --rereplicate
 OUTPUT=$(mktemp)
@@ -1336,7 +1348,21 @@ printf ">s;size=1;\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
-        --sizein --xsize \
+        --sizein \
+        --xsize \
+        --quiet \
+        --output - | \
+    grep -q "^>s;size=1" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --xsize strips abundance values (removes the ";size=INT[;]" annotations)
+DESCRIPTION="--xsize strips abundance values (without --sizein)"
+printf ">s;size=1;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xsize \
         --quiet \
         --output - | \
     grep -q "^>s;size=1" && \
