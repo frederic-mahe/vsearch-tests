@@ -176,7 +176,6 @@ printf ">s1\nU\n" | \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
-## TODO: impact of sizein on seed selection
 
 #*****************************************************************************#
 #                                                                             #
