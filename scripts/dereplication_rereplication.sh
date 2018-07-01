@@ -150,15 +150,31 @@ printf ">s1\na\n>s2\nA\n" | \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
-## --derep_fulllength outputs expected results (T = U)
-DESCRIPTION="--derep_fulllength outputs expected results (T = U)"
-OUTPUT=$(mktemp)
-printf ">s\nT\n>d\nu\n" | \
-    "${VSEARCH}" --derep_fulllength - --output "${OUTPUT}" --minseqlength 1 &> /dev/null
-[[ $(cat "${OUTPUT}") == $(printf ">s\nT") ]] &&
+## --derep_fulllength T and U are considered the same
+DESCRIPTION="--derep_fulllength T and U are considered the same"
+printf ">s1\nT\n>s2\nU\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s1@T@$" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
-rm "${OUTPUT}"
+
+## --derep_fulllength does not replace U with T in its output
+DESCRIPTION="--derep_fulllength does not replace U with T in its output"
+printf ">s1\nU\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s1@U@$" && \
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
 
 ## TODO: impact of sizein on seed selection
 
