@@ -79,8 +79,8 @@ printf ">s1\nAA\n>s2\nA\n" | \
         --quiet \
         --uc - | \
     grep -q "^H" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## --derep_fulllength replicate sequences are not sorted by
 ## alphabetical order of headers (s2 before s1)
