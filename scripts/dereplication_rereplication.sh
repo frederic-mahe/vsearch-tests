@@ -1025,8 +1025,8 @@ printf ">s1\nA\n>s2\nA\n" | \
         --quiet \
         --uc - | \
     grep -q "^[^HCS]" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## --uc returns a S line (centroid) and a C lines (cluster) for each input sequence
 DESCRIPTION="--uc returns a S line (centroid) and a C lines (cluster) for each sequence"
