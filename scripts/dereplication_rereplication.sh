@@ -30,6 +30,7 @@ if [[ ${OSTYPE} =~ darwin ]] ; then
     sha1sum() { shasum ; }
 fi
 
+
 #*****************************************************************************#
 #                                                                             #
 #                              --derep_fullength                              #
@@ -58,7 +59,7 @@ printf ">s\nA\n" | \
         failure "${DESCRIPTION}"
 
 ## --derep_fulllength outputs expected results (trick to check a multiline pattern)
-DESCRIPTION="--derep_fulllength outputs expected results"
+DESCRIPTION="--derep_fulllength outputs expected results (in fasta format)"
 printf ">s1\nA\n>s2\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
@@ -176,6 +177,7 @@ printf ">s1\nU\n" | \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
+
 #*****************************************************************************#
 #                                                                             #
 #                                --derep_prefix                               #
@@ -284,6 +286,7 @@ printf ">s\nTUTUTT\n>d\nTUTU\n" | \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 rm "${OUTPUT}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -394,20 +397,6 @@ printf ">s\nA\n" | \
     "${VSEARCH}" --derep_prefix - --output - --minuniquesize 0 &> /dev/null && \
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                                  --output                                   #
-#                                                                             #
-#*****************************************************************************#
-
-## --output is accepted
-DESCRIPTION="--output is accepted"
-printf ">s\nA\n" | \
-    "${VSEARCH}" --derep_prefix - --output - &> /dev/null && \
-    success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -840,6 +829,7 @@ printf ">a\nAAAA\n" | \
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
 
+
 #*****************************************************************************#
 #                                                                             #
 #                                   --topn                                    #
@@ -899,6 +889,7 @@ printf ">a\nAAAA\n" | \
     "${VSEARCH}" --derep_fulllength - --output - --topn 0 &> /dev/null &&\
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
