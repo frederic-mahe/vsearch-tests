@@ -124,8 +124,8 @@ printf ">s2\nA\n>s1\nG\n" | \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
-## --derep_fulllength is case insensitive
-DESCRIPTION="--derep_fulllength is case insensitive"
+## --derep_fulllength sequence comparison is case insensitive
+DESCRIPTION="--derep_fulllength sequence comparison is case insensitive"
 printf ">s1\nA\n>s2\na\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
@@ -134,6 +134,19 @@ printf ">s1\nA\n>s2\na\n" | \
         --output - | \
     tr "\n" "@" | \
     grep -q "^>s1@A@$" && \
+    success "${DESCRIPTION}" || \
+	    failure "${DESCRIPTION}"
+
+## --derep_fulllength preserves the case of the first occurrence of each sequence
+DESCRIPTION="--derep_fulllength preserves the case of the first occurrence of each sequence"
+printf ">s1\na\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -q "^>s1@a@$" && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
