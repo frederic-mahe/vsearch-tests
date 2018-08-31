@@ -313,14 +313,14 @@ RATEPCT=$(printf '@s1\nAAA\n+\n++0\n@s2\nAAA\n+\n++0' | \
 #                                                                             #
 #*****************************************************************************#
 
-DESCRIPTION="--fastq_stats RatePct is correct"
-RATEPCT=$(printf "@s1\nAAA\n+\n('&\n" | \
-		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null) #| \
+#DESCRIPTION="--fastq_stats RatePct is correct"
+#RATEPCT=$(printf "@s1\nAAA\n+\n('&\n" | \
+#		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null) #| \
 #                   awk 'NR==32 {print $2}' -)
-echo "${RATEPCT}"
-[[ $(echo "${RATEPCT}") == "7.721%" ]] && \
-    success  "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+#echo "${RATEPCT}"
+#[[ $(echo "${RATEPCT}") == "7.721%" ]] && \
+#    success  "${DESCRIPTION}" || \
+#        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
