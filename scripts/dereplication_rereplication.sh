@@ -947,7 +947,7 @@ DESCRIPTION="--topn accepts abundance values equal to 2^32"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
-        --topn $(( 1 << 32 )) \
+        --topn $(( 2 ** 32 )) \
         --output - &> /dev/null &&\
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
