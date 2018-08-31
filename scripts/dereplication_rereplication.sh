@@ -1363,7 +1363,7 @@ CENTROID_LABEL=$(printf ">s1\nAA\n>s2\nAA\n" | \
 DESCRIPTION="--uc 10th column is * with C"
 printf ">s1\nA\n" | \
 	"${VSEARCH}" --derep_fulllength - --uc - --minseqlength 1 --quiet | \
-    awk '/^C/ {v = $10} END {exit v ~ "*" ? 0 : 1}' && \
+    awk '/^C/ {v = $10} END {exit v ~ "[*]" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
