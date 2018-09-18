@@ -2508,4 +2508,79 @@ printf "@s1\nA\n+\nI\n" | \
 ## https://github.com/torognes/vsearch/issues/304
 
 
+
+#******************************************************************************#
+#                                                                              #
+#   wrong placement of semicolons in the output of the dereplication command   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/323
+
+# With abundance annotations in the input, without --sizein:
+DESCRIPTION="placement of semicolons in dereplicated headers # 1 (issue 323)"
+printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -Eq "^>s1;size=2;?$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# With abundance annotations in the input, with --sizein:
+DESCRIPTION="placement of semicolons in dereplicated headers # 2 (issue 323)"
+printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
+        "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --sizein \
+        --sizeout \
+        --output - | \
+    grep -Eq "^>s1;size=3;?$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Without abundance annotation in the input, without --sizeout:
+DESCRIPTION="placement of semicolons in dereplicated headers # 3 (issue 323)"
+printf ">s1\nA\n>s2\nA\n" | \
+        "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    grep -Eq "^>s1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Without abundance annotation in the input, with --sizeout:
+DESCRIPTION="placement of semicolons in dereplicated headers # 4 (issue 323)"
+printf ">s1\nA\n>s2\nA\n" | \
+        "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -Eq "^>s1;size=2;?$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# With abundance annotations in the input, with --sizein but no --sizeout:
+DESCRIPTION="placement of semicolons in dereplicated headers # 5 (issue 323)"
+printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
+        "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --sizein \
+        --output - | \
+    grep -Eq "^>s1;size=2;?$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 exit 0
