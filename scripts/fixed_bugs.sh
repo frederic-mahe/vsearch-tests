@@ -2583,4 +2583,41 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#******************************************************************************#
+#                                                                              #
+#  Problem with eestats2 for longer reads (short reads incorrectly accounted)  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/336
+
+# vsearch is wrongly extending shorter sequences up to the length of
+# the longest previously seen sequence, assuming perfect quality for
+# the extensions. If all sequences are equally long, the results are
+# the same.
+
+DESCRIPTION="eestats2: wrong MaxEE when mixing short & long reads (issue 336)"
+printf "@1\nAA\n+\nAA\n@2\nA\n+\nA\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 /dev/stdin \
+        --length_cutoffs 1,2,1 \
+        --quiet \
+        --output - | \
+    grep -Eq " +2( +2\( 50.0%\)){3}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="eestats2: correct MaxEE for same-length reads (issue 336)"
+printf "@1\nAA\n+\nAA\n@2\nAA\n+\nAA\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 /dev/stdin \
+        --length_cutoffs 1,2,1 \
+        --quiet \
+        --output - | \
+    grep -Eq " +2( +2\(100.0%\)){3}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
