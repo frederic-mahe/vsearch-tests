@@ -2620,4 +2620,41 @@ printf "@1\nAA\n+\nAA\n@2\nAA\n+\nAA\n" | \
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#    derep_fulllength fails to remove the part of the header after the space   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/338
+
+# The part of the header line from the first space should be ignored
+# (unless the --notrunclabels option is in effect)
+
+DESCRIPTION="derep_fulllength: header stops at first space (issue 338)"
+printf ">header meta data\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizeout \
+        --quiet \
+        --output - | \
+    grep -q ">header;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="derep_fulllength: notrunclabels includes full header (issue 338)"
+printf ">header meta data\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --notrunclabels \
+        --sizeout \
+        --quiet \
+        --output - | \
+    grep -q ">header meta data;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
