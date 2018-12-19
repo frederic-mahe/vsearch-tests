@@ -50,7 +50,7 @@ printf "@s1\nACGT\n+\nGGGG" |
 
 DESCRIPTION="--fastq_stats --fastq_ascii is accepted"
 printf "@s1\nACGT\n+\nGGGG" |
-"${VSEARCH}" --fastq_stats - --fastq_ascii 32 --log - &> /dev/null && \
+"${VSEARCH}" --fastq_stats - --fastq_ascii 33 --log - &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
