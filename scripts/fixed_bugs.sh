@@ -2669,4 +2669,38 @@ printf ">header meta data\nA\n" | \
 ## no test
 
 
+#******************************************************************************#
+#                                                                              #
+#      fastq_stats: corner case when computing truncation percentage           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/355
+
+## Bug in the log produced by fastq_stats with an input sequence of
+## length one. Output was:
+
+# Truncate at first Q
+#   Len     Q=5    Q=10    Q=15    Q=20
+# -----  ------  ------  ------  ------
+#     1  100.0%  100.0%  100.0%  100.0%
+#     0    0.0%    0.0%    0.0%  1640100.0%
+
+# instead of:
+
+# Truncate at first Q
+#   Len     Q=5    Q=10    Q=15    Q=20
+# -----  ------  ------  ------  ------
+#     1  100.0%  100.0%  100.0%  100.0%
+
+DESCRIPTION="fastq_stats: wrong truncation % when max length is 1 (issue 355)"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -Eq "^[[:blank:]]+0[[:blank:]]+" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 exit 0
