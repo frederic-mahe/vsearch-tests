@@ -216,22 +216,22 @@ echo -e "@;size=10\nACGT\n+\nGGGG\n" | \
     "${VSEARCH}" --sample_size 1 --fastqout - &> /dev/null && \
     failure "${DESCRIPTION}" || success "${DESCRIPTION}"
 
-## Define ASCII characters accepted in fasta identifiers
-DESCRIPTION="ascii characters 1-9, 11-12, 14-31, 33-127 allowed in fasta identifiers"
+## Define ASCII characters accepted in fastq identifiers
+DESCRIPTION="ascii characters 1-9, 11-12, 14-31, 33-127 allowed in fastq identifiers"
 for i in {1..9} 11 12 {14..31} {33..127} ; do
     OCTAL=$(printf "\%04o" ${i})
     echo -e "@aa${OCTAL}aa;size=1;\nACGT\n+\nGGGG\n" | \
         "${VSEARCH}" --sample_size 1 --fastaout - &> /dev/null || \
-        failure "ascii character ${i} allowed in fasta identifiers"
+        failure "ascii character ${i} allowed in fastq identifiers"
 done && success "${DESCRIPTION}"
 
-## Define ASCII characters not accepted in fasta identifiers
+## Define ASCII characters not accepted in fastq identifiers
 #  0: NULL
 # 10: "\n"
 # 13: "\r"
 # 32: SPACE
 for i in 0 10 13 32 ; do
-    DESCRIPTION="ascii character ${i} is not allowed in fasta identifiers"
+    DESCRIPTION="ascii character ${i} is not allowed in fastq identifiers"
     OCTAL=$(printf "\%04o" ${i})
     echo -e "@aa${OCTAL}aa;size=1;\nACGT\n+\nGGGG\n" | \
         "${VSEARCH}" --sample_size 1 --fastaout - &> /dev/null && \
@@ -239,12 +239,12 @@ for i in 0 10 13 32 ; do
             success "${DESCRIPTION}"
 done 
 
-## Define ASCII characters accepted in fasta headers
+## Define ASCII characters accepted in fastq headers
 #  0: NULL
 # 13: "\r"
 # 32: SPACE
 for i in 0 13 32 ; do
-    DESCRIPTION="ascii character ${i} is allowed in fasta header (outside identifier)"
+    DESCRIPTION="ascii character ${i} is allowed in fastq header (outside identifier)"
     OCTAL=$(printf "\%04o" ${i})
     echo -e "@aa;size=1; ${OCTAL}padding\nACGT\n+\nGGGG\n" | \
         "${VSEARCH}" --sample_size 1 --fastaout - &> /dev/null && \
@@ -252,28 +252,28 @@ for i in 0 13 32 ; do
             failure "${DESCRIPTION}"
 done 
 
-## ASCII character 10 (\n) is not allowed in fasta headers (outside identifier)
+## ASCII character 10 (\n) is not allowed in fastq headers (outside identifier)
 # 10: "\n"
-DESCRIPTION="ascii character 10 is not allowed in fasta headers (outside identifier)"
+DESCRIPTION="ascii character 10 is not allowed in fastq headers (outside identifier)"
 OCTAL=$(printf "\%04o" 10)
 echo -e "@aa;size=1; ${OCTAL}padding\nACGT\n+\nGGGG\n" | \
     "${VSEARCH}" --sample_size 1 --fastaout - &> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-## non-ASCII characters accepted in fasta identifiers
-DESCRIPTION="non-ASCII characters accepted in fasta identifiers"
+## non-ASCII characters accepted in fastq identifiers
+DESCRIPTION="non-ASCII characters accepted in fastq identifiers"
 echo -e "@ø;size=1;\nACGT\n+\nGGGG\n" | \
     "${VSEARCH}" --sample_size 1 --fastaout -  &> /dev/null && \
     success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
-## Define ASCII characters accepted in fasta sequences
+## Define ASCII characters accepted in fastq sequences
 # 10: "\n"
 # 13: "\r"
 # and ACGTUacgtu
 # SPACE is not allowed
 for i in 0 10 13 65 67 71 84 85 97 99 103 116 117 ; do
-    DESCRIPTION="ascii character ${i} is allowed in sequences"
+    DESCRIPTION="ascii character ${i} is allowed in fastq sequences"
     OCTAL=$(printf "\%04o" ${i})
     echo -e "@aaaa;size=1;\nAC${OCTAL}GT\n+\nGGGG\n" | \
         "${VSEARCH}" --sample_size 1 --fastaout - &> /dev/null && \
@@ -281,9 +281,9 @@ for i in 0 10 13 65 67 71 84 85 97 99 103 116 117 ; do
             failure "${DESCRIPTION}"
 done
 
-## Define ASCII characters not accepted in fasta sequences
+## Define ASCII characters not accepted in fastq sequences
 for i in {1..9} 11 12 {14..64} 66 {68..70} {72..83} {86..96} 98 {100..102} {104..115} {118..127} ; do
-    DESCRIPTION="ascii character ${i} is not allowed in sequences"
+    DESCRIPTION="ascii character ${i} is not allowed in fastq sequences"
     OCTAL=$(printf "\%04o" ${i})
     echo -e "@s;size=1;\nAC${OCTAL}GT\n+\nGGGGG\n" | \
         "${VSEARCH}" --sample_size 1 --fastaout - &> /dev/null && \
@@ -291,25 +291,14 @@ for i in {1..9} 11 12 {14..64} 66 {68..70} {72..83} {86..96} 98 {100..102} {104.
             success "${DESCRIPTION}"
 done
 
-## Vsearch aborts if fasta identifiers are not unique
+## Vsearch aborts if fastq identifiers are not unique
 DESCRIPTION="vsearch aborts if fasta headers are not unique"
 echo -e "@a;size=10;\nACGT\n+\nGGGG\n@a;size=10;\nAAGT\n+\nGGGG\n" | \
     "${VSEARCH}" --sample_size 1 --fastaout - &> /dev/null && \
     failure "${DESCRIPTION}" || success "${DESCRIPTION}"
 
-# ## Fasta headers can contain more than one underscore symbol
-# DESCRIPTION="fasta headers can contain more than one underscore symbol"
-# STATS=$(mktemp)
-# IDENTIFIER="a_2_2"
-# echo -e ">${IDENTIFIER}_3\nACGTACGT" | \
-#     "${VSEARCH}" --sample_size 1 --fastaout - -s "${STATS}" &> /dev/null
-# grep -qE "[[:blank:]]${IDENTIFIER}[[:blank:]]" "${STATS}" && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
-# rm -f "${STATS}"
-
-## Fasta header must contain an abundance value after being truncated
-DESCRIPTION="vsearch aborts if fasta headers lacks abundance value"
+## Fastq header must contain an abundance value after being truncated
+DESCRIPTION="vsearch aborts if fastq headers lacks abundance value"
 echo -e "@a a;size=1;\nACGT+\nGGGG\n" | \
     "${VSEARCH}" --sample_size 1 --fastaout - &> /dev/null && \
     failure "${DESCRIPTION}" || success "${DESCRIPTION}"
