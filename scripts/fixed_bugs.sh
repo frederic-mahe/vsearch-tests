@@ -2507,6 +2507,7 @@ printf "@s1\nA\n+\nI\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/304
 
+## no test
 
 
 #******************************************************************************#
@@ -2655,6 +2656,17 @@ printf ">header meta data\nA\n" | \
     grep -q ">header meta data;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#             Compilation warnings with gcc for vsearch 2.10                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/350
+
+## no test
 
 
 exit 0
