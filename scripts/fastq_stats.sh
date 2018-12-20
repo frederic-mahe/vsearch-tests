@@ -41,33 +41,177 @@ DESCRIPTION="check if vsearch is in the PATH"
 
 DESCRIPTION="--fastq_stats + --log is accepted"
 printf "@s\nA\n+\nG\n" | \
-"${VSEARCH}" --fastq_stats - --log - &> /dev/null && \
+    "${VSEARCH}" --fastq_stats - --log - &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats fails without --log"
+DESCRIPTION="--fastq_stats fails without --log"  # shouldn't that be true?
 printf "@s\nA\n+\nG\n" | \
-"${VSEARCH}" --fastq_stats - &> /dev/null && \
+    "${VSEARCH}" --fastq_stats - &> /dev/null && \
     failure  "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats --fastq_ascii is accepted"
 printf "@s\nA\n+\nG\n" | \
-"${VSEARCH}" --fastq_stats - --fastq_ascii 33 --log - &> /dev/null && \
+    "${VSEARCH}" --fastq_stats - --fastq_ascii 33 --log - &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats --fastq_qmin is accepted"
 printf "@s\nA\n+\nG\n" | \
-"${VSEARCH}" --fastq_stats - --fastq_qmin 20 --log - &> /dev/null && \
+    "${VSEARCH}" --fastq_stats - --fastq_qmin 20 --log - &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats --fastq_qmax is accepted"
 printf "@s\nA\n+\nG\n" | \
-"${VSEARCH}" --fastq_stats - --fastq_qmax 40 --log - &> /dev/null && \
+    "${VSEARCH}" --fastq_stats - --fastq_qmax 40 --log - &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              Input values                                   #
+#                                                                             #
+#*****************************************************************************#
+
+# G is interpreted as a quality value of 38 when the offset is 33
+DESCRIPTION="--fastq_stats --fastq_ascii is set to 33 by default"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+    grep -qE "G[[:blank:]]+38" && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats --fastq_ascii can be set to 33"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_ascii 33 --log - &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats --fastq_ascii can be set to 64"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_ascii 64 --log - &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# G is interpreted as a quality value of 7 when the offset is 64
+DESCRIPTION="--fastq_stats --fastq_ascii 64 is taken into account"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_ascii 64 --log - 2> /dev/null | \
+    grep -qE "G[[:blank:]]+7" && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# or should we allow users to use other offset values?
+DESCRIPTION="--fastq_stats --fastq_ascii rejects values other than 33 or 64"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_ascii 42 --log - &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# vsearch now checks that the argument to fastq_ascii + the argument
+# to fastq_qmin or fastq_qmax is within the range 33 to 126 of
+# printable ascii characters.
+DESCRIPTION="--fastq_stats fastq_ascii + fastq_qmin is at least 33"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_qmin 0 --log - &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats fastq_ascii + fastq_qmax is at most 126 (offset 33)"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_qmax 93 --log - &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats fastq_ascii + fastq_qmax must be less than 127 (offset 33)"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_qmax 94 --log - &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats fastq_ascii + fastq_qmax is at most 126 (offset 64)"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_ascii 64 --fastq_qmax 62 --log - &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats fastq_ascii + fastq_qmax must be less than 127 (offset 64)"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_ascii 64 --fastq_qmax 63 --log - &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats fastq_qmin can be equal to fastq_qmax"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_qmin 38 --fastq_qmax 38 --log - &> /dev/null && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats fastq_qmin cannot be greater than fastq_qmax"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_qmin 39 --fastq_qmax 38 --log - &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ascii characters accepted as fastq quality values (33 to 126)
+for i in {33..126} ; do
+    DESCRIPTION="ascii character ${i} can be used as fastq quality value (offset 33)"
+    echo -e "@s\nA\n+\n$(printf "\%04o" ${i})\n" | \
+        "${VSEARCH}" --fastq_stats - --fastq_ascii 33 --fastq_qmax 93 --log - &> /dev/null && \
+        success  "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+done
+
+## ascii characters rejected as fastq quality values (1-32 and 127)
+for i in {1..32} 127 ; do
+    DESCRIPTION="ascii character ${i} cannot be used as fastq quality value (offset 33)"
+    echo -e "@s\nA\n+\n$(printf "\%04o" ${i})\n" | \
+        "${VSEARCH}" --fastq_stats - --fastq_ascii 33 --fastq_qmax 93 --log - &> /dev/null && \
+        failure  "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+done
+
+## ascii characters accepted as fastq quality values (64 to 126)
+for i in {64..126} ; do
+    DESCRIPTION="ascii character ${i} can be used as a fastq quality value (offset 64)"
+    echo -e "@s\nA\n+\n$(printf "\%04o" ${i})\n" | \
+        "${VSEARCH}" --fastq_stats - --fastq_ascii 64 --fastq_qmax 62 --log - &> /dev/null && \
+        success  "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+done
+
+## ascii characters rejected as fastq quality values (1-63 and 127)
+for i in {1..63} 127 ; do
+    DESCRIPTION="ascii character ${i} cannot be used as fastq quality value (offset 64)"
+    echo -e "@s\nA\n+\n$(printf "\%04o" ${i})\n" | \
+        "${VSEARCH}" --fastq_stats - --fastq_ascii 64 --fastq_qmax 62 --log - &> /dev/null && \
+        failure  "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+done
+
+## when using the --fastq_stats command, the --fastq_qmin and
+## --fastq_qmax options do not play any filtering role. At most, the
+## values can be changed to accommodate a dataset with unusual quality
+## values. That's it.
+
+## fastq_qmin controls the range of accepted quality values
+DESCRIPTION="--fastq_qmin controls the range of accepted quality values"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_qmin 39 --log - &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## fastq_qmax controls the range of accepted quality values
+DESCRIPTION="--fastq_qmax controls the range of accepted quality values"
+printf "@s\nA\n+\nG\n" | \
+    "${VSEARCH}" --fastq_stats - --fastq_qmax 37 --log - &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## below this point the tests need to be revised -----------------------------
 
 
 #*****************************************************************************#
@@ -78,64 +222,64 @@ printf "@s\nA\n+\nG\n" | \
 
 DESCRIPTION="--fastq_stats read length is correct #1"
 READ_LENGTH=$(printf "@s1\nAC\n+\nGG" | \
-		     "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==8 {print $2}' -)
+		             "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		             awk 'NR==8 {print $2}' -)
 [[ $(printf "${READ_LENGTH}") == "2" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats read length is correct #2"
 READ_LENGTH=$(printf "@s1\n\n+\n" | \
-		     "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==8 {print $2}' -)
+		             "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		             awk 'NR==8 {print $2}' -)
 [[ $(printf "${READ_LENGTH}") == "0" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats number of reads is correct #1"
 READ_NB=$(printf "@s1\nA\n+\nG" | \
-		     "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==8 {print $3}' -)
+		         "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		         awk 'NR==8 {print $3}' -)
 [[ $(printf "${READ_NB}") == "1" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats number of reads is correct #2"
 READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nA\n+\nG" | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==8 {print $3}' -)
+		         "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		         awk 'NR==8 {print $3}' -)
 [[ $(printf "${READ_NB}") == "2" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats percentage of reads with this length is correct"
 READ_PERCENT=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAA\n+\nGG" | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==8 {print $4}' -)
+		              "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		              awk 'NR==8 {print $4}' -)
 [[ $(echo "${READ_PERCENT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats fraction of reads with this length or more is correct"
 READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==9 {print $5}' -)
+		         "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		         awk 'NR==9 {print $5}' -)
 [[ $(echo "${READ_PERCENT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats fraction of reads with this length or more is correct"
 READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==9 {print $5}' -)
+		         "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		         awk 'NR==9 {print $5}' -)
 [[ $(echo "${READ_PERCENT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats fraction of reads with this length or more is correct"
 READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==9 {print $5}' -)
+		         "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		         awk 'NR==9 {print $5}' -)
 [[ $(echo "${READ_PERCENT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -158,7 +302,7 @@ READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
 # 				  awk 'NR==13{print $1}' -)
 # 	     else
 # 		 READ_NB=$(printf "@s1\nA\n+\n${LETTER}" | \
-# 				  "${VSEARCHg}" --fastq_stats - --log - --fastq_ascii 64 2> /dev/null | \
+# 				  "${VSEARCH}" --fastq_stats - --log - --fastq_ascii 64 2> /dev/null | \
 # 				  awk 'NR==13{print $1}' -)
 # 	     fi 
 # 	     [[ $(printf "${READ_NB}") == "${LETTER}" ]] && \
@@ -168,56 +312,56 @@ READ_NB=$(printf "@s1\nA\n+\nG\n@s2\nAA\n+\nGG\n@s3\nAAA\n+\nGGG\n" | \
 
 DESCRIPTION="--fastq_stats Phred quality score is correct #1"
 E_PROBA=$(printf '@s1\nA\n+\nH\n' | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==13 {print $3}' -)
+		         "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		         awk 'NR==13 {print $3}' -)
 [[ $(printf "${E_PROBA}") == "0.00013" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats Phred quality score is correct #2"
 E_PROBA=$(printf '@s1\nA\n+\n"' | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==13 {print $3}' -)
+		         "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		         awk 'NR==13 {print $3}' -)
 [[ $(printf "${E_PROBA}") == "0.79433" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats number of bases with this quality score is correct #1"
 BASES_NB=$(printf '@s1\nA\n+\nH\n@s2\nA\n+\nG' | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==13 {print $4}' -)
+		          "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		          awk 'NR==13 {print $4}' -)
 [[ $(echo "${BASES_NB}") == "1" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats number of bases with this quality score is correct #2"
 BASES_NB=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nG' | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==13 {print $4}' -)
+		          "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		          awk 'NR==13 {print $4}' -)
 [[ $(echo "${BASES_NB}") == "2" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats percentage of bases with this quality score is correct"
 BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nH' | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==13 {print $5}' -)
+		            "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		            awk 'NR==13 {print $5}' -)
 [[ $(echo "${BASES_PRCT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats percentage of bases with this quality score is correct"
 BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nH' | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==13 {print $5}' -)
+		            "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		            awk 'NR==13 {print $5}' -)
 [[ $(echo "${BASES_PRCT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats percentage of bases with this quality score or higher is correct"
 BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nI' | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==14 {print $6}' -)
+		            "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		            awk 'NR==14 {print $6}' -)
 [[ $(echo "${BASES_PRCT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -231,8 +375,8 @@ BASES_PRCT=$(printf '@s1\nA\n+\nG\n@s2\nA\n+\nH\n@s3\nA\n+\nI' | \
 
 DESCRIPTION="--fastq_stats PctRecs is correct"
 BASES_PRCT=$(printf '@s1\nA\n+\nH\n@s2\nAA\n+\nHH\n@s3\nAAA\n+\nHHH' | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==19 {print $2}' -)
+		            "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		            awk 'NR==19 {print $2}' -)
 [[ $(echo "${BASES_PRCT}") == "66.7%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -243,48 +387,48 @@ BASES_PRCT=$(printf '@s1\nA\n+\nH\n@s2\nAA\n+\nHH\n@s3\nAAA\n+\nHHH' | \
 ## significant numbers with the second above 4 before truncating)? TO BE REVISED
 DESCRIPTION="--fastq_stats AvgQ is correct"
 AVGQ=$(printf '@s1\nAAAA\n+\nHDII\n@s2\nAA\n+\nHG\n@s3\nAA\n+\nHI' | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==21 {print $3}' -)
+		      "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		      awk 'NR==21 {print $3}' -)
 [[ $(echo "${AVGQ}") == "37.7" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats P(AvgQ) is correct"
 PAVGQ=$(printf '@s1\nAAAA\n+\nHDII\n@s2\nAA\n+\nHG\n@s3\nAA\n+\nHI' | \
-		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		     awk 'NR==21 {print $4}' -)
+		       "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		       awk 'NR==21 {print $4}' -)
 [[ $(echo "${PAVGQ}") == "0.00017" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats avgP is correct"
 AVGP=$(printf '@s1\nAAAA\n+\nIDII\n@s2\nAA\n+\nHH\n' | \
-		    "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-		    awk 'NR==20 {print $5}' -)
+		      "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+		      awk 'NR==20 {print $5}' -)
 [[ $(echo "${AVGP}") == "0.000221" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats avgEE is correct"
 AVGEE=$(printf '@s1\nAAA\n+\n++5\n@s2\nAAA\n+\n""5' | \
-		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-     awk 'NR==20 {print $6}' -)
+		       "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+               awk 'NR==20 {print $6}' -)
 [[ $(echo "${AVGEE}") == "0.90" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats Rate is correct"
 RATE=$(printf '@s1\nAAA\n+\n++0\n@s2\nAAA\n+\n++0' | \
-		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-                   awk 'NR==19 {print $7}' -)
+		      "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+              awk 'NR==19 {print $7}' -)
 [[ $(echo "${RATE}") == "0.077208" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats RatePct is correct"
 RATEPCT=$(printf '@s1\nAAA\n+\n++0\n@s2\nAAA\n+\n++0' | \
-		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-                   awk 'NR==19 {print $8}' -)
+		         "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+                 awk 'NR==19 {print $8}' -)
 [[ $(echo "${RATEPCT}") == "7.721%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -297,8 +441,8 @@ RATEPCT=$(printf '@s1\nAAA\n+\n++0\n@s2\nAAA\n+\n++0' | \
 
 DESCRIPTION="--fastq_stats RatePct is correct"
 RATEPCT=$(printf '@s1\nAAA\n+\n++0\n@s2\nAAA\n+\n++0' | \
-		           "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
-                   awk 'NR==23 {print $2}' -)
+		         "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
+                 awk 'NR==23 {print $2}' -)
 [[ $(echo "${RATEPCT}") == "7.721%" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
