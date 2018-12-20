@@ -62,7 +62,7 @@ printf "@s1\nACGT\n+\nGGGG" |
 
 DESCRIPTION="--fastq_stats --fastq_qmax is accepted"
 printf "@s1\nACGT\n+\nGGGG" |
-"${VSEARCH}" --fastq_stats - --fastq_qmin 32 --log - &> /dev/null && \
+"${VSEARCH}" --fastq_stats - --fastq_qmax 32 --log - &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
