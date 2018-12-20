@@ -24,53 +24,50 @@ VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
 [[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
+
 #*****************************************************************************#
 #                                                                             #
 #                                  Arguments                                  #
 #                                                                             #
 #*****************************************************************************#
 
-# FASTQ=$(mktemp)
-# printf "@illumina33\nGTGAATCATCGAATCTTT\n+\nCCCCCGGGGGGGGGGGGG\n" > "${FASTQ}"
-# DESCRIPTION="fastq stats deals with Illumina +33"
-# "${VSEARCH}" \
-#     --fastq_stats "${QUERY}" \
-#     --db "${DATABASE}" \
-#     --alnout "${ALNOUT}" \
-#     --quiet 2> /dev/null && \
-#     success  "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
-# rm "${FASTQ}"
+#   --fastq_stats FILENAME      report statistics on FASTQ file
+#  Parameters
+#   --fastq_ascii INT           FASTQ input quality score ASCII base char (33)
+#   --fastq_qmax INT            maximum base quality value for FASTQ input (41)
+#   --fastq_qmin INT            minimum base quality value for FASTQ input (0)
+#  Output
+#   --log FILENAME              output file for fastq_stats statistics
 
-DESCRIPTION="--fastq_stats is accepted"
-printf "@s1\nACGT\n+\nGGGG" |
+DESCRIPTION="--fastq_stats + --log is accepted"
+printf "@s\nA\n+\nG\n" | \
 "${VSEARCH}" --fastq_stats - --log - &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_stats fails without --log"
+printf "@s\nA\n+\nG\n" | \
+"${VSEARCH}" --fastq_stats - &> /dev/null && \
+    failure  "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--fastq_stats --fastq_ascii is accepted"
-printf "@s1\nACGT\n+\nGGGG" |
+printf "@s\nA\n+\nG\n" | \
 "${VSEARCH}" --fastq_stats - --fastq_ascii 33 --log - &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats --fastq_qmin is accepted"
-printf "@s1\nACGT\n+\nGGGG" |
-"${VSEARCH}" --fastq_stats - --fastq_qmin 32 --log - &> /dev/null && \
+printf "@s\nA\n+\nG\n" | \
+"${VSEARCH}" --fastq_stats - --fastq_qmin 20 --log - &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats --fastq_qmax is accepted"
-printf "@s1\nACGT\n+\nGGGG" |
-"${VSEARCH}" --fastq_stats - --fastq_qmax 32 --log - &> /dev/null && \
+printf "@s\nA\n+\nG\n" | \
+"${VSEARCH}" --fastq_stats - --fastq_qmax 40 --log - &> /dev/null && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastq_stats fails without --log"
-printf "@s1\nACGT\n+\nGGGG" |
-"${VSEARCH}" --fastq_stats - &> /dev/null && \
-    failure  "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -240,10 +237,10 @@ BASES_PRCT=$(printf '@s1\nA\n+\nH\n@s2\nAA\n+\nHH\n@s3\nAAA\n+\nHHH' | \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## following tests are checking that nucleotides after position 2 are not taken in
-## account by using 4 nucletotide sequence, and that result is truncated by
-## testing result having at least 2 significant numbers with the second above 4 before
-## truncating
+## following tests are checking that nucleotides after position 2 are
+## not taken into account when using 4 nucleotide-sequences, and that
+## the result is truncated. (by testing result having at least 2
+## significant numbers with the second above 4 before truncating)? TO BE REVISED
 DESCRIPTION="--fastq_stats AvgQ is correct"
 AVGQ=$(printf '@s1\nAAAA\n+\nHDII\n@s2\nAA\n+\nHG\n@s3\nAA\n+\nHI' | \
 		 "${VSEARCH}" --fastq_stats - --log - 2> /dev/null | \
