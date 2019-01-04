@@ -2693,7 +2693,7 @@ printf ">header meta data\nA\n" | \
 # -----  ------  ------  ------  ------
 #     1  100.0%  100.0%  100.0%  100.0%
 
-DESCRIPTION="fastq_stats: wrong truncation % when max length is 1 (issue 355)"
+DESCRIPTION="fastq_stats: wrong truncation percentage when max length is 1 (issue 355)"
 printf "@s\nA\n+\nG\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
