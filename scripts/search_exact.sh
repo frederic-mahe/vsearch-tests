@@ -936,34 +936,27 @@ SIMILARITY_PERCENTAGE=$(printf ">s2\nAT\n>s3\nAA\n" | \
 
 ## --uc match orientation is correct in 5th column with H (+)
 DESCRIPTION="--uc match orientation is correct in 5th column with H (+)"
-seq1="AA"
-seq2="AA"
-seq3="AA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-MATCH_ORIENTATION=$(printf ">s1;size=1;\nAT\n>s2;size=1;\nAA\n" | \
-			   "${VSEARCH}" --search_exact - \
-					--db <(printf "${database}") --uc - \
-                    --minseqlength 1 2> /dev/null | \
-               awk '/^H/ {v = $5} END {print v}' -)
-[[ "${MATCH_ORIENTATION}" == "+" ]] && \
+"${VSEARCH}" \
+    --search_exact <(printf ">q1;size=1;\nGACT\n") \
+	--db <(printf ">s1\nGACT\n") \
+    --minseqlength 1 \
+    --strand both \
+    --quiet \
+	--uc - | \
+    awk -F "\t" '{exit /^H/ && $5 == "+" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## --uc match orientation is correct in 5th column with H (-)
 DESCRIPTION="--uc match orientation is correct in 5th column with H (-)"
-seq1="GACT"
-seq2="AA"
-seq3="AA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-MATCH_ORIENTATION=$(printf ">s1;size=1;\nGACT\n>s2;size=1;\nAGTC\n" | \
-			   "${VSEARCH}" --search_exact - \
-					--db <(printf "${database}") \
-					--uc - --strand both \
-                    --minseqlength 1 2> /dev/null | \
-               awk '/^H/ {v = $5} END {print v}' -)
-[[ "${MATCH_ORIENTATION}" == "-" ]] && \
+"${VSEARCH}" \
+    --search_exact <(printf ">q1;size=1;\nGACT\n") \
+	--db <(printf ">s1\nAGTC\n") \
+    --minseqlength 1 \
+    --strand both \
+    --quiet \
+	--uc - | \
+    awk -F "\t" '{exit /^H/ && $5 == "-" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
