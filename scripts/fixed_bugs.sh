@@ -2671,6 +2671,29 @@ printf ">header meta data\nA\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#            Handling of sequences with ambiguous nucleotide symbols           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/354
+
+# usearch has changed the way it takes into account ambiguous
+# nucleotide symbols in pairwise alignments (two wildcard letters
+# match each other if they represent at least one identical residue,
+# so for example NN matches anything)
+
+# DESCRIPTION="issue 354"
+# "${VSEARCH}" \
+#     --usearch_global <(printf ">q\nCRA\n") \
+#     --db <(printf ">t\nCYW\n") \
+#     --quiet \
+#     --minseqlength 1 \
+#     --id 0.3 \
+#     --alnout -
+
+
+#******************************************************************************#
+#                                                                              #
 #      fastq_stats: corner case when computing truncation percentage           #
 #                                                                              #
 #******************************************************************************#
