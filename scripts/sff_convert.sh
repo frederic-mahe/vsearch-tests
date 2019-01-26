@@ -523,6 +523,20 @@ MAX=$("${VSEARCH}" \
         failure "${DESCRIPTION}"
 unset MAX
 
+## valgrind detects no errors
+if which valgrind > /dev/null ; then
+    DESCRIPTION="valgrind detects no errors"
+    valgrind \
+        "${VSEARCH}" \
+        --sff_convert "${SFF}" \
+        --fastqout /dev/null 2>&1 | \
+        grep -q "ERROR SUMMARY: 0 errors" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+fi
+
+## fuzzing: stopped after 15 times 0.5 Billion executions of afl-fuzz 2.52b
+
 # ## no clipping by default (lowercase nucleotides in the output)
 # DESCRIPTION="no clipping by default (lowercase nucleotides in the output)"
 # "${VSEARCH}" \
