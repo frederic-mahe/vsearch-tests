@@ -1017,4 +1017,53 @@ rm "${OUTPUT}"
 
 rm "${FASTQx1000}"
 
+
+#*****************************************************************************#
+#                                                                             #
+#                            behavioral tests                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## Percentage subsampling returns a predictable number of reads
+##
+## Here the number of reads in the input is 100 + 50 + 10 = 160, so
+## there should always be 16 reads in the output
+DESCRIPTION="--fastx_subsample returns a predictable total number of reads (--sample_pct)"
+for i in {1..100} ; do
+    printf ">s1;size=100;\nA\n>s2;size=50;\nC\n>s3;size=10;\nG\n" | \
+        "${VSEARCH}" \
+            --fastx_subsample - \
+            --sizein \
+            --sizeout \
+            --sample_pct 10.0 \
+            --fastaout - 2> /dev/null | \
+        awk 'BEGIN {FS = "="} /^>/ {sum += $NF} END {exit sum == 16 ? 0 : 1}' || \
+        failure "${DESCRIPTION}"
+done && success "${DESCRIPTION}"
+
+
+## read numbers per sequence converge towards an expected value
+## (average other 100 repeats)
+DESCRIPTION="--fastx_subsample returns predictable numbers of reads per sequence (--sample_pct)"
+for i in {1..100} ; do
+    printf ">s1;size=100;\nA\n>s2;size=50;\nC\n>s3;size=10;\nG\n" | \
+        "${VSEARCH}" \
+            --fastx_subsample - \
+            --sizein \
+            --sizeout \
+            --sample_pct 10.0 \
+            --fastaout - 2> /dev/null
+done | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --output - 2> /dev/null | \
+    awk 'BEGIN {FS = "="} /^>/ {printf "%.0f@", $NF / 100} END {printf "\n"}' | \
+    grep -q "^10@5@1@$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit
