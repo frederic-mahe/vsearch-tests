@@ -19,8 +19,12 @@ success () {
     printf "${GREEN}PASS${NO_COLOR}: ${1}\n"
 }
 
-## Is vsearch installed?
+## use the first vsearch binary in $PATH by default, unless user wants
+## to test another binary
 VSEARCH=$(which vsearch)
+[[ "${1}" ]] && VSEARCH="${1}"
+
+## Is vsearch installed?
 DESCRIPTION="check if vsearch is in the PATH"
 [[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
@@ -535,7 +539,8 @@ if which valgrind > /dev/null ; then
             failure "${DESCRIPTION}"
 fi
 
-## fuzzing: stopped after 15 times 0.5 Billion executions of afl-fuzz 2.52b
+## - fuzzing: stopped after 15 times 0.5 Billion executions of afl-fuzz 2.52b, no issue.
+## - real-life: test against all ENA avalaible SFF files (60,011 files, 2019-01-22), no issue.
 
 # ## no clipping by default (lowercase nucleotides in the output)
 # DESCRIPTION="no clipping by default (lowercase nucleotides in the output)"
