@@ -1066,8 +1066,8 @@ done | \
         failure "${DESCRIPTION}"
 
 
-## when subsampling two fastq files with the same seed and the same
-## number of reads per file, then the same reads must be
+## when subsampling with a given seed two fastq files with the same
+## number of reads per file, then the same reads will be
 ## selected. This is important for paired-end files that need to
 ## remain in sync (R1-R2). In this test, R1 and R2 subsamplings must
 ## be identical (same reads, same order):
@@ -1115,6 +1115,57 @@ cmp -s \
                --fastqout - 2> /dev/null) && \
            success "${DESCRIPTION}" || \
                failure "${DESCRIPTION}"
+unset SEED
+
+
+## when subsampling with a given seed two fastq files with a different
+## number of reads per file, then the different reads will be
+## selected. In this test, there are 10 reads in the first fastq file
+## and 9 reads in the second, so subsamplings must be different:
+DESCRIPTION="--fastx_subsample depends on the number of reads in the fastq file (--sample_size)"
+SEED=${RANDOM}
+cmp -s \
+    <(for i in {01..10} ; do
+          printf "@s%s\nA\n+\nI\n" ${i}
+      done | \
+          "${VSEARCH}" \
+              --fastx_subsample - \
+              --randseed ${SEED} \
+              --sample_size 3 \
+              --fastqout - 2> /dev/null) \
+     <(for i in {01..9} ; do
+           printf "@s%s\nA\n+\nI\n" ${i}
+       done | \
+           "${VSEARCH}" \
+               --fastx_subsample - \
+               --randseed ${SEED} \
+               --sample_size 3 \
+               --fastqout - 2> /dev/null) && \
+           failure "${DESCRIPTION}" || \
+               success "${DESCRIPTION}"
+unset SEED
+
+DESCRIPTION="--fastx_subsample depends on the number of reads in the fastq file (--sample_pct)"
+SEED=${RANDOM}
+cmp -s \
+    <(for i in {01..10} ; do
+          printf "@s%s\nA\n+\nI\n" ${i}
+      done | \
+          "${VSEARCH}" \
+              --fastx_subsample - \
+              --randseed ${SEED} \
+              --sample_pct 30.0 \
+              --fastqout - 2> /dev/null) \
+     <(for i in {01..9} ; do
+           printf "@s%s\nA\n+\nI\n" ${i}
+       done | \
+           "${VSEARCH}" \
+               --fastx_subsample - \
+               --randseed ${SEED} \
+               --sample_pct 30.0 \
+               --fastqout - 2> /dev/null) && \
+           failure "${DESCRIPTION}" || \
+               success "${DESCRIPTION}"
 unset SEED
 
 
