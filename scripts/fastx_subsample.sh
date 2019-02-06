@@ -1066,4 +1066,56 @@ done | \
         failure "${DESCRIPTION}"
 
 
+## when subsampling two fastq files with the same seed and the same
+## number of reads per file, then the same reads must be
+## selected. This is important for paired-end files that need to
+## remain in sync (R1-R2). In this test, R1 and R2 subsamplings must
+## be identical (same reads, same order):
+DESCRIPTION="--fastx_subsample selects the same reads in paired-end fastq files (--sample_size)"
+SEED=${RANDOM}
+cmp -s \
+    <(for i in {01..10} ; do
+          printf "@s%s\nA\n+\nI\n" ${i}
+      done | \
+          "${VSEARCH}" \
+              --fastx_subsample - \
+              --randseed ${SEED} \
+              --sample_size 3 \
+              --fastqout - 2> /dev/null) \
+     <(for i in {01..10} ; do
+           printf "@s%s\nA\n+\nI\n" ${i}
+       done | \
+           "${VSEARCH}" \
+               --fastx_subsample - \
+               --randseed ${SEED} \
+               --sample_size 3 \
+               --fastqout - 2> /dev/null) && \
+           success "${DESCRIPTION}" || \
+               failure "${DESCRIPTION}"
+unset SEED
+
+DESCRIPTION="--fastx_subsample selects the same reads in paired-end fastq files (--sample_pct)"
+SEED=${RANDOM}
+cmp -s \
+    <(for i in {01..10} ; do
+          printf "@s%s\nA\n+\nI\n" ${i}
+      done | \
+          "${VSEARCH}" \
+              --fastx_subsample - \
+              --randseed ${SEED} \
+              --sample_pct 30.0 \
+              --fastqout - 2> /dev/null) \
+     <(for i in {01..10} ; do
+           printf "@s%s\nA\n+\nI\n" ${i}
+       done | \
+           "${VSEARCH}" \
+               --fastx_subsample - \
+               --randseed ${SEED} \
+               --sample_pct 30.0 \
+               --fastqout - 2> /dev/null) && \
+           success "${DESCRIPTION}" || \
+               failure "${DESCRIPTION}"
+unset SEED
+
+
 exit
