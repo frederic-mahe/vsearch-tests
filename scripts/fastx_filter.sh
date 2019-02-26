@@ -559,3 +559,100 @@ OUTPUT=$(printf '>seq\nAGA\n' | \
    $(printf '>c9cd9df36dcce8254c5ccf410709b5213524ad76\nAGA\n') ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    xee                                      #
+#                                                                             #
+#*****************************************************************************#
+
+# Strip information about expected errors (ee) from the output file
+# headers. This information is added by the --fastq_eeout and --eeout
+# options. Option introduced in vsearch v2.11.0 (Feb. 2019).
+
+DESCRIPTION="--fastx_filter --xee strips the ee header (@s;ee=float)"
+printf "@s;ee=1.23\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --xee strips the ee header (@s;ee=float;)"
+printf "@s;ee=1.23;\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --xee strips the ee header (@s;size=1;ee=float)"
+printf "@s;size=1;ee=1.23\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --xee strips the ee header (@s;size=1;ee=float;)"
+printf "@s;size=1;ee=1.23;\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_filter --xee strips the ee header (@s;ee=float;size=1)"
+printf "@s;ee=1.23;size=1\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# assuming vsearch never outputs entry headers ending with ";"
+DESCRIPTION="--fastx_filter --xee strips the ee header (@s;ee=float;size=1;)"
+printf "@s;ee=1.23;size=1;\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# assuming xee can only match ";ee=[0-9]*.?[0-9]*;?"
+DESCRIPTION="--fastx_filter --xee does not strip non-float ee values (@s;ee=not-a-float;)"
+printf "@s;ee=a;\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s;ee=a;" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# verify what xee can match: ";ee=[0-9]*.?[0-9]*;?"
+DESCRIPTION="--fastx_filter --xee strips partial ee floats values (@s;ee=.23)"
+printf "@s;ee=.23\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# verify what xee can match: ";ee=[0-9]*.?[0-9]*;?"
+DESCRIPTION="--fastx_filter --xee strips partial ee floats values (@s;ee=0)"
+printf "@s;ee=0\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ee cannot contain a negative value
+DESCRIPTION="--fastx_filter --xee does not strip negative ee values (@s;ee=-1)"
+printf "@s;ee=-1\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# ee is placed before the header!
+DESCRIPTION="--fastx_filter --xee strips when ee is placed before the sequence header (@;ee=float;s)"
+printf "@;ee=1.23;s\nA\n+\nI\n" | \
+	"${VSEARCH}" --fastx_filter - --fastqout - --xee 2> /dev/null | \
+    grep -qx "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+exit 0
