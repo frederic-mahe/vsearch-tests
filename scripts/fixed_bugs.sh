@@ -2726,4 +2726,31 @@ printf "@s\nA\n+\nG\n" | \
         success "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#            Could cluster_fast build consensus based on abundances?           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/363
+
+# vsearch uses the most frequent sequence as the consensus sequence,
+# but fails to take sequence abundances into account. In this
+# toy-example, the centroid sequence should be AA (abundance of 9),
+# even if AT occurs twice (total abundance of 2).
+
+DESCRIPTION="cluster_size --consout: consensus sequence is cluster's most abundant sequence (issue 363)"
+printf ">s1;size=1\nAT\n>s2;size=9\nAA\n>s3;size=1\nAT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --consout - | \
+    tr "\n" "@" | \
+    grep -qx ">centroid=s2;size=9;seqs=3@AA@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
