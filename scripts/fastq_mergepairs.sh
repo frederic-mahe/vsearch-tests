@@ -41,91 +41,91 @@ DESCRIPTION="--fastq_mergepairs --reverse --fastqout is accepted"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s1\nA\n+\n!\n") \
     --reverse <(printf "@s1\nA\n+\n!\n") \
-    --fastqout - &> /dev/null && \
+    --fastqout - > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastaout is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --fastaout - &> /dev/null && \
+                 --fastaout - > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastaout_notmerged_fwd is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --fastaout_notmerged_fwd - &> /dev/null && \
+                 --fastaout_notmerged_fwd - > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastaout_notmerged_rev is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --fastaout_notmerged_fwd - &> /dev/null && \
+                 --fastaout_notmerged_fwd - > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastqout is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --fastqout - &> /dev/null && \
+                 --fastqout - > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastqout_notmerged_fwd is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --fastqout_notmerged_fwd - &> /dev/null && \
+                 --fastqout_notmerged_fwd - > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastqout_notmerged_rev is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --fastqout_notmerged_fwd - &> /dev/null && \
+                 --fastqout_notmerged_fwd - > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --eetabbedout is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - &> /dev/null && \
+                 --eetabbedout - > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_truncqual is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_truncqual 1 &> /dev/null && \
+                 --eetabbedout - --fastq_truncqual 1 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_minlen is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_minlen 1 &> /dev/null && \
+                 --eetabbedout - --fastq_minlen 1 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_minlen is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_minlen 1 &> /dev/null && \
+                 --eetabbedout - --fastq_minlen 1 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_maxns is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_maxns 1 &> /dev/null && \
+                 --eetabbedout - --fastq_maxns 1 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_allowmergestagger is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_allowmergestagger &> /dev/null && \
+                 --eetabbedout - --fastq_allowmergestagger > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -139,63 +139,63 @@ printf '@seq1\nA\n+\n!\n' | \
 DESCRIPTION="--fastq_mergepairs --maxdiffs is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --maxdiffs 5 &> /dev/null && \
+                 --eetabbedout - --maxdiffs 5 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_minmergelen is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_minmergelen 5 &> /dev/null && \
+                 --eetabbedout - --fastq_minmergelen 5 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_maxmergelen is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_maxmergelen 5 &> /dev/null && \
+                 --eetabbedout - --fastq_maxmergelen 5 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_ascii is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_ascii 33 &> /dev/null && \
+                 --eetabbedout - --fastq_ascii 33 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_maxee is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_maxee 1 &> /dev/null && \
+                 --eetabbedout - --fastq_maxee 1 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_nostagger is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_nostagger &> /dev/null && \
+                 --eetabbedout - --fastq_nostagger > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_qmax is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --fastq_qmax 1 &> /dev/null && \
+                 --eetabbedout - --fastq_qmax 1 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_qmin is accepted"
 printf '@seq1\nA\n+\n"\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n"\n') \
-                 --eetabbedout - --fastq_qmin 1 &> /dev/null && \
+                 --eetabbedout - --fastq_qmin 1 > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --label_suffix is accepted"
 printf '@seq1\nA\n+\n!\n' | \
     "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --eetabbedout - --label_suffix a &> /dev/null && \
+                 --eetabbedout - --label_suffix a > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -209,14 +209,14 @@ printf '@seq1\nA\n+\n!\n' | \
 DESCRIPTION="--fastq_mergepairs --fastq_minovlen fails if given 0"
 "${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nA\n+\n$\n') \
                       --reverse <(printf '@seq2\nT\n+\n$\n') \
-                      --fastqout - --fastq_minovlen 0 &> /dev/null && \
+                      --fastqout - --fastq_minovlen 0 > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_minovlen fails if given negative integer"
 "${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nA\n+\n$\n') \
                       --reverse <(printf '@seq2\nT\n+\n$\n') \
-                      --fastqout - --fastq_minovlen -- -1 &> /dev/null && \
+                      --fastqout - --fastq_minovlen -- -1 > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -239,14 +239,14 @@ MERGSEQ_NB=$("${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nAAAA\n+\n!!!!\n') 
 DESCRIPTION="--fastq_mergepairs --fastq_minlen fails if given 0"
 "${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nA\n+\n$\n') \
                       --reverse <(printf '@seq2\nT\n+\n$\n') \
-                      --fastqout - --fastq_minlen 0 &> /dev/null && \
+                      --fastqout - --fastq_minlen 0 > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_minlen fails if given negative integer"
 "${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nA\n+\n$\n') \
                       --reverse <(printf '@seq2\nT\n+\n$\n') \
-                      --fastqout - --fastq_minlen -- -1 &> /dev/null && \
+                      --fastqout - --fastq_minlen -- -1 > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -269,14 +269,14 @@ MERGSEQ_NB=$("${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nAAAA\n+\n!!!!\n') 
 DESCRIPTION="--fastq_mergepairs --fastq_minmergelen fails if given 0"
 "${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nA\n+\n$\n') \
                       --reverse <(printf '@seq2\nT\n+\n$\n') \
-                      --fastqout - --fastq_minmergelen 0 &> /dev/null && \
+                      --fastqout - --fastq_minmergelen 0 > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_minmergelen fails if given negative integer"
 "${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nA\n+\n$\n') \
                       --reverse <(printf '@seq2\nT\n+\n$\n') \
-                      --fastqout - --fastq_minmergelen -- -1 &> /dev/null && \
+                      --fastqout - --fastq_minmergelen -- -1 > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -302,14 +302,14 @@ MERGSEQS=$("${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nAAAA\n+\n!!!!\n') \
 DESCRIPTION="--fastq_mergepairs --fastq_minmergelen fails if given 0"
 "${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nA\n+\n$\n') \
                       --reverse <(printf '@seq2\nT\n+\n$\n') \
-                      --fastqout - --fastq_minmergelen 0 &> /dev/null && \
+                      --fastqout - --fastq_minmergelen 0 > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_minmergelen fails if given negative integer"
 "${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nA\n+\n$\n') \
                       --reverse <(printf '@seq2\nT\n+\n$\n') \
-                      --fastqout - --fastq_minmergelen -- -1 &> /dev/null && \
+                      --fastqout - --fastq_minmergelen -- -1 > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -335,14 +335,14 @@ MERGSEQS=$("${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nAAAA\n+\n!!!!\n') \
 DESCRIPTION="--fastq_mergepairs --fastq_minmergelen fails if given 0"
 "${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nA\n+\n$\n') \
                       --reverse <(printf '@seq2\nT\n+\n$\n') \
-                      --fastqout - --fastq_minmergelen 0 &> /dev/null && \
+                      --fastqout - --fastq_minmergelen 0 > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs --fastq_minmergelen fails if given negative integer"
 "${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nA\n+\n$\n') \
                       --reverse <(printf '@seq2\nT\n+\n$\n') \
-                      --fastqout - --fastq_minmergelen -- -1 &> /dev/null && \
+                      --fastqout - --fastq_minmergelen -- -1 > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
