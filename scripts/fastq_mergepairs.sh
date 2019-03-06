@@ -19,22 +19,29 @@ success () {
 }
 
 
-## Is vsearch installed?
+## use the first vsearch binary in $PATH by default, unless user wants
+## to test another binary
 VSEARCH=$(which vsearch)
+[[ "${1}" ]] && VSEARCH="${1}"
+
+## Is vsearch installed?
 DESCRIPTION="check if vsearch is in the PATH"
-[[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
+[[ "${VSEARCH}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
 #                                                                             #
-#                                Tests généraux                               #    
+#                                Test options                                 #
 #                                                                             #
 #*****************************************************************************#
 
 DESCRIPTION="--fastq_mergepairs --reverse --fastqout is accepted"
-printf '@seq1\nA\n+\n!\n' | \
-    "${VSEARCH}" --fastq_mergepairs - --reverse <(printf '@seq1\nA\n+\n!\n') \
-                 --fastqout - &> /dev/null && \
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1\nA\n+\n!\n") \
+    --reverse <(printf "@s1\nA\n+\n!\n") \
+    --fastqout - &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -350,3 +357,5 @@ MERGSEQS=$("${VSEARCH}" --fastq_mergepairs <(printf '@seq1\nAAAA\n+\n!!!!\n') \
 [[ ("${MERGSEQ_NB}" == $(printf "1")) && ("${MERGSEQS}" == $(printf "")) ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+exit 0
