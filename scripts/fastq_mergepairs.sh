@@ -202,6 +202,52 @@ printf '@seq1\nA\n+\n!\n' | \
 
 #*****************************************************************************#
 #                                                                             #
+#                             handle empty input                              #
+#                                                                             #
+#*****************************************************************************#
+
+## (see issue 366)
+
+DESCRIPTION="--fastq_mergepairs R1 and R2 empty input"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "") \
+    --reverse <(printf "") \
+    --fastqout - > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_mergepairs R2 empty input"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1\nA\n+\n!\n") \
+    --reverse <(printf "") \
+    --fastqout - > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_mergepairs R1 empty input"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "") \
+    --reverse <(printf "@s1\nA\n+\n!\n") \
+    --fastqout - > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_mergepairs empty input yields empty output"
+TMP=$(mktemp --dry-run)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "") \
+    --reverse <(printf "") \
+    --fastqout ${TMP} > /dev/null 2>&1
+[[ -e ${TMP} ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+
+## todo: check if a warning message is issued
+
+
+#*****************************************************************************#
+#                                                                             #
 #                               --fastq_minovlen                              #    
 #                                                                             #
 #*****************************************************************************#
