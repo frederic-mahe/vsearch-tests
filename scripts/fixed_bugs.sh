@@ -2753,4 +2753,44 @@ printf ">s1;size=1\nAT\n>s2;size=9\nAA\n>s3;size=1\nAT\n" | \
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#                       fatal error when running unoise                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/364
+
+
+#******************************************************************************#
+#                                                                              #
+#                        Handling of empty input files                         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/366
+
+## vsearch terminates with a fatal error when running the
+## fastq_mergepairs command on an empty input file. It may be more
+## appropriate to issue a warning and generate empty output in such
+## cases, instead of terminating with an error.
+
+DESCRIPTION="--fastq_mergepairs handles empty input"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "") \
+    --reverse <(printf "") \
+    --fastqout - > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_mergepairs warning if empty input"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "") \
+    --reverse <(printf "") \
+    --fastqout - 2>&1 > /dev/null | \
+    grep -q "^Warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
