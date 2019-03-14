@@ -243,7 +243,14 @@ TMP=$(mktemp --dry-run)
         failure "${DESCRIPTION}"
 rm -f ${TMP}
 
-## todo: check if a warning message is issued
+DESCRIPTION="--fastq_mergepairs warning if empty input"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "") \
+    --reverse <(printf "") \
+    --fastqout - 2>&1 > /dev/null | \
+    grep -q "^Warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
