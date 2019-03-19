@@ -2737,13 +2737,15 @@ printf "@s\nA\n+\nG\n" | \
 # vsearch uses the most frequent sequence as the consensus sequence,
 # but fails to take sequence abundances into account. In this
 # toy-example, the centroid sequence should be AA (abundance of 9),
-# even if AT occurs twice (total abundance of 2).
+# even if AT occurs twice (total abundance of 2), only when using the
+# --sizein option.
 
 DESCRIPTION="cluster_size --consout: consensus sequence is cluster's most abundant sequence (issue 363)"
 printf ">s1;size=1\nAT\n>s2;size=9\nAA\n>s3;size=1\nAT\n" | \
     "${VSEARCH}" \
         --cluster_size - \
         --minseqlength 1 \
+        --sizein \
         --id 0.5 \
         --quiet \
         --consout - | \
