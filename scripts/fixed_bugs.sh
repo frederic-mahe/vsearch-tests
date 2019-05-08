@@ -2821,7 +2821,8 @@ printf "@s;size=1;\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
         --xsize \
-        --fastqout - 2> /dev/null | \
+        --quiet \
+        --fastqout - | \
     grep -q "^@s$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2832,7 +2833,8 @@ printf "@s;size=1;\r\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
         --xsize \
-        --fastqout - 2> /dev/null | \
+        --quiet \
+        --fastqout - | \
     grep -q "^@s$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
