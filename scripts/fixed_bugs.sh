@@ -2682,6 +2682,14 @@ printf ">header meta data\nA\n" | \
 # match each other if they represent at least one identical residue,
 # so for example NN matches anything)
 
+# v2.13: Ambiguous nucleotide symbols (MRSVWYHKDBN) will now count as
+# matching to other symbols if they have in common at least one of the
+# nucleotides (ACGTU) they represent. For example: W will match A and
+# T, but also any of MRVHDN. This will be indicated with a + symbol in
+# alignments. Identical matches between any of ACGTU will be indicated
+# with a | symbol. This is similar to usearch version 8 and later. The
+# alignment score for aligning to any ambiguous symbol is still 0.
+
 # DESCRIPTION="issue 354"
 # "${VSEARCH}" \
 #     --usearch_global <(printf ">q\nCRA\n") \
@@ -2795,4 +2803,41 @@ DESCRIPTION="--fastq_mergepairs warning if empty input"
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#            Different outputs for Windows and Mac / Linux                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/371
+
+## Incorrect parsing of FASTA and FASTQ headers on Windows due to the
+## differences in newline characters on Windows vs Mac/Linux (CR LF vs
+## LF), solved in version 2.13.3.
+
+# Test a normal situation first
+DESCRIPTION="correct parsing of headers with LF characters (issue 371)"
+printf "@s;size=1;\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --xsize \
+        --fastqout - 2> /dev/null | \
+    grep -q "^@s$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# The issue can be replicated on any system (there should be no trailling ";")
+DESCRIPTION="correct parsing of headers with CR LF characters (issue 371)"
+printf "@s;size=1;\r\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --xsize \
+        --fastqout - 2> /dev/null | \
+    grep -q "^@s$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
+
+# TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
