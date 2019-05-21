@@ -2840,6 +2840,51 @@ printf "@s;size=1;\r\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#                     Suspected incorrect cluster results                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/375
+
+# There are different definitions of what are identical sequences (see
+# --iddef). In the example below, s1 and s2 are identical if terminal
+# gaps are not taken into account (vsearch's default behavior):
+
+# s1 GGGGTCAAACAGGATTAGATACCCTGGTAG
+#        ||||||||||||||||||||||||||
+# s2     TCAAACAGGATTAGATACCCTGGTAGAAAA
+
+# Test a normal situation first
+DESCRIPTION="sequences are identical (neglect terminal gaps) (issue 375)"
+SAME="TCAAACAGGATTAGATACCCTGGTAG"
+printf ">s1;size=1\nGGGG%s\n>s2;size=1\n%sAAAA" ${SAME} ${SAME} | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.00 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="sequences are different (account for terminal gaps) (issue 375)"
+SAME="TCAAACAGGATTAGATACCCTGGTAG"
+printf ">s1;size=1\nGGGG%s\n>s2;size=1\n%sAAAA" ${SAME} ${SAME} | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.00 \
+        --iddef 1 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 exit 0
 
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
