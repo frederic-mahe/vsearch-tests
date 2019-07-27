@@ -32,13 +32,19 @@ DESCRIPTION="check if vsearch is in the PATH"
 #*****************************************************************************#
 
 DESCRIPTION="--fastx_revcomp is accepted"
-printf "@s1\nACGT\n+\nGGGG" | "${VSEARCH}" --fastx_revcomp - --fastqout - --fastaout - &> /dev/null && \
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastqout - > /dev/null 2>&1 && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats --fastqout fill a file"
 OUTPUT=$(mktemp)
-printf "@s1\nACGT\n+\nGGGG" | "${VSEARCH}" --fastx_revcomp - --fastqout "${OUTPUT}" &> /dev/null
+printf "@s1\nACGT\n+\nGGGG" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastqout "${OUTPUT}" > /dev/null 2>&1
 [[ -s "${OUTPUT}" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -46,7 +52,7 @@ rm "${OUTPUT}"
 
 DESCRIPTION="--fastq_stats --fastaout fill a file"
 OUTPUT=$(mktemp)
-printf "@s1\nACGT\n+\nGGGG" | "${VSEARCH}" --fastx_revcomp - --fastaout "${OUTPUT}" &> /dev/null
+printf "@s1\nACGT\n+\nGGGG" | "${VSEARCH}" --fastx_revcomp - --fastaout "${OUTPUT}" > /dev/null 2>&1
 [[ -s "${OUTPUT}" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -54,20 +60,20 @@ rm "${OUTPUT}"
 
 DESCRIPTION="--fastq_stats --fastaout fill a file"
 OUTPUT=$(mktemp)
-printf "@s1\nACGT\n+\nGGGG" | "${VSEARCH}" --fastx_revcomp - --fastaout "${OUTPUT}" &> /dev/null
+printf "@s1\nACGT\n+\nGGGG" | "${VSEARCH}" --fastx_revcomp - --fastaout "${OUTPUT}" > /dev/null 2>&1
 [[ -s "${OUTPUT}" ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
 
 DESCRIPTION="--fastq_stats fails if fasta sequence given with --fastqout option"
-printf ">s1\nACGT" | "${VSEARCH}" --fastx_revcomp - --fastqout - &> /dev/null && \
+printf ">s1\nACGT" | "${VSEARCH}" --fastx_revcomp - --fastqout - > /dev/null 2>&1 && \
     failure  "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats reversing-complementing to fasta is correct"
 OUTPUT=$(mktemp)
-printf ">s1\nGTCA" | "${VSEARCH}" --fastx_revcomp - --fastaout "${OUTPUT}" &> /dev/null
+printf ">s1\nGTCA" | "${VSEARCH}" --fastx_revcomp - --fastaout "${OUTPUT}" > /dev/null 2>&1
 [[ $(cat "${OUTPUT}") == $(printf ">s1\nTGAC") ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -75,7 +81,7 @@ rm "${OUTPUT}"
 
 DESCRIPTION="--fastq_stats reversing-complementing to fastq is correct"
 OUTPUT=$(mktemp)
-printf "@s1\nGTCA\n+\nFGHI" | "${VSEARCH}" --fastx_revcomp - --fastqout "${OUTPUT}" &> /dev/null
+printf "@s1\nGTCA\n+\nFGHI" | "${VSEARCH}" --fastx_revcomp - --fastqout "${OUTPUT}" > /dev/null 2>&1
 [[ $(cat "${OUTPUT}") == $(printf "@s1\nTGAC\n+\nIHGF") ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -83,7 +89,7 @@ rm "${OUTPUT}"
 
 DESCRIPTION="--fastq_stats reversing-complementing fastq to fasta is correct"
 OUTPUT=$(mktemp)
-printf "@s1\nGTCA\n+\nFGHI" | "${VSEARCH}" --fastx_revcomp - --fastaout "${OUTPUT}" &> /dev/null
+printf "@s1\nGTCA\n+\nFGHI" | "${VSEARCH}" --fastx_revcomp - --fastaout "${OUTPUT}" > /dev/null 2>&1
 [[ $(cat "${OUTPUT}") == $(printf ">s1\nTGAC") ]] && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
