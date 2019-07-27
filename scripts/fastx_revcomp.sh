@@ -24,6 +24,7 @@ VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
 [[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
+
 #*****************************************************************************#
 #                                                                             #
 #                                  Arguments                                  #
@@ -87,3 +88,5 @@ printf "@s1\nGTCA\n+\nFGHI" | "${VSEARCH}" --fastx_revcomp - --fastaout "${OUTPU
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${OUTPUT}"
+
+exit 0
