@@ -604,6 +604,25 @@ OUTPUT=$("${VSEARCH}" --usearch_global <(printf "${search_query}") \
         failure "${DESCRIPTION}"
 unset "OUTPUT"
 
+
+DESCRIPTION="--usearch_global alnlen can be shorter than both seqs."
+## expect an alignment of length 1:
+## AT-
+##  |
+## -TA
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\nTA\n") \
+    --db <(printf ">t\nAT\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --userfields alnlen \
+    --userout - | \
+    grep -qw "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 DESCRIPTION="--usearch_global --blast6out finds the correct mism"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
@@ -2488,7 +2507,8 @@ USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc)
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset "SPECIFIED" "USERFIELD"
-    
+
+
 DESCRIPTION="--usearch_global --iddef 1 correct"
 SPECIFIED=$("${VSEARCH}" \
 		--usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
