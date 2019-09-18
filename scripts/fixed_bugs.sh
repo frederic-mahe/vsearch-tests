@@ -2885,6 +2885,29 @@ printf ">s1;size=1\nGGGG%s\n>s2;size=1\n%sAAAA" ${SAME} ${SAME} | \
         success "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#          --fastaout_rev writes Read1 sequence instead of Read2               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/387
+
+# This is limited to the fasta output, fastq output is ok.
+
+DESCRIPTION="fastx_filter fastaout_rev returns R2 sequences, not R1 (issue 387)"
+"${VSEARCH}" \
+    --fastx_filter <(printf '@s_1\nA\n+\nI\n') \
+    --reverse <(printf '@s_2\nT\n+\nI\n') \
+    --fastq_minlen 1 \
+    --fastaout /dev/null \
+    --fastaout_rev - 2> /dev/null | \
+    tr -d "\n" | \
+    grep -qx ">s_2T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
 
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
