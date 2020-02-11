@@ -30,7 +30,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                  Improve selection of unique kmers in query                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/1
 
 
@@ -39,7 +39,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                        Parallelisation with pthreads                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/2
 
 
@@ -48,7 +48,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #     Vectorization of global alignment - single query vs multiple targets     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/3
 
 
@@ -57,7 +57,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                        Clustering similar to usearch                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/4
 
 
@@ -66,7 +66,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                      Performance comparison to usearch                       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/5
 
 
@@ -75,7 +75,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                               Sequence masking                               #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/6
 
 
@@ -84,7 +84,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                        Implement more accept options                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/7
 
 
@@ -93,7 +93,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                             Search both strands                              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/8
 
 
@@ -102,7 +102,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                 Add support for bzipped/gzipped fasta files                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/9
 
 
@@ -111,7 +111,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                         Prioritized features/options                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/10
 
 
@@ -120,7 +120,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                  Clustering                                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/11
 
 
@@ -129,7 +129,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                              Chimera detection                               #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/12
 
 
@@ -138,7 +138,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                Documentation                                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/13
 
 
@@ -147,7 +147,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                  Manuscript                                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/14
 
 
@@ -156,7 +156,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                  Support for long (>15 nt) and gapped seeds                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/15
 
 
@@ -165,7 +165,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #      Vectorization of global alignment - single query vs single target       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/16
 
 
@@ -174,7 +174,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #        Convert array of top kmer hits into a min heap priority queue         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/17
 
 
@@ -183,7 +183,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                        Fix values of some userfields                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/18
 
 
@@ -192,7 +192,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #           Add option to define identity as including terminal gaps           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/19
 
 
@@ -201,7 +201,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #      Fix number of columns in blast6out output for non-matching queries      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/20
 
 
@@ -210,7 +210,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                Consistency with output_no_hits and uc_allhits                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/21
 
 
@@ -219,7 +219,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                          Segfault in dereplication                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/22
 
 
@@ -228,7 +228,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                     do not wrap alignments when rowlen=0                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/23
 
 
@@ -237,7 +237,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                    fix for maxaccepts=0 and maxrejects=0                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/24
 
 
@@ -246,7 +246,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #              Implement --cons_truncate clustering output option              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/25
 
 
@@ -255,7 +255,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                            Minor bug in Makefile                             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/26
 
 
@@ -264,7 +264,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                  Shuffling not random on unix with --seed 0                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/27
 
 
@@ -274,7 +274,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                    output)                                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/28
 
 
@@ -283,7 +283,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                    maxuniquesize option for dereplication                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/29
 
 
@@ -292,7 +292,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                Bug in masking                                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/30
 
 
@@ -301,7 +301,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #   Difference between --blast6out and --userout for evalue and bits fields    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/31
 
 
@@ -311,7 +311,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                   correctly                                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/32
 
 
@@ -320,7 +320,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #          Difference between --blast6out and --userout for id field           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/33
 
 
@@ -329,7 +329,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #           Speed-up searching when using the --top_hits_only option           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/34
 
 
@@ -338,7 +338,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #       Should T and U be considered as identical during dereplication?        #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/35
 
 
@@ -347,7 +347,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #              Support for --sizein and --sizeout when clustering              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/36
 
 
@@ -356,7 +356,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #      Check if illegal options are specified for the different commands       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/37
 
 
@@ -365,7 +365,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #               Stable sorting to avoid input-order dependencies               #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/38
 
 
@@ -375,7 +375,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                    stdout)                                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/39
 
 
@@ -384,7 +384,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                         Automatic regression testing                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/40
 
 
@@ -393,7 +393,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                              Bug in sortbysize                               #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/41
 
 
@@ -402,7 +402,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                     Add support for amino acid sequences                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/42
 
 
@@ -411,7 +411,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                     API                                      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/43
 
 
@@ -420,7 +420,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #             add usearch's fastq_mergepairs function and options              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/44
 
 
@@ -429,7 +429,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                    Illegal instruction fault on some cpus                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/45
 
 
@@ -438,7 +438,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                            Write --help to stdout                            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/46
 
 
@@ -447,7 +447,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                            allpairs_global option                            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/47
 
 
@@ -456,7 +456,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                         Reference Chimera checking.                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/48
 
 
@@ -465,7 +465,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #             Add --log option to uchime_ref (and other commands?)             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/49
 
 
@@ -474,7 +474,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                              Add --quiet option                              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/50
 
 
@@ -483,7 +483,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #         Reduce memory requirements for aligning very long sequences          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/51
 
 
@@ -492,7 +492,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                Handle alignments of long sequences correctly                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/52
 
 
@@ -501,7 +501,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #     Incorrect output from chimera detection with the --uchimeout option      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/53
 
 
@@ -510,7 +510,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                  blast6out subject and query hit location.                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/54
 
 
@@ -519,7 +519,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                     Option to output in SAM format file                      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/55
 
 
@@ -528,7 +528,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                           Documentation - git link                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/56
 
 
@@ -537,7 +537,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #     Use "=" to indicate perfect alignment in column 8 of UC output file      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/57
 
 
@@ -546,7 +546,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                      Add a "cluster_abundance" command                       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/58
 
 
@@ -555,7 +555,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                     Improve help message for clustering                      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/59
 
 
@@ -564,7 +564,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                 Single Makefile, Autotools and smaller repo                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/60
 
 
@@ -574,7 +574,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                              sequence identifier                             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/61
 
 
@@ -584,7 +584,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                   specified                                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/62
 
 
@@ -593,7 +593,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #         Seg Fault or Cannot allocate enough memory on long sequences         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/63
 
 
@@ -602,7 +602,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #          Dereplication: option to use hash values as sequence names          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/64
 
 
@@ -611,7 +611,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                          x permissions on binaries                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/65
 
 
@@ -620,7 +620,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #       Improve reading of FASTA files, including very long header lines       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/66
 
 
@@ -629,7 +629,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                       Ambiguity in consensus alignment                       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/67
 
 
@@ -638,7 +638,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                          adopt semantic versioning                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/68
 
 
@@ -648,7 +648,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                   allocated                                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/69
 
 
@@ -657,7 +657,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #               Error in `vsearch': corrupted double-linked list               #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/70
 
 
@@ -666,7 +666,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #          Error in calculation of the identity using --iddef 3 (MBL)          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/71
 
 
@@ -675,7 +675,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                        Integrate patches from Debian                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/72
 
 
@@ -684,7 +684,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                         Status taxonomy assignment?                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/73
 
 
@@ -693,7 +693,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                  cluster input sequences shorter than 32nt                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/74
 
 
@@ -702,7 +702,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #             cluster_fast and msa output for each of the clusters             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/75
 
 
@@ -711,7 +711,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                segfault when running cluster_fast with msaout                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/76
 
 
@@ -720,7 +720,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 # Segmentation fault when using --uchime_denovo on a large fasta file (9.3 GB) #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/77
 
 
@@ -729,7 +729,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                     Chimera detection progress indicator                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/78
 
 
@@ -738,7 +738,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                        Support for multiple databases                        #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/79
 
 
@@ -747,7 +747,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                           Generating cluster files                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/80
 
 
@@ -756,7 +756,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                            Space in a header line                            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/81
 
 
@@ -765,7 +765,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #       Error "No output files specified" when only samout is specified        #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/82
 
 
@@ -774,7 +774,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #               Wanted: samout with search, not just clustering                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/83
 
 
@@ -783,7 +783,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                     --relabel does not work consistently                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/84
 
 
@@ -792,7 +792,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                Problem with repeats when clustering WGS reads                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/85
 
 
@@ -801,7 +801,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #         Option to not ignore terminal gaps when computing consensus          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/86
 
 
@@ -810,7 +810,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #              Chimera search with translated protein sequences?               #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/87
 
 
@@ -819,7 +819,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                        Vsearch needs a Galaxy wrapper                        #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/88
 
 
@@ -828,7 +828,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #        Consensus output in clustering produces empty fasta sequences         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/89
 
 
@@ -837,7 +837,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                 Dereplication based on prefixes of sequences                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/90
 
 
@@ -846,7 +846,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                       Unable to build on OS X 10.10.3                        #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/91
 
 
@@ -855,7 +855,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                    MAINT: renaming string.h to xstring.h                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/92
 
 
@@ -864,7 +864,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                   I've made a homebrew package for vsearch                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/93
 
 
@@ -873,7 +873,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                         Sequence profile of clusters                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/94
 
 
@@ -882,7 +882,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #             usearch_global sequences that contain repeated kmers             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/95
 
 
@@ -891,7 +891,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                  question about compile time optimizations                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/96
 
 
@@ -900,7 +900,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                Error in `vsearch': double free or corruption                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/97
 
 
@@ -909,7 +909,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #              option --minh ignored while using --uchime_denovo               #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/98
 
 
@@ -918,7 +918,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                 Test scripts                                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/99
 
 
@@ -928,7 +928,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                     lines                                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/100
 
 
@@ -937,7 +937,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #        Reorganize subsampling commands for compatibilty with usearch         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/101
 
 
@@ -946,7 +946,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #         Option to sort cluster output files by the size of clusters          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/102
 
 
@@ -956,7 +956,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                     files                                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/103
 
 
@@ -965,7 +965,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                     Missing output in uchime_denovo mode                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/104
 
 
@@ -974,7 +974,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                Change license                                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/105
 
 
@@ -983,7 +983,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                  Replace CityHash by FarmHash or MetroHash?                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/106
 
 
@@ -992,7 +992,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                     Add header information to sam output                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/107
 
 
@@ -1001,7 +1001,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                        Warnings reported by cppcheck                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/108
 
 
@@ -1010,7 +1010,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                  Request regarding abundance labeled output                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/109
 
 
@@ -1019,7 +1019,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                            details of msa output                             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/110
 
 
@@ -1028,7 +1028,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                Large memory consumption with --fastx_revcomp                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/111
 
 
@@ -1037,7 +1037,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                     Typo                                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/112
 
 
@@ -1046,7 +1046,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                 Help message                                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/113
 
 
@@ -1055,7 +1055,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #              Remove stray ` mark from installation instructions              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/114
 
 
@@ -1064,7 +1064,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                         Support xz compressed files                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/115
 
 
@@ -1073,7 +1073,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                           FASTQ version conversion                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/116
 
 
@@ -1082,7 +1082,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                         Add "-v" option for version                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/117
 
 
@@ -1091,7 +1091,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                          Improve chimera detection                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/118
 
 
@@ -1100,7 +1100,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                 Support AVX2                                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/119
 
 
@@ -1109,7 +1109,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #      Make --fastx_subsample work with FASTQ files, not just FASTA files      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/120
 
 
@@ -1118,7 +1118,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                      Add relabelling options to shuffle                      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/121
 
 
@@ -1127,7 +1127,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                               sizeorder option                               #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/122
 
 
@@ -1136,7 +1136,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                       Issue with zlib on version 1.4.0                       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/123
 
 
@@ -1145,7 +1145,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                    Remove dependency on crypto libraries                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/124
 
 
@@ -1154,7 +1154,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                           Fix example in man page                            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/125
 
 
@@ -1163,7 +1163,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                    realloc() error clustering on v.1.4.1                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/126
 
 
@@ -1172,7 +1172,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #     Fatal error: Cannot determine amount of RAM with 1.4.2 on OSX 10.8.5     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/127
 
 
@@ -1181,7 +1181,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                Fix alignment bug introduced in version 1.2.17                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/128
 
 
@@ -1190,7 +1190,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #              possible for .uc files to be relabel_sha1-aware?                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/129
 
 
@@ -1199,7 +1199,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                              add --search_exact                              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/130
 
 
@@ -1208,7 +1208,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                    add --relabel option to --shuffle #121                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/131
 
 
@@ -1217,7 +1217,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                     Implement the search_global command                      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/132
 
 
@@ -1226,7 +1226,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                         Add test for --search_exact                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/133
 
 
@@ -1235,7 +1235,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                         release vsearch on anacoda?                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/134
 
 
@@ -1244,7 +1244,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                   error in --fastq_stats on MaxOSX 10.8.5                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/135
 
 
@@ -1253,7 +1253,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #            Allow floating point number argument to threads option            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/136
 
 
@@ -1262,7 +1262,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                           disable default CXXFLAGS                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/137
 
 
@@ -1271,7 +1271,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #             fastq_convert: fastaout does not work on fastq files             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/138
 
 
@@ -1280,7 +1280,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                   Remove autoconf files from distribution                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/139
 
 
@@ -1289,7 +1289,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #             escape tabs in fasta names writing output with --uc              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/140
 
 ## vsearch truncates at the first space or tab by default, similar to
@@ -1327,7 +1327,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                   quote fasta record names in --uc output                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/141
 
 
@@ -1336,7 +1336,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #    Segfault or fatal error with fastx-commands on compressed input files     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/142
 
 
@@ -1345,7 +1345,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                          Improved chimera reporting                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/143
 
 
@@ -1354,7 +1354,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #    Optionally compress output to FASTA or FASTQ files with gzip or bzip2     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/144
 
 
@@ -1363,7 +1363,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #vsearch --fastq_stats doesn't report correct values of AvgEE, Rate and RatePct#
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/145
 
 
@@ -1372,7 +1372,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #         Error in installing vsearch 1.9.2 from source on OS X 10.8.5         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/146
 
 
@@ -1381,7 +1381,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                          Letter case not preserved                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/147
 
 
@@ -1390,7 +1390,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                         Add --fastq_eestats command                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/148
 
 
@@ -1399,7 +1399,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                   Incorrect abundance in subsample output                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/149
 
 
@@ -1408,7 +1408,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                   relabel issue duruing --derep_fulllength                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/150
 
 
@@ -1417,7 +1417,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                                Rereplication                                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/151
 
 
@@ -1426,7 +1426,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                                usearch_local                                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/152
 
 
@@ -1435,7 +1435,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                  Wrong alignment results in usearch_global                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/153
 
 
@@ -1444,7 +1444,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                                automake 1.15                                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/154
 
 
@@ -1453,7 +1453,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #                     Request: uchime score in fasta label                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/155
 
 
@@ -1462,7 +1462,7 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 #             Avoid progress indicator if stderr is not a terminal             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/156
 # Avoid updating the progress indicator when stderr is not a terminal
 
@@ -1531,7 +1531,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #                      Segmentation fault with uchime_ref                      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/157
 
 
@@ -1540,7 +1540,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #         Database sequences in lower case are being masked by default         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/158
 
 
@@ -1549,7 +1549,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #            Remove unaligned part of alignment in uchimealn files             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/159
 
 
@@ -1558,7 +1558,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #                     --relabel not working with --consout                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/160
 
 
@@ -1567,7 +1567,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #           Add options to filter sequences and consensus sequences            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/161
 
 
@@ -1576,7 +1576,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #                       inconsistency with merging pairs                       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/162
 
 
@@ -1585,7 +1585,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #                              --self doco error?                              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/163
 
 
@@ -1594,7 +1594,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #             Do not truncate FASTQ labels (for fastq_mergepairs)              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/164
 
 
@@ -1603,7 +1603,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #                     New option to output sequence length                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/165
 
 
@@ -1612,7 +1612,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #                               Make OTU tables                                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/166
 
 
@@ -1621,7 +1621,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #   Add idoffset argument for clustering of non-overlapped paired-end reads    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/167
 
 
@@ -1630,7 +1630,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #                  Output expected errors to fasta format too                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/168
 
 
@@ -1639,7 +1639,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #                         Compilation error [Fasta.c]                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/169
 
 
@@ -1648,7 +1648,7 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #                          Windows Executable Version                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/170
 
 
@@ -1674,7 +1674,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #        Windows Modifications For Compilation with Visual Studio 2015         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/172
 
 
@@ -1683,7 +1683,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #            Indicate matching strand in uc file when dereplicating            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/173
 
 
@@ -1692,7 +1692,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #       Improve error message when FASTQ quality values are out of range       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/174
 
 
@@ -1701,7 +1701,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #               Merge pair fails when there are empty sequences                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/175
 
 
@@ -1710,7 +1710,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #       Compute evalues and bit scores using Karlin-Altschul statistics        #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/176
 
 
@@ -1719,7 +1719,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                       uchime_denovo on very long reads                       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/177
 
 
@@ -1729,7 +1729,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                                    dataset                                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/178
 
 
@@ -1738,7 +1738,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                     Wrong values in the blast6out table                      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/179
 
 
@@ -1747,7 +1747,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #             New option for trimming the sequence based on maxEE              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/180
 
 
@@ -1824,7 +1824,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #           Comparing vsearch chimera detection with uchime - denovo           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/183
 
 
@@ -1833,7 +1833,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #             Segmentation fault when masking very long sequences              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/184
 
 
@@ -1842,7 +1842,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                            Implement cluster_otus                            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/185
 
 
@@ -1851,7 +1851,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #     --minseqlength and --maxseqlength options do not work for filtering      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/186
 
 
@@ -1860,7 +1860,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                             Illegal instruction                              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/187
 
 
@@ -1869,7 +1869,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                            Rolling hash function?                            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/188
 
 
@@ -1878,7 +1878,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                          Allow shorter word lengths                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/189
 
 
@@ -1887,7 +1887,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                  Filtering options for fastA sequences also                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/190
 
 
@@ -1896,7 +1896,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                              typo in the manual                              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/191
 
 
@@ -1905,7 +1905,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #            Improve documentation of fastq_stats and fastq_eestats            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/192
 
 
@@ -1914,7 +1914,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #         Add option to write non-chosen subsamples to a separate file         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/193
 
 
@@ -1923,7 +1923,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #          --fastq_stats fails on fastq files with an offset of +64?           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/194
 
 
@@ -1932,7 +1932,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                         redundancy in read searching                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/195
 
 
@@ -1941,7 +1941,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                    Document the UC format in the manpage                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/196
 
 
@@ -1950,7 +1950,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #               Extend --fastx_subsample to support FASTQ files                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/197
 
 
@@ -1959,7 +1959,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                              Update the manpage                              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/198
 
 
@@ -1968,7 +1968,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #       --top_hits_only limited to --matched instead of also --dbmatched       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/199
 
 
@@ -1977,7 +1977,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                                fulldp option                                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/200
 
 
@@ -1987,7 +1987,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                                unequal length                                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/201
 
 
@@ -1996,7 +1996,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #                             Implement relabel @                              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/202
 
 
@@ -2005,7 +2005,7 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 #         fastq_trunclen and discarded short sequences (issue 203)            #
 #                                                                             #
 #*****************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/203
 
 DESCRIPTION="discard entries shorter than --fastq_trunclength value (issue 203)"
@@ -2036,7 +2036,7 @@ DESCRIPTION="keep entries equal or longer than --fastq_trunclength value (issue 
 #        fastx_filter ignores input sequence abundance when relabeling         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/204
 #
 # --fastx_filter ignores input sequence abundances when relabeling
@@ -2060,7 +2060,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                            Old versions on conda                             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/205
 
 
@@ -2069,7 +2069,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                       Fatal error when reading ncbi-nr                       #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/206
 
 
@@ -2078,7 +2078,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #            Use cluster number in column 2 on H-lines in uc files             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/207
 
 
@@ -2087,7 +2087,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                       dereplication option suggestion                        #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/208
 
 
@@ -2096,7 +2096,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                         An error when running v2.30                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/209
 
 
@@ -2105,7 +2105,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                          Sintax taxonomy classifier                          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/210
 
 
@@ -2114,7 +2114,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                   gapopen and gapext - effect as expected?                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/211
 
 
@@ -2124,7 +2124,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                                  LENGTH > 7                                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/212
 
 
@@ -2133,7 +2133,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 # Internal gaps occur in alignments even with infinite internal gap penalties  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/213
 
 
@@ -2142,7 +2142,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                 Improve behaviour with very short sequences                  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/214
 
 
@@ -2151,7 +2151,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                   --top_hits_only reports only one top hit                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/215
 
 
@@ -2161,7 +2161,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                                 terminal gaps                                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/216
 
 
@@ -2170,7 +2170,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #             Ideas for potential improvement in accuracy or speed             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/217
 
 
@@ -2179,7 +2179,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                     Improve multiple sequence alignment                      #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/218
 
 
@@ -2188,7 +2188,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #            Describe a standard metabarcoding pipeline for vsearch            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/219
 
 
@@ -2197,7 +2197,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                    clustering: profiles do not make sense                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/220
 
 
@@ -2207,7 +2207,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                                    option                                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/221
 
 
@@ -2216,7 +2216,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                   Port VSEARCH to the POWER8 architecture                    #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/222
 
 
@@ -2225,7 +2225,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                         Correctly detect named pipes                         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/223
 
 
@@ -2234,7 +2234,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                     Qiime open reference does not work ?                     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/224
 
 
@@ -2243,7 +2243,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #        Add minuniquesize/maxuniquesize to the command --fastx_filter         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/225
 
 
@@ -2252,7 +2252,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                            fastq_eestats2 feature                            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/226
 
 
@@ -2261,7 +2261,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #             Truncate header when converting from FASTQ to FASTA              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/227
 
 
@@ -2270,7 +2270,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                Overflow in fastq_stats with large FASTQ files                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/228
 
 
@@ -2279,7 +2279,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                 Compatibility with older versions of usearch                 #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/229
 
 
@@ -2288,7 +2288,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #  Using Vsearch to produce a consensus OTU table from non-overlapping reads   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/230
 
 
@@ -2297,7 +2297,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #         Add fastq_maxdiffpct option (% difference for merging pairs)         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/231
 
 
@@ -2306,7 +2306,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #        Recording query reads that fail to cluster as "N" or "No hit"         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/232
 
 
@@ -2315,7 +2315,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #               Progress bar during shuffling always shows 100%                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/233
 
 
@@ -2324,7 +2324,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                          Add support for udb files                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/234
 
 
@@ -2333,7 +2333,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #         Can we have a function of write to standard output and error         #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/235
 
 
@@ -2342,7 +2342,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                        OTU sequence short than before                        #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/236
 
 
@@ -2351,7 +2351,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #              should --log capture the output of --fastq_chars?               #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/237
 
 
@@ -2360,7 +2360,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 # when in doubt, --fastq_chars should assume an offset of +33 rather than +64  #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/238
 
 
@@ -2369,7 +2369,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                   shuffle silently converts fastq to fasta                   #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/239
 
 
@@ -2378,7 +2378,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                           Typo in warning message                            #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/240
 
 
@@ -2387,7 +2387,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #       what should average cluster size be when there are no clusters?        #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/241
 
 
@@ -2396,7 +2396,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                           Add --relabel_ids option                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/242
 
 
@@ -2405,7 +2405,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                           Dealing with a full disk                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/243
 
 
@@ -2414,7 +2414,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                          Lifting memory limitation                           #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/244
 
 
@@ -2423,7 +2423,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #         query end position correct in blast6 output when Searching?          #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/245
 
 
@@ -2432,7 +2432,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                            link broken in README                             #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/246
 
 
@@ -2441,7 +2441,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                fix link to manpage in README.md to close #246                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/pull/247
 
 
@@ -2451,7 +2451,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #                                 --sample_size                                #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/248
 
 
@@ -2460,7 +2460,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #             change the warning message for discarded sequences?              #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/249
 
 
@@ -2469,8 +2469,62 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #     vsearch help or version should return the latest vsearch publication     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/250
+
+
+#******************************************************************************#
+#                                                                              #
+#             SAM format: wrong edit distance in optional tags                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/260
+
+## SAM format:
+# AS:i:? alignment score (i.e percent identity)
+# XN:i:? next best alignment score (always 0?)
+# XM:i:? number of mismatches
+# XO:i:? number of gap opens (excluding terminal gaps)
+# XG:i:? number of gap extensions (excluding terminal gaps)
+# NM:i:? edit distance (sum of XM and XG)
+# MD:Z:? variant string
+# YT:Z:UU string representing alignment type
+
+# NM (edit distance) is defined as the sum of mismatches XM and gap
+# extensions XG, where it should be the sum of mismatches XM, gap
+# extensions XG and gap opens XO, shouldn't it? Unless gap opens are
+# included in mismatches, which does not seem to be the case.
+
+vsearch \
+    --usearch_global <(printf '>q1\nGGGGGGGGGG\n') \
+    --db <(printf '>r1\nGGGGGCCCCGGGGG\n') \
+    --id 0.5 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - \
+    --alnout -
+
+# I think the edit distance should just include the number of
+# mismatches and the number of alignment positions with a gap
+# symbol. In the example there are 0 mismatches and 4 gap positions,
+# so the total edit distance is 4. The edit distance is usually
+# defined as the number of simple operations necessary to transform
+# one string into another, where the operations usually allowed are
+# single nucleotide substitutions, single nucleotide deletions, and
+# single nucleotide insertions.
+
+# The edit distance (4 in this example) will usually be identical to
+# the total alignment length (16 in this example) minus the number of
+# matches (12 in this example).
+
+# Qry  1 + ggggg----ggggg 10
+#          |||||    |||||
+# Tgt  1 + GGGGGCCCCGGGGG 14
+
+# 14 cols, 10 ids (71.4%), 4 gaps (28.6%)
+# q1	0	r1	1	255	5M4D5M	*	0	0	gggggggggg	*	AS:i:71	XN:i:0	XM:i:0	XO:i:1	XG:i:4	NM:i:4	MD:Z:5^CCCC5	YT:Z:UU
+
 
 
 #******************************************************************************#
@@ -2478,7 +2532,7 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #   For the fastq_eestats2 option the argument "-" is not treated as stdin     #
 #                                                                              #
 #******************************************************************************#
-## 
+##
 ## https://github.com/torognes/vsearch/issues/273
 
 DESCRIPTION="fastq_eestats2 treats \"-\" as stdin (issue 273)"
@@ -2909,5 +2963,17 @@ DESCRIPTION="fastx_filter fastaout_rev returns R2 sequences, not R1 (issue 387)"
 
 
 exit 0
+
+
+#******************************************************************************#
+#                                                                              #
+#                           vsearch error (issue 396)                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/396
+
+# This is a copy-paste issue (dashes replaced with utf-8 chars, shell breaks)
+
 
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
