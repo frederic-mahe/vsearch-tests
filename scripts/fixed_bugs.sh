@@ -2496,14 +2496,14 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 # extensions XG and gap opens XO, shouldn't it? Unless gap opens are
 # included in mismatches, which does not seem to be the case.
 
-vsearch \
-    --usearch_global <(printf '>q1\nGGGGGGGGGG\n') \
-    --db <(printf '>r1\nGGGGGCCCCGGGGG\n') \
-    --id 0.5 \
-    --quiet \
-    --minseqlength 1 \
-    --samout - \
-    --alnout -
+# vsearch \
+#     --usearch_global <(printf '>q1\nGGGGGGGGGG\n') \
+#     --db <(printf '>r1\nGGGGGCCCCGGGGG\n') \
+#     --id 0.5 \
+#     --quiet \
+#     --minseqlength 1 \
+#     --samout - \
+#     --alnout -
 
 # I think the edit distance should just include the number of
 # mismatches and the number of alignment positions with a gap
@@ -2962,9 +2962,6 @@ DESCRIPTION="fastx_filter fastaout_rev returns R2 sequences, not R1 (issue 387)"
         failure "${DESCRIPTION}"
 
 
-exit 0
-
-
 #******************************************************************************#
 #                                                                              #
 #                           vsearch error (issue 396)                          #
@@ -2973,7 +2970,44 @@ exit 0
 ##
 ## https://github.com/torognes/vsearch/issues/396
 
-# This is a copy-paste issue (dashes replaced with utf-8 chars, shell breaks)
+# This is a copy-paste issue (dashes replaced with utf-8 chars, shell
+# breaks). A copy-paste from vsearch_man.pdf does not produce the same
+# issue. Nothing to change then.
+
+
+#******************************************************************************#
+#                                                                              #
+#                      Fasta Header problem (issue 397)                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/397
+
+# empty issue
+
+
+#******************************************************************************#
+#                                                                              #
+#                      Fasta Header problem (issue 398)                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/398
+
+# vsearch detects non-ascii characters in fasta headers and exits with
+# an error message
+
+DESCRIPTION="detect non-ascii chars in fasta headers and break (issue 398)"
+"${VSEARCH}" \
+    --uchime_ref <(printf ">s1\nAC\n") \
+    --db <(printf ">s2×\nAC\n") \
+    --nonchimeras /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
+# TODO: fix issue 260 (SAM format)
+
+exit 0
