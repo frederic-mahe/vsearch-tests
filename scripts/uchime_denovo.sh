@@ -12,16 +12,18 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    
+    # exit 1
 }
 
 success () {
     printf "${GREEN}PASS${NO_COLOR}: ${1}\n"
 }
 
+## use the first vsearch binary in $PATH by default, unless user wants
+## to test another binary
+VSEARCH=$(which vsearch 2> /dev/null)
+[[ "${1}" ]] && VSEARCH="${1}"
 
-## Is vsearch installed?
-VSEARCH=$(which vsearch)
 DESCRIPTION="check if vsearch is in the PATH"
 [[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
 
@@ -32,7 +34,7 @@ DESCRIPTION="check if vsearch is in the PATH"
 #                                                                             #
 #*****************************************************************************#
 
-#used sequences from Edgar et Al. Bioinformatics Vol.27 no. 16 2011 p.2194-2200
+# used sequences from Edgar et Al. Bioinformatics Vol.27 no. 16 2011 p.2194-2200
 
 DESCRIPTION="--uchime_denovo is accepted"
 printf '@seq1\nAGC\n+\nIII\n' | \
