@@ -2,7 +2,7 @@
 
 ## Launch all tests
 for s in ./scripts/*.sh ; do
-    bash "${s}"
+    bash "${s}" "${1}" || exit 1
     echo
 done
 
