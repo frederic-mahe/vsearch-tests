@@ -12,21 +12,22 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    # exit -1
+    # exit 1
 }
 
 success () {
     printf "${GREEN}PASS${NO_COLOR}: ${1}\n"
 }
 
-## use the first vsearch binary in $PATH by default, unless user wants
+## use the first binary in $PATH by default, unless user wants
 ## to test another binary
-VSEARCH=$(which vsearch)
+VSEARCH=$(which vsearch 2> /dev/null)
 [[ "${1}" ]] && VSEARCH="${1}"
 
-## Is vsearch installed?
-DESCRIPTION="check if vsearch is in the PATH"
-[[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
+DESCRIPTION="check if vsearch is executable"
+[[ -x "${VSEARCH}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## create a tiny test file
 SFF=$(mktemp)

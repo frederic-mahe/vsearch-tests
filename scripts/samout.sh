@@ -12,15 +12,22 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
+    # exit 1
 }
 
 success () {
     printf "${GREEN}PASS${NO_COLOR}: ${1}\n"
 }
-## Is vsearch installed?
-VSEARCH=$(which vsearch)
-DESCRIPTION="check if vsearch is in the PATH"
-[[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
+
+## use the first binary in $PATH by default, unless user wants
+## to test another binary
+VSEARCH=$(which vsearch 2> /dev/null)
+[[ "${1}" ]] && VSEARCH="${1}"
+
+DESCRIPTION="check if vsearch is executable"
+[[ -x "${VSEARCH}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 # macOS adaptations
 
@@ -50,6 +57,7 @@ function perlgrep_v ()
 ## (https://github.com/samtools/hts-specs), and in particular
 ## SAMv1.pdf (6 Apr 2017, 434cda9) and SAMtags.pdf (20 Jun 2016,
 ## e087be0).
+
 
 #*****************************************************************************#
 #                                                                             #

@@ -12,11 +12,22 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
+    # exit 1
 }
 
 success () {
     printf "${GREEN}PASS${NO_COLOR}: ${1}\n"
 }
+
+## use the first binary in $PATH by default, unless user wants
+## to test another binary
+VSEARCH=$(which vsearch 2> /dev/null)
+[[ "${1}" ]] && VSEARCH="${1}"
+
+DESCRIPTION="check if vsearch is executable"
+[[ -x "${VSEARCH}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## Constructing a test file
 SEQx1000=$(mktemp)
@@ -24,15 +35,11 @@ for ((i=1 ; i<=1000 ; i++)) ; do
     printf "@%s%d\nAAGG\n+\nGGGG\n" "seq" ${i}
 done > "${SEQx1000}"
 
-## Is vsearch installed?
-VSEARCH=$(which vsearch)
-DESCRIPTION="check if vsearch is in the PATH"
-[[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
-
 if [[ ${OSTYPE} =~ darwin ]] ; then
     md5sum() { md5 -r ; }
     sha1sum() { shasum ; }
 fi
+
 
 #*****************************************************************************#
 #                                                                             #

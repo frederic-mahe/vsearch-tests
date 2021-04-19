@@ -12,7 +12,7 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    exit -1
+    exit 1
 }
 
 success () {
@@ -25,7 +25,9 @@ VSEARCH=$(which vsearch 2> /dev/null)
 [[ "${1}" ]] && VSEARCH="${1}"
 
 DESCRIPTION="check if vsearch is in the PATH"
-[[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
+[[ "${VSEARCH}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
