@@ -1,7 +1,7 @@
 #!/usr/bin/env bash -
 
 ## Print a header
-SCRIPT_NAME="fastq_eestats all tests"
+SCRIPT_NAME="fastq_eestats"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
@@ -12,17 +12,22 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
+    # exit 1
 }
 
 success () {
     printf "${GREEN}PASS${NO_COLOR}: ${1}\n"
 }
 
+## use the first binary in $PATH by default, unless user wants
+## to test another binary
+VSEARCH=$(which vsearch 2> /dev/null)
+[[ "${1}" ]] && VSEARCH="${1}"
 
-## Is vsearch installed?
-VSEARCH=$(which vsearch)
-DESCRIPTION="check if vsearch is in the PATH"
-[[ "${VSEARCH}" ]] && success "${DESCRIPTION}" || failure "${DESCRIPTION}"
+DESCRIPTION="check if vsearch is executable"
+[[ -x "${VSEARCH}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
