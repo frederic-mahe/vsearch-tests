@@ -3012,6 +3012,43 @@ DESCRIPTION="detect non-ascii chars in fasta headers and break (issue 398)"
         success "${DESCRIPTION}"
 
 
+# ************************************************************************** #
+#                                                                            #
+#    Fatal error: Invalid line 3 in FASTQ file: '+' line must be empty or    #
+#                      identical to header (issue 470)                       #
+#                                                                            #
+# ************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/470
+
+DESCRIPTION="issue 470: '+' line must be empty or identical to header (empty)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 470: '+' line must be empty or identical to header (equal)"
+printf "@s\nA\n+s\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 470: '+' line must be empty or identical to header (unequal)"
+printf "@s\nA\n+s1\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
 
