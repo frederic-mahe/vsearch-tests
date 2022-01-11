@@ -2658,14 +2658,38 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
 # the extensions. If all sequences are equally long, the results are
 # the same.
 
-DESCRIPTION="issue 336: eestats2: wrong MaxEE when mixing short & long reads"
+## old (before v2.8.5)
+# Length         MaxEE 0.50         MaxEE 1.00         MaxEE 2.00
+# ------   ----------------   ----------------   ----------------
+#      1          2(100.0%)          2(100.0%)          2(100.0%)
+#      2          2(100.0%)          2(100.0%)          2(100.0%)
+
+
+## expected (after v2.8.5)
+# Length         MaxEE 0.50         MaxEE 1.00         MaxEE 2.00
+# ------   ----------------   ----------------   ----------------
+#      1          2(100.0%)          2(100.0%)          2(100.0%)
+#      2          1( 50.0%)          1( 50.0%)          1( 50.0%)
+
+DESCRIPTION="issue 336: eestats2: wrong MaxEE when mixing short & long reads (older and wrong output)"
 printf "@1\nAA\n+\nAA\n@2\nA\n+\nA\n" | \
     "${VSEARCH}" \
         --fastq_eestats2 /dev/stdin \
         --length_cutoffs 1,2,1 \
         --quiet \
         --output - | \
-    grep -Eq " +2( +2\( 50.0%\)){3}" && \
+    grep -Eq " +2( +2\(100.0%\)){3}" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 336: eestats2: wrong MaxEE when mixing short & long reads (expected output)"
+printf "@1\nAA\n+\nAA\n@2\nA\n+\nA\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 /dev/stdin \
+        --length_cutoffs 1,2,1 \
+        --quiet \
+        --output - | \
+    grep -Eq " +2( +1\( 50.0%\)){3}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
