@@ -2647,6 +2647,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
 #******************************************************************************#
 #                                                                              #
 #  Problem with eestats2 for longer reads (short reads incorrectly accounted)  #
+#                             (issue 336)                                      #
 #                                                                              #
 #******************************************************************************#
 ##
@@ -2657,7 +2658,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
 # the extensions. If all sequences are equally long, the results are
 # the same.
 
-DESCRIPTION="eestats2: wrong MaxEE when mixing short & long reads (issue 336)"
+DESCRIPTION="issue 336: eestats2: wrong MaxEE when mixing short & long reads"
 printf "@1\nAA\n+\nAA\n@2\nA\n+\nA\n" | \
     "${VSEARCH}" \
         --fastq_eestats2 /dev/stdin \
@@ -2668,7 +2669,7 @@ printf "@1\nAA\n+\nAA\n@2\nA\n+\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="eestats2: correct MaxEE for same-length reads (issue 336)"
+DESCRIPTION="issue 336: eestats2: correct MaxEE for same-length reads"
 printf "@1\nAA\n+\nAA\n@2\nAA\n+\nAA\n" | \
     "${VSEARCH}" \
         --fastq_eestats2 /dev/stdin \
@@ -2683,6 +2684,7 @@ printf "@1\nAA\n+\nAA\n@2\nAA\n+\nAA\n" | \
 #******************************************************************************#
 #                                                                              #
 #    derep_fulllength fails to remove the part of the header after the space   #
+#                                 (issue 338)                                  #
 #                                                                              #
 #******************************************************************************#
 ##
@@ -2691,7 +2693,7 @@ printf "@1\nAA\n+\nAA\n@2\nAA\n+\nAA\n" | \
 # The part of the header line from the first space should be ignored
 # (unless the --notrunclabels option is in effect)
 
-DESCRIPTION="derep_fulllength: header stops at first space (issue 338)"
+DESCRIPTION="issue 338: derep_fulllength: header stops at first space"
 printf ">header meta data\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
@@ -2703,7 +2705,7 @@ printf ">header meta data\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="derep_fulllength: notrunclabels includes full header (issue 338)"
+DESCRIPTION="issue 338: derep_fulllength: notrunclabels includes full header"
 printf ">header meta data\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
@@ -2761,7 +2763,7 @@ printf ">header meta data\nA\n" | \
 
 #******************************************************************************#
 #                                                                              #
-#      fastq_stats: corner case when computing truncation percentage           #
+#   fastq_stats: corner case when computing truncation percentage (issue 355)  #
 #                                                                              #
 #******************************************************************************#
 ##
@@ -2783,7 +2785,7 @@ printf ">header meta data\nA\n" | \
 # -----  ------  ------  ------  ------
 #     1  100.0%  100.0%  100.0%  100.0%
 
-DESCRIPTION="fastq_stats: wrong truncation percentage when max length is 1 (issue 355)"
+DESCRIPTION="issue 355: fastq_stats: wrong truncation percentage when max length is 1"
 printf "@s\nA\n+\nG\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -2795,7 +2797,7 @@ printf "@s\nA\n+\nG\n" | \
 
 #******************************************************************************#
 #                                                                              #
-#            Could cluster_fast build consensus based on abundances?           #
+#     Could cluster_fast build consensus based on abundances? (issue 363)      #
 #                                                                              #
 #******************************************************************************#
 ##
@@ -2807,7 +2809,7 @@ printf "@s\nA\n+\nG\n" | \
 # even if AT occurs twice (total abundance of 2), only when using the
 # --sizein option.
 
-DESCRIPTION="cluster_size --consout: consensus sequence is cluster's most abundant sequence (issue 363)"
+DESCRIPTION="issue 363: cluster_size --consout: consensus sequence is cluster's most abundant sequence"
 printf ">s1;size=1\nAT\n>s2;size=9\nAA\n>s3;size=1\nAT\n" | \
     "${VSEARCH}" \
         --cluster_size - \
