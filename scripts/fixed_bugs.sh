@@ -1292,6 +1292,7 @@ DESCRIPTION="check if vsearch is executable"
 #******************************************************************************#
 #                                                                              #
 #             escape tabs in fasta names writing output with --uc              #
+#                                  (issue 141)                                 #
 #                                                                              #
 #******************************************************************************#
 ##
@@ -1302,7 +1303,7 @@ DESCRIPTION="check if vsearch is executable"
 ## line will be read.
 
 ## vsearch truncates after a tab
-DESCRIPTION="truncate headers after a tab (issue 141)"
+DESCRIPTION="issue 140: truncate headers after a tab"
 "${VSEARCH}" \
     --cluster_fast <(printf ">s1\theader\nA\n") \
     --id 0.97 \
@@ -1314,7 +1315,7 @@ DESCRIPTION="truncate headers after a tab (issue 141)"
         failure "${DESCRIPTION}"
 
 ## vsearch does not truncate after a tab with --notrunclabels
-DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
+DESCRIPTION="issue 140: do not truncate after a tab with --notrunclabels"
 "${VSEARCH}" \
     --cluster_fast <(printf ">s1\theader\nA\n") \
     --id 0.97 \
@@ -1475,57 +1476,63 @@ DESCRIPTION="do not truncate after a tab with --notrunclabels (issue 141)"
 # file. Maybe the issue should be renamed "Avoid writing progress
 # indicator to log file"?
 
-DESCRIPTION="do not output progress when stderr is a tty and stdout is a tty"
-"${VSEARCH}" \
-    --fastx_mask <(printf ">seq1\nACGT\n") \
-    --fastaout - 2>&1 | \
+DESCRIPTION="issue 156: do not output progress when stderr is a tty and stdout is a tty"
+printf ">seq1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - 2>&1 | \
     grep -q "Writing output" && \
     failure "${DESCRIPTION}" || \
         success  "${DESCRIPTION}"  # should we avoid visually mixed output?
 
-DESCRIPTION="output progress when stderr is a redirection and stdout is a tty"
-"${VSEARCH}" \
-    --fastx_mask <(printf ">seq1\nACGT\n") \
-    --fastaout - 2>&1 | \
+DESCRIPTION="issue 156: output progress when stderr is a redirection and stdout is a tty"
+printf ">seq1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - 2>&1 | \
     grep -q "Writing output" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="output progress when log, stderr and stdout are ttys"
-"${VSEARCH}" \
-    --fastx_mask <(printf ">seq1\nACGT\n") \
-    --log - \
-    --fastaout - 2>&1 | \
+DESCRIPTION="issue 156: output progress when log, stderr and stdout are ttys"
+printf ">seq1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --log - \
+        --fastaout - 2>&1 | \
     grep -q "Writing output" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="do not output progress when stderr is a redirection"
-"${VSEARCH}" \
-    --fastx_mask <(printf ">seq1\nACGT\n") \
-    --fastaout /dev/null 2>&1 | \
+DESCRIPTION="issue 156: do not output progress when stderr is a redirection"
+printf ">seq1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null 2>&1 | \
     grep -q "Writing output" && \
     failure "${DESCRIPTION}" || \
-        success  "${DESCRIPTION}"  # can vsearch know if stderr is
-                                   # attached to anything else than a
-                                   # tty?
+        success  "${DESCRIPTION}"
 
-DESCRIPTION="do not output progress when log is a file and stderr is a redirection"
+# can vsearch know if stderr is attached to anything else than a tty?
+
+DESCRIPTION="issue 156: do not output progress when log is a file and stderr is a redirection"
 PROGRESS=$(mktemp)
-"${VSEARCH}" \
-    --fastx_mask <(printf ">seq1\nACGT\n") \
-    --log ${PROGRESS} \
-    --fastaout - > /dev/null 2>> ${PROGRESS}
+printf ">seq1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --log ${PROGRESS} \
+        --fastaout - > /dev/null 2>> ${PROGRESS}
 grep -q "Writing output" ${PROGRESS} && \
     failure "${DESCRIPTION}" || \
         success  "${DESCRIPTION}"
 rm ${PROGRESS}
 
-DESCRIPTION="do not output progress when log is a process substitution"
-"${VSEARCH}" \
-    --fastx_mask <(printf ">seq1\nACGT\n") \
-    --log >(grep -q "Writing output" && true) \
-    --fastaout - 2>&1 | \
+DESCRIPTION="issue 156: do not output progress when log is a process substitution"
+printf ">seq1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --log >(grep -q "Writing output" && true) \
+        --fastaout - 2>&1 | \
     grep -q "Writing output" && \
     failure "${DESCRIPTION}" || \
         success  "${DESCRIPTION}"
@@ -1663,13 +1670,14 @@ DESCRIPTION="do not output progress when log is a process substitution"
 #                                                                             #
 #*****************************************************************************#
 
-DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
-"${VSEARCH}" \
-    --usearch_global <(printf ">seq1\n\n") \
-    -db <(printf ">ref1\nACGT\n") \
-    --id 0.97 \
-    --quiet \
-    --alnout - &> /dev/null && \
+DESCRIPTION="issue 171: no segmentation fault when a query is empty"
+printf ">seq1\n\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        -db <(printf ">ref1\nACGT\n") \
+        --id 0.97 \
+        --quiet \
+        --alnout - &> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2013,24 +2021,26 @@ DESCRIPTION="no segmentation fault when a query is empty (issue 171)"
 ##
 ## https://github.com/torognes/vsearch/issues/203
 
-DESCRIPTION="discard entries shorter than --fastq_trunclength value (issue 203)"
-"${VSEARCH}" \
-    --fastq_filter <(printf "@seq1\nACGT\n+\nIIII\n") \
-    --fastq_trunclen 5 \
-    --quiet \
-    --fastqout - \
-    2> /dev/null | \
+DESCRIPTION="issue 203: discard entries shorter than --fastq_trunclength value"
+printf "@seq1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_trunclen 5 \
+        --quiet \
+        --fastqout - \
+        2> /dev/null | \
     grep -q "seq1" && \
     failure "${DESCRIPTION}" || \
         success  "${DESCRIPTION}"
 
-DESCRIPTION="keep entries equal or longer than --fastq_trunclength value (issue 203)"
-"${VSEARCH}" \
-    --fastq_filter <(printf "@seq1\nACGT\n+\nIIII\n") \
-    --fastq_trunclen 4 \
-    --quiet \
-    --fastqout - \
-    2> /dev/null | \
+DESCRIPTION="issue 203: keep entries equal or longer than --fastq_trunclength value"
+printf "@seq1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_trunclen 4 \
+        --quiet \
+        --fastqout - \
+        2> /dev/null | \
     grep -q "seq1" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2597,7 +2607,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
 # With abundance annotations in the input, with --sizein:
 DESCRIPTION="issue 323: placement of semicolons in dereplicated headers # 2"
 printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
-        "${VSEARCH}" \
+    "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
         --quiet \
@@ -2611,7 +2621,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
 # Without abundance annotation in the input, without --sizeout:
 DESCRIPTION="issue 323: placement of semicolons in dereplicated headers # 3"
 printf ">s1\nA\n>s2\nA\n" | \
-        "${VSEARCH}" \
+    "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
         --quiet \
@@ -2623,7 +2633,7 @@ printf ">s1\nA\n>s2\nA\n" | \
 # Without abundance annotation in the input, with --sizeout:
 DESCRIPTION="issue 323: placement of semicolons in dereplicated headers # 4"
 printf ">s1\nA\n>s2\nA\n" | \
-        "${VSEARCH}" \
+    "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
         --quiet \
@@ -2637,7 +2647,7 @@ printf ">s1\nA\n>s2\nA\n" | \
 # With abundance annotations in the input, with --sizein but no --sizeout:
 DESCRIPTION="issue 323: placement of semicolons in dereplicated headers # 5"
 printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
-        "${VSEARCH}" \
+    "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
         --quiet \
