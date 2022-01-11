@@ -1476,17 +1476,62 @@ DESCRIPTION="issue 140: do not truncate after a tab with --notrunclabels"
 # file. Maybe the issue should be renamed "Avoid writing progress
 # indicator to log file"?
 
-DESCRIPTION="issue 156: do not output progress when stderr is a tty and stdout is a tty"
-printf ">seq1\nACGT\n" | \
+# Currently, vsearch prints progress to stderr if stderr is a tty
+# unless the --quiet or --no_progress options are specified.
+
+DESCRIPTION="issue 156: vsearch prints to stderr if stderr is a tty"
+printf ">s\nAAAA\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
-        --fastaout - 2>&1 | \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "Writing output" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 156: vsearch prints to stderr if stderr is a redirection to a file"
+(
+    TMP=$(mktemp)
+    exec 2> ${TMP}
+    printf ">s\nAAAA\n" | \
+        "${VSEARCH}" \
+            --fastx_mask - \
+            --fastaout /dev/null
+    grep -q "Writing output" ${TMP} && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm ${TMP}
+)
+
+DESCRIPTION="issue 156: vsearch does not print to stderr if stderr is a tty and --quiet is used"
+printf ">s\nAAAA\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --quiet \
+        --fastaout /dev/null 2>&1 | \
     grep -q "Writing output" && \
     failure "${DESCRIPTION}" || \
-        success  "${DESCRIPTION}"  # should we avoid visually mixed output?
+        success "${DESCRIPTION}"
+
+# Progress on current task increases from 0 to 100%. When using
+# --no_progress, a line is printed when the task 100% is done without
+# any intermediate state
+DESCRIPTION="issue 156: vsearch does not print progress to stderr if stderr is a tty and --no_progress is used"
+yes ">s@AAAA" | \
+    head -n 500 | \
+    tr "@" "\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --no_progress \
+        --fastaout /dev/null 2>&1 | \
+    grep -q -m 1 "100%$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+# I cannot find a way to test for the presence of intermediate
+# percentage values, so the counterpart (progress is printed) is not
+# properly tested
 
 DESCRIPTION="issue 156: output progress when stderr is a redirection and stdout is a tty"
-printf ">seq1\nACGT\n" | \
+printf ">s\nAAAA\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
         --fastaout - 2>&1 | \
@@ -1504,20 +1549,9 @@ printf ">seq1\nACGT\n" | \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 156: do not output progress when stderr is a redirection"
-printf ">seq1\nACGT\n" | \
-    "${VSEARCH}" \
-        --fastx_mask - \
-        --fastaout /dev/null 2>&1 | \
-    grep -q "Writing output" && \
-    failure "${DESCRIPTION}" || \
-        success  "${DESCRIPTION}"
-
-# can vsearch know if stderr is attached to anything else than a tty?
-
 DESCRIPTION="issue 156: do not output progress when log is a file and stderr is a redirection"
 PROGRESS=$(mktemp)
-printf ">seq1\nACGT\n" | \
+printf ">s\nAAAA\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
         --log ${PROGRESS} \
@@ -1526,16 +1560,6 @@ grep -q "Writing output" ${PROGRESS} && \
     failure "${DESCRIPTION}" || \
         success  "${DESCRIPTION}"
 rm ${PROGRESS}
-
-DESCRIPTION="issue 156: do not output progress when log is a process substitution"
-printf ">seq1\nACGT\n" | \
-    "${VSEARCH}" \
-        --fastx_mask - \
-        --log >(grep -q "Writing output" && true) \
-        --fastaout - 2>&1 | \
-    grep -q "Writing output" && \
-    failure "${DESCRIPTION}" || \
-        success  "${DESCRIPTION}"
 
 
 #******************************************************************************#
