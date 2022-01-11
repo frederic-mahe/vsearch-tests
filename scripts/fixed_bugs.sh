@@ -2833,7 +2833,7 @@ printf ">s1;size=1\nAT\n>s2;size=9\nAA\n>s3;size=1\nAT\n" | \
 
 #******************************************************************************#
 #                                                                              #
-#                        Handling of empty input files                         #
+#               Handling of empty input files (issue 366)                      #
 #                                                                              #
 #******************************************************************************#
 ##
@@ -2841,10 +2841,10 @@ printf ">s1;size=1\nAT\n>s2;size=9\nAA\n>s3;size=1\nAT\n" | \
 
 ## vsearch terminates with a fatal error when running the
 ## fastq_mergepairs command on an empty input file. It may be more
-## appropriate to issue a warning and generate empty output in such
-## cases, instead of terminating with an error.
+## appropriate to generate empty output in such cases, instead of
+## terminating with an error.
 
-DESCRIPTION="--fastq_mergepairs handles empty input"
+DESCRIPTION="issue 366: --fastq_mergepairs handles empty input"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "") \
     --reverse <(printf "") \
@@ -2852,14 +2852,28 @@ DESCRIPTION="--fastq_mergepairs handles empty input"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_mergepairs warning if empty input"
+
+DESCRIPTION="issue 366: --fastq_mergepairs handles empty input (minimal input)"
+"${VSEARCH}" \
+    --fastq_minovlen 5 \
+    --fastq_mergepairs <(printf "@s\nAAAAA\n+\nIIIII\n") \
+    --reverse <(printf "@s\nTTTTT\n+\nIIIII\n") \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    grep -q "^@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="issue 366: --fastq_mergepairs handles empty input (empty input, empty output)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "") \
     --reverse <(printf "") \
-    --fastqout - 2>&1 > /dev/null | \
-    grep -q "^Warning" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 #******************************************************************************#
