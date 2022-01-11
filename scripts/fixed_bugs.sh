@@ -2864,7 +2864,7 @@ DESCRIPTION="--fastq_mergepairs warning if empty input"
 
 #******************************************************************************#
 #                                                                              #
-#            Different outputs for Windows and Mac / Linux                     #
+#          Different outputs for Windows and Mac / Linux (issue 371)           #
 #                                                                              #
 #******************************************************************************#
 ##
@@ -2875,7 +2875,7 @@ DESCRIPTION="--fastq_mergepairs warning if empty input"
 ## LF), solved in version 2.13.3.
 
 # Test a normal situation first
-DESCRIPTION="correct parsing of headers with LF characters (issue 371)"
+DESCRIPTION="issue 371: correct parsing of headers with LF characters"
 printf "@s;size=1;\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
@@ -2887,7 +2887,7 @@ printf "@s;size=1;\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 # The issue can be replicated on any system (there should be no trailling ";")
-DESCRIPTION="correct parsing of headers with CR LF characters (issue 371)"
+DESCRIPTION="issue 371: correct parsing of headers with CR LF characters (issue 371)"
 printf "@s;size=1;\r\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
@@ -2901,7 +2901,7 @@ printf "@s;size=1;\r\nA\n+\nI\n" | \
 
 #******************************************************************************#
 #                                                                              #
-#                     Suspected incorrect cluster results                      #
+#               Suspected incorrect cluster results (issue 375)                #
 #                                                                              #
 #******************************************************************************#
 ##
@@ -2916,7 +2916,7 @@ printf "@s;size=1;\r\nA\n+\nI\n" | \
 # s2     TCAAACAGGATTAGATACCCTGGTAGAAAA
 
 # Test a normal situation first
-DESCRIPTION="sequences are identical (neglect terminal gaps) (issue 375)"
+DESCRIPTION="issue 375: sequences are identical (neglect terminal gaps)"
 SAME="TCAAACAGGATTAGATACCCTGGTAG"
 printf ">s1;size=1\nGGGG%s\n>s2;size=1\n%sAAAA" ${SAME} ${SAME} | \
     "${VSEARCH}" \
@@ -2929,7 +2929,7 @@ printf ">s1;size=1\nGGGG%s\n>s2;size=1\n%sAAAA" ${SAME} ${SAME} | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="sequences are different (account for terminal gaps) (issue 375)"
+DESCRIPTION="issue 375: sequences are different (account for terminal gaps)"
 SAME="TCAAACAGGATTAGATACCCTGGTAG"
 printf ">s1;size=1\nGGGG%s\n>s2;size=1\n%sAAAA" ${SAME} ${SAME} | \
     "${VSEARCH}" \
@@ -2946,7 +2946,7 @@ printf ">s1;size=1\nGGGG%s\n>s2;size=1\n%sAAAA" ${SAME} ${SAME} | \
 
 #******************************************************************************#
 #                                                                              #
-#          --fastaout_rev writes Read1 sequence instead of Read2               #
+#     --fastaout_rev writes Read1 sequence instead of Read2 (issue 387)        #
 #                                                                              #
 #******************************************************************************#
 ##
@@ -2954,7 +2954,7 @@ printf ">s1;size=1\nGGGG%s\n>s2;size=1\n%sAAAA" ${SAME} ${SAME} | \
 
 # This is limited to the fasta output, fastq output is ok.
 
-DESCRIPTION="fastx_filter fastaout_rev returns R2 sequences, not R1 (issue 387)"
+DESCRIPTION="issue 387: fastx_filter fastaout_rev returns R2 sequences, not R1"
 "${VSEARCH}" \
     --fastx_filter <(printf '@s_1\nA\n+\nI\n') \
     --reverse <(printf '@s_2\nT\n+\nI\n') \
