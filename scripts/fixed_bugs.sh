@@ -2039,6 +2039,7 @@ DESCRIPTION="keep entries equal or longer than --fastq_trunclength value (issue 
 #******************************************************************************#
 #                                                                              #
 #        fastx_filter ignores input sequence abundance when relabeling         #
+#                              (issue 204)                                     #
 #                                                                              #
 #******************************************************************************#
 ##
@@ -2046,16 +2047,17 @@ DESCRIPTION="keep entries equal or longer than --fastq_trunclength value (issue 
 #
 # --fastx_filter ignores input sequence abundances when relabeling
 # with fasta input, --sizein and --sizeout options
-DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
-"${VSEARCH}" \
-    --fastx_filter <(printf ">seq1;size=5;\nACGT\n") \
-    --sizein \
-    --relabel_md5 \
-    --sizeout \
-    --quiet \
-    --fastaout - \
-    2> /dev/null | \
-    grep -q ";size=5;" && \
+
+DESCRIPTION="issue 204: fastx_filter reports sizein when relabeling fasta"
+printf ">seq1;size=5;\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sizein \
+        --relabel_md5 \
+        --sizeout \
+        --quiet \
+        --fastaout - 2> /dev/null | \
+    grep -qE ";size=5;?$" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2535,12 +2537,13 @@ DESCRIPTION="fastx_filter reports sizein when relabeling fasta (issue 204)"
 #******************************************************************************#
 #                                                                              #
 #   For the fastq_eestats2 option the argument "-" is not treated as stdin     #
+#                               (issue 323)                                    #
 #                                                                              #
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/273
 
-DESCRIPTION="fastq_eestats2 treats \"-\" as stdin (issue 273)"
+DESCRIPTION="issue 273: fastq_eestats2 treats \"-\" as stdin"
 printf "@s1\nA\n+\nI\n" | \
     "${VSEARCH}" --fastq_eestats2 - --output - &> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -2572,13 +2575,14 @@ printf "@s1\nA\n+\nI\n" | \
 #******************************************************************************#
 #                                                                              #
 #   wrong placement of semicolons in the output of the dereplication command   #
+#                              (issue 323)                                     #
 #                                                                              #
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/323
 
 # With abundance annotations in the input, without --sizein:
-DESCRIPTION="placement of semicolons in dereplicated headers # 1 (issue 323)"
+DESCRIPTION="issue 323: placement of semicolons in dereplicated headers # 1"
 printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
@@ -2591,7 +2595,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         failure "${DESCRIPTION}"
 
 # With abundance annotations in the input, with --sizein:
-DESCRIPTION="placement of semicolons in dereplicated headers # 2 (issue 323)"
+DESCRIPTION="issue 323: placement of semicolons in dereplicated headers # 2"
 printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         "${VSEARCH}" \
         --derep_fulllength - \
@@ -2605,7 +2609,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         failure "${DESCRIPTION}"
 
 # Without abundance annotation in the input, without --sizeout:
-DESCRIPTION="placement of semicolons in dereplicated headers # 3 (issue 323)"
+DESCRIPTION="issue 323: placement of semicolons in dereplicated headers # 3"
 printf ">s1\nA\n>s2\nA\n" | \
         "${VSEARCH}" \
         --derep_fulllength - \
@@ -2617,7 +2621,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         failure "${DESCRIPTION}"
 
 # Without abundance annotation in the input, with --sizeout:
-DESCRIPTION="placement of semicolons in dereplicated headers # 4 (issue 323)"
+DESCRIPTION="issue 323: placement of semicolons in dereplicated headers # 4"
 printf ">s1\nA\n>s2\nA\n" | \
         "${VSEARCH}" \
         --derep_fulllength - \
@@ -2631,7 +2635,7 @@ printf ">s1\nA\n>s2\nA\n" | \
 
 
 # With abundance annotations in the input, with --sizein but no --sizeout:
-DESCRIPTION="placement of semicolons in dereplicated headers # 5 (issue 323)"
+DESCRIPTION="issue 323: placement of semicolons in dereplicated headers # 5"
 printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         "${VSEARCH}" \
         --derep_fulllength - \
