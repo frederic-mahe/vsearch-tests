@@ -2999,17 +2999,19 @@ DESCRIPTION="fastx_filter fastaout_rev returns R2 sequences, not R1 (issue 387)"
 ##
 ## https://github.com/torognes/vsearch/issues/398
 
-# vsearch detects non-ascii characters in fasta headers and exits with
-# an error message
+# vsearch detects non-ascii characters (128-255) in fasta headers and
+# issues a warning for each character
 
-DESCRIPTION="detect non-ascii chars in fasta headers and break (issue 398)"
+DESCRIPTION="issue 398: detect non-ascii chars in fasta headers and issue a warning"
+WARNING="WARNING: Non-ASCII"
 "${VSEARCH}" \
     --uchime_ref <(printf ">s1\nAC\n") \
     --db <(printf ">s2×\nAC\n") \
     --nonchimeras /dev/null \
-    --quiet 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    --quiet 2>&1 | \
+    grep -q "${WARNING}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 # ************************************************************************** #
