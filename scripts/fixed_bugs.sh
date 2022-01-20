@@ -3129,6 +3129,30 @@ printf "@s\nA\n+s1\nI\n" | \
         success "${DESCRIPTION}"
 
 
+# ************************************************************************** #
+#                                                                            #
+#    Alignment using vsearch, how to output the sequence of the best hit?    #
+#                                (issue 473)                                 #
+#                                                                            #
+# ************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/473
+
+DESCRIPTION="issue 473: use qrow and trow fields to output aligned sequences"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\nAAATCG\n") \
+    --db <(printf ">s1\nAAATGGA\n") \
+    --quiet \
+    --minseqlength 1 \
+    --id 0.8 \
+    --userfields "qrow+trow" \
+    --userout - | \
+    tr "\t" "@" | \
+    grep -qw "AAATCG@AAATGG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
 
