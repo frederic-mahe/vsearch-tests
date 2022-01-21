@@ -3094,6 +3094,17 @@ WARNING="WARNING: Non-ASCII"
 
 # ************************************************************************** #
 #                                                                            #
+#              is test suite in sync with vsearch ? (issue 442)              #
+#                                                                            #
+# ************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/442
+
+## not testable
+
+
+# ************************************************************************** #
+#                                                                            #
 #    Fatal error: Invalid line 3 in FASTQ file: '+' line must be empty or    #
 #                      identical to header (issue 470)                       #
 #                                                                            #
@@ -3199,3 +3210,7 @@ unset OCTAL OFFSET DESCRIPTION
 # TODO: fix issue 260 (SAM format)
 
 exit 0
+
+
+## bug with vsearch bug with --dbnotmatched? !!!!!!!!!!!!!!!!!!!
+# vsearch --usearch_global <(printf ">q\nA\n") --db <(printf ">s\nC\n") --minseqlength 1 --id 0.5 --quiet --dbnotmatched -
