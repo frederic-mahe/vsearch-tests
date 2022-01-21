@@ -3153,6 +3153,48 @@ DESCRIPTION="issue 473: use qrow and trow fields to output aligned sequences"
         failure "${DESCRIPTION}"
 
 
+# ************************************************************************** #
+#                                                                            #
+#      support for Illumina RTA3 simplified quality scores? (issue 474)      #
+#                                                                            #
+# ************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/474
+
+#  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+#  |                         |    |        |                              |                     |
+# 33                        59   64       73                            104                   126
+#    |         |          |             |
+#    2........12.........23............37
+#                                   |         |          |             |
+#                                   2........12.........23............37
+
+# |   RTA3 |     |     |
+# | offset | +33 | +64 |
+# |--------+-----+-----|
+# |      2 | '#' | 'B' |
+# |     12 | '-' | 'L' |
+# |     23 | '8' | 'W' |
+# |     37 | 'F' | 'e' |
+# |--------+-----+-----|
+
+for OFFSET in 33 64 ; do
+    for i in 2 12 23 37 ; do
+        DESCRIPTION="issue 474: RTA3 quality score ${i} is accepted (offset +${OFFSET})"
+        OCTAL=$(printf "\%04o" $(( ${i} + ${OFFSET} )) )
+        echo -e "@s\nA\n+\n${OCTAL}\n" | \
+            "${VSEARCH}" \
+                --fastq_eestats - \
+                --fastq_ascii ${OFFSET} \
+                --quiet \
+                --output /dev/null 2> /dev/null && \
+            success "${DESCRIPTION}" || \
+                failure "${DESCRIPTION}"
+    done
+done
+unset OCTAL OFFSET DESCRIPTION
+
+
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
 
