@@ -3206,6 +3206,44 @@ done
 unset OCTAL OFFSET DESCRIPTION
 
 
+# ************************************************************************** #
+#                                                                            #
+#               not all samples appear in OTU table (issue 479)              #
+#                                                                            #
+# ************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/479
+
+## three identical sequences, present in three samples
+# >s1;size=2;sample=A1;
+# A
+# >s2;size=1;sample=A2;
+# A
+# >s3;size=4;sample=A3;
+# A
+
+## expected:
+# #OTU ID	A1	A2	A3
+# OTU_1	2	1	4
+
+DESCRIPTION="issue 479: not all samples appear in OTU table"
+printf ">s1;size=2;sample=A1;\nA\n>s2;size=1;sample=A2;\nA\n>s3;size=4;sample=A3;\nA\n" |\
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --quiet \
+        --id 0.97 \
+        --strand plus \
+        --sizein \
+        --sizeout \
+        --relabel OTU_ \
+        --otutabout - | \
+    tr -d '\n' | \
+    tr "\t" "@" | \
+    grep -qw "#OTU ID@A1@A2@A3OTU_1@2@1@4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
 
