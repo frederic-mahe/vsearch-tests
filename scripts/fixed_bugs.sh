@@ -3244,11 +3244,48 @@ printf ">s1;size=2;sample=A1;\nA\n>s2;size=1;sample=A2;\nA\n>s3;size=4;sample=A3
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
-# TODO: fix issue 260 (SAM format)
+
+# ************************************************************************** #
+#                                                                            #
+#         Recover info in fasta header when using sintax (issue 481)         #
+#                                                                            #
+# ************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/481
+
+HEADER1="UDB018521|SH1140878.08FU;tax=d:Fungi,p:Basidiomycota,c:Agaricomycetes,o:Thelephorales,f:Thelephoraceae,g:Tomentella,s:Tomentella_badia_SH1140878.08FU;"
+HEADER2="UDB026255|SH1140865.08FU;tax=d:Fungi,p:Basidiomycota,c:Agaricomycetes,o:Thelephorales,f:Thelephoraceae;"
+SEQ1="GTCGCTCCATCCGAGTGTGCTAAAAATGAGGTATGGTCAGTCTGGTCGTATCGAATTTCTAGTATGCGAGGGGGGAGAAGTCGTAACAAGGTAGCC"
+SEQ2="$(rev <<< "${SEQ1}")"
+
+DESCRIPTION="issue 481: recover info in fasta header when using sintax (test sintax output #1)"
+"${VSEARCH}" \
+    --sintax <(printf ">query\n%s\n" "${SEQ1}") \
+    --db <(printf ">%s\n%s\n>%s\n%s\n" "${HEADER1}" "${SEQ1}" "${HEADER2}" "${SEQ2}") \
+    --quiet \
+    --tabbedout - | \
+    grep -q "SH1140878.08FU(1.00)[[:space:]]+$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="issue 481: recover info in fasta header when using sintax (test sintax output #2)"
+"${VSEARCH}" \
+    --sintax <(printf ">query\n%s\n" "${SEQ2}") \
+    --db <(printf ">%s\n%s\n>%s\n%s\n" "${HEADER1}" "${SEQ1}" "${HEADER2}" "${SEQ2}") \
+    --quiet \
+    --tabbedout - | \
+    grep -q "Thelephoraceae(1.00)[[:space:]]+$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset HEADER1 HEADER2 SEQ1 SEQ2
+
 
 exit 0
 
+# TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
+# TODO: fix issue 260 (SAM format)
 
 ## bug with vsearch bug with --dbnotmatched? !!!!!!!!!!!!!!!!!!!
 # vsearch --usearch_global <(printf ">q\nA\n") --db <(printf ">s\nC\n") --minseqlength 1 --id 0.5 --quiet --dbnotmatched -
