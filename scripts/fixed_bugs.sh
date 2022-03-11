@@ -3247,6 +3247,17 @@ printf ">s1;size=2;sample=A1;\nA\n>s2;size=1;sample=A2;\nA\n>s3;size=4;sample=A3
 
 # ************************************************************************** #
 #                                                                            #
+#                 optimization flag is set to -O2 (issue 480)                #
+#                                                                            #
+# ************************************************************************** #
+#
+## https://github.com/torognes/vsearch/issues/480
+
+## question: not testable
+
+
+# ************************************************************************** #
+#                                                                            #
 #         Recover info in fasta header when using sintax (issue 481)         #
 #                                                                            #
 # ************************************************************************** #
