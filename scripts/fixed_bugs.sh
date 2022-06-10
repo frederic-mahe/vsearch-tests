@@ -3293,6 +3293,53 @@ DESCRIPTION="issue 481: recover info in fasta header when using sintax (test sin
 unset HEADER1 HEADER2 SEQ1 SEQ2
 
 
+# ************************************************************************** #
+#                                                                            #
+#  sintax: extra tab in tabbedout output when there is no match (issue 493)  #
+#                                                                            #
+# ************************************************************************** #
+#
+## https://github.com/torognes/vsearch/issues/493
+
+CUTOFF="0.9"
+Q1="TGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCT"
+Q2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+TAX="tax=d:d,p:p,c:c,o:o,f:f,g:g,s:s"
+
+# match: three tabs (four columns) as expected
+DESCRIPTION="issue 493: sintax tabbedout 3 tabs (4 cols) when there is a match"
+printf ">q1\n%s\n" ${Q1} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX} ${Q1}) \
+        --sintax_cutoff "${CUTOFF}" \
+        --quiet \
+        --tabbedout - | \
+    tr -cd '\t' | \
+    wc -c | \
+    awk '{exit $1 == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# no match: four tabs (five columns) instead of three
+DESCRIPTION="issue 493: sintax tabbedout 3 tabs (4 cols) when there is no match"
+printf ">q1\n%s\n" ${Q2} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX} ${Q1}) \
+        --sintax_cutoff "${CUTOFF}" \
+        --quiet \
+        --tabbedout - | \
+    tr -cd '\t' | \
+    wc -c | \
+    awk '{exit $1 == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset Q1 Q2 TAX CUTOFF
+
 exit 0
 
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
