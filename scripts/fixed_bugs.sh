@@ -3295,6 +3295,33 @@ unset HEADER1 HEADER2 SEQ1 SEQ2
 
 # ************************************************************************** #
 #                                                                            #
+#  fastq_chars: sequence and quality lines must be equally long (issue 492)  #
+#                                                                            #
+# ************************************************************************** #
+#
+## https://github.com/torognes/vsearch/issues/492
+
+DESCRIPTION="issue 492: fastq_chars final newline char '\\\t' is not required"
+printf "@s\nA\n+\nI" | \
+    "${VSEARCH}" \
+        --fastq_chars - \
+        --quiet \
+        --log /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 492: fastq_chars seq and qual lines must have the same length"
+printf "@s\nA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - \
+        --quiet \
+        --log /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+# ************************************************************************** #
+#                                                                            #
 #  sintax: extra tab in tabbedout output when there is no match (issue 493)  #
 #                                                                            #
 # ************************************************************************** #
