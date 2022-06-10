@@ -3295,6 +3295,136 @@ unset HEADER1 HEADER2 SEQ1 SEQ2
 
 # ************************************************************************** #
 #                                                                            #
+#             some questions about Extraction options (issue 488)            #
+#                                                                            #
+# ************************************************************************** #
+#
+## https://github.com/torognes/vsearch/issues/488
+
+## label must match the entire header (not case-sensitive)
+DESCRIPTION="issue 488: fastx_getseqs label matches the full header"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --quiet \
+        --label "s1" \
+        --fastaout - | \
+    grep -q "^>s1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 488: fastx_getseqs label matches the full header (not case-sensitive)"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --quiet \
+        --label "S1" \
+        --fastaout - | \
+    grep -q "^>s1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="issue 488: fastx_getseqs label does not match header with size annotation"
+printf ">s1;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --quiet \
+        --label "s1" \
+        --fastaout - | \
+    grep -q "^>s1$" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# label_substr_match: with that option, the label specified with
+# --label may match anywhere in the header (not case-sensitive)
+DESCRIPTION="issue 488: fastx_getseqs label_substr_match matches part of the header (#1)"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --quiet \
+        --label "s1" \
+        --label_substr_match \
+        --fastaout - | \
+    grep -q "^>s1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 488: fastx_getseqs label_substr_match matches part of the header (#2)"
+printf ">s11\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --quiet \
+        --label "s1" \
+        --label_substr_match \
+        --fastaout - | \
+    grep -q "^>s11$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 488: fastx_getseqs label_substr_match matches part of the header (not case-sensitive)"
+printf ">s11\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --quiet \
+        --label "S1" \
+        --label_substr_match \
+        --fastaout - | \
+    grep -q "^>s11$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## label_word matches header with size annotations. Words are defined
+## as strings delimited by either the start or end of the header or by
+## any symbol that is not a letter (A-Z, a-z) or digit (0-9)
+## (case-sensitive)
+DESCRIPTION="issue 488: fastx_getseqs label_word matches the label (#1)"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --quiet \
+        --label_word "s1" \
+        --fastaout - | \
+    grep -q "^>s1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 488: fastx_getseqs label_word matches the label (#2)"
+printf ">s1;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --quiet \
+        --label_word "s1" \
+        --fastaout - | \
+    grep -q "^>s1;size=1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 488: fastx_getseqs label_word matches the label (and nothing more)"
+printf ">s11;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --quiet \
+        --label_word "s1" \
+        --fastaout - | \
+    grep -q "^>s1;size=1$" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 488: fastx_getseqs label_word matches the label (case-sensitive)"
+printf ">s1;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --quiet \
+        --label_word "S1" \
+        --fastaout - | \
+    grep -q "^>s1;size=1$" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+# ************************************************************************** #
+#                                                                            #
 #  fastq_chars: sequence and quality lines must be equally long (issue 492)  #
 #                                                                            #
 # ************************************************************************** #
