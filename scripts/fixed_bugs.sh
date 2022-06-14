@@ -3425,6 +3425,47 @@ printf ">s1;size=1\nA\n" | \
 
 # ************************************************************************** #
 #                                                                            #
+#       vsearch fails to assign taxonomy for Fungi ITS seqs (issue 489)      #
+#                                                                            #
+# ************************************************************************** #
+#
+## https://github.com/torognes/vsearch/issues/489
+
+CUTOFF="0.9"
+Q1="TGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCT"
+TAX="tax=d:d,p:p,c:c,o:o,f:f,g:g,s:s"
+
+# sintax assumes comma-separated taxonomy fields
+DESCRIPTION="issue 489: sintax assumes comma-separated taxonomy fields"
+printf ">q1\n%s\n" ${Q1} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX} ${Q1}) \
+        --sintax_cutoff "${CUTOFF}" \
+        --quiet \
+        --tabbedout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# sintax assumes comma-separated taxonomy fields (no error message if not)
+DESCRIPTION="issue 489: sintax assumes comma-separated taxonomy fields (no error message if ';' is used)"
+printf ">q1\n%s\n" ${Q1} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX//,/;} ${Q1}) \
+        --sintax_cutoff "${CUTOFF}" \
+        --quiet \
+        --tabbedout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset Q1 TAX CUTOFF
+
+
+# ************************************************************************** #
+#                                                                            #
 #  fastq_chars: sequence and quality lines must be equally long (issue 492)  #
 #                                                                            #
 # ************************************************************************** #
