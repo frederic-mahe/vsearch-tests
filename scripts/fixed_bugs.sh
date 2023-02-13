@@ -3538,6 +3538,53 @@ printf ">q1\n%s\n" ${Q2} | \
 
 unset Q1 Q2 TAX CUTOFF
 
+
+#******************************************************************************#
+#                                                                              #
+#         segmentation fault when printing out alignments (issue 508)          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/508
+
+# When using the option --clusters "string" option, vsearch outputs
+# each cluster to a separate fasta file using the prefix string and a
+# ticker (0, 1, 2, etc.) to construct the path and filenames. It needs
+# to allocate memory for the longest file name of the clusters files
+# (length(string) + a potentially big number).
+
+# If the option --clusters "string" is not used, then opt_clusters is
+# a nullptr and vsearch should not try to compute length(nullptr)
+# (segmentation fault).
+
+DESCRIPTION="issue 508: cluster_size works with --clusters (no segfault)"
+PREFIX=$(mktemp --dry-run | cut -d "." -f 2)
+
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --uc /dev/null \
+        --clusters "tmp${PREFIX}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm "tmp${PREFIX}0"
+
+DESCRIPTION="issue 508: cluster_size works without --clusters (no segfault)"
+
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --uc /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 exit 0
 
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
