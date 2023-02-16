@@ -3585,6 +3585,21 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#******************************************************************************#
+#                                                                              #
+#                    vsearch in R markdown issue (issue 510)                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/510
+
+DESCRIPTION="issue 510: vsearch is in path and is executable"
+[[ -x "${VSEARCH}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
 
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
