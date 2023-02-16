@@ -3585,6 +3585,16 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+#******************************************************************************#
+#                                                                              #
+#      warnings with recent GCC (possible false-positives) (issue 509)         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/509
+
+## compile-time, not testable
+
 
 #******************************************************************************#
 #                                                                              #
