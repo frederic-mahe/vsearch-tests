@@ -3541,6 +3541,78 @@ unset Q1 Q2 TAX CUTOFF
 
 #******************************************************************************#
 #                                                                              #
+#       Can vsearch combine two clustered-otutab together? (issue 507)         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/507
+
+# Question: if both otutab1 and otutab2 were clustered at 97%
+# similarity, what is the best way to combine them into a new otutab
+# (otutab3)? If I use otutab1 as a reference, use blast to compare
+# otutab2 with it (set 97% similarity), some otu may be aligned while
+# others are not. Then relabel the unaligned OTUs bind them to
+# otutab1, that’s otutab3 = otutab1 + otutab2-unaligned. Is otutab3
+# reliable?
+
+# No, otutab3 is not reliable. There is no easy way to merge
+# independent clustering results. Even though all OTUs in otutab3 are
+# at least 97% different, there might be sequences assigned to an otu
+# in otutab1 that are actually more similar to otus in otutab2 and the
+# other way round. So the safest strategy is to group all fasta
+# sequences and to run a new clustering.
+
+# Proof:
+
+DESCRIPTION="issue 507: independent clustering results are not mergeable"
+
+S1="TGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCT"
+S2="TGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAAAAAA"
+S3="CCCCGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAAAAAA"
+
+# S1 TGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCT
+#        ||||||||||||||||||||||||||||||||||||
+# S2 CCCCGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAAAAAA
+#        |||||||||||||||||||||||||||||||||||||||||
+# S3 TGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAAAAAA
+
+# similarities
+# S1 vs S2: 88.9%
+# S2 vs S3: 91.1%
+# S1 vs S3: 80.0%
+
+# with --id 0.85, 'S1' and 'S2' cluster together. When 'S3' is added,
+# 'S3' and 'S2' cluster together, leaving 'S1' alone:
+
+# #OTU ID	A
+# s1	3
+# s3	4
+
+# For simplicity, all sequences come from a single sample 'A'.
+
+(printf ">s1;size=3;sample=A;\n%s\n" $S1
+ printf ">s2;size=1;sample=A;\n%s\n" $S2
+ printf ">s3;size=3;sample=A;\n%s\n" $S3
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --quiet \
+        --id 0.85 \
+        --otutabout - | \
+    awk 'BEGIN {FS = "\t"} NR == 3 {exit $1 == "s3" && $2 == 4 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset S1 S2 S3
+
+# Note on short sequences: There needs to be at least 6 shared k-mers
+# to start the pairwise alignment, and at least one out of every 16
+# k-mers from the query needs to match the target. (k-mers length is 8
+# by default, see option --wordlength).
+
+
+#******************************************************************************#
+#                                                                              #
 #         segmentation fault when printing out alignments (issue 508)          #
 #                                                                              #
 #******************************************************************************#
@@ -3614,6 +3686,8 @@ exit 0
 
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
+# TODO: otutabout in the absence of ';sample=abcd1234;' each cluster is assigned to its own sample (matrix diagonal)?
+
 
 ## bug with vsearch bug with --dbnotmatched? !!!!!!!!!!!!!!!!!!!
 # vsearch --usearch_global <(printf ">q\nA\n") --db <(printf ">s\nC\n") --minseqlength 1 --id 0.5 --quiet --dbnotmatched -
