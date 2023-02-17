@@ -3541,6 +3541,67 @@ unset Q1 Q2 TAX CUTOFF
 
 #******************************************************************************#
 #                                                                              #
+#       Chimera detection --uchime_ref unexpected behaviour (issue 504)        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/504
+
+
+#******************************************************************************#
+#                                                                              #
+#              uchime_ref --db can't read from stdin (issue 506)               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/506
+
+# --db generally does not accept '-' as argument meaning read from
+# stdin. This was done intentionally to avoid the use of '-' for
+# multiple arguments, which would cause problems.
+
+DESCRIPTION="issue 506: reading --db from process substitutions"
+"${VSEARCH}" \
+    --uchime_ref <(printf ">query\nAAGG\n") \
+    --db <(printf ">parentA\nAAAA\n>parentB\nGGGG\n") \
+    --quiet \
+    --uchimeout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 506: reading query from '-' (stdin) and --db from process substitution"
+printf ">query\nAAGG\n" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db <(printf ">parentA\nAAAA\n>parentB\nGGGG\n") \
+        --quiet \
+        --uchimeout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 506: reading query from process substitution and --db from /dev/stdin"
+printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
+    "${VSEARCH}" \
+        --uchime_ref <(printf ">query\nAAGG\n") \
+        --db /dev/stdin \
+        --quiet \
+        --uchimeout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 506: reading --db from '-' (stdin) is not accepted"
+printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
+    "${VSEARCH}" \
+        --uchime_ref <(printf ">query\nAAGG\n") \
+        --db - \
+        --quiet \
+        --uchimeout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #       Can vsearch combine two clustered-otutab together? (issue 507)         #
 #                                                                              #
 #******************************************************************************#
