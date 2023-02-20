@@ -1793,18 +1793,28 @@ printf ">seq1\n\n" | \
 #     N-tails are converted to A-tails in consensus sequences (issue 181)     #
 #                                                                             #
 #*****************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/181
 
-# DESCRIPTION="N-tails are preserved in consensus sequences (issue 181)"
-# "${VSEARCH}" \
-#   --cluster_fast <(printf ">s1\nACGTNNN\n>s2\nACGT\n") \
-#   --id 0.50 \
-#   --minseqlength 1 \
-#   --fasta_width 0 \
-#   --quiet \
-#   --consout - | \
-#     grep -qE "N{3}$" && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+## In vsearch 1.11.1 and older, ambiguous nucleotide symbols (N) were
+## replaced with A.
+
+DESCRIPTION="issue 181: N-tails are preserved in consensus sequences"
+printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --quiet \
+        --consout -  | \
+    grep -q "NNN$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Note: vsearch offers a --fastq_filter --fastq_trunclen_keep positive
+# integer that allows to truncate fastq reads, but (as of early 2023)
+# there are no option to pad shorter sequences with Ns, or to do the
+# same for fasta entries.
 
 
 #*****************************************************************************#
@@ -3546,6 +3556,17 @@ unset Q1 Q2 TAX CUTOFF
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/504
+
+
+#******************************************************************************#
+#                                                                              #
+#           Add Edgar RC (2016) UNOISE2 to references (issue 505)              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/505
+
+# pull request (README.md), nothing to do
 
 
 #******************************************************************************#
