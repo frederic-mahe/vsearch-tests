@@ -3551,6 +3551,37 @@ unset Q1 Q2 TAX CUTOFF
 
 #******************************************************************************#
 #                                                                              #
+#                   question on edlib vs vsearch (issue 499)                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/499
+
+# question, nothing to test yet
+
+
+#******************************************************************************#
+#                                                                              #
+#     fastq --eeout: report more precise expected error values (issue 500)     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/500
+
+
+#******************************************************************************#
+#                                                                              #
+#          chimera detection: variable number of chunks (issue 501)            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/501
+
+# question, nothing to test yet
+
+
+#******************************************************************************#
+#                                                                              #
 #       Chimera detection --uchime_ref unexpected behaviour (issue 504)        #
 #                                                                              #
 #******************************************************************************#
