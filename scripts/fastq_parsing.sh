@@ -1,7 +1,7 @@
 #!/bin/bash -
 
 ## Print a header
-SCRIPT_NAME="Fasta parsing"
+SCRIPT_NAME="fastq parsing"
 line=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${line:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
@@ -29,13 +29,6 @@ DESCRIPTION="check if vsearch is executable"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## Is usearch installed?
-for USEARCH in usearch{5..9} ; do
-    DESCRIPTION="check if ${USEARCH} is in the PATH"
-    which "${USEARCH}" > /dev/null 2>&1 && \
-        success "${DESCRIPTION}" || failure "${DESCRIPTION}"
-done
-
 
 #*****************************************************************************#
 #                                                                             #
@@ -43,86 +36,29 @@ done
 #                                                                             #
 #*****************************************************************************#
 
-# --------------------------------------------------------------------- vsearch
-
-## Return status should be zero (success)
-find . -name "*.fastq" ! -name "error*" -print | sort | \
+## valid fastq files
+find ./data/ -name "*.fastq" ! -name "error*" -print | \
+    sort | \
     while read f ; do
-        DESCRIPTION="vsearch: $(basename ${f}) is a valid file"
-        "${VSEARCH}" --fastq_chars "${f}" &> /dev/null && \
+        DESCRIPTION="fastq parsing: $(basename ${f}) is a valid file"
+        "${VSEARCH}" \
+            --fastq_chars "${f}" \
+            --quiet && \
             success  "${DESCRIPTION}" || \
                 failure "${DESCRIPTION}"
     done
 
-## Return status should be !zero (failure)
-find . -name "error*.fastq" -print | sort | \
+## invalid fastq files
+find ./data/ -name "error*.fastq" -print | \
+    sort | \
     while read f ; do
-        DESCRIPTION="vsearch: $(basename ${f}) is an invalid file"
-        "${VSEARCH}" --fastq_chars "${f}" &> /dev/null && \
+        DESCRIPTION="fastq parsing: $(basename ${f}) is an invalid file"
+        "${VSEARCH}" \
+            --fastq_chars "${f}" \
+            --quiet 2> /dev/null && \
             failure "${DESCRIPTION}" || \
-                success  "${DESCRIPTION}"
+                success "${DESCRIPTION}"
     done
 
-# --------------------------------------------------------------- usearch (all)
-
-for USEARCH in usearch{6..9} ; do
-    ## Return status should be zero (success)
-    find . -name "*.fastq" ! -name "error*" -print | sort | \
-        while read f ; do
-            DESCRIPTION="${USEARCH}: $(basename ${f}) is a valid file"
-            "${USEARCH}" -fastq_chars "${f}" &> /dev/null && \
-                success  "${DESCRIPTION}" || \
-                    failure "${DESCRIPTION}"
-        done
-
-    ## Return status should be !zero (failure)
-    find . -name "error*.fastq" -print | sort | \
-        while read f ; do
-            DESCRIPTION="${USEARCH}: $(basename ${f}) is an invalid file"
-            "${USEARCH}" -fastq_chars "${f}" &> /dev/null && \
-                failure "${DESCRIPTION}" || \
-                    success  "${DESCRIPTION}"
-        done
-done
-    
-# # -------------------------------------------------------------------- usearch7
-
-# ## Return status should be zero (success)
-# find . -name "*.fastq" ! -name "error*" -print | \
-#     while read f ; do
-#         DESCRIPTION="usearch7: $(basename ${f}) is a valid file"
-#         "${USEARCH7}" -fastq_chars "${f}" &> /dev/null && \
-#             success  "${DESCRIPTION}" || \
-#                 failure "${DESCRIPTION}"
-#     done
-
-# ## Return status should be !zero (failure)
-# find . -name "error*.fastq" -print | \
-#     while read f ; do
-#         DESCRIPTION="usearch7: $(basename ${f}) is an invalid file"
-#         "${USEARCH7}" -fastq_chars "${f}" &> /dev/null && \
-#             failure "${DESCRIPTION}" || \
-#                 success  "${DESCRIPTION}"
-#     done
-
-# # -------------------------------------------------------------------- usearch8
-
-# ## Return status should be zero (success)
-# find . -name "*.fastq" ! -name "error*" -print | \
-#     while read f ; do
-#         DESCRIPTION="usearch8: $(basename ${f}) is a valid file"
-#         "${USEARCH8}" -fastq_chars "${f}" &> /dev/null && \
-#             success  "${DESCRIPTION}" || \
-#                 failure "${DESCRIPTION}"
-#     done
-
-# ## Return status should be !zero (failure)
-# find . -name "error*.fastq" -print | \
-#     while read f ; do
-#         DESCRIPTION="usearch8: $(basename ${f}) is an invalid file"
-#         "${USEARCH8}" -fastq_chars "${f}" &> /dev/null && \
-#             failure "${DESCRIPTION}" || \
-#                 success  "${DESCRIPTION}"
-#     done
 
 exit 0
