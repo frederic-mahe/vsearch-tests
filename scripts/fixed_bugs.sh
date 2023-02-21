@@ -3580,6 +3580,54 @@ unset Q1 Q2 TAX CUTOFF
 # values should include enough digits to cover Q = 41 (ee =
 # 0.000079433), and Q = 93 (ee ~ 0.0000000005012).
 
+# '!' = 0, ee = 1.0
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=0"
+printf "@s1\nA\n+\n!\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=1.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '+' = 10, ee = 0.1
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=10"
+printf "@s1\nA\n+\n+\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '5' = 20, ee = 0.01
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=20"
+printf "@s1\nA\n+\n5\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.01" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '?' = 30, ee = 0.001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=30"
+printf "@s1\nA\n+\n?\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # 'I' = 40, ee = 0.0001
 DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=40"
 printf "@s1\nA\n+\nI\n" | \
