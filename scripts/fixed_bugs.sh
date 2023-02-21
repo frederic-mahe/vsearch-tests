@@ -32,11 +32,13 @@ DESCRIPTION="check if vsearch is executable"
 
 #******************************************************************************#
 #                                                                              #
-#                  Improve selection of unique kmers in query                  #
+#         Improve selection of unique kmers in query (issue 1)                 #
 #                                                                              #
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/1
+
+# not testable
 
 
 #******************************************************************************#
@@ -1904,11 +1906,13 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 
 #******************************************************************************#
 #                                                                              #
-#                             Illegal instruction                              #
+#                   Illegal instruction (issue 187)                            #
 #                                                                              #
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/187
+
+# compilation issue, nothing to test
 
 
 #******************************************************************************#
@@ -3567,6 +3571,116 @@ unset Q1 Q2 TAX CUTOFF
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/500
+
+# when working with quality values ranging from 0 to 40, the smallest
+# possible expected error is 10E-(Q/10) = 1E-4 = 0.0001.
+
+# The possible range of quality values has been extended to 41 with
+# Illumina 1.8+, and to 93 with PacBio's HiFi reads. The returned ee
+# values should include enough digits to cover Q = 41 (ee =
+# 0.000079433), and Q = 93 (ee ~ 0.0000000005012).
+
+# 'I' = 40, ee = 0.0001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=40"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.0001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'J' = 41, ee = 0.000079433
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=41"
+printf "@s1\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.000079" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'S' = 50, ee = 0.00001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=50"
+printf "@s1\nA\n+\nS\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 50 \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.00001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ']' = 60, ee = 0.000001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=60"
+printf "@s1\nA\n+\n]\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 60 \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.000001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'g' = 70, ee = 0.0000001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=70"
+printf "@s1\nA\n+\ng\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 70 \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.0000001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'q' = 80, ee = 0.00000001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=80"
+printf "@s1\nA\n+\nq\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 80 \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.00000001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '{' = 90, ee = 0.000000001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=90"
+printf "@s1\nA\n+\n{\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 90 \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.000000001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '~' = 93, ee = 0.0000000005012
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=93"
+printf "@s1\nA\n+\n~\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 93 \
+        --quiet \
+        --eeout \
+        --fastqout - | \
+    grep -q "ee=0.0000000005" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
