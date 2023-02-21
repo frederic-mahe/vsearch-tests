@@ -3731,6 +3731,159 @@ printf "@s1\nA\n+\n~\n" | \
         failure "${DESCRIPTION}"
 
 
+# ------------------------------------------------ same tests for a fasta output
+
+# '!' = 0, ee = 1.0
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=0 (fasta)"
+printf "@s1\nA\n+\n!\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=1.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '+' = 10, ee = 0.1
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=10 (fasta)"
+printf "@s1\nA\n+\n+\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '5' = 20, ee = 0.01
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=20 (fasta)"
+printf "@s1\nA\n+\n5\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.01" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '?' = 30, ee = 0.001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=30 (fasta)"
+printf "@s1\nA\n+\n?\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'I' = 40, ee = 0.0001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=40 (fasta)"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.0001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'J' = 41, ee = 0.000079433
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=41 (fasta)"
+printf "@s1\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.000079" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'S' = 50, ee = 0.00001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=50 (fasta)"
+printf "@s1\nA\n+\nS\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 50 \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.00001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ']' = 60, ee = 0.000001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=60 (fasta)"
+printf "@s1\nA\n+\n]\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 60 \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.000001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'g' = 70, ee = 0.0000001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=70 (fasta)"
+printf "@s1\nA\n+\ng\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 70 \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.0000001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'q' = 80, ee = 0.00000001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=80 (fasta)"
+printf "@s1\nA\n+\nq\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 80 \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.00000001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '{' = 90, ee = 0.000000001
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=90 (fasta)"
+printf "@s1\nA\n+\n{\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 90 \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.000000001" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '~' = 93, ee = 0.0000000005012
+DESCRIPTION="issue 500: --eeout reports enough digits to distinguish Q=93 (fasta)"
+printf "@s1\nA\n+\n~\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 93 \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -q "ee=0.0000000005" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 #******************************************************************************#
 #                                                                              #
 #          chimera detection: variable number of chunks (issue 501)            #
