@@ -410,12 +410,72 @@ printf "" | \
 # lines of integer nucleotides, 80 by default). Set the value to zero to
 # eliminate the wrapping.
 
-# - no option: test a seq with 80 nucleotides (observe lack of wrapping)
-# - no option: test a seq with more than 80 nucleotides (observe wrapping)
-# - option is accepted
-# - accept value of 2^32?
-# - set value to 1 (observe wrapping)
-# - set value to 0 (observe lack of wrapping)
+# 80 nucleotides, expect 2 lines (header + one sequence line)
+DESCRIPTION="--derep_fulllength fasta output is not wrapped (80 nucleotides or less)"
+printf ">s\n%080s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --quiet \
+        --output - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 81 nucleotides, expect 3 lines
+DESCRIPTION="--derep_fulllength fasta output is wrapped (81 nucleotides or more)"
+printf ">s\n%081s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --quiet \
+        --output - | \
+    awk 'END {exit NR == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --fasta_width is accepted (empty input)"
+printf "" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --fasta_width 80 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --fasta_width 2^32 is accepted"
+printf ">s\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --fasta_width $(( 2 ** 32 )) \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 2 nucleotides, expect 3 lines
+DESCRIPTION="--derep_fulllength --fasta_width 1 (1 nucleotide per line)"
+printf ">s\nTT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 2 \
+        --fasta_width 1 \
+        --quiet \
+        --output - | \
+    awk 'END {exit NR == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# expect 81 nucleotides on the second line
+DESCRIPTION="--derep_fulllength --fasta_width 0 (no wrapping)"
+printf ">s\n%081s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --fasta_width 0 \
+        --quiet \
+        --output - | \
+    awk 'NR == 2 {exit length($1) == 81 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -861,7 +921,6 @@ exit 0
 
 ## list of options available when using the --derep_fulllength command
 
-# fasta_width
 # log
 # maxseqlength
 # maxuniquesize
@@ -885,9 +944,10 @@ exit 0
 # xsize
 
 
-## options tested:
+## options tested so far:
 
 # bzip2_decompress
 # gzip_decompress
+# fasta_width
 # quiet
 # output
