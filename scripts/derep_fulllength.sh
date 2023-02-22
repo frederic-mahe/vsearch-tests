@@ -387,6 +387,18 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--derep_fulllength rejects --bzip2_decompress + --gzip_decompress"
+printf "" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --bzip2_decompress \
+        --gzip_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
