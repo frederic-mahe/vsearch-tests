@@ -4112,6 +4112,54 @@ DESCRIPTION="issue 510: vsearch is in path and is executable"
 
 #******************************************************************************#
 #                                                                              #
+#   Sintax sometimes only outputs the ID with no further columns (issue 511)   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/511
+
+# if the --sintax_cutoff option is not used, expect three columns for
+# a match or no match
+
+Q1="TGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCT"
+Q2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+TAX="tax=d:d,p:p,c:c,o:o,f:f,g:g,s:s"
+
+# match: two tabs (three columns)
+DESCRIPTION="issue 511: sintax tabbedout 2 tabs (3 cols) when there is a match (no cutoff)"
+printf ">q1\n%s\n" ${Q1} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX} ${Q1}) \
+        --quiet \
+        --tabbedout - | \
+    tr -cd '\t' | \
+    wc -c | \
+    awk '{exit $1 == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# no match: two tabs (three columns)
+DESCRIPTION="issue 511: sintax tabbedout 2 tabs (3 cols) when there is no match (no cutoff)"
+printf ">q1\n%s\n" ${Q2} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX} ${Q1}) \
+        --quiet \
+        --tabbedout - | \
+    tr -cd '\t' | \
+    wc -c | \
+    awk '{exit $1 == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset Q1 Q2 TAX
+
+
+#******************************************************************************#
+#                                                                              #
 #    fastq_mergepairs Fatal error: More reverse reads than forward reads       #
 #                                (issue 512)                                   #
 #                                                                              #
