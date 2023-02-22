@@ -41,7 +41,7 @@ DESCRIPTION="--derep_fulllength is accepted"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
-        --output - &> /dev/null && \
+        --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -251,7 +251,7 @@ printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --topn 1 \
-        --output - &> /dev/null &&\
+        --output /dev/null 2> /dev/null &&\
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -306,7 +306,7 @@ printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --topn "-1" \
-        --output - &> /dev/null &&\
+        --output /dev/null 2> /dev/null &&\
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -319,7 +319,7 @@ printf ">s\nA\n" | \
         --minseqlength 1 \
         --topn 0 \
         --quiet \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
@@ -330,7 +330,7 @@ printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --topn A \
-        --output - &> /dev/null &&\
+        --output /dev/null 2> /dev/null &&\
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
 
@@ -340,7 +340,7 @@ printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --topn $(( 2 ** 32 )) \
-        --output - &> /dev/null &&\
+        --output /dev/null 2> /dev/null &&\
     success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 
@@ -370,7 +370,7 @@ printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
-        --uc - &> /dev/null && \
+        --uc /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -580,7 +580,7 @@ printf ">s\nA\n" | \
         --derep_fulllength - \
         --minseqlength 1 \
         --xsize \
-        --output - &> /dev/null && \
+        --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
