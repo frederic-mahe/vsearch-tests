@@ -376,7 +376,8 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--derep_fulllength --gzip_decompress rejects uncompressed stdin"
+# more flexible than bzip2
+DESCRIPTION="--derep_fulllength --gzip_decompress accepts uncompressed stdin"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
@@ -384,8 +385,8 @@ printf ">s\nA\n" | \
         --minseqlength 1 \
         --quiet \
         --output /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_fulllength rejects --bzip2_decompress + --gzip_decompress"
 printf "" | \
