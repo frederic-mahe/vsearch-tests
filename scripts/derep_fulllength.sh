@@ -36,16 +36,125 @@ DESCRIPTION="check if vsearch is executable"
 #                                                                             #
 #*****************************************************************************#
 
-## ------------------------------ command --derep_fulllength and mandatory args
+## ---------------------------- command --derep_fulllength and mandatory output
 
 ## --derep_fulllength is accepted
 DESCRIPTION="--derep_fulllength is accepted"
-printf ">s\nA\n" | \
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
+
+## --derep_fulllength requires --output
+DESCRIPTION="--derep_fulllength requires --output"
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength accepts empty input"
+printf "" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength rejects non-fasta input (#1)"
+printf "\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength rejects non-fasta input (#2)"
+printf "\n>s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output /dev/null 2> /dev/null  && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength accepts a single fasta entry"
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# discard entries shorter than 32 nucleotides by default
+DESCRIPTION="--derep_fulllength discards a short fasta entry"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength discards an empty fasta entry"
+printf ">s\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## ----------------------------------------- options --quiet and --minseqlength
+
+DESCRIPTION="--derep_fulllength outputs stderr messages"
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output /dev/null 2>&1 | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --quiet removes stderr messages"
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --quiet \
+        --output /dev/null 2>&1 | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --minseqlength 1 (keep very short fasta entries)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# keep empty fasta entries
+DESCRIPTION="--derep_fulllength --minseqlength 0 (keep empty fasta entries)"
+printf ">s\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 0 \
+        --quiet \
+        --output - | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ----------------------------------------------------- test general behaviour
 
 ## --derep_fulllength outputs data
 DESCRIPTION="--derep_fulllength outputs data"
@@ -70,7 +179,7 @@ printf ">s1\nA\n>s2\nA\n" | \
     tr "\n" "@" | \
     grep -q "^>s1@A@$" && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --derep_fulllength takes terminal gaps into account (substring aren't merged)
 DESCRIPTION="--derep_fulllength takes terminal gaps into account"
@@ -97,7 +206,7 @@ printf ">s2\nA\n>s1\nA\n" | \
     tr "\n" "@" | \
     grep -q "^>s2@A@$" && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --derep_fulllength distinct sequences are sorted by
 ## alphabetical order of headers (s1 before s2)
@@ -111,7 +220,7 @@ printf ">s2\nA\n>s1\nG\n" | \
     tr "\n" "@" | \
     grep -q "^>s1@G@>s2@A@$" && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --derep_fulllength distinct sequences are not sorted by
 ## alphabetical order of DNA strings (G before A)
@@ -125,7 +234,7 @@ printf ">s2\nA\n>s1\nG\n" | \
     tr "\n" "@" | \
     grep -q "^>s1@G@>s2@A@$" && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --derep_fulllength sequence comparison is case insensitive
 DESCRIPTION="--derep_fulllength sequence comparison is case insensitive"
@@ -138,7 +247,7 @@ printf ">s1\nA\n>s2\na\n" | \
     tr "\n" "@" | \
     grep -q "^>s1@A@$" && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --derep_fulllength preserves the case of the first occurrence of each sequence
 DESCRIPTION="--derep_fulllength preserves the case of the first occurrence of each sequence"
@@ -151,7 +260,7 @@ printf ">s1\na\n>s2\nA\n" | \
     tr "\n" "@" | \
     grep -q "^>s1@a@$" && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --derep_fulllength T and U are considered the same
 DESCRIPTION="--derep_fulllength T and U are considered the same"
@@ -164,7 +273,7 @@ printf ">s1\nT\n>s2\nU\n" | \
     tr "\n" "@" | \
     grep -q "^>s1@T@$" && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --derep_fulllength does not replace U with T in its output
 DESCRIPTION="--derep_fulllength does not replace U with T in its output"
@@ -177,7 +286,7 @@ printf ">s1\nU\n" | \
     tr "\n" "@" | \
     grep -q "^>s1@U@$" && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -196,7 +305,7 @@ printf ">s1\nA\n" | \
         --quiet \
         --output /dev/null && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --strand both allow dereplication of strand plus and minus (--derep_fulllength)
 DESCRIPTION="--strand allow dereplication of strand plus and minus (--derep_fulllength)"
@@ -255,7 +364,7 @@ printf ">s\nA\n" | \
         --topn 1 \
         --output /dev/null 2> /dev/null &&\
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --topn keeps only n sequences
 DESCRIPTION="--topn keeps only n sequences"
@@ -268,7 +377,7 @@ printf ">s1\nA\n>s2\nG\n" | \
         --output - | \
     awk '/^>/ {c += 1} END {exit c == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --topn returns only the n most abundant sequences (s2 in this example)
 DESCRIPTION="--topn returns only the n most abundant sequences"
@@ -283,7 +392,7 @@ printf ">s1;size=1;\nA\n>s2;size=2;\nC\n" | \
     tr "\n" "@" | \
     grep -q "^>s2;size=2;@C@$" &&\
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --topn returns only the n most abundant sequences after full length
 ## dereplication (s1 in this example)
@@ -300,7 +409,7 @@ printf ">s1;size=1;\nA\n>s2;size=2;\nC\n>s3;size=2;\nA\n" | \
     tr "\n" "@" | \
     grep -qE "^>s1;size=3;?@A@$" && \
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --topn fails with negative arguments
 DESCRIPTION="--topn fails with negative arguments"
@@ -310,7 +419,7 @@ printf ">s\nA\n" | \
         --topn "-1" \
         --output /dev/null 2> /dev/null &&\
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 ## --topn zero should return no sequence or fail (only values > 0
 ## should be accepted)
@@ -324,7 +433,7 @@ printf ">s\nA\n" | \
         --output - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
-	    success "${DESCRIPTION}"
+	success "${DESCRIPTION}"
 
 ## --topn fails with non-numerical argument
 DESCRIPTION="--topn fails with non-numerical argument"
@@ -334,7 +443,7 @@ printf ">s\nA\n" | \
         --topn A \
         --output /dev/null 2> /dev/null &&\
     failure "${DESCRIPTION}" || \
-	    success "${DESCRIPTION}"
+	success "${DESCRIPTION}"
 
 ## --topn accepts abundance values equal to 2^32
 DESCRIPTION="--topn accepts abundance values equal to 2^32"
@@ -344,7 +453,7 @@ printf ">s\nA\n" | \
         --topn $(( 2 ** 32 )) \
         --output /dev/null 2> /dev/null &&\
     success "${DESCRIPTION}" || \
-	    failure "${DESCRIPTION}"
+	failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -432,8 +541,8 @@ printf ">s1\nA\n" | \
         --uc - | \
     awk '{if (/^S/) {s += 1} ; if (/^C/) {c += 1}}
          END {exit NR == 2 && c == 1 && s == 1 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+             success "${DESCRIPTION}" || \
+                 failure "${DESCRIPTION}"
 
 ## --uc returns no H line (first column) when there is no hit
 DESCRIPTION="--uc returns no H line when there is no hit"
@@ -620,12 +729,10 @@ exit 0
 # xsize + sizein + sizeout: ?
 # xsize + sizein + sizeout + notrunclabels: ?
 # xsize + sizein + sizeout + relabel_keep: ?
-# output: show that is mandatory
-# quiet: show that it removes some text on stdin
 
 ## list of options available when using the --derep_fulllength command
 
-# bzip2_decompress
+# bzip2_decompress  --------------------------- next
 # fasta_width
 # gzip_decompress
 # log
@@ -635,8 +742,6 @@ exit 0
 # minuniquesize
 # no_progress
 # notrunclabels
-# output *mandatory*
-# quiet
 # relabel
 # relabel_keep
 # relabel_md5
@@ -651,3 +756,9 @@ exit 0
 # uc
 # xee
 # xsize
+
+
+## options tested:
+
+# quiet
+# output
