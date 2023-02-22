@@ -4110,6 +4110,62 @@ DESCRIPTION="issue 510: vsearch is in path and is executable"
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#    fastq_mergepairs Fatal error: More reverse reads than forward reads       #
+#                                (issue 512)                                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/512
+
+DESCRIPTION="issue 512: fastq_mergepairs equal number of reads"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1_1\nA\n+\nI\n") \
+    --reverse <(printf "@s1_2\nT\n+\nI\n") \
+    --quiet \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 512: fastq_mergepairs more forward reads"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1_1\nA\n+\nI\n@s2_1\nA\n+\nI\n") \
+    --reverse <(printf "@s1_2\nT\n+\nI\n") \
+    --quiet \
+    --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 512: fastq_mergepairs more forward reads (error message)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1_1\nA\n+\nI\n@s2_1\nA\n+\nI\n") \
+    --reverse <(printf "@s1_2\nT\n+\nI\n") \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "forward" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 512: fastq_mergepairs more reverse reads"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1_1\nA\n+\nI\n") \
+    --reverse <(printf "@s1_2\nT\n+\nI\n@s2_2\nA\n+\nI\n") \
+    --quiet \
+    --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 512: fastq_mergepairs more reverse reads (error message)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1_1\nA\n+\nI\n") \
+    --reverse <(printf "@s1_2\nT\n+\nI\n@s2_2\nA\n+\nI\n") \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "reverse" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 exit 0
 
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
