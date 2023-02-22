@@ -109,7 +109,7 @@ printf ">s\n" | \
         success "${DESCRIPTION}"
 
 
-## ----------------------------------------- options --quiet and --minseqlength
+## ---------------------- options for simpler tests: --quiet and --minseqlength
 
 DESCRIPTION="--derep_fulllength outputs stderr messages"
 printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
@@ -287,6 +287,123 @@ printf ">s1\nU\n" | \
     grep -q "^>s1@U@$" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#               --bzip2_decompress and --gzip_decompress                      #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--derep_fulllength rejects compressed stdin (bzip2)"
+printf ">s\nA\n" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --bzip2_decompress is accepted (empty input)"
+printf "" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --bzip2_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --bzip2_decompress accepts compressed stdin"
+printf ">s\nA\n" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --bzip2_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --bzip2_decompress rejects uncompressed stdin"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --bzip2_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength rejects compressed stdin (gzip)"
+printf ">s\nA\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --gzip_decompress is accepted (empty input)"
+printf "" | \
+    gzip | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --gzip_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --gzip_decompress accepts compressed stdin"
+printf ">s\nA\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --gzip_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --gzip_decompress rejects uncompressed stdin"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --gzip_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                               --fasta_width                                 #
+#                                                                             #
+#*****************************************************************************#
+
+# Fasta files produced by vsearch are wrapped (sequences are written on
+# lines of integer nucleotides, 80 by default). Set the value to zero to
+# eliminate the wrapping.
+
+# - no option: test a seq with 80 nucleotides (observe lack of wrapping)
+# - no option: test a seq with more than 80 nucleotides (observe wrapping)
+# - option is accepted
+# - accept value of 2^32?
+# - set value to 1 (observe wrapping)
+# - set value to 0 (observe lack of wrapping)
 
 
 #*****************************************************************************#
@@ -732,9 +849,7 @@ exit 0
 
 ## list of options available when using the --derep_fulllength command
 
-# bzip2_decompress  --------------------------- next
 # fasta_width
-# gzip_decompress
 # log
 # maxseqlength
 # maxuniquesize
@@ -760,5 +875,7 @@ exit 0
 
 ## options tested:
 
+# bzip2_decompress
+# gzip_decompress
 # quiet
 # output
