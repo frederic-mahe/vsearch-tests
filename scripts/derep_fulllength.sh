@@ -32,9 +32,11 @@ DESCRIPTION="check if vsearch is executable"
 
 #*****************************************************************************#
 #                                                                             #
-#                              --derep_fullength                              #
+#                             --derep_fulllength                              #
 #                                                                             #
 #*****************************************************************************#
+
+## ------------------------------ command --derep_fulllength and mandatory args
 
 ## --derep_fulllength is accepted
 DESCRIPTION="--derep_fulllength is accepted"
@@ -612,3 +614,40 @@ printf ">s;size=1;\nA\n" | \
         success "${DESCRIPTION}"
 
 exit 0
+
+## TODO:
+# sizein + no sizeout = xsize: change output order?
+# xsize + sizein + sizeout: ?
+# xsize + sizein + sizeout + notrunclabels: ?
+# xsize + sizein + sizeout + relabel_keep: ?
+# output: show that is mandatory
+# quiet: show that it removes some text on stdin
+
+## list of options available when using the --derep_fulllength command
+
+# bzip2_decompress
+# fasta_width
+# gzip_decompress
+# log
+# maxseqlength
+# maxuniquesize
+# minseqlength
+# minuniquesize
+# no_progress
+# notrunclabels
+# output *mandatory*
+# quiet
+# relabel
+# relabel_keep
+# relabel_md5
+# relabel_self
+# relabel_sha1
+# sample
+# sizein
+# sizeout
+# strand
+# threads
+# topn
+# uc
+# xee
+# xsize
