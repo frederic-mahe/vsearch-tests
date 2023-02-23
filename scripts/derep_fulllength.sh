@@ -922,6 +922,7 @@ exit 0
 
 ## list of options available when using the --derep_fulllength command
 
+# lengthout
 # log
 # maxseqlength
 # maxuniquesize
@@ -942,6 +943,7 @@ exit 0
 # topn
 # uc
 # xee
+# xlength
 # xsize
 
 
