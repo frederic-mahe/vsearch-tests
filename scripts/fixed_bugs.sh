@@ -4118,8 +4118,8 @@ DESCRIPTION="issue 510: vsearch is in path and is executable"
 ##
 ## https://github.com/torognes/vsearch/issues/511
 
-# if the --sintax_cutoff option is not used, expect three columns for
-# a match or no match
+# (similar to issue 493) if the --sintax_cutoff option is not used,
+# expect three columns for a match or no match
 
 Q1="TGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCT"
 Q2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
