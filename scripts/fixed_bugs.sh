@@ -1644,6 +1644,199 @@ rm ${PROGRESS}
 ##
 ## https://github.com/torognes/vsearch/issues/165
 
+## ------------------------------------------------------------------ lengthout
+
+DESCRIPTION="issue 165: fastq_filter --lengthout is accepted"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --lengthout \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --lengthout adds sequence length"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --lengthout \
+        --fastaout - | \
+    grep -q ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: derep_fulllength --lengthout is zero when length is null"
+printf ">s\n\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 0 \
+        --quiet \
+        --lengthout \
+        --output -  | \
+    grep -q ">s;length=0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --eeout and --lengthout can be used at the same time"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --lengthout \
+        --fastaout - | \
+    grep "^>s" | \
+    grep ";ee=" | \
+    grep -q ";length=" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --eeout and --lengthout (no extra ';')"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --eeout \
+        --lengthout \
+        --fastaout - | \
+    grep -q ";;" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --lengthout replaces sequence length if already present"
+printf "@s;length=2\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --lengthout \
+        --fastaout - | \
+    grep -q ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter without --lengthout headers with length are untouched"
+printf "@s;length=2\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --fastaout - | \
+    grep -q ">s;length=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter without --lengthout headers with length are untouched (final ';')"
+printf "@s;length=2;\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --fastaout - | \
+    grep -q ">s;length=2;" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## -------------------------------------------------------------------- xlength
+
+DESCRIPTION="issue 165: fastq_filter --xlength is accepted"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --xlength \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --xlength removes sequence length"
+printf "@s;length=1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --xlength \
+        --fastaout - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --xlength removes sequence length and dangling ';'"
+printf "@s;length=1;\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --xlength \
+        --fastaout - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter without --xlength headers with length are untouched"
+printf "@s;length=1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --fastaout - | \
+    grep -wq ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter without --xlength headers with length are untouched (final ';')"
+printf "@s;length=1;\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --fastaout - | \
+    grep -wq ">s;length=1;" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --xlength is silent if sequence length is missing"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --xlength \
+        --fastaout - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --xlength dangling ';'"
+printf "@s;\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --xlength \
+        --fastaout - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --lengthout and --xlength can be used at the same time (#1)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --xlength \
+        --lengthout \
+        --fastaout - | \
+    grep -q ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --lengthout and --xlength can be used at the same time (#2)"
+printf "@s;length=2\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --xlength \
+        --lengthout \
+        --fastaout - | \
+    grep -q ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
