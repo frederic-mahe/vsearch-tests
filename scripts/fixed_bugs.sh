@@ -1663,9 +1663,20 @@ printf "@s\nA\n+\nI\n" | \
         --quiet \
         --lengthout \
         --fastaout - | \
-    grep -q ">s;length=1" && \
+    grep -wq ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 165: fastq_filter --lengthout adds sequence length without a terminal ';'"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --lengthout \
+        --fastaout - | \
+    grep -q ">s;length=1;" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="issue 165: derep_fulllength --lengthout is zero when length is null"
 printf ">s\n\n" | \
@@ -1675,7 +1686,7 @@ printf ">s\n\n" | \
         --quiet \
         --lengthout \
         --output -  | \
-    grep -q ">s;length=0" && \
+    grep -wq ">s;length=0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1712,7 +1723,7 @@ printf "@s;length=2\nA\n+\nI\n" | \
         --quiet \
         --lengthout \
         --fastaout - | \
-    grep -q ">s;length=1" && \
+    grep -wq ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1722,7 +1733,7 @@ printf "@s;length=2\nA\n+\nI\n" | \
         --fastq_filter - \
         --quiet \
         --fastaout - | \
-    grep -q ">s;length=2" && \
+    grep -wq ">s;length=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1732,7 +1743,7 @@ printf "@s;length=2;\nA\n+\nI\n" | \
         --fastq_filter - \
         --quiet \
         --fastaout - | \
-    grep -q ">s;length=2;" && \
+    grep -wq ">s;length=2;" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4409,6 +4420,7 @@ DESCRIPTION="issue 512: fastq_mergepairs more reverse reads (error message)"
 
 exit 0
 
+# TODO: issue 513: make a test with two occurrences of the query in the target sequence
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
 # TODO: otutabout in the absence of ';sample=abcd1234;' each cluster is assigned to its own sample (matrix diagonal)?
