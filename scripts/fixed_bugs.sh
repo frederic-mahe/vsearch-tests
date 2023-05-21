@@ -4418,13 +4418,494 @@ DESCRIPTION="issue 512: fastq_mergepairs more reverse reads (error message)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#******************************************************************************#
+#                                                                              #
+#   --sizein seems having no effect in vsearch --usearch_global (issue 521)    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/521
+
+## We can have queries with size or not, subject with size or not,
+## option sizein or not, option sizeout or not, single or multiple
+## matches. It corresponds to five boolean variables, and 32 possible
+## configurations.
+
+DESCRIPTION="issue 521: usearch_global dbmatched (no size, single match)"
+# qsize = False, ssize = False, sizein = False, sizeout = False, multiple = False
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --dbmatched /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (no size, double match)"
+# qsize = False, ssize = False, sizein = False, sizeout = False, multiple = True
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n>q2\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --dbmatched /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizeout, single match)"
+# qsize = False, ssize = False, sizein = False, sizeout = True, multiple = False
+# expect a single match ;size=1
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizeout, double match)"
+# qsize = False, ssize = False, sizein = False, sizeout = True, multiple = True
+# expect a double match ;size=2
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n>q2\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=2;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizein, single match)"
+# qsize = False, ssize = False, sizein = True, sizeout = False, multiple = False
+# expect a single match ;size=1
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --dbmatched /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizein, double match)"
+# qsize = False, ssize = False, sizein = True, sizeout = False, multiple = True
+# expect a double match ;size=2
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n>q2\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --dbmatched /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizein, sizeout, single match)"
+# qsize = False, ssize = False, sizein = True, sizeout = True, multiple = False
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizein, sizeout, double match)"
+# qsize = False, ssize = False, sizein = True, sizeout = True, multiple = True
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n>q2\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=2;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (subject size, single match)"
+# qsize = False, ssize = True, sizein = False, sizeout = False, multiple = False
+# subject's size is left untouched
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n") \
+    --db <(printf ">s1;size=3\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=3;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (subject size, double match)"
+# qsize = False, ssize = True, sizein = False, sizeout = False, multiple = True
+# subject's size is left untouched
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n>q2\nAAAA\n") \
+    --db <(printf ">s1;size=3\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=3;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizeout, single match)"
+# qsize = False, ssize = True, sizein = False, sizeout = True, multiple = False
+# subject's size is overwritten
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n") \
+    --db <(printf ">s1;size=3\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizeout, double match)"
+# qsize = False, ssize = True, sizein = False, sizeout = True, multiple = True
+# subject's size is overwritten
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n>q2\nAAAA\n") \
+    --db <(printf ">s1;size=3\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=2;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, single match)"
+# qsize = False, ssize = True, sizein = True, sizeout = False, multiple = False
+# subject's size is left untouched
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n") \
+    --db <(printf ">s1;size=3\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=3;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, double match)"
+# qsize = False, ssize = True, sizein = True, sizeout = False, multiple = True
+# subject's size is left untouched
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n>q2\nAAAA\n") \
+    --db <(printf ">s1;size=3\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=3;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, sizeout, single match)"
+# qsize = False, ssize = True, sizein = True, sizeout = True, multiple = False
+# subject's size is overwritten
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n") \
+    --db <(printf ">s1;size=3\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, sizeout, double match)"
+# qsize = False, ssize = True, sizein = True, sizeout = True, multiple = True
+# subject's size is overwritten
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAAA\n>q2\nAAAA\n") \
+    --db <(printf ">s1;size=3\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=2;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, single match)"
+# qsize = True, ssize = False, sizein = False, sizeout = False, multiple = False
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --dbmatched /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, double match)"
+# qsize = True, ssize = False, sizein = False, sizeout = False, multiple = True
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n>q2;size2\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --dbmatched /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizeout, single match)"
+# qsize = True, ssize = False, sizein = False, sizeout = True, multiple = False
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizeout, double match)"
+# qsize = True, ssize = False, sizein = False, sizeout = True, multiple = True
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n>q2;size=2\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=2;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizein, single match)"
+# qsize = True, ssize = False, sizein = True, sizeout = False, multiple = False
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --dbmatched /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizein, double match)"
+# qsize = True, ssize = False, sizein = True, sizeout = False, multiple = True
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n>q2;size=2\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --dbmatched /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizein, sizeout, single match)"
+# qsize = True, ssize = False, sizein = True, sizeout = True, multiple = False
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=3;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizein, sizeout, double match)"
+# qsize = True, ssize = False, sizein = True, sizeout = True, multiple = True
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n>q2;size=2\nAAAA\n") \
+    --db <(printf ">s1\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=5;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, single match)"
+# qsize = True, ssize = True, sizein = False, sizeout = False, multiple = False
+# subject size is left untouched
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n") \
+    --db <(printf ">s1;size=6\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=6;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, double match)"
+# qsize = True, ssize = True, sizein = False, sizeout = False, multiple = True
+# subject size is left untouched
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n>q2;size=2\nAAAA\n") \
+    --db <(printf ">s1;size=6\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=6;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, sizeout, single match)"
+# qsize = True, ssize = True, sizein = False, sizeout = True, multiple = False
+# subject size is overwritten
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n") \
+    --db <(printf ">s1;size=6\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, sizeout, double match)"
+# qsize = True, ssize = True, sizein = False, sizeout = True, multiple = True
+# subject size is overwritten
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n>q2;size=2\nAAAA\n") \
+    --db <(printf ">s1;size=6\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=2;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, sizein, single match)"
+# qsize = True, ssize = True, sizein = True, sizeout = False, multiple = False
+# subject size is left untouched
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n") \
+    --db <(printf ">s1;size=6\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=6;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, sizein, double match)"
+# qsize = True, ssize = True, sizein = True, sizeout = False, multiple = True
+# subject size is left untouched
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n>q2;size=2\nAAAA\n") \
+    --db <(printf ">s1;size=6\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=6;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, sizein, sizeout, single match)"
+# qsize = True, ssize = True, sizein = True, sizeout = True, multiple = False
+# subject size is overwritten
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n") \
+    --db <(printf ">s1;size=6\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=3;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, sizein, sizeout double match)"
+# qsize = True, ssize = True, sizein = True, sizeout = True, multiple = True
+# subject size is overwritten
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1;size=3\nAAAA\n>q2;size=2\nAAAA\n") \
+    --db <(printf ">s1;size=6\nAAAA\n") \
+    --minseqlength 1 \
+    --id 0.50 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --dbmatched /dev/stdout | \
+    grep -qEx ">s1;size=5;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
 # TODO: otutabout in the absence of ';sample=abcd1234;' each cluster is assigned to its own sample (matrix diagonal)?
-
 
 ## bug with vsearch bug with --dbnotmatched? !!!!!!!!!!!!!!!!!!!
 # vsearch --usearch_global <(printf ">q\nA\n") --db <(printf ">s\nC\n") --minseqlength 1 --id 0.5 --quiet --dbnotmatched -
