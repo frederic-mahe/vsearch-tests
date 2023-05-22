@@ -780,6 +780,48 @@ unset "OUTPUT"
 #                                                                             #
 #*****************************************************************************#
 
+# dbnotmatched: write database target sequences not matching query
+# sequences to filename, in fasta format.
+
+DESCRIPTION="--usearch_global --dbnotmatched does not report matched db entry"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">s1\nA\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --dbnotmatched /dev/stdout | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## Note: at some point there was a bug with --dbnotmatched (unmatched
+## were not reported)
+DESCRIPTION="--usearch_global --dbnotmatched reports unmatched db entry"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">s1\nC\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --dbnotmatched /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --dbnotmatched reports unmatched db entry in fasta format"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">s1\nC\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --dbnotmatched /dev/stdout | \
+    tr "\n" "@" | \
+    grep -qx ">s1@C@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--usearch_global --dbmatched displays the matched sequence"
 seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
