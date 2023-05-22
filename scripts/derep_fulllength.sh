@@ -916,9 +916,11 @@ exit 0
 
 ## TODO:
 # sizein + no sizeout = xsize: change output order?
-# xsize + sizein + sizeout: ?
+# xsize + sizein + sizeout: ? is the order important?
 # xsize + sizein + sizeout + notrunclabels: ?
 # xsize + sizein + sizeout + relabel_keep: ?
+# lengthout: if length, then remove, else no effect?
+# eeout + lengthout + sizeout? is the order relevant?
 
 ## list of options available when using the --derep_fulllength command
 
