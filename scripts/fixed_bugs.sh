@@ -4906,6 +4906,3 @@ exit 0
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
 # TODO: otutabout in the absence of ';sample=abcd1234;' each cluster is assigned to its own sample (matrix diagonal)?
-
-## bug with vsearch bug with --dbnotmatched? !!!!!!!!!!!!!!!!!!!
-# vsearch --usearch_global <(printf ">q\nA\n") --db <(printf ">s\nC\n") --minseqlength 1 --id 0.5 --quiet --dbnotmatched -
