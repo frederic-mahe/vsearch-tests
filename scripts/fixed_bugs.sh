@@ -4900,6 +4900,163 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#******************************************************************************#
+#                                                                              #
+#     maxseqlength is not supported by makeudb_search command (issue 523)      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/523
+
+## command --makeudb_search accepts option --minseqlength. It seems
+## logical that it should also accept option --maxseqlength
+
+## UDB needs to write to a seekable file descriptor (pipes, sockets,
+## tty devices are not seekable, regular files and most block devices
+## generally are)
+DESCRIPTION="issue 522: makeudb_usearch fails to write to a non-seekable output"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --makeudb_usearch /dev/stdin \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 522: makeudb_usearch can write to a regular file"
+TMP_UDB=$(mktemp)
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --makeudb_usearch /dev/stdin \
+        --quiet \
+        --output "${TMP_UDB}" 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP_UDB}"
+unset TMP_UDB
+
+## filter if length < 32
+DESCRIPTION="issue 522: makeudb_usearch discards sequences shorter than 32 nucleotides by default (#1)"
+TMP_UDB=$(mktemp)
+printf ">s1\n%031s\n" | \
+    tr " " "A" | \
+    "${VSEARCH}" \
+        --makeudb_usearch /dev/stdin \
+        --quiet \
+        --output "${TMP_UDB}" 2>&1 | \
+    grep -q "discarded" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP_UDB}"
+unset TMP_UDB
+
+## no filter if length >= 32
+DESCRIPTION="issue 522: makeudb_usearch discards sequences shorter than 32 nucleotides by default (#2)"
+TMP_UDB=$(mktemp)
+printf ">s1\n%032s\n" | \
+    tr " " "A" | \
+    "${VSEARCH}" \
+        --makeudb_usearch /dev/stdin \
+        --quiet \
+        --output "${TMP_UDB}" 2>&1 | \
+    grep -q "discarded" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm "${TMP_UDB}"
+unset TMP_UDB
+
+## accepts the minseqlength option
+DESCRIPTION="issue 522: makeudb_usearch accepts the --minseqlength option (#1)"
+TMP_UDB=$(mktemp)
+printf ">s1\n%010s\n" | \
+    tr " " "A" | \
+    "${VSEARCH}" \
+        --makeudb_usearch /dev/stdin \
+        --minseqlength 10 \
+        --quiet \
+        --output "${TMP_UDB}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP_UDB}"
+unset TMP_UDB
+
+## accepts the minseqlength option and uses it
+DESCRIPTION="issue 522: makeudb_usearch accepts the --minseqlength option (#2)"
+TMP_UDB=$(mktemp)
+printf ">s1\n%09s\n" | \
+    tr " " "A" | \
+    "${VSEARCH}" \
+        --makeudb_usearch /dev/stdin \
+        --minseqlength 10 \
+        --quiet \
+        --output "${TMP_UDB}" 2>&1 | \
+    grep -q "discarded" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP_UDB}"
+unset TMP_UDB
+
+## accepts sequences up to 50,000 nucleotides
+DESCRIPTION="issue 522: makeudb_usearch accepts sequences with up to 50,000 nucleotides"
+TMP_UDB=$(mktemp)
+printf ">s1\n%050000s\n" | \
+    tr " " "A" | \
+    "${VSEARCH}" \
+        --makeudb_usearch /dev/stdin \
+        --quiet \
+        --output "${TMP_UDB}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP_UDB}"
+unset TMP_UDB
+
+DESCRIPTION="issue 522: makeudb_usearch discards sequences longer than 50,000 nucleotides"
+TMP_UDB=$(mktemp)
+printf ">s1\n%050001s\n" | \
+    tr " " "A" | \
+    "${VSEARCH}" \
+        --makeudb_usearch /dev/stdin \
+        --quiet \
+        --output "${TMP_UDB}" 2>&1 | \
+    grep -q "discarded" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP_UDB}"
+unset TMP_UDB
+
+## accepts the maxseqlength option
+DESCRIPTION="issue 522: makeudb_usearch accepts the --maxseqlength option (#1)"
+TMP_UDB=$(mktemp)
+printf ">s1\n%032s\n" | \
+    tr " " "A" | \
+    "${VSEARCH}" \
+        --makeudb_usearch /dev/stdin \
+        --maxseqlength 40 \
+        --quiet \
+        --output "${TMP_UDB}" 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP_UDB}"
+unset TMP_UDB
+
+## accepts the maxseqlength option and uses it
+DESCRIPTION="issue 522: makeudb_usearch accepts the --maxseqlength option (#2)"
+TMP_UDB=$(mktemp)
+printf ">s1\n%040s\n" | \
+    tr " " "A" | \
+    "${VSEARCH}" \
+        --makeudb_usearch /dev/stdin \
+        --maxseqlength 39 \
+        --quiet \
+        --output "${TMP_UDB}" 2>&1 | \
+    grep -q "discarded" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP_UDB}"
+unset TMP_UDB
+
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
