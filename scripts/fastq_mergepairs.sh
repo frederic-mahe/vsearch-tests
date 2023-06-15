@@ -232,7 +232,7 @@ DESCRIPTION="--fastq_mergepairs R1 empty input"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_mergepairs empty input yields empty output"
-TMP=$(mktemp --dry-run)
+TMP=$(mktemp -u)
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "") \
     --reverse <(printf "") \

@@ -4262,7 +4262,7 @@ unset S1 S2 S3
 # (segmentation fault).
 
 DESCRIPTION="issue 508: cluster_size works with --clusters (no segfault)"
-PREFIX=$(mktemp --dry-run | cut -d "." -f 2)
+PREFIX=$(mktemp -u | cut -d "." -f 2)
 
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
