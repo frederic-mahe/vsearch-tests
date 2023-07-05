@@ -4903,6 +4903,78 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
 
 #******************************************************************************#
 #                                                                              #
+#   Why FASTQ quality value above qmax is treated as Fatal error? (issue 522)  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/522
+
+DESCRIPTION="issue 522: Q values up to 41 accepted by default"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 522: Q values up to 41 accepted by default (quiet on stderr)"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 522: Q values above 41 rejected by default"
+printf "@s\nA\n+\nK\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 522: Q values above 41 rejected by default (quiet on stderr)"
+printf "@s\nA\n+\nK\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 522: Q values up to 42 accepted with --fastq_qmax 42"
+printf "@s\nA\n+\nK\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_qmax 42 \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 522: Q values up to 93 accepted with --fastq_qmax 93"
+printf "@s\nA\n+\n~\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_qmax 93 \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 522: Q values error when fastq_qmax > 93"
+printf "@s\nA\n+\n~\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_qmax 94 \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #     maxseqlength is not supported by makeudb_search command (issue 523)      #
 #                                                                              #
 #******************************************************************************#
@@ -5055,6 +5127,36 @@ printf ">s1\n%040s\n" | \
         failure "${DESCRIPTION}"
 rm "${TMP_UDB}"
 unset TMP_UDB
+
+
+#******************************************************************************#
+#                                                                              #
+#      fastq_mergepairs: pair-end merge compared with FLASH (issue 526)        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/526
+
+## How can I adjust the parameters to get similar results as FLASH?
+
+# vsearch's merging algorithm is more conservative than flash's by
+# design. In vsearch, there are three options you can toggle to relax
+# some merging parameters:
+
+# - fastq_minovlen: specify the minimum overlap between the merged
+#   reads. The default is 10. Must be at least 5.
+# - fastq_maxdiffpct: specify the maximum percentage of non-matching
+#   nucleotides allowed in the overlap region. The default value is
+#   100.0%.
+# - fastq_maxdiffs: specify the maximum number of non-matching
+#   nucleotides allowed in the overlap region. That option has a strong
+#   influence on the merging success rate. The default value is 10.
+
+# There are other more sophisticated rules in the merging algorithm that
+# will discard read pairs with a high fraction of mismatches, but these
+# rules are not controlled by user-facing variables. So, it is currently
+# not possible for end-users to adjust the vsearch's merging algorithm
+# parameters to get similar results as flash.
 
 
 #******************************************************************************#
