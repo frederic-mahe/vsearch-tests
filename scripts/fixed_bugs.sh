@@ -5057,6 +5057,173 @@ rm "${TMP_UDB}"
 unset TMP_UDB
 
 
+#******************************************************************************#
+#                                                                              #
+#  fastq_mergepairs: merging stats should be written to log file (issue 527)   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/527
+
+DESCRIPTION="issue 527: fastq_mergepairs does not write header to stdout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null 2> /dev/null | \
+    grep -q "^vsearch" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 527: fastq_mergepairs does not write stats to stdout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null 2> /dev/null | \
+    grep -q "^Statistics" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 527: fastq_mergepairs writes header to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^vsearch" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 527: fastq_mergepairs writes stats to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^Statistics" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 527: fastq_mergepairs quiet does not writes header to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^vsearch" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 527: fastq_mergepairs quiet writes stats to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^Statistics" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## -------------------------------------------------- quiet = false, log = true
+
+DESCRIPTION="issue 527: fastq_mergepairs writes header to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --log "${TMP}" 2> /dev/null
+grep -q "^vsearch" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+DESCRIPTION="issue 527: fastq_mergepairs writes header to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --log /dev/null 2>&1 | \
+    grep -q "^vsearch" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 527: fastq_mergepairs writes stats to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --log "${TMP}" 2> /dev/null
+grep -q "^Statistics" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+DESCRIPTION="issue 527: fastq_mergepairs writes time and memory to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --log "${TMP}" 2> /dev/null
+grep -q "memory" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+
+## --------------------------------------------------- quiet = true, log = true
+
+DESCRIPTION="issue 527: fastq_mergepairs quiet writes header to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --quiet \
+    --log "${TMP}" 2> /dev/null
+grep -q "^vsearch" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+DESCRIPTION="issue 527: fastq_mergepairs log quiet does not write header to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --quiet \
+    --log /dev/null 2>&1 | \
+    grep -q "^vsearch" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 527: fastq_mergepairs quiet writes time and memory to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --quiet \
+    --log "${TMP}" 2> /dev/null
+grep -q "memory" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+DESCRIPTION="issue 527: fastq_mergepairs quiet writes stats to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --quiet \
+    --log "${TMP}" 2> /dev/null
+grep -q "^Statistics" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
