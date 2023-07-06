@@ -510,6 +510,14 @@ DESCRIPTION="fastq_mergepairs no warning if empty input"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="fastq_mergepairs error if missing file"
+"${VSEARCH}" \
+    --fastq_mergepairs missing_R1 \
+    --reverse missing_R2 \
+    --fastqout - > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -857,6 +865,254 @@ DESCRIPTION="fastq_mergepairs option fastq_minmergelen must be an integer"
     --reverse <(printf '@s\nT\n+\nI\n') \
     --fastq_minmergelen A \
     --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                --fastq_qmax                                 #
+#                                                                             #
+#*****************************************************************************#
+
+# Specify the maximum quality score accepted when reading FASTQ
+# files. The default is 41, which is usual for recent Sanger/Illumina
+# 1.8+ files.
+
+# int64_t again, values accepted should range from 1 to 93
+
+DESCRIPTION="fastq_mergepairs option fastq_qmax rejects negative values"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmax -1 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# lowest possible qmin is zero, and qmax = qmin + 1
+DESCRIPTION="fastq_mergepairs option fastq_qmax rejects a null value"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\n!\n") \
+    --reverse <(printf "@s\nT\n+\n!\n") \
+    --fastq_qmax 0 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmax accepts positive integers (1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\n!\n") \
+    --reverse <(printf "@s\nT\n+\n!\n") \
+    --fastq_qmax 1 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="fastq_mergepairs option fastq_qmax accepts positive integers (41)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmax 41 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmax accepts positive integers (93)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmax 93 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Sum of arguments to --fastq_ascii and --fastq_qmax must be no more than 126
+DESCRIPTION="fastq_mergepairs option fastq_qmax rejects values greater than 126 - 33 = 93 (94)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmax 94 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmax 40 accepts entry with Q=40"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmax 40 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmax 40 rejects entry with Q=41"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nJ\n") \
+    --reverse <(printf "@s\nT\n+\nJ\n") \
+    --fastq_qmax 40 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmax 40 rejects entry with Q=41 (log file)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nJ\n") \
+    --reverse <(printf "@s\nT\n+\nJ\n") \
+    --fastq_qmax 40 \
+    --log /dev/null \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmax must be greater than fastq_qmin"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nJ\n") \
+    --reverse <(printf "@s\nT\n+\nJ\n") \
+    --fastq_qmin 42 \
+    --fastq_qmax 41 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                --fastq_qmin                                 #
+#                                                                             #
+#*****************************************************************************#
+
+# Specify the minimum quality score accepted for FASTQ files. The
+# default is 0, which is usual for recent Sanger/Illumina 1.8+
+# files. Older formats may use scores between -5 and 2.
+
+# int64_t again, values accepted should range from 0 to 92
+
+# Older formats may use scores between -5 and 2. To do what?
+
+# Sum of arguments to --fastq_ascii and --fastq_qmin must be no less than 33
+DESCRIPTION="fastq_mergepairs option fastq_qmin rejects negative values (-1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmin -1 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmin accepts a null value (default)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmin 0 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmin accepts positive integers (1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmin 1 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmin accepts positive integers (40)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmin 40 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# The argument to --fastq_qmin cannot be equal to or greater than --fastq_qmax
+DESCRIPTION="fastq_mergepairs fails if fastq_qmin is equal to fastq_qmax default (41)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmin 41 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs succeeds if fastq_qmin is smaller than fastq_qmax (41)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nJ\n") \
+    --reverse <(printf "@s\nT\n+\nJ\n") \
+    --fastq_qmin 41 \
+    --fastq_qmax 42 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs succeeds if fastq_qmax is greater than fastq_qmin (42)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nK\n") \
+    --reverse <(printf "@s\nT\n+\nK\n") \
+    --fastq_qmin 42 \
+    --fastq_qmax 93 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs succeeds if fastq_qmax is greater than fastq_qmin (92)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\n}\n") \
+    --reverse <(printf "@s\nT\n+\n}\n") \
+    --fastq_qmin 92 \
+    --fastq_qmax 93 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# The argument to --fastq_qmin cannot be larger than --fastq_qmax
+DESCRIPTION="fastq_mergepairs option fastq_qmin rejects values greater than 126 - 33 = 93 (94)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qmin 94 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmin 15 accepts entry with Q=15"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\n0\n") \
+    --reverse <(printf "@s\nT\n+\n0\n") \
+    --fastq_qmin 15 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmin 16 rejects entry with Q=15"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\n0\n") \
+    --reverse <(printf "@s\nT\n+\n0\n") \
+    --fastq_qmin 16 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmin 16 rejects entry with Q=15 (log file)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\n0\n") \
+    --reverse <(printf "@s\nT\n+\n0\n") \
+    --fastq_qmin 16 \
+    --log /dev/null \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_qmin must be smaller than fastq_qmax"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nJ\n") \
+    --reverse <(printf "@s\nT\n+\nJ\n") \
+    --fastq_qmin 42 \
+    --fastq_qmax 41 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
