@@ -518,6 +518,19 @@ DESCRIPTION="fastq_mergepairs error if missing file"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="fastq_mergepairs error if unable to open file for writing"
+TMP=$(mktemp)
+chmod u-w "${TMP}"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastqout "${TMP}" > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+w "${TMP}"
+rm -f "${TMP}"
+unset TMP
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -526,6 +539,25 @@ DESCRIPTION="fastq_mergepairs error if missing file"
 #*****************************************************************************#
 
 # merging tests: trigger all possible causes for rejection
+
+# reasons for not merging:
+#    - undefined
+#    - ok
+#    - input seq too short (after truncation)
+#    - input seq too long
+#    - too many Ns in input
+#    - overlap too short
+#    - too many differences (maxdiffs)
+#    - too high percentage of differences (maxdiffpct)
+#    - staggered
+#    - indels in overlap region
+#    - potential repeats in overlap region / multiple overlaps
+#    - merged sequence too short
+#    - merged sequence too long
+#    - expected error too high
+#    - alignment score too low, insignificant, potential indel
+#    - too few kmers on same diag found
+
 
 DESCRIPTION="fastq_mergepairs failed merging: too few kmers found on same diagonal "
 "${VSEARCH}" \
@@ -553,6 +585,104 @@ DESCRIPTION="fastq_mergepairs failed merging: overlap too short"
     grep -q "overlap too short" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+# --AAAATAAAAAA
+#   |||||||||
+# AAAAAATAAAA--
+DESCRIPTION="fastq_mergepairs failed merging: staggered read pairs"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "staggered read pairs" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --AAAATAAAAAA
+#   |||||||||
+# AAAAAATAAAA--
+DESCRIPTION="fastq_mergepairs failed merging: staggered read pairs (allowed)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "Statistics of merged reads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5...9
+# AAAATAAAA
+# -||||||||
+# TAAATAAAA
+DESCRIPTION="fastq_mergepairs failed merging: alignment score too low, or score drop too high"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAA\n+\nIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTA\n+\nIIIIIIIII\n") \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "alignment score too low, or score drop too high" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5....10
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAA
+DESCRIPTION="fastq_mergepairs simplest merging case (default parameters)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "Statistics of merged reads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5
+# AAAAA
+# |||||
+# AAAAA
+DESCRIPTION="fastq_mergepairs simplest merging case (minimal overlap = 5)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAAA\n+\nIIIII\n") \
+    --reverse <(printf "@s\nTTTTT\n+\nIIIII\n") \
+    --fastq_minovlen 5 \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "Statistics of merged reads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5
+# ATAAA
+# |||||
+# ATAAA
+DESCRIPTION="fastq_mergepairs alternative short merging case (minimal overlap = 5)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nATAAA\n+\nIIIII\n") \
+    --reverse <(printf "@s\nTTTAT\n+\nIIIII\n") \
+    --fastq_minovlen 5 \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "Statistics of merged reads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                               --fastaout                                    #
+#                                                                             #
+#*****************************************************************************#
+
+# - test output formats (fasta, fastq, eetabbedout),
+
+
+#*****************************************************************************#
+#                                                                             #
+#                               --fastqout                                    #
+#                                                                             #
+#*****************************************************************************#
+
+# - check if valid format,
+# - check Q values in merged reads, should be JJJJJJJ...
 
 
 #*****************************************************************************#
