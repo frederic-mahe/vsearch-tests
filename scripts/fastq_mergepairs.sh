@@ -687,128 +687,432 @@ DESCRIPTION="fastq_mergepairs alternative short merging case (minimal overlap = 
 
 #*****************************************************************************#
 #                                                                             #
-#                               --fastq_minovlen                              #    
+#                               --fastq_maxlen                                #
 #                                                                             #
 #*****************************************************************************#
 
-# positive integer: default is 10, must be at least 5.
+# positive integer (int64_t): discard sequences with more than the
+# specified number of bases (default is 2^63 - 1)
 
-DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (5)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen accepts values >= 1 (1)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 5 \
+    --fastq_maxlen 1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (10)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen accepts values >= 1 (2^8)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 10 \
+    --fastq_maxlen 256 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (2^8)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen accepts values >= 1 (2^16)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 256 \
+    --fastq_maxlen 65536 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (2^16)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen accepts values >= 1 (2^32)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 65536 \
+    --fastq_maxlen 4294967296 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (2^32)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen accepts values >= 1 (2^63 - 1)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 4294967296 \
-    --fastqout /dev/null > /dev/null 2>&1 && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (2^63 - 1)"
-"${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 9223372036854775807 \
+    --fastq_maxlen 9223372036854775807 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 # option value is stored in a signed int64_t
-DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values > 2^63 - 1 (2^63)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen rejects values > 2^63 - 1 (2^63)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 9223372036854775808 \
+    --fastq_maxlen 9223372036854775808 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-
-DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values > 2^63 - 1 (2^64 - 1)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen rejects values > 2^63 - 1 (2^64 - 1)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 18446744073709551615 \
+    --fastq_maxlen 18446744073709551615 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values > 2^63 - 1 (2^64)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen rejects values > 2^63 - 1 (2^64)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 18446744073709551616 \
+    --fastq_maxlen 18446744073709551616 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values below 5 (4)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen rejects values below 1 (0)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 4 \
+    --fastq_maxlen 0 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values below 5 (0)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen must be a positive integer (-1)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen 0 \
+    --fastq_maxlen -1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minovlen must be a positive integer (-1)"
+DESCRIPTION="fastq_mergepairs option fastq_maxlen must be an integer (A)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen -1 \
+    --fastq_maxlen A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minovlen must be an integer (A)"
+DESCRIPTION="fastq_mergepairs fastq_maxlen accept sequences of up to LONG_MAX length (default)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_maxlen accept sequences of length smaller or equal to 10"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_maxlen 10 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_maxlen reject sequences of length greater than 9"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_maxlen 9 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+#*****************************************************************************#
+#                                                                             #
+#                            --fastq_maxmergelen                              #
+#                                                                             #
+#*****************************************************************************#
+
+# positive integer (int64_t): specify the maximum length of the merged
+# sequence (default is 1000000)
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen rejects a null value (0)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minovlen A \
+    --fastq_maxmergelen 0 \
     --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values > 0 (1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen 1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values > 0 (2^8)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen 256 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (2^16)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen 65536 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (10^6)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen 1000000 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (2^32)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen 4294967296 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (2^63 - 1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen 9223372036854775807 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# option value is stored in a signed int64_t
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen rejects values > 2^63 - 1 (2^63)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen 9223372036854775808 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen rejects values > 2^63 - 1 (2^64 - 1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen 18446744073709551615 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen rejects values > 2^63 - 1 (2^64)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen 18446744073709551616 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen must be a positive integer (-1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen -1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen must be an integer (A)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxmergelen A \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# 1...5....10
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAA
+DESCRIPTION="fastq_mergepairs fastq_maxmergelen accepts long merged sequences (default)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_maxmergelen accepts merged sequences shorter than 10"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_maxmergelen 10 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_maxmergelen rejects merged sequences longer than 9"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_maxmergelen 9 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                --fastq_maxns                                #
+#                                                                             #
+#*****************************************************************************#
+
+# positive integer (int64_t): discard sequences with more than the
+# specified number of N's (default is 2^63 - 1)
+
+DESCRIPTION="fastq_mergepairs option fastq_maxns accepts values >= 0 (0)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns 0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxns accepts values >= 0 (1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns 1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxns accepts values >= 0 (2^8)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns 256 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxns accepts values >= 0 (2^16)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns 65536 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxns accepts values >= 0 (2^32)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns 4294967296 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxns accepts values >= 0 (2^63 - 1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns 9223372036854775807 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# option value is stored in a signed int64_t
+DESCRIPTION="fastq_mergepairs option fastq_maxns rejects values > 2^63 - 1 (2^63)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns 9223372036854775808 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxns rejects values > 2^63 - 1 (2^64 - 1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns 18446744073709551615 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxns rejects values > 2^63 - 1 (2^64)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns 18446744073709551616 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxns must be a positive integer (-1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns -1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxns must be an integer (A)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxns A \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# AAATAAAAAAN
+# |||||||||||
+# AAATAAAAAAN
+DESCRIPTION="fastq_mergepairs fastq_maxns accepts sequences with Ns (default)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAN\n+\nIIIIIIIIII#\n") \
+    --reverse <(printf "@s\nNTTTTTTATTT\n+\n#IIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_maxns accepts sequences with up to n Ns (1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAN\n+\nIIIIIIIIII#\n") \
+    --reverse <(printf "@s\nNTTTTTTATTT\n+\n#IIIIIIIIII\n") \
+    --fastq_maxns 1 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_maxns rejects sequences with more than n Ns (0)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAN\n+\nIIIIIIIIII#\n") \
+    --reverse <(printf "@s\nNTTTTTTATTT\n+\n#IIIIIIIIII\n") \
+    --fastq_maxns 0 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -819,7 +1123,8 @@ DESCRIPTION="fastq_mergepairs option fastq_minovlen must be an integer (A)"
 #                                                                             #
 #*****************************************************************************#
 
-# discard sequences with less than the specified number of bases (default 1)
+# positive integer (int64_t): discard sequences with less than the
+# specified number of bases (default 1)
 
 DESCRIPTION="fastq_mergepairs option fastq_minlen accepts values >= 1 (1)"
 "${VSEARCH}" \
@@ -923,16 +1228,57 @@ DESCRIPTION="fastq_mergepairs option fastq_minlen must be an integer"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="fastq_mergepairs fastq_minlen accept sequences of length 1 or more (default)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_minlen accept sequences of length greater or equal to 10"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_minlen 10 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_minlen reject sequences of length smaller than 11"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_minlen 11 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
-#                             --fastq_minmergelen                             #    
+#                            --fastq_minmergelen                              #
 #                                                                             #
 #*****************************************************************************#
 
-# specify the minimum length of the merged sequence. The default is 1.
+# positive integer (int64_t): specify the minimum length of the merged
+# sequence. The default is 1.
 
-DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 1 (1)"
+# should minmergelen = 0 be rejected? should users be allowed to
+# reject all input sequences?
+DESCRIPTION="fastq_mergepairs option fastq_minmergelen rejects a null value (0)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minmergelen 0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values > 0 (1)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -941,7 +1287,7 @@ DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 1 (1)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 1 (2^8)"
+DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values > 0 (2^8)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -950,7 +1296,7 @@ DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 1 (2^8)
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 5 (2^16)"
+DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 0 (2^16)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -959,7 +1305,7 @@ DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 5 (2^16
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 5 (2^32)"
+DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 0 (2^32)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -968,7 +1314,7 @@ DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 5 (2^32
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 5 (2^63 - 1)"
+DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 0 (2^63 - 1)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -986,7 +1332,6 @@ DESCRIPTION="fastq_mergepairs option fastq_minmergelen rejects values > 2^63 - 1
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-
 
 DESCRIPTION="fastq_mergepairs option fastq_minmergelen rejects values > 2^63 - 1 (2^64 - 1)"
 "${VSEARCH}" \
@@ -1006,17 +1351,7 @@ DESCRIPTION="fastq_mergepairs option fastq_minmergelen rejects values > 2^63 - 1
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-# should minmergelen = 0 be rejected? should users be allowed to reject all input sequences?
-DESCRIPTION="fastq_mergepairs option fastq_minmergelen rejects value 0"
-"${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
-    --fastq_minmergelen 0 \
-    --fastqout /dev/null > /dev/null 2>&1 && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="fastq_mergepairs option fastq_minmergelen must be a positive integer"
+DESCRIPTION="fastq_mergepairs option fastq_minmergelen must be a positive integer (-1)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -1025,11 +1360,171 @@ DESCRIPTION="fastq_mergepairs option fastq_minmergelen must be a positive intege
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_minmergelen must be an integer"
+DESCRIPTION="fastq_mergepairs option fastq_minmergelen must be an integer (A)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
     --fastq_minmergelen A \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# 1...5....10
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAA
+DESCRIPTION="fastq_mergepairs fastq_minmergelen accepts short merged sequences (default)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_minmergelen accepts merged sequences equal or longer than 10"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_minmergelen 10 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_minmergelen rejects merged sequences shorter than 11"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_minmergelen 11 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                               --fastq_minovlen                              #
+#                                                                             #
+#*****************************************************************************#
+
+# positive integer: default is 10, must be at least 5.
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (5)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 5 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (10)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 10 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (2^8)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 256 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (2^16)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 65536 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (2^32)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 4294967296 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (2^63 - 1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 9223372036854775807 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# option value is stored in a signed int64_t
+DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values > 2^63 - 1 (2^63)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 9223372036854775808 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values > 2^63 - 1 (2^64 - 1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 18446744073709551615 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values > 2^63 - 1 (2^64)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 18446744073709551616 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values below 5 (4)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 4 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values below 5 (0)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen 0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen must be a positive integer (-1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen -1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_minovlen must be an integer (A)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_minovlen A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
