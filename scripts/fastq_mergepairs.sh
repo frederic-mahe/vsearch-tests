@@ -30,6 +30,14 @@ DESCRIPTION="check if vsearch is executable"
         failure "${DESCRIPTION}"
 
 
+# 33                        59   64       73                            104                   126
+#  |                         |    |        |                              |                     |
+#  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+#  |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |  |
+#  0....5...10...15...20...25...30...35...40...45...50...55...60...65...70...75...80...85...90.93
+#                                 0....5...10...15...20...25...30...35...40...45...50...55...60..
+
+
 #*****************************************************************************#
 #                                                                             #
 #                                Test options                                 #
@@ -687,6 +695,339 @@ DESCRIPTION="fastq_mergepairs alternative short merging case (minimal overlap = 
 
 #*****************************************************************************#
 #                                                                             #
+#                               --fastq_maxee                                 #
+#                                                                             #
+#*****************************************************************************#
+
+# real (double): discard sequences with an expected error greater than
+# the specified number (value ranging from 0.0 to infinity). For a
+# given sequence, the expected error is the sum of error probabilities
+# for all the positions in the sequence. In practice, the expected
+# error is greater than zero (error probabilities can be small but not
+# null), and at most equal to the length of the sequence (when all
+# positions have an error probability of 1.0) (default is DBL_MAX =
+# 1.79769e+308)
+
+## error probabilities can be small but not null
+DESCRIPTION="fastq_mergepairs option fastq_maxee rejects null value (0.0)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee rejects negative values (-0.0)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee -0.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee rejects negative values (-0.1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee -0.1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee rejects negative values (-1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee -1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee must be a double (A)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee A \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## - largest int that fits in a double without precision loss (n * 1.0)
+## - (n * Q93) 2.22045e-16
+
+## smallest possible EE value is Q93
+# a single Q93 is 5.011872336e-10 (epsilon is 2.22045e-16, so it seems
+# that a single Q93 is stored with a limited precision)
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts smallest possible EE value (Q93)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.0000000005011872336 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values < 1 (10e-9)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.000000001 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values < 1 (10e-8)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.00000001 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values < 1 (10e-7)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.0000001 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values < 1 (10e-6)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.000001 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values < 1 (10e-5)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.00001 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values < 1 (10e-4)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.0001 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values < 1 (10e-3)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.001 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values < 1 (10e-2)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.01 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values < 1 (10e-1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 0.1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values = 1.0 (10e-0)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 1.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values > 1.0 (10e1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 10.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values > 1.0 (10e2)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 100.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values > 1.0 (10e3)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 1000.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values > 1.0 (10e4)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 10000.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values > 1.0 (10e5)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 100000.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values > 1.0 (10e6)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 1000000.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values > 1.0 (10e7)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 10000000.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values > 1.0 (10e8)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 100000000.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values > 1.0 (10e9)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 1000000000.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## In order to reach EE = 10 billions, you need a sequence with 10
+## billion positions, all with a Q value of zero (p = 1.0)
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts values > 1.0 (10e10)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 10000000000.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts integral values"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## all integral values between 0 and 2^53 are contiguously
+## representable in a double without loss
+DESCRIPTION="fastq_mergepairs option fastq_maxee accepts 2^53 (last integral value stored without loss)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxee 9007199254740992.0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_maxee accepts sequences with any EE value (default)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ASCII '+' = Q10 = 0.1, but merged Q values are corrected to '9' (10 x Q24 = 0.03981)
+DESCRIPTION="fastq_mergepairs fastq_maxee accepts sequences with EE smaller or equal to 0.04"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n++++++++++\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n++++++++++\n") \
+    --fastq_maxee 0.04 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 11 x Q24 = 0.04379
+DESCRIPTION="fastq_mergepairs fastq_maxee rejects sequences with EE greater than 0.04"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\n+++++++++++\n") \
+    --reverse <(printf "@s\nTTTTTTTATTT\n+\n+++++++++++\n") \
+    --fastq_maxee 0.04 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# try to land on a round EE value: 10 x Q20 = 0.1
+DESCRIPTION="fastq_mergepairs fastq_maxee accepts sequences with EE smaller or equal to 0.1"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n++++++++++\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n++++++++++\n") \
+    --fastq_qmaxout 20 \
+    --fastq_maxee 0.1 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_maxee rejects sequences with EE greater than 0.1"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\n+++++++++++\n") \
+    --reverse <(printf "@s\nTTTTTTTATTT\n+\n+++++++++++\n") \
+    --fastq_qmaxout 20 \
+    --fastq_maxee 0.1 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                               --fastq_maxlen                                #
 #                                                                             #
 #*****************************************************************************#
@@ -822,6 +1163,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxlen reject sequences of length greater th
     grep -qw ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -1776,5 +2118,106 @@ DESCRIPTION="fastq_mergepairs option fastq_qmin must be smaller than fastq_qmax"
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                  --sample                                   #
+#                                                                             #
+#*****************************************************************************#
+
+# When writing FASTA or FASTQ files, add the the given sample
+# identifier string to sequence headers. For instance, if the given
+# string is ABC, the text ";sample=ABC" will be added to the header.
+
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (fasta)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample ABC \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (fastq)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample ABC \
+    --fastqout - 2> /dev/null | \
+    grep -qw "@s;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (--sample=ABC)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample=ABC \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (--sample \"ABC\")"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample "ABC" \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (--sample 'ABC')"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample 'ABC' \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (--sample=\"ABC\")"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample="ABC" \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (empty string)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample="" \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s;sample=" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (space)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample=" " \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s;sample= " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (non-ascii)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample="é" \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s;sample=é" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 exit 0
