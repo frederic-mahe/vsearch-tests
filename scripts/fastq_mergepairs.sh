@@ -676,6 +676,411 @@ DESCRIPTION="fastq_mergepairs alternative short merging case (minimal overlap = 
 
 #*****************************************************************************#
 #                                                                             #
+#                         post-merging consensus                              #
+#                                                                             #
+#*****************************************************************************#
+
+# when merging, forward and reverse can disagree for some
+# positions. The algorithm will output a consensus. Here is a list of
+# cases I can think of:
+#
+# A - A -> A (same Q values)
+# A - A -> A (different Q values)
+# N - N -> N?
+# A - N -> A
+# N - A -> A
+# A - N -> N? (unlikeliy case where A and N have the same Q value)
+# N - A -> N? (unlikeliy case where A and N have the same Q value)
+# A - N -> N? (unlikeliy case where N has a higher Q value)
+# N - A -> N? (unlikeliy case where N has a higher Q value)
+# A - T -> A (if A has a greater Q value)
+# A - T -> T (if T has a greater Q value)
+# A - T -> A? (if A and T have the same Q value)
+
+## That's at least (6 x 3) = 18 possibilities:
+
+# A vs. A
+# A vs. T and T vs. A
+# A vs. N and N vs. A
+# N vs. N
+
+# Q equal
+# Q greater
+# Q smaller
+
+# R2 seems to always win in case of conflict with equal Q values.
+# Hypothesis:
+# - position (start vs. end of the read), *NO*
+# - transition type A -> T != T -> A      *NO*
+
+## -------------------------------------------------------------------- A vs. A
+
+# 1...5....10 (length is 11)
+# AAATAAAAAAA
+# |||||||||||
+# AAATAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, same Q values)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTATTT\n+\nIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, different Q values #1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTATTT\n+\nIIIIIIIIIIH\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, different Q values #2)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIIIH\n") \
+    --reverse <(printf "@s\nTTTTTTTATTT\n+\nIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------------------------------- N vs. N
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# NAATAAAAAAAAAA
+# .|||||||||||||
+# NAATAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (N vs N, same Q values '@')"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\n@IIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII@\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "NAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# NAATAAAAAAAAAA
+# .|||||||||||||
+# NAATAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (N vs N, same Q values 'I')"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "NAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# NAATAAAAAAAAAA
+# .|||||||||||||
+# NAATAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII@\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "NAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# NAATAAAAAAAAAA
+# .|||||||||||||
+# NAATAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\n@IIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "NAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------------------- A vs. N and N vs. A
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# AAATAAAAAAAAAA
+# .|||||||||||||
+# NAATAAAAAAAAAA (N has a Q value = @ = 0)
+DESCRIPTION="fastq_mergepairs consensus output (A vs N, different Q values #1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII@\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# AAATAAAAAAAAAN (N has a Q value = @ = 0)
+# |||||||||||||.
+# AAATAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (N vs A, different Q values #2)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAN\n+\nIIIIIIIIIIIII@\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# AAATAAAAAAAAAA
+# .|||||||||||||
+# NAATAAAAAAAAAA (N has a Q value = I)
+DESCRIPTION="fastq_mergepairs consensus output (A vs N, same Q values)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# AAATAAAAAAAAAN (N has a Q value = I)
+# |||||||||||||.
+# AAATAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (N vs A, same Q values)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAN\n+\nIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# AAATAAAAAAAAAA (A has a Q value = H)
+# .|||||||||||||
+# NAATAAAAAAAAAA (N has a Q value = I)
+DESCRIPTION="fastq_mergepairs consensus output (A vs N, N with higher Q value)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\nHIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# AAATAAAAAAAAAN (N has a Q value = I)
+# |||||||||||||.
+# AAATAAAAAAAAAA (A has a Q value = H)
+DESCRIPTION="fastq_mergepairs consensus output (N vs A, N with higher Q value)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAN\n+\nIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nHIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------------------------------- A vs. T
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# AAATAAAAAAAAAA
+# .|||||||||||||
+# TAATAAAAAAAAAA (T has a Q value = @ = 0)
+DESCRIPTION="fastq_mergepairs consensus output (A vs T, T has a much lower Q value)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTA\n+\nIIIIIIIIIIIII@\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10...15
+# AAATAAAAAAAAAAA
+# .||||||||||||||
+# TAATAAAAAAAAAAA (T has a Q value = H)
+DESCRIPTION="fastq_mergepairs consensus output (A vs T, T has a lower Q value)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTA\n+\nIIIIIIIIIIIIIIH\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10...15
+# AAATAAAAAAAAAAA
+# .||||||||||||||
+# TAATAAAAAAAAAAA (T has a Q value = I) read R2 wins
+DESCRIPTION="fastq_mergepairs consensus output (A vs T, same Q value) R2 wins"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTA\n+\nIIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "TAATAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10...15
+# AAATAAAAAAAAAAA (A has a Q value = H)
+# .||||||||||||||
+# TAATAAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (A vs T, A has a lower Q value)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nHIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTA\n+\nIIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "TAATAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# AAATAAAAAAAAAA (A has a Q value = @ = 0)
+# .|||||||||||||
+# TAATAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (A vs T, T has a much lower Q value)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\n@IIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTA\n+\nIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "TAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------------------------------- T vs. A
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# TAATAAAAAAAAAA
+# .|||||||||||||
+# AAATAAAAAAAAAA (A has a Q value = @ = 0)
+DESCRIPTION="fastq_mergepairs consensus output (T vs A, A has a much lower Q value)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIII@\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "TAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10...15
+# TAATAAAAAAAAAAA
+# .||||||||||||||
+# AAATAAAAAAAAAAA (A has a Q value = H)
+DESCRIPTION="fastq_mergepairs consensus output (T vs A, A has a lower Q value)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIIH\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "TAATAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10...15
+# TAATAAAAAAAAAAA
+# .||||||||||||||
+# AAATAAAAAAAAAAA (A has a Q value = I) read R2 wins
+DESCRIPTION="fastq_mergepairs consensus output (T vs A, same Q value) R2 wins"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10...15
+# TAATAAAAAAAAAAA (T has a Q value = H)
+# .||||||||||||||
+# AAATAAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (T vs A, T has a lower Q value)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nHIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10.... (length is 14)
+# TAATAAAAAAAAAA (T has a Q value = @ = 0)
+# .|||||||||||||
+# AAATAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs consensus output (T vs A, T has a much lower Q value)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAA\n+\n@IIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------ effect of position 5' or 3'
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10...15
+# TAATAAAAAAAAAAA
+# .||||||||||||||
+# AAATAAAAAAAAAAA (A has a Q value = I) read R2 wins
+DESCRIPTION="fastq_mergepairs consensus output (conflict, same Q values, R1 5' R2 3') R2 wins"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10...15
+# AAATAAAAAAAAAAA
+# ||||||||||||||.
+# AAATAAAAAAAAAAT (A has a Q value = I) read R2 wins
+DESCRIPTION="fastq_mergepairs consensus output (conflict, same Q values, R1 3' R2 5') R2 wins"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nATTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAAAAAT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10...15
+# AAATAAAAAAAAAAA
+# ||||||.||||||||
+# AAATAATAAAAAAAA (A has a Q value = I) read R2 wins
+DESCRIPTION="fastq_mergepairs consensus output (conflict, same Q values, mid-R1 mid-R2) R2 wins"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTATTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAATAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                               --fastaout                                    #
 #                                                                             #
 #*****************************************************************************#
