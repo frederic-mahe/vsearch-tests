@@ -1624,7 +1624,7 @@ DESCRIPTION="fastq_mergepairs eetabbedout (two conflict, low Q values, R1 3' R2 
 #                                                                             #
 #*****************************************************************************#
 
-# - test output formats (fasta, fastq, eetabbedout),
+# - check if valid format,
 
 
 #*****************************************************************************#
@@ -1635,6 +1635,191 @@ DESCRIPTION="fastq_mergepairs eetabbedout (two conflict, low Q values, R1 3' R2 
 
 # - check if valid format,
 # - check Q values in merged reads, should be JJJJJJJ...
+
+
+#*****************************************************************************#
+#                                                                             #
+#                             --fastq_maxdiffs                                #
+#                                                                             #
+#*****************************************************************************#
+
+# positive integer (int64_t): specify the maximum number of non-matching nucleotides
+# allowed in the overlap region. That option has a strong influence on
+# the merging success rate. The default value is 10.
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs accepts a null value (0)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs 0 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs accepts values > 0 (1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs 1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs accepts values > 0 (10)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs 10 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs accepts values > 0 (2^8)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs 256 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs accepts values > 0 (2^16)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs 65536 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs accepts values > 0 (2^32)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs 4294967296 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs accepts values > 0 (2^63 - 1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs 9223372036854775807 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# option value is stored in a signed int64_t
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs rejects values > 2^63 - 1 (2^63)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs 9223372036854775808 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs rejects values > 2^63 - 1 (2^64 - 1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs 18446744073709551615 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs rejects values > 2^63 - 1 (2^64)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs 18446744073709551616 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs must be a positive integer (-1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs -1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs must be an integer (A)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffs A \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# normal case: no diff (already covered)
+# case with 1 diff: maxdiff = 10 (default) (already covered)
+# case with 1 diff: maxdiff = 2
+# 1...5...10...15
+# TAATAAAAAAAAAAA
+# .||||||||||||||
+# AAATAAAAAAAAAAA (A has a Q value = #) 1 diff on R2
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs (1 diff on R2, maxdiffs = 2, merging)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
+    --fastq_maxdiffs 2 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# case with 1 diff: maxdiff = 1
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs (1 diff on R2, maxdiffs = 1, merging)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
+    --fastq_maxdiffs 1 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# case with 1 diff: maxdiff = 0
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs (1 diff on R2, maxdiffs = 0, no merging)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
+    --fastq_maxdiffs 0 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# case with 2 diffs (one on each read): maxdiff = 2
+# 1...5...10...15
+# TAATAAAAAAAAAAT (one low Q value on 3')
+# .|||||||||||||.
+# AAATAAAAAAAAAAA (one low Q value on 3')
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs (1 diff on R1, 1 diff on R2, maxdiffs = 2, merging)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAT\n+\nIIIIIIIIIIIIII#\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
+    --fastq_maxdiffs 2 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# case with 2 diffs (one on each read): maxdiff = 1
+DESCRIPTION="fastq_mergepairs option fastq_maxdiffs (1 diff on R1, 1 diff on R2, maxdiffs = 1, no merging)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAT\n+\nIIIIIIIIIIIIII#\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
+    --fastq_maxdiffs 1 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -2145,7 +2330,7 @@ DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values > 0 (2^8)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (2^16)"
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values > 0 (2^16)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -2154,7 +2339,7 @@ DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (2^16
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (10^6)"
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values > 0 (10^6)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -2163,7 +2348,7 @@ DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (10^6
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (2^32)"
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values > 0 (2^32)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -2172,7 +2357,7 @@ DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (2^32
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values >= 0 (2^63 - 1)"
+DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values > 0 (2^63 - 1)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
