@@ -3319,6 +3319,171 @@ DESCRIPTION="fastq_mergepairs option fastq_qmin must be smaller than fastq_qmax"
 
 #*****************************************************************************#
 #                                                                             #
+#                            --fastq_truncqual                                #
+#                                                                             #
+#*****************************************************************************#
+
+# positive integer (int64_t): truncate sequences starting from the
+# first base with the specified base quality score value or lower.
+
+# default value set to LONG_MIN (so very negative),
+# accepted values should be ranging from 0 to 93
+
+for QUAL in {0..93} ; do
+    DESCRIPTION="fastq_mergepairs option fastq_truncqual accepts value ${QUAL}"
+    "${VSEARCH}" \
+        --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --fastq_truncqual ${QUAL} \
+        --fastqout /dev/null > /dev/null 2>&1 && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+done
+
+DESCRIPTION="fastq_mergepairs option fastq_truncqual rejects value > 93 (94)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_truncqual 94 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_truncqual rejects value < 0 (-1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_truncqual -1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_truncqual rejects non-integral values (A)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_truncqual A \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## fastq_truncqual applies before merging
+# 1...5...10
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAA (after merging, quality values are all Js = 41)
+DESCRIPTION="fastq_mergepairs option fastq_truncqual set to zero, no trunc"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_truncqual 0 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "AAATAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_truncqual set to 39 (Q = 40), no trunc"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_truncqual 39 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "AAATAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_truncqual set to 40 (Q = 40), trunc before merging"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_truncqual 40 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "AAATAAAAAA" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## forward read is truncated from 5' to 3'
+# 1...5...10..              after truncation:     merging (fastq):
+# AAATAAAAAAAA <= low Q     AAATAAAAAAA           AAATAAAAAAAA
+# ||||||||||||              |||||||||||           |||||||||||.
+# AAATAAAAAAAA              AAATAAAAAAAA          JJJJJJJJJJJI
+DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is truncated from 5' to 3' (12th/12)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAA\n+\nIIIIIIIIIII+\n") \
+    --reverse <(printf "@s\nTTTTTTTTATTT\n+\nIIIIIIIIIIII\n") \
+    --fastq_truncqual 10 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "JJJJJJJJJJJI" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## forward read is truncated from 5' to 3' (11th position)
+## proof: 13 nuc, trunctate after 10th
+# 1...5...10...                                    merging (fastq):
+# AAATAAAAAAAAA 11th position has low Q            AAATAAAAAAAAA
+# |||||||||||||                                    |||||||||||||
+# AAATAAAAAAAAA                                    JJJJJJJJJJIII
+DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is truncated from 5' to 3' (11th/13)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIII+II\n") \
+    --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
+    --fastq_truncqual 10 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "JJJJJJJJJJIII" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## forward read is truncated from 5' to 3' (9th position)
+## proof: 13 nuc, trunctate after 9th, shorter than minlength
+# 1...5...10...                                    no merging
+# AAATAAAAAAAAA 9th position has low Q
+# |||||||||||||
+# AAATAAAAAAAAA
+DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is too short after trunc (9th/13)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIII+IIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
+    --fastq_truncqual 10 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "JJJJJJJJIIIII" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## reverse read is truncated from 5' to 3' (11th position)
+## proof: 13 nuc, trunctate after 10th
+# 1...5...10...            expected                merging (fastq):
+# AAATAAAAAAAAA 11th position has low Q            AAATAAAAAAAAA
+# |||||||||||||                                    |||||||||||||
+# AAATAAAAAAAAA                                    IIIJJJJJJJJJJ
+DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is truncated from 5' to 3' (11th/13)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIII+II\n") \
+    --fastq_truncqual 10 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "IIIJJJJJJJJJJ" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## reverse read is truncated from 5' to 3' (9th position)
+## proof: 13 nuc, trunctate after 9th
+# 1...5...10...            expected                no merging
+# AAATAAAAAAAAA 9th position has low Q
+# |||||||||||||
+# AAATAAAAAAAAA
+DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is too short after trunc (9th/13)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIII+III\n") \
+    --fastq_truncqual 10 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "IIIIIJJJJJJJJ" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                                   --log                                     #
 #                                                                             #
 #*****************************************************************************#
