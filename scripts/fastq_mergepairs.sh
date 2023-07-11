@@ -731,6 +731,112 @@ DESCRIPTION="fastq_mergepairs quiet writes stats to stderr"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## ---------------------------------------------------------------- overhanging
+
+# 1...5...10.
+# GAAATAAAAAA
+#  ||||||||||
+#  AAATAAAAAA
+DESCRIPTION="fastq_mergepairs forward read 5' overhanging (1 nucleotide)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nGAAATAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout - 2>&1 | \
+    grep -qw "GAAATAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5...10..
+# GGAAATAAAAAA
+#   ||||||||||
+#   AAATAAAAAA
+DESCRIPTION="fastq_mergepairs forward read 5' overhanging (2 nucleotides)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nGGAAATAAAAAA\n+\nIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout - 2>&1 | \
+    grep -qw "GGAAATAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5...10...
+# GGGAAATAAAAAA
+#    ||||||||||
+#    AAATAAAAAA
+DESCRIPTION="fastq_mergepairs forward read 5' overhanging (3 nucleotides)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nGGGAAATAAAAAA\n+\nIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout - 2>&1 | \
+    grep -qw "GGGAAATAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5...10...15...20
+# GGGGGGGGGGAAATAAAAAA
+#           ||||||||||
+#           AAATAAAAAA
+DESCRIPTION="fastq_mergepairs forward read 5' overhanging (10 nucleotides)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nGGGGGGGGGGAAATAAAAAA\n+\nIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout - 2>&1 | \
+    grep -qw "GGGGGGGGGGAAATAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5...10.
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAAG
+DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (1 nucleotide)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nCTTTTTTATTT\n+\nIIIIIIIIIII\n") \
+    --fastaout - 2>&1 | \
+    grep -qw "AAATAAAAAAG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5...10..
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAAGG
+DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (2 nucleotides)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nCCTTTTTTATTT\n+\nIIIIIIIIIIII\n") \
+    --fastaout - 2>&1 | \
+    grep -qw "AAATAAAAAAGG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5...10...
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAAGGG
+DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (3 nucleotides)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nCCCTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
+    --fastaout - 2>&1 | \
+    grep -qw "AAATAAAAAAGGG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1...5...10...15...20
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAAGGGGGGGGGG
+DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (10 nucleotides)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nCCCCCCCCCCTTTTTTATTT\n+\nIIIIIIIIIIIIIIIIIIII\n") \
+    --fastaout - 2>&1 | \
+    grep -qw "AAATAAAAAAGGGGGGGGGG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
