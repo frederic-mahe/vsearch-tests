@@ -910,6 +910,26 @@ DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, different Q va
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# special case: when Q < 2, any symbol ACGT is converted to 'N' (forward)
+DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, Q value below 2 for reverse read)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTATTT\n+\nIIIIIIIIII!\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# special case: when Q < 2, any symbol ACGT is converted to 'N' (reverse)
+DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, Q value below 2 for forward read)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIII!\n") \
+    --reverse <(printf "@s\nTTTTTTTATTT\n+\nIIIIIIIIIII\n") \
+    --fastaout - 2> /dev/null | \
+    grep -qw "AAATAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------------- N vs. N
 
 # To avoid 'alignment score too low, or score drop too high'
