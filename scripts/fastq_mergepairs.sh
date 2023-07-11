@@ -673,6 +673,64 @@ DESCRIPTION="fastq_mergepairs alternative short merging case (minimal overlap = 
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --------------------------------------------------------------------- stderr
+
+DESCRIPTION="fastq_mergepairs does not write header to stdout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null 2> /dev/null | \
+    grep -q "^vsearch" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs does not write stats to stdout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null 2> /dev/null | \
+    grep -q "^Statistics" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs writes header to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^vsearch" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs writes stats to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^Statistics" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs quiet does not writes header to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^vsearch" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs quiet writes stats to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^Statistics" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -753,10 +811,10 @@ DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, different Q va
 # NAATAAAAAAAAAA
 # .|||||||||||||
 # NAATAAAAAAAAAA
-DESCRIPTION="fastq_mergepairs consensus output (N vs N, same Q values '@')"
+DESCRIPTION="fastq_mergepairs consensus output (N vs N, same Q values '#')"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\n@IIIIIIIIIIIII\n") \
-    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII@\n") \
+    --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\n#IIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII#\n") \
     --fastaout - 2> /dev/null | \
     grep -qw "NAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
@@ -784,7 +842,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs N, same Q values 'I')"
 DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #1)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
-    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII@\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII#\n") \
     --fastaout - 2> /dev/null | \
     grep -qw "NAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
@@ -797,7 +855,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #1)"
 # NAATAAAAAAAAAA
 DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #1)"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\n@IIIIIIIIIIIII\n") \
+    --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\n#IIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
     grep -qw "NAATAAAAAAAAAA" && \
@@ -814,7 +872,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #1)"
 DESCRIPTION="fastq_mergepairs consensus output (A vs N, different Q values #1)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
-    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII@\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII#\n") \
     --fastaout - 2> /dev/null | \
     grep -qw "AAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
@@ -827,7 +885,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs N, different Q values #1)"
 # AAATAAAAAAAAAA
 DESCRIPTION="fastq_mergepairs consensus output (N vs A, different Q values #2)"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAN\n+\nIIIIIIIIIIIII@\n") \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAN\n+\nIIIIIIIIIIIII#\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
     grep -qw "AAATAAAAAAAAAA" && \
@@ -900,7 +958,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs A, N with higher Q value)"
 DESCRIPTION="fastq_mergepairs consensus output (A vs T, T has a much lower Q value)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
-    --reverse <(printf "@s\nTTTTTTTTTTATTA\n+\nIIIIIIIIIIIII@\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTA\n+\nIIIIIIIIIIIII#\n") \
     --fastaout - 2> /dev/null | \
     grep -qw "AAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
@@ -955,7 +1013,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs T, A has a lower Q value)"
 # TAATAAAAAAAAAA
 DESCRIPTION="fastq_mergepairs consensus output (A vs T, T has a much lower Q value)"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\n@IIIIIIIIIIIII\n") \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\n#IIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTA\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
     grep -qw "TAATAAAAAAAAAA" && \
@@ -972,7 +1030,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs T, T has a much lower Q val
 DESCRIPTION="fastq_mergepairs consensus output (T vs A, A has a much lower Q value)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
-    --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIII@\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIII#\n") \
     --fastaout - 2> /dev/null | \
     grep -qw "TAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
@@ -1027,7 +1085,7 @@ DESCRIPTION="fastq_mergepairs consensus output (T vs A, T has a lower Q value)"
 # AAATAAAAAAAAAA
 DESCRIPTION="fastq_mergepairs consensus output (T vs A, T has a much lower Q value)"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAA\n+\n@IIIIIIIIIIIII\n") \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAA\n+\n#IIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
     grep -qw "AAATAAAAAAAAAA" && \
@@ -1077,6 +1135,361 @@ DESCRIPTION="fastq_mergepairs consensus output (conflict, same Q values, mid-R1 
     grep -qw "AAATAATAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              --eetabbedout                                  #
+#                                                                             #
+#*****************************************************************************#
+
+# Write statistics with expected errors of each merged read to the
+# given file. The file is a tab separated file with four columns:
+# - the number of expected errors in the forward read,
+# - the number of expected errors in the reverse read,
+# - the number of observed errors in the forward read,
+# - the number of observed errors in the reverse read.
+# The observed number of errors are the number of differences in the
+# overlap region of the merged sequence relative to each of the reads
+# in the pair.
+
+# 1...5....10
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAA
+DESCRIPTION="fastq_mergepairs eetabbedout writes to a file"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --eetabbedout - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout writes one line per merging"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout empty output when there is no merging"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" 'END {exit NR == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout is a tab separated file with four columns"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit NF == 4 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout column 1 returns an EE value"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n@@@@@@@@@@\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n@@@@@@@@@@\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 > 0.00 && $1 <= 0.01 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout column 2 returns an EE value"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n@@@@@@@@@@\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n@@@@@@@@@@\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 > 0.00 && $2 <= 0.01 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout column 3 returns an integer"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n@@@@@@@@@@\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n@@@@@@@@@@\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $3 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout column 4 returns an integer"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n@@@@@@@@@@\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n@@@@@@@@@@\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $4 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## EE per read is 10 * 0.1 = 1.0 (same for overlap region)
+## eetabbedout: 1.00	1.00	0	0
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 1, EE = 1.0)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n++++++++++\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n++++++++++\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == 1.0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 1, EE = 0.1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n5555555555\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n5555555555\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == 0.1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 1, EE = 0.01)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n??????????\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n??????????\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == 0.01 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 1, EE = 0.001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == 0.001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 1, EE = 0.0001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nSSSSSSSSSS\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nSSSSSSSSSS\n") \
+    --fastq_qmax 50 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == 0.0001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 1, EE = 0.00001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n]]]]]]]]]]\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n]]]]]]]]]]\n") \
+    --fastq_qmax 60 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == 0.00001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 1, EE = 0.000001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\ngggggggggg\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\ngggggggggg\n") \
+    --fastq_qmax 70 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == 0.000001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 1, EE = 0.0000001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nqqqqqqqqqq\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nqqqqqqqqqq\n") \
+    --fastq_qmax 80 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == 0.0000001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 1, EE = 0.00000001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n{{{{{{{{{{\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n{{{{{{{{{{\n") \
+    --fastq_qmax 90 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == 0.00000001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 1, EE = 0.000000005)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n~~~~~~~~~~\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n~~~~~~~~~~\n") \
+    --fastq_qmax 93 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 > 0.000000005 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## EE per read is 10 * 0.1 = 1.0 (same for overlap region)
+## eetabbedout: 1.00	1.00	0	0
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 2, EE = 1.0)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n++++++++++\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n++++++++++\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 == 1.0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 2, EE = 0.1)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n5555555555\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n5555555555\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 == 0.1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 2, EE = 0.01)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n??????????\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n??????????\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 == 0.01 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 2, EE = 0.001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 == 0.001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 2, EE = 0.0001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nSSSSSSSSSS\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nSSSSSSSSSS\n") \
+    --fastq_qmax 50 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 == 0.0001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 2, EE = 0.00001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n]]]]]]]]]]\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n]]]]]]]]]]\n") \
+    --fastq_qmax 60 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 == 0.00001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 2, EE = 0.000001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\ngggggggggg\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\ngggggggggg\n") \
+    --fastq_qmax 70 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 == 0.000001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 2, EE = 0.0000001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nqqqqqqqqqq\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nqqqqqqqqqq\n") \
+    --fastq_qmax 80 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 == 0.0000001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 2, EE = 0.00000001)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n{{{{{{{{{{\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n{{{{{{{{{{\n") \
+    --fastq_qmax 90 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 == 0.00000001 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs eetabbedout returns precise EE values (column 2, EE = 0.000000005)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n~~~~~~~~~~\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n~~~~~~~~~~\n") \
+    --fastq_qmax 93 \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $2 > 0.000000005 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# To avoid 'alignment score too low, or score drop too high'
+# 1...5...10...15
+# AAATAAAAAAAAAAA
+# |||||||||||||||
+# AAATAAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs eetabbedout (no conflict) no errors"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $3 == 0 && $4 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"  # 0.00	0.00	0	0
+
+# 1...5...10...15
+# TAATAAAAAAAAAAA
+# .||||||||||||||
+# AAATAAAAAAAAAAA (A has a Q value = #) read R1 wins
+DESCRIPTION="fastq_mergepairs eetabbedout (conflict, R2 has a low Q value, R1 5' R2 3') 1 error on R2"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $4 == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"  # 0.00	0.63	0	1
+
+# 1...5...10...15
+# TAATAAAAAAAAAAA
+# .||||||||||||||
+# AAATAAAAAAAAAAA (A has a high Q value = I) read R2 wins
+DESCRIPTION="fastq_mergepairs eetabbedout (conflict, same Q value, R1 5' R2 3') 1 error on R1"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $3 == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"  # 0.00	0.00	1	0
+
+# 1...5...10...15
+# TAATAAAAAAAAAAA (T has a low Q value = #) read R2 wins
+# .||||||||||||||
+# AAATAAAAAAAAAAA
+DESCRIPTION="fastq_mergepairs eetabbedout (conflict, R1 has a low Q value, R1 5' R2 3') 1 error on R1"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\n#IIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $3 == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"  # 0.63	0.00	1	0
+
+# 1...5...10...15
+# TAATAAAAAAAAAAT (one low Q value on 3') read R2 wins
+# .|||||||||||||.
+# AAATAAAAAAAAAAA (one low Q value on 3') read R1 wins
+DESCRIPTION="fastq_mergepairs eetabbedout (two conflict, low Q values, R1 3' R2 3') 1 error on each"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAT\n+\nIIIIIIIIIIIIII#\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
+    --eetabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $3 == 1 && $4 == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"  # 0.63	0.63	1	1
 
 
 #*****************************************************************************#
@@ -2523,6 +2936,114 @@ DESCRIPTION="fastq_mergepairs option fastq_qmin must be smaller than fastq_qmax"
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                   --log                                     #
+#                                                                             #
+#*****************************************************************************#
+
+## -------------------------------------------------- log = true, quiet = false
+
+DESCRIPTION="fastq_mergepairs writes header to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --log "${TMP}" 2> /dev/null
+grep -q "^vsearch" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+DESCRIPTION="fastq_mergepairs writes header to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --log /dev/null 2>&1 | \
+    grep -q "^vsearch" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs writes stats to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --log "${TMP}" 2> /dev/null
+grep -q "^Statistics" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+DESCRIPTION="fastq_mergepairs writes time and memory to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --log "${TMP}" 2> /dev/null
+grep -q "memory" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+
+## --------------------------------------------------- log = true, quiet = true
+
+DESCRIPTION="fastq_mergepairs quiet writes header to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --quiet \
+    --log "${TMP}" 2> /dev/null
+grep -q "^vsearch" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+DESCRIPTION="fastq_mergepairs log quiet does not write header to stderr"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --quiet \
+    --log /dev/null 2>&1 | \
+    grep -q "^vsearch" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs quiet writes time and memory to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --quiet \
+    --log "${TMP}" 2> /dev/null
+grep -q "memory" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+DESCRIPTION="fastq_mergepairs quiet writes stats to log file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --quiet \
+    --log "${TMP}" 2> /dev/null
+grep -q "^Statistics" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
 
 
 #*****************************************************************************#
