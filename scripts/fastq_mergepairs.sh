@@ -837,6 +837,54 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (10 nucleotides)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## ------------------------------------------------------------------- chunking
+
+# input files are processed in chunks of 500 fastq entries (currently)
+
+# 1...5....10
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAA
+DESCRIPTION="fastq_mergepairs fill chunks with n merging case (n = 499)"
+MAX=499
+"${VSEARCH}" \
+    --fastq_mergepairs <(for ((i=1 ; i<=MAX ; i++)) ; do printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n" ; done) \
+    --reverse <(for ((i=1 ; i<=MAX ; i++)) ; do printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n" ; done) \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset MAX
+
+DESCRIPTION="fastq_mergepairs fill chunks with n merging case (n = 500)"
+MAX=500
+"${VSEARCH}" \
+    --fastq_mergepairs <(for ((i=1 ; i<=MAX ; i++)) ; do printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n" ; done) \
+    --reverse <(for ((i=1 ; i<=MAX ; i++)) ; do printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n" ; done) \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset MAX
+
+DESCRIPTION="fastq_mergepairs fill chunks with n merging case (n = 501)"
+MAX=501
+"${VSEARCH}" \
+    --fastq_mergepairs <(for ((i=1 ; i<=MAX ; i++)) ; do printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n" ; done) \
+    --reverse <(for ((i=1 ; i<=MAX ; i++)) ; do printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n" ; done) \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset MAX
+
+DESCRIPTION="fastq_mergepairs fill chunks with n merging case (n = 999)"
+MAX=999
+"${VSEARCH}" \
+    --fastq_mergepairs <(for ((i=1 ; i<=MAX ; i++)) ; do printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n" ; done) \
+    --reverse <(for ((i=1 ; i<=MAX ; i++)) ; do printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n" ; done) \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset MAX
+
 
 #*****************************************************************************#
 #                                                                             #
