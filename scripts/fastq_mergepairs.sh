@@ -3439,13 +3439,35 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is truncated f
 # AAATAAAAAAAAA 9th position has low Q
 # |||||||||||||
 # AAATAAAAAAAAA
-DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is too short after trunc (9th/13)"
+DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is too short for overlap after trunc (9th/13)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIII+IIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
     --fastq_truncqual 10 \
     --fastqout - 2> /dev/null | \
     grep -qw "JJJJJJJJIIIII" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is longer than fastq_minlen after trunc (11 nuc vs. 10)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIIII+I\n") \
+    --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
+    --fastq_truncqual 10 \
+    --fastq_minlen 10 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "JJJJJJJJJJJII" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is shorter than fastq_minlen after trunc (11 nuc vs. 12)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIIII+I\n") \
+    --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
+    --fastq_truncqual 10 \
+    --fastq_minlen 12 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "JJJJJJJJJJJII" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -3471,13 +3493,35 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is truncated f
 # AAATAAAAAAAAA 9th position has low Q
 # |||||||||||||
 # AAATAAAAAAAAA
-DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is too short after trunc (9th/13)"
+DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is too short for overlap after trunc (9th/13)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIII+IIII\n") \
     --fastq_truncqual 10 \
     --fastqout - 2> /dev/null | \
     grep -qw "IIIIIJJJJJJJJ" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is longer than fastq_minlen after trunc (11 nuc vs. 10)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIII+I\n") \
+    --fastq_truncqual 10 \
+    --fastq_minlen 10 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "IIJJJJJJJJJJJ" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is shorter than fastq_minlen after trunc (11 nuc vs. 12)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIII+I\n") \
+    --fastq_truncqual 10 \
+    --fastq_minlen 12 \
+    --fastqout - 2> /dev/null | \
+    grep -qw "IIJJJJJJJJJJJ" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
