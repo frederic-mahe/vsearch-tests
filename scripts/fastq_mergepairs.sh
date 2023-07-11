@@ -2402,6 +2402,26 @@ DESCRIPTION="fastq_mergepairs fastq_maxns rejects sequences with more than n Ns 
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="fastq_mergepairs fastq_maxns accepts sequences with up to n Ns (1, reverse read)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nNTTTTTTATTT\n+\n#IIIIIIIIII\n") \
+    --fastq_maxns 1 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs fastq_maxns rejects sequences with more than n Ns (0, reverse read)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nNTTTTTTATTT\n+\n#IIIIIIIIII\n") \
+    --fastq_maxns 0 \
+    --fastaout - 2> /dev/null | \
+    grep -qw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
