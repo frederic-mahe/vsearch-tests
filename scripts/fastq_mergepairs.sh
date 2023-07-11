@@ -3474,7 +3474,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is truncated f
 DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is too short after trunc (9th/13)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIIIIII\n") \
-    --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIII+III\n") \
+    --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIII+IIII\n") \
     --fastq_truncqual 10 \
     --fastqout - 2> /dev/null | \
     grep -qw "IIIIIJJJJJJJJ" && \
