@@ -837,6 +837,25 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (10 nucleotides)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --------------------------------------------------------------------- indels
+
+## notes:
+# - could not find a single indel case in all my sequencing runs:
+#   find . -name "*.log" -exec grep -H -m 1 "indel errors" '{}' \;
+
+# 1...5...10...15...20...25
+# AAATAAAAAACGCGAAAAAATAAA
+# ||||||||||    ||||||||||
+# AAATAAAAAA----AAAAAATAAA
+#
+# IIIIIIIIIIIIIIIIIIIIIIII
+# DESCRIPTION="fastq_mergepairs indel in overlap"
+# "${VSEARCH}" \
+#     --fastq_mergepairs <(printf "@s\nAAATAAAAAACGAAAAAATAAA\n+\nIIIIIIIIIIIIIIIIIIIIII\n") \
+#     --reverse <(printf "@s\nTTTATTTTTTCTTTTTTATTT\n+\nIIIIIIIIIIIIIIIIIIIII\n") \
+#     --fastaout -
+
+
 ## ------------------------------------------------------------------- chunking
 
 # input files are processed in chunks of 500 fastq entries (currently)
@@ -3421,7 +3440,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is truncated f
 ## proof: 13 nuc, trunctate after 10th
 # 1...5...10...                                    merging (fastq):
 # AAATAAAAAAAAA 11th position has low Q            AAATAAAAAAAAA
-# |||||||||||||                                    |||||||||||||
+# |||||||||||||                                    ||||||||||...
 # AAATAAAAAAAAA                                    JJJJJJJJJJIII
 DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is truncated from 5' to 3' (11th/13)"
 "${VSEARCH}" \
@@ -3475,7 +3494,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is shorter tha
 ## proof: 13 nuc, trunctate after 10th
 # 1...5...10...            expected                merging (fastq):
 # AAATAAAAAAAAA 11th position has low Q            AAATAAAAAAAAA
-# |||||||||||||                                    |||||||||||||
+# |||||||||||||                                    ...||||||||||
 # AAATAAAAAAAAA                                    IIIJJJJJJJJJJ
 DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is truncated from 5' to 3' (11th/13)"
 "${VSEARCH}" \
