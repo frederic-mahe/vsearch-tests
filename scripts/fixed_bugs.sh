@@ -2902,6 +2902,68 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#        Hits missed when clustering or searching with short sequences         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/328
+
+## vsearch will never report more than one match in each database
+## sequence, unless they are on different strands
+
+DESCRIPTION="issue 328: vsearch reports one hit if there is one perfect match"
+printf ">s1\nTCAAGATATTTGCTCGGTAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">q1\nTCAAGATATTTGCTCGGTAA\n") \
+        --minseqlength 1 \
+        --id 0.9 \
+        --quiet \
+        --userfields target \
+        --userout - | \
+    awk '{if ($1 == "q1") {hits++} } END {exit hits == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Note: vsearch matches the second occurrence
+DESCRIPTION="issue 328: vsearch reports one hit if there are two consecutive perfect matches"
+printf ">s1\nTCAAGATATTTGCTCGGTAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">q1\nTCAAGATATTTGCTCGGTAATCAAGATATTTGCTCGGTAA\n") \
+        --minseqlength 1 \
+        --id 0.9 \
+        --quiet \
+        --userfields target \
+        --userout - | \
+    awk '{if ($1 == "q1") {hits++} } END {exit hits == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## Second part is a reverse-complement of the first part:
+# TCAAGATATTTGCTCGGTAA
+# ||||||||||||||||||||
+# TCAAGATATTTGCTCGGTAATTACCGAGCAAATATCTTGA
+#                     ||||||||||||||||||||
+#                     TTACCGAGCAAATATCTTGA
+DESCRIPTION="issue 328: vsearch reports two hits if there are on different strands (perfect matches)"
+printf ">s1\nTCAAGATATTTGCTCGGTAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">q1\nTCAAGATATTTGCTCGGTAATTACCGAGCAAATATCTTGA\n") \
+        --minseqlength 1 \
+        --strand both \
+        --id 0.9 \
+        --quiet \
+        --userfields target \
+        --userout - | \
+    awk '{if ($1 == "q1") {hits++} } END {exit hits == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #  Problem with eestats2 for longer reads (short reads incorrectly accounted)  #
 #                             (issue 336)                                      #
 #                                                                              #
