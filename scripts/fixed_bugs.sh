@@ -5388,6 +5388,80 @@ grep -q "^Statistics" "${TMP}" && \
 rm "${TMP}"
 
 
+#******************************************************************************#
+#                                                                              #
+#     always report the rightmost match if multiple equivalent occurrences     #
+#                 are present in target sequence? (issue 530)                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/530
+
+# tilo: first nucleotide of the target aligned with the query
+# tihi: last nucleotide of the target aligned with the query
+# (ignoring initial gaps, nucleotide numbering starts from 1)
+
+SEQUENCE="TCAAGATATTTGCTCGGTAA"
+
+# q1	1	20
+DESCRIPTION="issue 530: report the rightmost match in target sequence (one match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk -v MATCH_END=$(( ${#SEQUENCE} * 1 )) '{exit $3 == MATCH_END ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# q1	21	40
+DESCRIPTION="issue 530: report the rightmost match in target sequence (two matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">q1\n%s%s\n" "${SEQUENCE}" "${SEQUENCE}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk -v MATCH_END=$(( ${#SEQUENCE} * 2 )) '{exit $3 == MATCH_END ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# q1	41	60
+DESCRIPTION="issue 530: report the rightmost match in target sequence (three matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">q1\n%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" "${SEQUENCE}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk -v MATCH_END=$(( ${#SEQUENCE} * 3 )) '{exit $3 == MATCH_END ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# q1	61	80
+DESCRIPTION="issue 530: report the rightmost match in target sequence (four matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">q1\n%s%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" "${SEQUENCE}" "${SEQUENCE}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk -v MATCH_END=$(( ${#SEQUENCE} * 4 )) '{exit $3 == MATCH_END ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset SEQUENCE
+
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
