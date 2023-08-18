@@ -5049,7 +5049,7 @@ printf "@s\nA\n+\n~\n" | \
 ## UDB needs to write to a seekable file descriptor (pipes, sockets,
 ## tty devices are not seekable, regular files and most block devices
 ## generally are)
-DESCRIPTION="issue 522: makeudb_usearch fails to write to a non-seekable output"
+DESCRIPTION="issue 523: makeudb_usearch fails to write to a non-seekable output"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \
@@ -5058,7 +5058,7 @@ printf ">s1\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="issue 522: makeudb_usearch can write to a regular file"
+DESCRIPTION="issue 523: makeudb_usearch can write to a regular file"
 TMP_UDB=$(mktemp)
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
@@ -5071,7 +5071,7 @@ rm "${TMP_UDB}"
 unset TMP_UDB
 
 ## filter if length < 32
-DESCRIPTION="issue 522: makeudb_usearch discards sequences shorter than 32 nucleotides by default (#1)"
+DESCRIPTION="issue 523: makeudb_usearch discards sequences shorter than 32 nucleotides by default (#1)"
 TMP_UDB=$(mktemp)
 printf ">s1\n%031s\n" | \
     tr " " "A" | \
@@ -5086,7 +5086,7 @@ rm "${TMP_UDB}"
 unset TMP_UDB
 
 ## no filter if length >= 32
-DESCRIPTION="issue 522: makeudb_usearch discards sequences shorter than 32 nucleotides by default (#2)"
+DESCRIPTION="issue 523: makeudb_usearch discards sequences shorter than 32 nucleotides by default (#2)"
 TMP_UDB=$(mktemp)
 printf ">s1\n%032s\n" | \
     tr " " "A" | \
@@ -5101,7 +5101,7 @@ rm "${TMP_UDB}"
 unset TMP_UDB
 
 ## accepts the minseqlength option
-DESCRIPTION="issue 522: makeudb_usearch accepts the --minseqlength option (#1)"
+DESCRIPTION="issue 523: makeudb_usearch accepts the --minseqlength option (#1)"
 TMP_UDB=$(mktemp)
 printf ">s1\n%010s\n" | \
     tr " " "A" | \
@@ -5116,7 +5116,7 @@ rm "${TMP_UDB}"
 unset TMP_UDB
 
 ## accepts the minseqlength option and uses it
-DESCRIPTION="issue 522: makeudb_usearch accepts the --minseqlength option (#2)"
+DESCRIPTION="issue 523: makeudb_usearch accepts the --minseqlength option (#2)"
 TMP_UDB=$(mktemp)
 printf ">s1\n%09s\n" | \
     tr " " "A" | \
@@ -5132,7 +5132,7 @@ rm "${TMP_UDB}"
 unset TMP_UDB
 
 ## accepts sequences up to 50,000 nucleotides
-DESCRIPTION="issue 522: makeudb_usearch accepts sequences with up to 50,000 nucleotides"
+DESCRIPTION="issue 523: makeudb_usearch accepts sequences with up to 50,000 nucleotides"
 TMP_UDB=$(mktemp)
 printf ">s1\n%050000s\n" | \
     tr " " "A" | \
@@ -5145,7 +5145,7 @@ printf ">s1\n%050000s\n" | \
 rm "${TMP_UDB}"
 unset TMP_UDB
 
-DESCRIPTION="issue 522: makeudb_usearch discards sequences longer than 50,000 nucleotides"
+DESCRIPTION="issue 523: makeudb_usearch discards sequences longer than 50,000 nucleotides"
 TMP_UDB=$(mktemp)
 printf ">s1\n%050001s\n" | \
     tr " " "A" | \
@@ -5160,7 +5160,7 @@ rm "${TMP_UDB}"
 unset TMP_UDB
 
 ## accepts the maxseqlength option
-DESCRIPTION="issue 522: makeudb_usearch accepts the --maxseqlength option (#1)"
+DESCRIPTION="issue 523: makeudb_usearch accepts the --maxseqlength option (#1)"
 TMP_UDB=$(mktemp)
 printf ">s1\n%032s\n" | \
     tr " " "A" | \
@@ -5175,7 +5175,7 @@ rm "${TMP_UDB}"
 unset TMP_UDB
 
 ## accepts the maxseqlength option and uses it
-DESCRIPTION="issue 522: makeudb_usearch accepts the --maxseqlength option (#2)"
+DESCRIPTION="issue 523: makeudb_usearch accepts the --maxseqlength option (#2)"
 TMP_UDB=$(mktemp)
 printf ">s1\n%040s\n" | \
     tr " " "A" | \
@@ -5386,6 +5386,17 @@ grep -q "^Statistics" "${TMP}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP}"
+
+
+#******************************************************************************#
+#                                                                              #
+#                 add a DEBUG compilation option (issue 528)                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/528
+
+# A debugging configuration is now available (no test required)
 
 
 #******************************************************************************#
