@@ -3374,6 +3374,231 @@ WARNING="WARNING: Non-ASCII"
 
 # ************************************************************************** #
 #                                                                            #
+#       small unexpected difference in id3 similarity value (issue 432)      #
+#                                                                            #
+# ************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/432
+
+## 1 - test large alignment from issue #432
+
+QUERY_SEQ="AGCTCCATTAGCGTATATTAAAATTGTTGCAGTTGAAAAGCTCGTAGTTGGATCTTTGACAGGTGTAGATTTTATTTTTGTTTGGAATCTAAATTTTGAATTAATATCTGTCATTCGTGGCATGGGAAGTAGTGTTTGGCATTTGGCTATGTTGGGTACTGCAGAACAGGAGCATAATTACTTTGAGGAAAGGAGAGCGATTAAGGCAAGCAAGACGTCGTGTATCTAGTAGCATGGAATAATATGATAGGGCTAATTTCTAATTTTTTGTTGGTTTAATGAGATATAGCAATGATTGATAGGGATAGTTGGGGGTGCTAGTATTCAATGGCCAGAGGTGAAATTCTTGGATTCATTGAAGACTGTCTTTAGCGAAAGCATTCACCAAGGATATCTTCT"
+TARGET_SEQ="AGCTCCAAGGGCGTACACTAACATTGCTGCTGTTAAAACACTTGTAGTCCGCCTCAGGGATCCAGGTCTGCCGGACGGCCGCCGCGTCGCGCCCCCGCCCCCCCCGCGGCGGGTTACAACCTCCGCGCAGTATGCTCCTGGTCCCGCCCGTTCATCCGGTACKATGGTGCAATCGGCCCCCGCGCGAGGCCCCCTTCAGTGGGCGGCCGAGGCGGTCTCAACACCCGACACGTGTGGTTCCTTGACGCGAGGGGGGGGGGGCTCGCGGCGCGGGGCGGTGTGCSCGGGGGGGGGCGTGGTGCGGTCCGCCGCACCGCGCATCCCCCGGCCCCGGCCCGCACCCGGACCCTCCCCACCGGGGGACGCGGCCCCCGTTGCGCCGTCGGTCTGCTCCCCCCGTCCACCACCGGGGCTCACCGTCCCCGTCACCATGGAAAACTCAGTGTGCCCCAGGCGTTTCGACATTGGCTCCCCCCTTCTCCCCCCCCGCCCCCGCGGCGGCGGGGGGACCGTCCGACCGTACGCCCGTCCATGGAATGTCACAGCATCGACTCAAGGTGGCCACCGCACCGGGACCCCCGCGGTTCCGGAACCGTTTGTTTGTGCTGGCCTTGGAGCCCCTGCCCCGAGGGAACCTGGCGCCCGCGGCCCCCCCCAGCCCGGCGGACCCCGCACGCCCCCCGCGGCCCCCCGGGGCCAAACGGGGCGTTCCGCGGTCCCCGAGGGGGGGTGGGGCCCGCGCCGCTCGCCAGCGAGGGGACCGCTCGGGGCGCAAGGTATGGCGACGCCAGAGGTGAAATTCTCAGACCGCCGCCCGACCCGCGGCGGCGCAGGCGTTCTGCAAGTGCGTGTCCG"
+
+# Find best pairwise alignment, keep id3 matches >= 0.5, expect a
+# similarity of 98.7%
+#
+# Qry 381 + TTCACCAAGGATATCTTCT 399
+#             | ||||||   |   ||
+# Tgt   1 + AGCTCCAAGGGCGTACACT 19
+DESCRIPTION="issue 432: id3 similarity value for large sequences with a small overlap"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query1\n%s\n" "${QUERY_SEQ}") \
+    --threads 1 \
+    --quiet \
+    --qmask none \
+    --dbmask none \
+    --notrunclabels \
+    --maxaccepts 0 \
+    --maxrejects 0 \
+    --top_hits_only \
+    --db <(printf ">target1\n%s\n" "${TARGET_SEQ}") \
+    --id 0.5 \
+    --iddef 3 \
+    --userfields id3+mism+gaps+opens+tl \
+    --userout - | \
+    awk '{exit ($1 == 98.7 && $2 == 9 && $3 == 0 && $4 == 0 && $5 == 855) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset QUERY_SEQ TARGET_SEQ
+
+# id3 is defined as such:
+
+# counting each gap opening (internal or terminal) as a single
+# mismatch, whether or not the gap was extended: 1.0 - [(mismatches +
+# gap openings)/(longest sequence length)]
+
+# In that particular alignment, we have the following values:
+#  - mismatches = 9,
+#  - gap openings = 2, (two large terminal gaps)
+#  - longest sequence length = 855
+
+# The id3 formula simplifies to 1 - (11 / 855) = 98.7%
+
+# However, when using 'userfields' to report the number of gap
+# openings ('opens') or columns containing a gap ('gaps'), the
+# returned values are null.
+
+# Hypothesis: terminal gaps are not included in the userfields 'gaps'
+# and 'opens'
+
+# This is indeed the way usearch works (versions 6 to 11 tested):
+# ./usearch11.0.667_i86linux32 \
+#     --usearch_global tmp_query \
+#     --quiet \
+#     --strand plus \
+#     --qmask none \
+#     --dbmask none \
+#     --maxaccepts 0 \
+#     --maxrejects 0 \
+#     --db tmp_target \
+#     --id 1.0 \
+#     --userfields id+opens+caln \
+#     --userout tmp_userout ; cat tmp_userout
+
+# Let's test vsearch.
+
+## 2 - tiny test showing that terminal gaps are excluded by 'opens' or 'gaps'
+
+SEQ="TTCACCAAGGATATCTTCTTTCACCAAGGATA"
+
+# Qry TTCACCAAGGATATCTTCTTTCACCAAGGATA
+#     ||||||||||||||||||||||||||||||||
+# Tgt TTCACCAAGGATATCTTCTTTCACCAAGGATA
+DESCRIPTION="issue 432: userfields 'opens' excludes terminal gaps (no gap)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQ}") \
+    --quiet \
+    --qmask none \
+    --dbmask none \
+    --db <(printf ">t1\n%s\n" "${SEQ}") \
+    --id 1.0 \
+    --userfields id+opens+caln \
+    --userout - | \
+    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "32M") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Qry TTCACCAAGGATATCTTCTTTCACCAAGGATA----
+#     ||||||||||||||||||||||||||||||||
+# Tgt TTCACCAAGGATATCTTCTTTCACCAAGGATACCCC
+DESCRIPTION="issue 432: userfields 'opens' excludes terminal gaps (left gap)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQ}") \
+    --quiet \
+    --qmask none \
+    --dbmask none \
+    --db <(printf ">t1\n%sCCCC\n" "${SEQ}") \
+    --id 1.0 \
+    --userfields id+opens+caln \
+    --userout - | \
+    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "32M4I") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Qry ----TTCACCAAGGATATCTTCTTTCACCAAGGATA
+#         ||||||||||||||||||||||||||||||||
+# Tgt CCCCTTCACCAAGGATATCTTCTTTCACCAAGGATA
+DESCRIPTION="issue 432: userfields 'opens' excludes terminal gaps (right gap)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQ}") \
+    --quiet \
+    --qmask none \
+    --dbmask none \
+    --db <(printf ">t1\nCCCC%s\n" "${SEQ}") \
+    --id 1.0 \
+    --userfields id+opens+caln \
+    --userout - | \
+    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "4I32M") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Qry ----TTCACCAAGGATATCTTCTTTCACCAAGGATA----
+#         ||||||||||||||||||||||||||||||||
+# Tgt CCCCTTCACCAAGGATATCTTCTTTCACCAAGGATACCCC
+DESCRIPTION="issue 432: userfields 'opens' excludes terminal gaps (left & right gap)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQ}") \
+    --quiet \
+    --qmask none \
+    --dbmask none \
+    --db <(printf ">t1\nCCCC%sCCCC\n" "${SEQ}") \
+    --id 1.0 \
+    --userfields id+opens+caln \
+    --userout - | \
+    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "4I32M4I") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Qry TTCACCAAGGATATCTTCTTTCACCAAGGATA
+#     ||||||||||||||||||||||||||||||||
+# Tgt TTCACCAAGGATATCTTCTTTCACCAAGGATA
+DESCRIPTION="issue 432: userfields 'gaps' excludes terminal gaps (no gap)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQ}") \
+    --quiet \
+    --qmask none \
+    --dbmask none \
+    --db <(printf ">t1\n%s\n" "${SEQ}") \
+    --id 1.0 \
+    --userfields id+gaps+caln \
+    --userout - | \
+    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "32M") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Qry TTCACCAAGGATATCTTCTTTCACCAAGGATA----
+#     ||||||||||||||||||||||||||||||||
+# Tgt TTCACCAAGGATATCTTCTTTCACCAAGGATACCCC
+DESCRIPTION="issue 432: userfields 'gaps' excludes terminal gaps (left gap)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQ}") \
+    --quiet \
+    --qmask none \
+    --dbmask none \
+    --db <(printf ">t1\n%sCCCC\n" "${SEQ}") \
+    --id 1.0 \
+    --userfields id+gaps+caln \
+    --userout - | \
+    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "32M4I") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Qry ----TTCACCAAGGATATCTTCTTTCACCAAGGATA
+#         ||||||||||||||||||||||||||||||||
+# Tgt CCCCTTCACCAAGGATATCTTCTTTCACCAAGGATA
+DESCRIPTION="issue 432: userfields 'gaps' excludes terminal gaps (right gap)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQ}") \
+    --quiet \
+    --qmask none \
+    --dbmask none \
+    --db <(printf ">t1\nCCCC%s\n" "${SEQ}") \
+    --id 1.0 \
+    --userfields id+gaps+caln \
+    --userout - | \
+    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "4I32M") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Qry ----TTCACCAAGGATATCTTCTTTCACCAAGGATA----
+#         ||||||||||||||||||||||||||||||||
+# Tgt CCCCTTCACCAAGGATATCTTCTTTCACCAAGGATACCCC
+DESCRIPTION="issue 432: userfields 'gaps' excludes terminal gaps (left & right gap)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQ}") \
+    --quiet \
+    --qmask none \
+    --dbmask none \
+    --db <(printf ">t1\nCCCC%sCCCC\n" "${SEQ}") \
+    --id 1.0 \
+    --userfields id+gaps+caln \
+    --userout - | \
+    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "4I32M4I") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset SEQ
+
+# Notes:
+#  - similarity remains 100% in all tests,
+#  - caln (CIGAR format) is used to check the structure of the alignment,
+#  - caln is from the point-of-view of the query sequence
+
+
+# ************************************************************************** #
+#                                                                            #
 #              is test suite in sync with vsearch ? (issue 442)              #
 #                                                                            #
 # ************************************************************************** #
