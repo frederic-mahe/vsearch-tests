@@ -3694,9 +3694,23 @@ DESCRIPTION="issue 473: use qrow and trow fields to output aligned sequences"
 # |     37 | 'F' | 'e' |
 # |--------+-----+-----|
 
+# |  MiSeq |     |     |
+# |   2023 |     |     |
+# | offset | +33 | +64 |
+# |--------+-----+-----|
+# |      2 | '#' | 'B' |
+# |     14 | '/' | 'N' |
+# |     21 | '6' | 'U' |
+# |     27 | '<' | '[' |
+# |     32 | 'A' | '`' |
+# |     36 | 'E' | 'd' |
+# |--------+-----+-----|
+
 for OFFSET in 33 64 ; do
+
+    # NovaSeq and RTA3 (2021)
     for i in 2 12 23 37 ; do
-        DESCRIPTION="issue 474: RTA3 quality score ${i} is accepted (offset +${OFFSET})"
+        DESCRIPTION="issue 474: NovaSeq RTA3 quality score ${i} is accepted (offset +${OFFSET})"
         OCTAL=$(printf "\%04o" $(( ${i} + ${OFFSET} )) )
         echo -e "@s\nA\n+\n${OCTAL}\n" | \
             "${VSEARCH}" \
@@ -3707,6 +3721,21 @@ for OFFSET in 33 64 ; do
             success "${DESCRIPTION}" || \
                 failure "${DESCRIPTION}"
     done
+
+    # MiSeq and RTA? (2023?) observed on a MiSeq run in August 2023
+    for i in 2 14 21 27 32 36 ; do
+        DESCRIPTION="issue 474: MiSeq RTA3 quality score ${i} is accepted (offset +${OFFSET})"
+        OCTAL=$(printf "\%04o" $(( ${i} + ${OFFSET} )) )
+        echo -e "@s\nA\n+\n${OCTAL}\n" | \
+            "${VSEARCH}" \
+                --fastq_eestats - \
+                --fastq_ascii ${OFFSET} \
+                --quiet \
+                --output /dev/null 2> /dev/null && \
+            success "${DESCRIPTION}" || \
+                failure "${DESCRIPTION}"
+    done
+
 done
 unset OCTAL OFFSET DESCRIPTION
 
