@@ -5738,6 +5738,506 @@ DESCRIPTION="issue 530: report the rightmost match in target sequence (four matc
 unset SEQUENCE
 
 
+#******************************************************************************#
+#                                                                              #
+#       fastq_stripleft when the resulting length is null (issue 533)          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/533
+
+## ------------------------------------------------------------------ stripleft
+
+DESCRIPTION="issue 533: fastq_stripleft (strip is null)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 0 \
+        --quiet \
+        --fastaout - | \
+    tr "\n" "_" | \
+    grep -qw ">s_AT_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft (strip is shorter than sequence length)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 1 \
+        --quiet \
+        --fastaout - | \
+    tr "\n" "_" | \
+    grep -qw ">s_T_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft (strip can be equal to sequence length)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 2 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft (strip is equal to sequence length, sequence is discarded)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 2 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft (strip can be longer than sequence length)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft (strip is longer than sequence length, sequence is discarded)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ----------------------------------------------------------------- stripright
+
+DESCRIPTION="issue 533: fastq_stripright (strip is null)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripright 0 \
+        --quiet \
+        --fastaout - | \
+    tr "\n" "_" | \
+    grep -qw ">s_AT_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripright (strip is shorter than sequence length)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripright 1 \
+        --quiet \
+        --fastaout - | \
+    tr "\n" "_" | \
+    grep -qw ">s_A_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripright (strip can be equal to sequence length)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripright 2 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripright (strip is equal to sequence length, sequence is discarded)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripright 2 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripright (strip can be longer than sequence length)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripright 3 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripright (strip is longer than sequence length, sequence is discarded)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripright 3 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ------------------------------------------------------stripleft + stripright
+
+# two parameters: left, right
+# four states: null, shorter, equal, longer (than initial sequence)
+# = 16 combinations
+
+DESCRIPTION="issue 533: fastq_stripleft + right (both are null)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 0 \
+        --fastq_stripright 0 \
+        --quiet \
+        --fastaout - | \
+    tr "\n" "_" | \
+    grep -qw ">s_AT_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is null, right is shorter)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 0 \
+        --fastq_stripright 1 \
+        --quiet \
+        --fastaout - | \
+    tr "\n" "_" | \
+    grep -qw ">s_A_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is null, right is equal) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 0 \
+        --fastq_stripright 2 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is null, right is equal) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 0 \
+        --fastq_stripright 2 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is null, right is longer) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 0 \
+        --fastq_stripright 3 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is null, right is longer) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 0 \
+        --fastq_stripright 3 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is shorter, right is null)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 1 \
+        --fastq_stripright 0 \
+        --quiet \
+        --fastaout - | \
+    tr "\n" "_" | \
+    grep -qw ">s_T_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is shorter, right is shorter) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 1 \
+        --fastq_stripright 1 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is shorter, right is shorter) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 1 \
+        --fastq_stripright 1 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is shorter, right is equal) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 1 \
+        --fastq_stripright 2 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is shorter, right is equal) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 1 \
+        --fastq_stripright 2 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is shorter, right is longer) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 1 \
+        --fastq_stripright 3 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is shorter, right is longer) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 1 \
+        --fastq_stripright 3 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is equal, right is null) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 2 \
+        --fastq_stripright 0 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is equal, right is null) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 2 \
+        --fastq_stripright 0 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is equal, right is shorter) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 2 \
+        --fastq_stripright 1 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is equal, right is shorter) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 2 \
+        --fastq_stripright 1 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is equal, right is equal) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 2 \
+        --fastq_stripright 2 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is equal, right is equal) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 2 \
+        --fastq_stripright 2 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is equal, right is longer) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 2 \
+        --fastq_stripright 3 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is equal, right is longer) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 2 \
+        --fastq_stripright 3 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is longer, right is null) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --fastq_stripright 0 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is longer, right is null) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --fastq_stripright 0 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is longer, right is shorter) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --fastq_stripright 1 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is longer, right is shorter) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --fastq_stripright 1 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is longer, right is equal) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --fastq_stripright 2 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is longer, right is equal) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --fastq_stripright 2 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is longer, right is longer) is OK"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --fastq_stripright 3 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (left is longer, right is longer) discard sequence"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --fastq_stripright 3 \
+        --quiet \
+        --fastaout - | \
+    grep -qw ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 533: fastq_stripleft + right (discarded sequences are reported)"
+printf ">s\nAT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_stripleft 3 \
+        --fastq_stripright 3 \
+        --fastaout /dev/null 2>&1 | \
+    grep -Eq "1 sequences{0,1} discarded" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
