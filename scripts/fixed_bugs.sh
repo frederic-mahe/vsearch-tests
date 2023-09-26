@@ -6238,6 +6238,323 @@ printf ">s\nAT\n" | \
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#     forward read trimming and filtering (Minardi et al. 2021) (issue 534)    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/534
+
+# Lasse Krøger Eliassen asked about the correct way to implement
+# forward read trimming and filtering, as described in Minardi et
+# al. 2021:
+# https://onlinelibrary.wiley.com/doi/10.1111/1755-0998.13509
+
+# "Forward reads were trimmed to 200 bp in length approximately
+# corresponding to the point at which the lower quartile fell
+# below 20. Low quality reads were removed when estimated errors were
+# greater than two and truncated if quality scores fell below
+# two."
+
+DESCRIPTION="issue 534: fastx_filter accepts short reads"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_A_+_I_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------------------- fastq_trunclen
+DESCRIPTION="issue 534: fastq_trunclen trims reads longer than n"
+printf "@s1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_trunclen 1 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_A_+_I_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: fastq_trunclen does not trim reads equal to n"
+printf "@s1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_trunclen 2 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_AA_+_II_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: fastq_trunclen discards reads shorter than n"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_trunclen 2 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## -------------------------------------------------------- fastq_trunclen_keep
+DESCRIPTION="issue 534: fastq_trunclen_keep trims reads longer than n"
+printf "@s1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_trunclen_keep 1 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_A_+_I_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: fastq_trunclen_keep does not trim reads equal to n"
+printf "@s1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_trunclen_keep 2 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_AA_+_II_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: fastq_trunclen_keep keeps reads shorter than n"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_trunclen_keep 2 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "_" | \
+        grep -wq "@s1_A_+_I_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ---------------------------------------------------------------- fastq_maxns
+DESCRIPTION="issue 534: maxns 0 keeps reads without Ns"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_maxns 0 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_A_+_I_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: maxns 0 discards reads with Ns"
+printf "@s1\nN\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_maxns 0 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ---------------------------------------------------------------- fastq_maxee
+# quality symbol '!' corresponds to an error probability of 1.0
+# expected error (EE) is the sum of all error probabilities
+DESCRIPTION="issue 534: maxee 1.0 keeps reads with an EE equal or lesser than 1.0"
+printf '@s1\nA\n+\n!\n' | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_maxee 1.0 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq '@s1_A_+_!_' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: maxee 0.9 discards reads with an EE greater than 0.9"
+printf '@s1\nA\n+\n!\n' | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_maxee 0.9 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: maxee 2.0 keeps reads with an EE equal or lesser than 2.0"
+printf '@s1\nAA\n+\n!!\n' | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_maxee 2.0 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq '@s1_AA_+_!!_' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: maxee 1.9 discards reads with an EE greater than 1.9"
+printf '@s1\nAA\n+\n!!\n' | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_maxee 1.9 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ------------------------------------------------------------ fastq_truncqual
+# truncate sequences starting from the first base with the specified
+# base quality score value or lower
+DESCRIPTION="issue 534: truncqual does not truncate reads without Q =< n"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_truncqual 39 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_A_+_I_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: truncqual truncates reads with Q =< n"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_truncqual 40 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: truncqual truncates reads at the first base with Q =< n (last position)"
+printf "@s1\nACG\n+\nJJI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_truncqual 40 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_AC_+_JJ_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: truncqual truncates reads at the first base with Q =< n (middle position)"
+printf "@s1\nACG\n+\nJIJ\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_truncqual 40 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_A_+_J_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: truncqual truncates reads at the first base with Q =< n (first position)"
+printf "@s1\nACG\n+\nIJJ\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_truncqual 40 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# ------------------------------------- length filtering is done after trimming
+
+# effects:
+# no qual, no len
+# qual, no len
+# no qual, len
+# qual, len
+
+DESCRIPTION="issue 534: length filtering is done after quality trimming (no qual, no len)"
+printf "@s1\nACG\n+\nJJJ\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_truncqual 40 \
+        --fastq_trunclen 3 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_ACG_+_JJJ_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: length filtering is done after quality trimming (no qual, len)"
+printf "@s1\nACG\n+\nJJJ\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_truncqual 40 \
+        --fastq_trunclen 2 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_AC_+_JJ_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: length filtering is done after quality trimming (qual, no len)"
+printf "@s1\nACG\n+\nJJI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_truncqual 40 \
+        --fastq_trunclen 2 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_AC_+_JJ_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 534: length filtering is done after quality trimming (qual, len)"
+printf "@s1\nACG\n+\nJIJ\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_truncqual 40 \
+        --fastq_trunclen 1 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq "@s1_A_+_J_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# initial length is 3, so trunclen 2 should pass, but length is 1 after truncqual
+DESCRIPTION="issue 534: length filtering is done after quality trimming (qual > len)"
+printf "@s1\nACG\n+\nJIJ\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastq_truncqual 40 \
+        --fastq_trunclen 2 \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -wq ".*" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
