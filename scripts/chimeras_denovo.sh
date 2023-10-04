@@ -976,7 +976,7 @@ printf ">s;size=1\nA\n" | \
 
 
 ## appr. upper limit of a 32-bit float
-DESCRIPTION="chimeras_denovo: option abskew accepts large values (3.4028235 × 10^38)"
+DESCRIPTION="chimeras_denovo: option abskew accepts large values (3.4028235 * 10^38)"
 printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
