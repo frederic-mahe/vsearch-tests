@@ -2,7 +2,7 @@
 
 ## Print a header
 SCRIPT_NAME="uchime_denovo"
-LINE=$(printf -- "-%.0s" {1..76})f
+LINE=$(printf -- "-%.0s" {1..76})
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
 ## Declare a color code for test results
