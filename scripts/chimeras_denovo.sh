@@ -165,9 +165,19 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --nonchimeras /dev/stdout 2> /dev/null |
     tr "\n" "@" | \
-        grep --quiet ">s;size=1@A@" && \
+        grep --quiet --word-regexp ">s;size=1@A@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: output option nonchimeras discards empty fasta sequences"
+printf ">s;size=1\n\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --nonchimeras /dev/stdout 2> /dev/null |
+        grep --quiet "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 # setting output to stdout or dash should yield the same results
@@ -217,7 +227,6 @@ printf ">s;size=1\nA\n" | \
 
 
 ## ------------------------------------------------------------------- chimeras
-## -------------------------------------------------- simplest positive example
 
 DESCRIPTION="chimeras_denovo: option chimeras is accepted"
 printf ">s;size=1\nA\n" | \
@@ -238,6 +247,7 @@ printf ">s;size=1\nA\n" | \
         success "${DESCRIPTION}"
 
 
+## simplest positive example (using default parameters)
 DESCRIPTION="chimeras_denovo: simplest positive example"
 #        1...5...10
 A_START="GTAGGCCGTG"
@@ -1120,7 +1130,9 @@ unset A_START A_END B_START B_END
 # DBL_EPSILON      = 2.22045e-16
 # LDBL_EPSILON     = 1.0842e-19
 
+# 900000000000000009/900000000000000000 = 1.000000000000001
 
+# abskew 9
 
 exit 0
 
@@ -1128,7 +1140,7 @@ exit 0
 # --abskew,
 # --alignwidth,  *DONE*
 # --alnout,      *DONE*
-# --chimeras,
+# --chimeras,    *DONE*
 # --chimeras_length_min,
 # --chimeras_parents_max,
 # --chimeras_parts,
@@ -1158,3 +1170,12 @@ exit 0
 # --xee,
 # --xn,
 # --xsize
+
+
+## Notes
+
+# - test chimeras with more than two parents,
+# - test chimeras with more than two parents for a given chunk,
+# - test tab output,
+# - test remaining command-specific parameters
+# - test if relabel applies to both chimeras and non-chimeras
