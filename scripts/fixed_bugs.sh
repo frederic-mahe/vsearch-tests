@@ -6566,9 +6566,496 @@ printf "@s1\nACG\n+\nJIJ\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+
+#******************************************************************************#
+#                                                                              #
+#               from fasta files to an OTU table (issue 536)                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/536
+
+# check the correctness of OTU tables created by --otutabout
+
+# The manual says:
+
+# Output an OTU table in the classic tab-separated plain text format
+# as a matrix containing the abundances of the OTUs in the different
+# samples. The first line will start with the string '#OTU ID' and is
+# followed by a tab-separated list of all sample identifiers. The
+# following lines, one for each OTU, starts with the OTU identifier
+# and is followed by a tab-separated list of abundances for that OTU
+# in each sample, in the order given on the first line. The OTU and
+# sample identifiers are extracted from the FASTA headers of the
+# sequences.  The OTUs are represented by the cluster centroids. An
+# extra column is added to the right of the table if taxonomy
+# information is available for at least one of the OTUs. This column
+# will be labelled 'taxonomy' and each row will then contain the
+# taxonomy information extracted for that OTU. See the --biomout
+# option for further details.
+
+# example:
+
+# #OTU ID	sample1	sample2
+# s1	1	1
+# s2	0	1
+# s3	1	0
+
+# ---------------------------------------------------------------- empty sample
+
+# empty query input produces an OTU table with only a header line (#OTU ID)
+DESCRIPTION="issue 536: otutabout accepts empty query input and produces a table"
+printf "" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    grep -qw "#OTU ID" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# --------------------------------------------------------------- single sample
+# number of columns
+DESCRIPTION="issue 536: otutabout accepts a single sample (2-column tsv table)"
+printf ">s1;sample=sample1\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'END {exit NF == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# number of lines
+DESCRIPTION="issue 536: otutabout accepts a single sample (2-line tsv table)"
+printf ">s1;sample=sample1\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# sample name
+DESCRIPTION="issue 536: otutabout accepts a single sample (sample name)"
+printf ">s1;sample=sample1\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" '{exit $2 == "sample1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# cluster name
+DESCRIPTION="issue 536: otutabout accepts a single sample (cluster name)"
+printf ">s1;sample=sample1\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 2 {exit $1 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# number of reads
+DESCRIPTION="issue 536: otutabout accepts a single sample (number of reads)"
+printf ">s1;sample=sample1\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 2 {exit $2 == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# number of reads (sizein)
+DESCRIPTION="issue 536: otutabout accepts a single sample (number of reads with sizein)"
+printf ">s1;sample=sample1;size=2\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --sizein \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 2 {exit $2 == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# no query-db match? equivalent to an empty query file
+# (queries that are not in db are ignored)
+DESCRIPTION="issue 536: otutabout accepts a single sample (no match with db sequences)"
+printf ">s1;sample=sample1\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s2\nGG\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    grep -qw "#OTU ID" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# if input file is not dereplicated, duplicated queries are merged
+# #OTU ID	sample1
+# s1	2
+DESCRIPTION="issue 536: otutabout merges duplicated queries"
+printf ">s1;sample=sample1\nAA\n>s1;sample=sample1\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 2 {exit $2 == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# otutabout accepts empty sample identifiers
+DESCRIPTION="issue 536: otutabout accepts empty sample identifiers"
+printf ">s1;sample=\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 1 {exit $2 == "" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# mix situation? technically not a single-sample situation anymore
+# #OTU ID		sample1
+# s1	1	1
+DESCRIPTION="issue 536: otutabout accepts a mix of empty and non-empty sample identifiers"
+printf ">s1;sample=\nAA\n>s1;sample=sample1\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 1 {exit ($2 == "" && $3 == "sample1") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# note that the empty sample name is sorted first
+
+
+# ----------------------------------------------------------------- two samples
+
+# two samples:
+# #OTU ID	sample1	sample2
+# s1	1	1
+DESCRIPTION="issue 536: otutabout accepts two samples (common sequence)"
+(
+    printf ">s1;sample=sample1\nAA\n"
+    printf ">s1;sample=sample2\nAA\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 2 {exit ($1 == "s1" && $2 == 1 && $3 == 1) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# two samples, exclusive sequences:
+# #OTU ID	sample1	sample2
+# s1	1	0
+# s2	0	1
+DESCRIPTION="issue 536: otutabout accepts two samples (exclusive sequences, three lines)"
+(
+    printf ">s1;sample=sample1\nAA\n"
+    printf ">s2;sample=sample2\nGG\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n>s2\nGG\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'END {exit NR == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 536: otutabout accepts two samples (exclusive sequences, absence is zero)"
+(
+    printf ">s1;sample=sample1\nAA\n"
+    printf ">s2;sample=sample2\nGG\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n>s2\nGG\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" '$1 == "s1" {exit ($3 == 0) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 536: otutabout accepts two samples (exclusive sequences, presence >= 1)"
+(
+    printf ">s1;sample=sample1\nAA\n"
+    printf ">s2;sample=sample2\nGG\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n>s2\nGG\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" '$1 == "s1" {exit ($2 == 1) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 536: otutabout accepts two samples (exclusive sequences, first cluster)"
+(
+    printf ">s1;sample=sample1\nAA\n"
+    printf ">s2;sample=sample2\nGG\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n>s2\nGG\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" '$1 == "s1" {exit ($2 == 1 && $3 == 0) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 536: otutabout accepts two samples (exclusive sequences, second cluster)"
+(
+    printf ">s1;sample=sample1\nAA\n"
+    printf ">s2;sample=sample2\nGG\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n>s2\nGG\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" '$1 == "s2" {exit ($2 == 0 && $3 == 1) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 536: otutabout accepts two samples (common and exclusive sequences, four lines)"
+(
+    printf ">s1;sample=sample1\nAA\n>s3;sample=sample1\nCC\n"
+    printf ">s1;sample=sample2\nAA\n>s2;sample=sample2\nGG\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n>s2\nGG\n>s3\nCC\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'END {exit NR == 4 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 536: otutabout contains the expected number of reads (same as input)"
+(
+    printf ">s1;sample=sample1\nAA\n>s3;sample=sample1\nCC\n"
+    printf ">s1;sample=sample2\nAA\n>s2;sample=sample2\nGG\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n>s2\nGG\n>s3\nCC\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk 'NR > 1 {for (i=2 ; i<=NF ; i++) {sum += $i}} \
+         END {exit sum == 4 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# sample names are alpha sorted (input in normal order)
+DESCRIPTION="issue 536: otutabout sample names are alpha sorted (two samples, normal input)"
+(
+    printf ">s1;sample=sample1\nAA\n"
+    printf ">s1;sample=sample2\nAA\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 1 {exit ($2 == "sample1" && \
+                                $3 == "sample2") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# sample names are alpha sorted (input in reverse-order)
+DESCRIPTION="issue 536: otutabout sample names are alpha sorted (two samples, reversed input)"
+(
+    printf ">s1;sample=sample2\nAA\n"
+    printf ">s1;sample=sample1\nAA\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 1 {exit ($2 == "sample1" && \
+                                $3 == "sample2") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# sample names are alpha sorted (input in reverse-order)
+DESCRIPTION="issue 536: otutabout sample names are alpha sorted (three samples, reversed input)"
+(
+    printf ">s1;sample=sample3\nAA\n"
+    printf ">s1;sample=sample2\nAA\n"
+    printf ">s1;sample=sample1\nAA\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 1 {exit ($2 == "sample1" && \
+                                $3 == "sample2" && \
+                                $4 == "sample3") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 536: otutabout cluster names are alpha sorted (normal input order)"
+(
+    printf ">s1;sample=sample1\nAA\n>s3;sample=sample1\nCC\n"
+    printf ">s1;sample=sample2\nAA\n>s2;sample=sample2\nGG\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n>s2\nGG\n>s3\nCC\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    cut --fields 1 | \
+    tail --lines=+2 | \
+    tr "\n" "@" | \
+    grep -qw "s1@s2@s3@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 536: otutabout cluster names are alpha sorted (reverse input order)"
+(
+    printf ">s1;sample=sample1\nAA\n>s3;sample=sample1\nCC\n"
+    printf ">s1;sample=sample2\nAA\n>s2;sample=sample2\nGG\n"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s3\nCC\n>s2\nGG\n>s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    cut --fields 1 | \
+    tail --lines=+2 | \
+    tr "\n" "@" | \
+    grep -qw "s1@s2@s3@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
-# TODO: otutabout in the absence of ';sample=abcd1234;' each cluster is assigned to its own sample (matrix diagonal)?
+# TODO: otutabout remaining open-questions (check the actual C++ code):
+#       - in the absence of ';sample=abcd1234;' each cluster is assigned to its own sample (matrix diagonal)?
+#       - clusters are sorted by decreasing abundance?
+#       - show that it work with both --sample and --relabel
+
