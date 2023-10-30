@@ -7049,6 +7049,35 @@ DESCRIPTION="issue 536: otutabout cluster names are alpha sorted (reverse input 
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#******************************************************************************#
+#                                                                              #
+#     --uchime_denovo takes abundance information into account (issue 537)     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/537
+
+DESCRIPTION="issue 537: uchime_denovo takes abundance information into account"
+#        1...5...10...15...20...25...30...35
+A_START="TCCAGCTCCAATAGCGTATACTAAAGTTGTTGC"
+B_START="AGTTCATGGGCAGGGGCTCCCCGTCATTTACTG"
+A_END=$(rev <<< ${A_START})
+B_END=$(rev <<< ${B_START})
+
+(
+    printf ">parentA;size=50\n%s\n" "${A_START}${A_END}"
+    printf ">parentB;size=49\n%s\n" "${B_START}${B_END}"
+    printf ">chimeraAB;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --uchime_denovo - \
+        --uchimeout /dev/null 2>&1 | \
+    grep -q "99 (.*) non-chimeras" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
