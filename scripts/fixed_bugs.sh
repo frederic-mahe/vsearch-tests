@@ -7078,6 +7078,52 @@ B_END=$(rev <<< ${B_START})
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#    how to detect matches containing many ambiguous symbols? (issue 538)      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/538
+
+# Qry  1 + nnnnnnnnnnnnnnnnnnnnnGG 23
+#          +++++++++++++++++++++||
+# Tgt  1 + GGCATGAACGATACCGATTAAGG 23
+
+# 23 cols, 23 ids (100.0%), 0 gaps (0.0%)
+
+# How to avoid this kind of matches?
+# - masking has no effect,
+# - minwordmatches (k-mer pre-filtering) has no effect
+
+# When aligning sequences, identical symbols will receive a positive
+# match score (default +2). Aligning a pair of symbols where at least
+# one of them is an ambiguous symbol (BDHKMNRSVWY) will always result
+# in a score of zero.
+
+# So the raw score should be low when compared to the alignment length
+# for N-rich queries.
+
+DESCRIPTION="issue 537: usearch_global use raw score to detect N-rich matches"
+${VSEARCH} \
+    --usearch_global <(printf ">query1\nNNNNNNNNNNNNNNNNNNNNNGG\n") \
+    --db <(printf ">target1\nGGCATGAACGATACCGATTAAGG\n") \
+    --quiet \
+    --minseqlength 23 \
+    --id 1.0 \
+    --userfields query+alnlen+ids+raw \
+    --userout - | \
+    awk 'BEGIN {matches = 23 ; score = 2 + 2}
+         {exit ($3 == matches && $4 == score) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# query1	23	23	4
+
+# Here the alignment length is 23, the number of matches is 23, and
+# yet the raw score is only 2, indicating an alignment with 21
+# ambiguous symbols.
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
