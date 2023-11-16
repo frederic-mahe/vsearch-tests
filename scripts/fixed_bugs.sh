@@ -7124,6 +7124,27 @@ ${VSEARCH} \
 # yet the raw score is only 2, indicating an alignment with 21
 # ambiguous symbols.
 
+
+#******************************************************************************#
+#                                                                              #
+#               src/derepsmallmem.cc: fix minor typo (issue 540)               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/540
+
+DESCRIPTION="issue 540: derep_smallmem complains if output filename is missing"
+TMP=$(mktemp)
+printf ">s\nA\n\n" > "${TMP}"
+${VSEARCH} \
+    --derep_smallmem "${TMP}" 2>&1 | \
+    grep -iq "Output" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+unset TMP
+
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
