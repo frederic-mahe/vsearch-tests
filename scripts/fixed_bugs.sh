@@ -7104,7 +7104,7 @@ B_END=$(rev <<< ${B_START})
 # So the raw score should be low when compared to the alignment length
 # for N-rich queries.
 
-DESCRIPTION="issue 537: usearch_global use raw score to detect N-rich matches"
+DESCRIPTION="issue 538: usearch_global use raw score to detect N-rich matches"
 ${VSEARCH} \
     --usearch_global <(printf ">query1\nNNNNNNNNNNNNNNNNNNNNNGG\n") \
     --db <(printf ">target1\nGGCATGAACGATACCGATTAAGG\n") \
