@@ -7156,6 +7156,16 @@ rm "${TMP}"
 unset TMP
 
 
+#******************************************************************************#
+#                                                                              #
+#                     clean-up stale branches (issue 542)                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/542
+
+## not testable
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
