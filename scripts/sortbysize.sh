@@ -85,15 +85,49 @@ printf ">s1;size=\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# does not return an average, but the abundance value of the first entry:
-#  - pointer indexing rounds down,
-#  - fprintf rounds down again ("%.0f\n")
-DESCRIPTION="--sortbysize median abundance (two entries)"
+# does return an average "(9 + 1) / 2 = 5"
+DESCRIPTION="--sortbysize median abundance (average of two entries)"
+printf ">s1;size=9\nA\n>s2;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qw "Median abundance: 5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# does return an average, but:
+#  - fprintf rounding ("%.0f\n") (1 + 2) / 2 = 1.5 ~ 2
+#  - Banker's rounding (round half to even)
+DESCRIPTION="--sortbysize median abundance (rounded average of two entries #1)"
 printf ">s1;size=2\nA\n>s2;size=1\nA\n" | \
     "${VSEARCH}" \
         --sortbysize - \
         --output /dev/null 2>&1 > /dev/null | \
     grep -qw "Median abundance: 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# does return an average, but:
+#  - fprintf rounding ("%.0f\n") (1 + 4) / 2 = 2.5 ~ 2
+#  - Banker's rounding (round half to even)
+DESCRIPTION="--sortbysize median abundance (rounded average of two entries #2)"
+printf ">s1;size=4\nA\n>s2;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qw "Median abundance: 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# does return an average, but:
+#  - fprintf rounding ("%.0f\n") (1 + 6) / 2 = 3.5 ~ 4
+#  - Banker's rounding (round half to even)
+DESCRIPTION="--sortbysize median abundance (rounded average of two entries #3)"
+printf ">s1;size=6\nA\n>s2;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qw "Median abundance: 4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -107,7 +141,10 @@ printf ">s1;size=3\nA\n>s2;size=2\nA\n>s3;size=1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# even-sized list of entries (returns the first entry after the middle point)
+# even-sized list of entries:
+# - returns the average of entries around the middle point,
+# - average is either round or has a remainder of 0.5
+# - fprintf rounds half to the closest even value
 DESCRIPTION="--sortbysize median abundance (even number of entries)"
 printf ">s1;size=4\nA\n>s2;size=3\nA\n>s3;size=2\nA\n>s4;size=1\nA\n" | \
     "${VSEARCH}" \
