@@ -7166,6 +7166,135 @@ unset TMP
 
 ## not testable
 
+
+#******************************************************************************#
+#                                                                              #
+#          --makeudb_usearch truncates fasta headers (issue 543)               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/543
+
+## sequence headers are truncated by default:
+DESCRIPTION="issue 543: search_exact truncates headers by default (normal header)"
+${VSEARCH} \
+    --search_exact <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --quiet \
+    --blast6out - | \
+    awk 'BEGIN {FS = "\t"} {exit $2 == "t1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 543: search_exact truncates headers by default (normal header, --notrunclabels)"
+${VSEARCH} \
+    --search_exact <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --notrunclabels \
+    --quiet \
+    --blast6out - | \
+    awk 'BEGIN {FS = "\t"} {exit $2 == "t1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 543: search_exact truncates headers by default (truncable header)"
+${VSEARCH} \
+    --search_exact <(printf ">q1\nA\n") \
+    --db <(printf ">t1 extra\nA\n") \
+    --quiet \
+    --blast6out - | \
+    awk 'BEGIN {FS = "\t"} {exit $2 == "t1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 543: search_exact truncates headers by default (truncable header, --notrunclabels)"
+${VSEARCH} \
+    --search_exact <(printf ">q1\nA\n") \
+    --db <(printf ">t1 extra\nA\n") \
+    --notrunclabels \
+    --quiet \
+    --blast6out - | \
+    awk 'BEGIN {FS = "\t"} {exit $2 == "t1 extra" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## sequence headers are truncated by default when building UDB:
+DESCRIPTION="issue 543: makeudb_usearch truncates headers by default (normal header)"
+TMP=$(mktemp)
+${VSEARCH} \
+    --makeudb_usearch <(printf ">t1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --output "${TMP}"
+
+${VSEARCH} \
+    --udb2fasta "${TMP}" \
+    --quiet \
+    --output - | \
+    grep -qw ">t1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+unset TMP
+
+DESCRIPTION="issue 543: makeudb_usearch truncates headers by default (normal header, --notrunclabels)"
+TMP=$(mktemp)
+${VSEARCH} \
+    --makeudb_usearch <(printf ">t1\nA\n") \
+    --notrunclabels \
+    --minseqlength 1 \
+    --quiet \
+    --output "${TMP}"
+
+${VSEARCH} \
+    --udb2fasta "${TMP}" \
+    --quiet \
+    --output - | \
+    grep -qw ">t1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+unset TMP
+
+DESCRIPTION="issue 543: makeudb_usearch truncates headers by default (truncable header)"
+TMP=$(mktemp)
+${VSEARCH} \
+    --makeudb_usearch <(printf ">t1 extra\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --output "${TMP}"
+
+${VSEARCH} \
+    --udb2fasta "${TMP}" \
+    --quiet \
+    --output - | \
+    grep -qw ">t1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+unset TMP
+
+DESCRIPTION="issue 543: makeudb_usearch truncates headers by default (truncable header, --notrunclabels)"
+TMP=$(mktemp)
+${VSEARCH} \
+    --makeudb_usearch <(printf ">t1 extra\nA\n") \
+    --notrunclabels \
+    --minseqlength 1 \
+    --quiet \
+    --output "${TMP}"
+
+${VSEARCH} \
+    --udb2fasta "${TMP}" \
+    --quiet \
+    --output - | \
+    grep -qw ">t1 extra" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+unset TMP
+
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
