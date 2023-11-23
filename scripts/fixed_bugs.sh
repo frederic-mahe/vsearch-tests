@@ -7307,8 +7307,9 @@ unset TMP
 
 ## future test
 # DESCRIPTION="issue 544: uchime_denovo supports option --maxseqlength"
-# ${VSEARCH} \
-#     --uchime_denovo <(printf ">s1\nAAAA\n") \
+# printf ">s1\nAAAA\n" | \
+#     ${VSEARCH} \
+#     --uchime_denovo - \
 #     --quiet \
 #     --maxseqlength 3 \
 #     --uchimeout /dev/null 2> /dev/null && \
