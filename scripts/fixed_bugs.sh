@@ -7295,6 +7295,27 @@ rm "${TMP}"
 unset TMP
 
 
+#******************************************************************************#
+#                                                                              #
+#      maxseqlength is not supported by uchime_denovo command (issue 544)      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/544
+
+## as of 2023-11-23, --uchime_denovo does not support option --maxseqlength
+
+## future test
+# DESCRIPTION="issue 544: uchime_denovo supports option --maxseqlength"
+# ${VSEARCH} \
+#     --uchime_denovo <(printf ">s1\nAAAA\n") \
+#     --quiet \
+#     --maxseqlength 3 \
+#     --uchimeout /dev/null 2> /dev/null && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
