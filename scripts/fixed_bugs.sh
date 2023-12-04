@@ -7317,6 +7317,358 @@ unset TMP
 #         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#      vsearch --top_hits_only --maxaccepts 1 returns sometimes 2 values       #
+#                               (issue 546)                                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/546
+
+## The goal is to obtain only one hit per query or no hit, never more.
+
+# simplest case: default parameters, single hit: expect match q1 t1
+DESCRIPTION="issue 546: default parameters, search returns single hit"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    tr "\t" " " | \
+    grep -qw "q1 t1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ------------------------------------------------------------- output_no_hits
+
+# default parameters, no hit
+DESCRIPTION="issue 546: default parameters, search returns no hit"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nCAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    grep -qw "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# default parameters, output_no_hits, no hit
+DESCRIPTION="issue 546: output_no_hits returns query with no hit"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nCAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --quiet \
+    --output_no_hits \
+    --userfields query+target \
+    --userout - | \
+    tr "\t" " " | \
+    grep -qw "q1 *" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# default parameters, output_no_hits, hit
+DESCRIPTION="issue 546: output_no_hits returns query with hit"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --quiet \
+    --output_no_hits \
+    --userfields query+target \
+    --userout - | \
+    tr "\t" " " | \
+    grep -qw "q1 t1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# default parameters, output_no_hits, hit and no hit
+DESCRIPTION="issue 546: output_no_hits returns all queries (hit and no hit)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n>q2\nCAG\n") \
+    --db <(printf ">t1\nAAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --quiet \
+    --output_no_hits \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------------------------ maxaccept
+
+# maxaccepts controls the number of tested targets
+
+# two hits but maxaccepts is 1 by default: return only one hit
+DESCRIPTION="issue 546: two identical targets, maxaccepts=1, report 1 hit"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n>t2\nAAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# default parameters, two hits, maxaccepts 2
+DESCRIPTION="issue 546: two identical targets, maxaccepts=2, report 2 hits"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n>t2\nAAG\n") \
+    --minseqlength 3 \
+    --maxaccepts 2 \
+    --id 1.00 \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# default parameters, two hits, maxaccepts 0
+DESCRIPTION="issue 546: two identical targets, maxaccepts=0, report unlimited hits"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n>t2\nAAG\n") \
+    --minseqlength 3 \
+    --maxaccepts 0 \
+    --id 1.00 \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------------------------------- maxhits
+
+# maxhits controls the overall number of hits reported
+
+# one hit, maxhits=1
+DESCRIPTION="issue 546: one target, maxhits=1, reports one hit"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --quiet \
+    --maxaccepts 0 \
+    --maxhits 1 \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# two hits, maxhits=1
+DESCRIPTION="issue 546: two identical targets, maxhits=1, report one hit"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n>t2\nAAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --quiet \
+    --maxaccepts 0 \
+    --maxhits 1 \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# two hits, maxhits=2
+DESCRIPTION="issue 546: two identical targets, maxhits=2, report two hits"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n>t2\nAAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --quiet \
+    --maxaccepts 0 \
+    --maxhits 2 \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# two hits, maxhits=0
+DESCRIPTION="issue 546: two identical targets, maxhits=0, report unlimited hits"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n>t2\nAAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --quiet \
+    --maxaccepts 0 \
+    --maxhits 0 \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --------------------------------------------------------------------- strand
+
+# strand plus or both:
+# single hit,
+# double hit,
+# with or without --maxaccepts limitation
+# with or without --maxhits limitation
+
+# all other options use default parameters
+DESCRIPTION="issue 546: strand plus: hit only on the normal strand (report one hit)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --strand plus \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 546: strand plus: hits on both strands (report one hit)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACGT\n") \
+    --db <(printf ">t1\nACGT\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --strand plus \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 546: strand both: hit on the normal strand (report one hit)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --strand both \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# maxaccepts = 1 by default, it has no effect on the number of hits reported
+DESCRIPTION="issue 546: strand both: hits on both strands (report two hits)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACGT\n") \
+    --db <(printf ">t1\nACGT\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --strand both \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# only report hits to the first target
+DESCRIPTION="issue 546: strand both, maxaccepts controls the number of tested targets"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACGT\n") \
+    --db <(printf ">t1\nACGT\n>t2\nACGT\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --strand both \
+    --maxaccepts 1 \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# If a query matches both strands of a target, use maxhits to report
+# only one hit
+DESCRIPTION="issue 546: strand both, maxhits controls the overall number of reported hits"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACGT\n") \
+    --db <(printf ">t1\nACGT\n") \
+    --minseqlength 3 \
+    --id 1.00 \
+    --strand both \
+    --maxhits 1 \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------------------------- top_hits_only
+
+DESCRIPTION="issue 546: default parameters, report all hits"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n>t2\nATG\n") \
+    --minseqlength 3 \
+    --id 0.50 \
+    --maxaccepts 0 \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 546: top_hits_only, report best hit"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n>t2\nATG\n") \
+    --minseqlength 3 \
+    --id 0.50 \
+    --maxaccepts 0 \
+    --top_hits_only \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 546: top_hits_only, report best hits"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAG\n") \
+    --db <(printf ">t1\nAAG\n>t2\nAAG\n") \
+    --minseqlength 3 \
+    --id 0.50 \
+    --maxaccepts 0 \
+    --top_hits_only \
+    --quiet \
+    --userfields query+target \
+    --userout - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
