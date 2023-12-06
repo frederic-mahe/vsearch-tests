@@ -7303,18 +7303,39 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/544
 
-## as of 2023-11-23, --uchime_denovo does not support option --maxseqlength
+## v2.26: --uchime_denovo supports option --maxseqlength
 
-## future test
-# DESCRIPTION="issue 544: uchime_denovo supports option --maxseqlength"
-# printf ">s1\nAAAA\n" | \
-#     ${VSEARCH} \
-#     --uchime_denovo - \
-#     --quiet \
-#     --maxseqlength 3 \
-#     --uchimeout /dev/null 2> /dev/null && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+DESCRIPTION="issue 544: uchime_denovo supports option --maxseqlength"
+printf ">s1\nAAA\n" | \
+    ${VSEARCH} \
+    --uchime_denovo - \
+    --quiet \
+    --maxseqlength 3 \
+    --uchimeout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 544: uchime_denovo maxseqlength keeps sequences <= n"
+printf ">s1\nAAA\n" | \
+    ${VSEARCH} \
+    --uchime_denovo - \
+    --quiet \
+    --maxseqlength 3 \
+    --uchimeout - | \
+    grep -q "s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 544: uchime_denovo maxseqlength excludes sequences > n"
+printf ">s1\nAAAA\n" | \
+    ${VSEARCH} \
+    --uchime_denovo - \
+    --quiet \
+    --maxseqlength 3 \
+    --uchimeout - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 #******************************************************************************#
