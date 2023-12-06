@@ -7340,6 +7340,116 @@ printf ">s1\nAAAA\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#             vsearch --usearch_global not showing "full alignment"            #
+#                  instead only the segment pair (issue 545)                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/545
+
+# Like usearch, vsearch returns semi-global pairwise alignments,
+# ignoring terminal gaps
+
+# The alignment of:
+
+# primer query:   ACAGTGACATGGGGACGTAT
+# reference:       CAGTGACATGGGGACGTAT...
+
+# is:
+
+# Qry    2 + CAGTGACATGGGGACGTAT 20
+#            |||||||||||||||||||
+# Tgt    1 + CAGTGACATGGGGACGTAT 19
+
+# and not:
+
+# Qry    1 + ACAGTGACATGGGGACGTAT 20
+#             |||||||||||||||||||
+# Tgt    1 + -CAGTGACATGGGGACGTAT 19
+
+
+# alignment starts at position 2 for the query (ignore 5' gap)
+DESCRIPTION="issue 545: usearch_global produces semi-global alignments"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACAGTGACATGGGGACGTAT\n") \
+    --db <(printf ">t1\nCAGTGACATGGGGACGTAT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 0.8 \
+    --alnout - | \
+    grep -Eq "Qry +2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Once a match is selected, iddef has no effect on the alignment
+DESCRIPTION="issue 545: usearch_global iddef has no effect on alignments (id 0)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACAGTGACATGGGGACGTAT\n") \
+    --db <(printf ">t1\nCAGTGACATGGGGACGTAT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --iddef 0 \
+    --id 0.8 \
+    --alnout - | \
+    grep -Eq "Qry +2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 545: usearch_global iddef has no effect on alignments (id 1)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACAGTGACATGGGGACGTAT\n") \
+    --db <(printf ">t1\nCAGTGACATGGGGACGTAT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --iddef 1 \
+    --id 0.8 \
+    --alnout - | \
+    grep -Eq "Qry +2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 545: usearch_global iddef has no effect on alignments (id 2)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACAGTGACATGGGGACGTAT\n") \
+    --db <(printf ">t1\nCAGTGACATGGGGACGTAT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --iddef 2 \
+    --id 0.8 \
+    --alnout - | \
+    grep -Eq "Qry +2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 545: usearch_global iddef has no effect on alignments (id 3)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACAGTGACATGGGGACGTAT\n") \
+    --db <(printf ">t1\nCAGTGACATGGGGACGTAT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --iddef 3 \
+    --id 0.8 \
+    --alnout - | \
+    grep -Eq "Qry +2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 545: usearch_global iddef has no effect on alignments (id 4)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACAGTGACATGGGGACGTAT\n") \
+    --db <(printf ">t1\nCAGTGACATGGGGACGTAT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --iddef 4 \
+    --id 0.8 \
+    --alnout - | \
+    grep -Eq "Qry +2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #      vsearch --top_hits_only --maxaccepts 1 returns sometimes 2 values       #
 #                               (issue 546)                                    #
 #                                                                              #
