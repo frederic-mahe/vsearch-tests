@@ -7879,6 +7879,7 @@ unset Q t1 t2
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
+# TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
 # TODO: otutabout remaining open-questions (check the actual C++ code):
