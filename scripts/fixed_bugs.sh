@@ -7800,6 +7800,82 @@ ${VSEARCH} \
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#                Issue related to usearch_global match (issue 547)             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/547
+
+# pre-sorting based on kmer profiles and --maxaccepts 1 (default) can
+# sometimes lead to the selection of a match with a sequence of lesser
+# similarity, but longer (so more kmers in common with the
+# query). I've been trying to create a toy-example demonstrating
+# that. So far, I've managed to create a 105 bp sequence containing at
+# least one copy of all possible 3-mers. I can derive from that
+# sequence target 1 (one mismatch) and target 2 (two mismatches and
+# some extra terminal nucleotides selected to make target 2's kmer
+# profile the best possible match for our query).
+
+# After a couple hours of work, I am still confused about the way kmer
+# profiles are computed. I need confirmation from Torbjørn. In my own
+# test script, t2 has a kmer profile score of 34. It should be ranked
+# lower than t1's score of 38!?
+
+# t1   AGATAGGGACGTGTACCAATCAGCGTTGTTCTGCCTCGTGAATCCGAACATAGGCACTTATTTCGAATCCAGGATAAGGCTAGATGCGCCCTGGGTCCCGGAGTA
+#      ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||
+# Q    AGATAGGGACGTGTACCAATCAGCGTTGTTCTGCCTCGTGAATCCGAACATAGGCACTTATTTCGAAACCAGGATAAGGCTAGATGCGCCCTGGGTCCCGGAGTA
+#      ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||| ||||||||||||||||||||||
+# t2 AAAGATAGGGACGTGTACCAATCAGCGTTGTTCTGCCTCGTGAATCCGAACATAGGCACTTATTTCGAATCCAGGATAAGGCTACATGCGCCCTGGGTCCCGGAGTAG
+
+Q="AGATAGGGACGTGTACCAATCAGCGTTGTTCTGCCTCGTGAATCCGAACATAGGCACTTATTTCGAAACCAGGATAAGGCTAGATGCGCCCTGGGTCCCGGAGTA"
+t1="AGATAGGGACGTGTACCAATCAGCGTTGTTCTGCCTCGTGAATCCGAACATAGGCACTTATTTCGAATCCAGGATAAGGCTAGATGCGCCCTGGGTCCCGGAGTA"
+t2="AAAGATAGGGACGTGTACCAATCAGCGTTGTTCTGCCTCGTGAATCCGAACATAGGCACTTATTTCGAATCCAGGATAAGGCTACATGCGCCCTGGGTCCCGGAGTAG"
+
+DESCRIPTION="issue 547: kmer profile filtering can favors longer sequences #1"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\n%s\n" "${Q}") \
+    --db <(printf ">t1\n%s\n>t2\n%s\n" "${t1}" "${t2}") \
+    --wordlength 3 \
+    --id 0.9 \
+    --quiet \
+    --userfields query+target+id \
+    --userout - | \
+    awk '{exit $2 == "t2" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 547: kmer profile filtering can favors longer sequences (fix with maxseqlength)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\n%s\n" "${Q}") \
+    --db <(printf ">t1\n%s\n>t2\n%s\n" "${t1}" "${t2}") \
+    --wordlength 3 \
+    --id 0.9 \
+    --maxseqlength "${#t1}" \
+    --quiet \
+    --userfields query+target+id \
+    --userout - 2> /dev/null | \
+    awk '{exit $2 == "t1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 547: kmer profile filtering can favors longer sequences (fix with maxaccepts)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\n%s\n" "${Q}") \
+    --db <(printf ">t1\n%s\n>t2\n%s\n" "${t1}" "${t2}") \
+    --wordlength 3 \
+    --id 0.9 \
+    --maxaccepts 2 \
+    --quiet \
+    --userfields query+target+id \
+    --userout - | \
+    awk '{exit $2 == "t1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset Q t1 t2
+
 exit 0
 
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
