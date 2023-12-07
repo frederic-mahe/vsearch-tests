@@ -7833,7 +7833,7 @@ Q="AGATAGGGACGTGTACCAATCAGCGTTGTTCTGCCTCGTGAATCCGAACATAGGCACTTATTTCGAAACCAGGATAA
 t1="AGATAGGGACGTGTACCAATCAGCGTTGTTCTGCCTCGTGAATCCGAACATAGGCACTTATTTCGAATCCAGGATAAGGCTAGATGCGCCCTGGGTCCCGGAGTA"
 t2="AAAGATAGGGACGTGTACCAATCAGCGTTGTTCTGCCTCGTGAATCCGAACATAGGCACTTATTTCGAATCCAGGATAAGGCTACATGCGCCCTGGGTCCCGGAGTAG"
 
-DESCRIPTION="issue 547: kmer profile filtering can favors longer sequences #1"
+DESCRIPTION="issue 547: kmer profile filtering can favor longer sequences #1"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${Q}") \
     --db <(printf ">t1\n%s\n>t2\n%s\n" "${t1}" "${t2}") \
@@ -7846,7 +7846,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 547: kmer profile filtering can favors longer sequences (fix with maxseqlength)"
+DESCRIPTION="issue 547: kmer profile filtering can favor longer sequences (fix with maxseqlength)"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${Q}") \
     --db <(printf ">t1\n%s\n>t2\n%s\n" "${t1}" "${t2}") \
@@ -7860,7 +7860,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 547: kmer profile filtering can favors longer sequences (fix with maxaccepts)"
+DESCRIPTION="issue 547: kmer profile filtering can favor longer sequences (fix with maxaccepts)"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${Q}") \
     --db <(printf ">t1\n%s\n>t2\n%s\n" "${t1}" "${t2}") \
