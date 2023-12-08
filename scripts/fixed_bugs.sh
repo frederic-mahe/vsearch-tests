@@ -4737,6 +4737,17 @@ DESCRIPTION="issue 512: fastq_mergepairs more reverse reads (error message)"
 
 #******************************************************************************#
 #                                                                              #
+#            vsearch tool detailed option in command line ? (issue 516)        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/516
+
+## not testable (yet)
+
+
+#******************************************************************************#
+#                                                                              #
 #   --sizein seems having no effect in vsearch --usearch_global (issue 521)    #
 #                                                                              #
 #******************************************************************************#
