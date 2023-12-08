@@ -5735,7 +5735,74 @@ DESCRIPTION="issue 530: report the rightmost match in target sequence (four matc
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-unset SEQUENCE
+## what about matches on the minus strand? One could expect rightmost
+## matches, so leftmost from the point of view of the normal
+## strand. In practice, vsearch returns rightmost matches with target
+## from the point of view of the normal strand. Maybe the rule is to
+## return the first perfect match found during backtracking? Only the
+## query is reverse-complemented, the target stays the same. That's
+## why the returned match is always the rightmost in the target
+## sequence.
+
+REVCOMP="TTACCGAGCAAATATCTTGA"
+
+DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (one match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">q1\n%s%s%s%s\n" "${REVCOMP}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --strand both \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk -v MATCH_END=$(( ${#SEQUENCE} * 1 )) '{exit $3 == MATCH_END ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (two matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">q1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --strand both \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk -v MATCH_END=$(( ${#SEQUENCE} * 2 )) '{exit $3 == MATCH_END ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (three matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">q1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --strand both \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk -v MATCH_END=$(( ${#SEQUENCE} * 3 )) '{exit $3 == MATCH_END ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (four matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">q1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --strand both \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk -v MATCH_END=$(( ${#SEQUENCE} * 4 )) '{exit $3 == MATCH_END ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset SEQUENCE REVCOMP
 
 
 #******************************************************************************#
