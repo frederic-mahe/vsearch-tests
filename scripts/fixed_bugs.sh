@@ -5740,6 +5740,18 @@ unset SEQUENCE
 
 #******************************************************************************#
 #                                                                              #
+#  compilation warning with ar: 'u' modifier ignored since 'D' is the default  #
+#                                (issue 531)                                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/531
+
+# not testable
+
+
+#******************************************************************************#
+#                                                                              #
 #  sintax output is sometimes 4 columns and other times 5 columns (issue 532)  #
 #                                                                              #
 #******************************************************************************#
@@ -6565,6 +6577,17 @@ printf "@s1\nACG\n+\nJIJ\n" | \
     grep -wq ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#         control of 2 separate randseed events in sintax (issue 535)          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/535
+
+## WIP
 
 
 #******************************************************************************#
