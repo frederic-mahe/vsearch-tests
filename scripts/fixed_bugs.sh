@@ -7158,6 +7158,18 @@ unset TMP
 
 #******************************************************************************#
 #                                                                              #
+#           Issue encountered when using vsearch --usearch_global              #
+#      to generate OTU frequency table src/derepsmallmem.cc (issue 541)        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/541
+
+## not enough information
+
+
+#******************************************************************************#
+#                                                                              #
 #                     clean-up stale branches (issue 542)                      #
 #                                                                              #
 #******************************************************************************#
