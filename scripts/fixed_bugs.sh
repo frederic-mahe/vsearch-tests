@@ -5677,6 +5677,17 @@ rm "${TMP}"
 
 #******************************************************************************#
 #                                                                              #
+#       Update log file output for --chimeras_denovo command (issue 529)       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/529
+
+# TBD
+
+
+#******************************************************************************#
+#                                                                              #
 #     always report the rightmost match if multiple equivalent occurrences     #
 #                 are present in target sequence? (issue 530)                  #
 #                                                                              #
@@ -5690,11 +5701,11 @@ rm "${TMP}"
 
 SEQUENCE="TCAAGATATTTGCTCGGTAA"
 
-# q1	1	20
+# t1	1	20
 DESCRIPTION="issue 530: report the rightmost match in target sequence (one match)"
 "${VSEARCH}" \
-    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s\n" "${SEQUENCE}") \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
@@ -5704,11 +5715,11 @@ DESCRIPTION="issue 530: report the rightmost match in target sequence (one match
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# q1	21	40
+# t1	21	40
 DESCRIPTION="issue 530: report the rightmost match in target sequence (two matches)"
 "${VSEARCH}" \
-    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">q1\n%s%s\n" "${SEQUENCE}" "${SEQUENCE}") \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s\n" "${SEQUENCE}" "${SEQUENCE}") \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
@@ -5718,11 +5729,11 @@ DESCRIPTION="issue 530: report the rightmost match in target sequence (two match
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# q1	41	60
+# t1	41	60
 DESCRIPTION="issue 530: report the rightmost match in target sequence (three matches)"
 "${VSEARCH}" \
-    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">q1\n%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" "${SEQUENCE}") \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" "${SEQUENCE}") \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
@@ -5732,11 +5743,11 @@ DESCRIPTION="issue 530: report the rightmost match in target sequence (three mat
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# q1	61	80
+# t1	61	80
 DESCRIPTION="issue 530: report the rightmost match in target sequence (four matches)"
 "${VSEARCH}" \
-    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">q1\n%s%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" "${SEQUENCE}" "${SEQUENCE}") \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" "${SEQUENCE}" "${SEQUENCE}") \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
@@ -5759,8 +5770,8 @@ REVCOMP="TTACCGAGCAAATATCTTGA"
 
 DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (one match)"
 "${VSEARCH}" \
-    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">q1\n%s%s%s%s\n" "${REVCOMP}") \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s%s\n" "${REVCOMP}") \
     --minseqlength 1 \
     --id 1.0 \
     --strand both \
@@ -5773,8 +5784,8 @@ DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (o
 
 DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (two matches)"
 "${VSEARCH}" \
-    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">q1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}") \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}") \
     --minseqlength 1 \
     --id 1.0 \
     --strand both \
@@ -5787,8 +5798,8 @@ DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (t
 
 DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (three matches)"
 "${VSEARCH}" \
-    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">q1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}") \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}") \
     --minseqlength 1 \
     --id 1.0 \
     --strand both \
@@ -5801,8 +5812,8 @@ DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (t
 
 DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (four matches)"
 "${VSEARCH}" \
-    --usearch_global <(printf ">s1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">q1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}") \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}") \
     --minseqlength 1 \
     --id 1.0 \
     --strand both \
@@ -5813,7 +5824,82 @@ DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (f
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-unset SEQUENCE REVCOMP
+unset REVCOMP
+
+# When aligning and backtracking, the code will always prefer to match
+# the sequences than opening a gap, given that the scores are
+# equal. vsearch starts backtracking at the 3' ends of the sequences,
+# and in the examples it will always start by matching the sequences
+# at the 3' end, hence our observations so far.
+
+# Counter-example: If the target/database sequence in the example has
+# some extra non-matching sequence at the 3' end, the first match is
+# chosen. This is because these are global alignments and when a gap
+# has to be opened at the 3' end anyway, it would rather extend that
+# gap than opening an additional gap in 5' end, because the score
+# would be better.
+
+PADDING="CCC"
+
+# t1	1	20
+DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, one match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s\n" "${SEQUENCE}" "${PADDING}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk '{exit $3 == 20 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# t1	1	20
+DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, two matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" "${PADDING}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk '{exit $3 == 20 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# t1	1	20
+DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, three matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" \
+                  "${SEQUENCE}" "${PADDING}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk '{exit $3 == 20 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# t1	1	20
+DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, four matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" \
+                  "${SEQUENCE}" "${SEQUENCE}" "${PADDING}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk '{exit $3 == 20 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset SEQUENCE REVCOMP PADDING
 
 
 #******************************************************************************#
@@ -7991,6 +8077,7 @@ unset Q t1 t2
 
 exit 0
 
+# TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
