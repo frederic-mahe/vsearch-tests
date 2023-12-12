@@ -8075,6 +8075,29 @@ ${VSEARCH} \
 
 unset Q t1 t2
 
+
+#******************************************************************************#
+#                                                                              #
+#                       missing userfields options (issue 548)                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/548
+
+# TBD
+
+
+#******************************************************************************#
+#                                                                              #
+#        Consequences of using vsearch on NovaSeq data (issue 549)             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/549
+
+# not testable?
+
+
 exit 0
 
 # TODO: issue 529
