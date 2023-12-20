@@ -3327,6 +3327,34 @@ DESCRIPTION="issue 387: fastx_filter fastaout_rev returns R2 sequences, not R1"
 
 #******************************************************************************#
 #                                                                              #
+#  Varying number of columns in blast6out output file from search (issue 388)  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/388
+
+# Two topics:
+#   - with --strand both and --maxaccepts 1, there could be two hits per query,
+#   - sometime blast6out does not return the expected 12 columns (bug!)
+
+# topic 1 is already covered by issue #546
+
+# topic 2: check that blast6out returns a tab-separated output with 12 columns:
+DESCRIPTION="issue 388: blast6out returns 12 tab-separated columns"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --blast6out - | \
+    awk 'BEGIN {FS = "\t"} {exit NF == 12 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #                           vsearch error (issue 396)                          #
 #                                                                              #
 #******************************************************************************#
