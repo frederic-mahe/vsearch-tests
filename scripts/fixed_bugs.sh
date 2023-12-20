@@ -8073,6 +8073,53 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+## de Bruijn sequences (shortest possible sequences containing all
+## possible 3-mers, repeated only once). Here q1 and t2 are different
+## 66-nt long de Bruijn sequences containing the exact same list of
+## 3-mers. So, the k-mer profile pre-filter will see them as exactly
+## similar (same kmer count, same length):
+
+q1="AAACAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA"
+t2="GGGTGGCGGAGTTGTCGTAGCTGCCGCAGATGACGAATTTCTTATCCTCATACTAACCCACAAAGG"
+
+## first test: t1 == q1 and t& is first in the input
+## perfect k-mer match, pre-sorting puts t1 at the top of the list of
+## potential matches to q1 to be tested
+t1="AAACAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA"
+DESCRIPTION="issue 547: kmer profile filtering favors first de Bruijn sequence (#1)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\n%s\n" "${q1}") \
+    --db <(printf ">t1\n%s\n>t2\n%s\n" "${t1}" "${t2}") \
+    --wordlength 3 \
+    --id 0.1 \
+    --quiet \
+    --userfields query+target+id \
+    --userout - | \
+    awk '{exit $2 == "t1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## second test: t1 == q1 but t2 is first in the input
+## perfect k-mer match, pre-sorting puts t2 at the top of the list of
+## potential matches to q1 to be tested
+t1="AAACAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA"
+DESCRIPTION="issue 547: kmer profile filtering favors first de Bruijn sequence (#2)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\n%s\n" "${q1}") \
+    --db <(printf ">t2\n%s\n>t1\n%s\n" "${t2}" "${t1}") \
+    --wordlength 3 \
+    --id 0.1 \
+    --quiet \
+    --userfields query+target+id \
+    --userout - | \
+    awk '{exit $2 == "t2" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# candidates are sorted by kmer counts, then by length, then by input
+# order (min_heap.cc:minheap_compare())
+
 unset Q t1 t2
 
 
