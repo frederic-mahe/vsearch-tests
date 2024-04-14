@@ -3495,6 +3495,17 @@ WARNING="WARNING: Non-ASCII"
 
 # ************************************************************************** #
 #                                                                            #
+#       Version and binary of vsearch for macOS 11 on ARM (issue 413)        #
+#                                                                            #
+# ************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/413
+
+## not testable, binaries for macOS ARM64 are available now
+
+
+# ************************************************************************** #
+#                                                                            #
 #       small unexpected difference in id3 similarity value (issue 432)      #
 #                                                                            #
 # ************************************************************************** #
