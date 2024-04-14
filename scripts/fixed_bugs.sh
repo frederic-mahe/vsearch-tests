@@ -49,6 +49,18 @@ DESCRIPTION="check if vsearch is executable"
 ##
 ## https://github.com/torognes/vsearch/issues/2
 
+## cannot test directly if several threads are created
+DESCRIPTION="issue 2: parallelization (search_exact accepts --threads)"
+"${VSEARCH}" \
+    --search_exact <(printf ">q1\nA\n") \
+    --db <(printf ">s1\nA\n>s2\nT\n") \
+    --threads 2 \
+    --quiet \
+    --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
