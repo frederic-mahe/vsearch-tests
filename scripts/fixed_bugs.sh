@@ -112,6 +112,87 @@ DESCRIPTION="check if vsearch is executable"
 ##
 ## https://github.com/torognes/vsearch/issues/9
 
+DESCRIPTION="issue 9: read uncompressed file"
+TMP=$(mktemp)
+printf ">s1\nA\n>s2\nA\n" > "${TMP}"
+"${VSEARCH}" \
+    --derep_fulllength "${TMP}" \
+    --minseqlength 1 \
+    --quiet \
+    --sizeout \
+    --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+DESCRIPTION="issue 9: read compressed file (gzip)"
+TMP=$(mktemp)
+printf ">s1\nA\n>s2\nA\n" | gzip -c > "${TMP}"
+"${VSEARCH}" \
+    --derep_fulllength "${TMP}" \
+    --minseqlength 1 \
+    --quiet \
+    --sizeout \
+    --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+
+DESCRIPTION="issue 9: read compressed file (bzip2)"
+TMP=$(mktemp)
+printf ">s1\nA\n>s2\nA\n" | bzip2 -c > "${TMP}"
+"${VSEARCH}" \
+    --derep_fulllength "${TMP}" \
+    --minseqlength 1 \
+    --quiet \
+    --sizeout \
+    --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+unset TMP
+
+DESCRIPTION="issue 9: read uncompressed stdin"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 9: read compressed stdin (gzip)"
+printf ">s1\nA\n>s2\nA\n" | gzip -c | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --gzip_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 9: read compressed stdin (bzip2)"
+printf ">s1\nA\n>s2\nA\n" | bzip2 -c | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --bzip2_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4772,6 +4853,17 @@ DESCRIPTION="issue 512: fastq_mergepairs more reverse reads (error message)"
 ## https://github.com/torognes/vsearch/issues/516
 
 ## not testable (yet)
+
+
+#******************************************************************************#
+#                                                                              #
+#        Windows binaries: working with compressed files (issue 520)           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/520
+
+## read gzip and bzip2 files, already covered by issue #9
 
 
 #******************************************************************************#
