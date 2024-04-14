@@ -3483,6 +3483,18 @@ WARNING="WARNING: Non-ASCII"
 
 # ************************************************************************** #
 #                                                                            #
+#               Crash on Windows with some versions of zlib1.dll             #
+#                    when reading gzipped files (issue 412)                  #
+#                                                                            #
+# ************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/412
+
+## already tested in issue 9
+
+
+# ************************************************************************** #
+#                                                                            #
 #       small unexpected difference in id3 similarity value (issue 432)      #
 #                                                                            #
 # ************************************************************************** #
