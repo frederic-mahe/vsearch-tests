@@ -8315,6 +8315,83 @@ unset Q t1 t2
 
 #******************************************************************************#
 #                                                                              #
+#           Obtaining the expected error for each read  (issue 551)            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/551
+
+## questions: how to obtain the EE value for each read? How to use EE to filter reads?
+
+## with and without --eeout
+DESCRIPTION="issue 551: obtaining the expected error for each read (--eeout)"
+printf "@s\nAAAA\n+\nIIII\n" | \
+    ${VSEARCH} \
+        --fastx_filter - \
+        --quiet \
+        --eeout \
+        --fastaout - | \
+    grep -Eqw ">s;ee=0.00040+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 551: obtaining the expected error for each read (no --eeout)"
+printf "@s\nAAAA\n+\nIIII\n" | \
+    ${VSEARCH} \
+        --fastx_filter - \
+        --quiet \
+        --fastaout - | \
+    grep -Eqw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## filter with and without --fastq_maxee
+DESCRIPTION="issue 551: obtaining the expected error for each read (no EE filtering)"
+printf "@s\nAAAA\n+\nIIII\n" | \
+    ${VSEARCH} \
+        --fastx_filter - \
+        --quiet \
+        --fastaout - | \
+    grep -Eqw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 551: obtaining the expected error for each read (above EE filtering threshold)"
+printf "@s\nAAAA\n+\nIIII\n" | \
+    ${VSEARCH} \
+        --fastx_filter - \
+        --quiet \
+        --fastq_maxee 0.0005 \
+        --fastaout - | \
+    grep -Eqw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 551: obtaining the expected error for each read (equal EE filtering threshold)"
+printf "@s\nAAAA\n+\nIIII\n" | \
+    ${VSEARCH} \
+        --fastx_filter - \
+        --quiet \
+        --fastq_maxee 0.0004 \
+        --fastaout - | \
+    grep -Eqw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 551: obtaining the expected error for each read (below EE filtering threshold)"
+printf "@s\nAAAA\n+\nIIII\n" | \
+    ${VSEARCH} \
+        --fastx_filter - \
+        --quiet \
+        --fastq_maxee 0.0003 \
+        --fastaout - | \
+    grep -Eqw ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #                       --weak_id not working (issue 554)                      #
 #                                                                              #
 #******************************************************************************#
