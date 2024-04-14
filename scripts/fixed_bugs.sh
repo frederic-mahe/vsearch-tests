@@ -58,6 +58,8 @@ DESCRIPTION="check if vsearch is executable"
 ##
 ## https://github.com/torognes/vsearch/issues/3
 
+## not testable
+
 
 #******************************************************************************#
 #                                                                              #
