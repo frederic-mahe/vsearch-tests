@@ -8424,6 +8424,30 @@ ${VSEARCH} \
 
 unset q1 s1 s2 s3
 
+## incomplete test! fail to capture weak_id match and good match at the same time
+
+# DESCRIPTION="issue 554: with weak_id, unlimited accepts and rejects, weak match before good match"
+# # case where the weak hit is found before the true hit??
+
+# q1="AAACAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA"
+# s2="AAACAAGAATACCACGACTAGCAGGAGTATGATGATTCCCGCCACGGCGTCTGCTTGGGTGTTTAA" # weak match (97.0%)
+# #                   substitutions ^            ^
+# s3="GTCCAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA" # weaker match (95.5%), higher kmer similarity?
+# #   ^^^
+
+# # s3 must be kmer-sorted before s2: maybe two terminal mismatches?
+
+# vsearch \
+#     --usearch_global <(printf ">q1\n%s\n" "${q1}") \
+#     --db <(printf ">s3\n%s\n>s2\n%s\n" "${s3}" "${s2}") \
+#     --id 0.97 \
+#     --weak_id 0.95 \
+#     --maxaccepts 0 \
+#     --maxrejects 0 \
+#     --quiet \
+#     --alnout - \
+#     --uc -
+
 
 #******************************************************************************#
 #                                                                              #
