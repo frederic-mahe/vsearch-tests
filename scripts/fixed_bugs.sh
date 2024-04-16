@@ -359,6 +359,13 @@ DESCRIPTION="issue 13: vsearch documentation (vsearch --help exists)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="issue 13: vsearch documentation (vsearch --help mentions manpage)"
+"${VSEARCH}" \
+    --help 2> /dev/null | \
+    grep -q "man vsearch" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
