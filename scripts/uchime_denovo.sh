@@ -65,7 +65,7 @@ printf ">sA;size=5;\n%s\n>sB;size=5;\n%s\n>sQ;size=1;\n%s\n" "${A}" "${B}" "${Q}
 # try to reduce further by factorizing the common parts
 
 
-## smallest example with default parameters
+## smallest example with default parameters (does not work)
 A_START="CCTTGGTAGGCCGTTGCCCTGCAACT"
 A_END="GGGTCCATCTCACACCACCGGTGTACC"
 B_START="TCTTGGTGGGCCGTTACCCCGCAACA"
