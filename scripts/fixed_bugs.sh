@@ -147,6 +147,10 @@ unset s1 s2 s3
 ##
 ## https://github.com/torognes/vsearch/issues/6
 
+## DUST masking method by Tatusov and Lipman
+
+## check if the original paper gives examples, if yes create tests
+
 
 #******************************************************************************#
 #                                                                              #
