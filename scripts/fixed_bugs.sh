@@ -103,6 +103,30 @@ unset Q1
 ##
 ## https://github.com/torognes/vsearch/issues/4
 
+DESCRIPTION="issue 4: Clustering similar to usearch (version 6)"
+s1="AAACAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA"
+s2="AAACAAGAATACCACGACTACCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA"
+#          substitution ^
+s3="TTAAACACCCAAGCAGACGCCGAGGCGGGAATCATGATACTCCTGGTAGTCGTGGTATTCTTGTTT" # s1 revcomp
+${VSEARCH} \
+    --cluster_size <(printf ">s1\n%s\n>s3\n%s\n>s2\n%s\n" "${s1}" "${s3}" "${s2}") \
+    --id 0.97 \
+    --quiet \
+    --uc - | \
+    awk '{a[$1] += 1}
+         END {exit (a["C"] == 2 && a["H"] == 1 && a["S"] == 2) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## expect 2 seeds (S), 1 hit (H), and 2 cluster records (C)
+# S	0	66	*	*	*	*	*	s1	*
+# H	0	66	98.5	+	0	0	66M	s2	s1
+# S	1	66	*	*	*	*	*	s3	*
+# C	0	2	*	*	*	*	*	s1	*
+# C	1	1	*	*	*	*	*	s3	*
+
+unset s1 s2 s3
+
 
 #******************************************************************************#
 #                                                                              #
