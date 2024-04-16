@@ -70,7 +70,29 @@ DESCRIPTION="issue 2: parallelization (search_exact accepts --threads)"
 ##
 ## https://github.com/torognes/vsearch/issues/3
 
-## not testable
+## vsearch seem to perform only 16-bit SIMD alignment. Compare a
+## single query to 8, 16 or 32 targets simultaneously using SIMD
+## instructions. Vectorization cannot be tested directly. The goal
+## here is to create a toy-dataset that could fill in the 8, 16 or 32
+## comparison channels, making sure that vectorization code is
+## executed at least once by our test suite.
+DESCRIPTION="issue 3: single query vs multiple targets (32 targets)"
+q1="AAACAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA"
+
+${VSEARCH} \
+    --usearch_global <(printf ">q1\n%s\n" "${q1}") \
+    --db <(for i in {1..32} ; do
+               printf ">t%d\n%s\n" ${i} "${q1}"
+           done) \
+    --maxaccepts 32 \
+    --id 0.97 \
+    --quiet \
+    --blast6out - | \
+    awk 'END {exit NR == 32 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset Q1
 
 
 #******************************************************************************#
