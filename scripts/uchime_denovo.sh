@@ -51,6 +51,26 @@ printf '@seq1\nAGC\n+\nIII\n' | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+# This one works!
+DESCRIPTION="small positive example (using default parameters)"
+#        1...5...10...15...20...25...30...35
+A_START="TCCAGCTCCAATAGCGTATACTAAAGTTGTTGC"
+B_START="AGTTCATGGGCAGGGGCTCCCCGTCATTTACTG"
+A_END=$(rev <<< ${A_START})
+B_END=$(rev <<< ${B_START})
+
+(
+    printf ">parentA;size=50\n%s\n" "${A_START}${A_END}"
+    printf ">parentB;size=49\n%s\n" "${B_START}${B_END}"
+    printf ">chimeraAB;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --uchime_denovo - \
+        --uchimeout /dev/null
+
+
+## This one does not work
 A_START="GATTGTAGGCTGG"
 A_END="AGTCGAACGGTAACAGGAAG"
 B_START="ACGCGAACGCTGG"
