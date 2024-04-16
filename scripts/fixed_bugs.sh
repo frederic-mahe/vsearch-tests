@@ -112,6 +112,8 @@ unset Q1
 ##
 ## https://github.com/torognes/vsearch/issues/5
 
+## not testable
+
 
 #******************************************************************************#
 #                                                                              #
