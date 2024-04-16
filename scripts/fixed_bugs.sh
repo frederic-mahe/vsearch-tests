@@ -329,6 +329,32 @@ printf ">s1\nA\n>s2\nA\n" | bzip2 -c | \
 ##
 ## https://github.com/torognes/vsearch/issues/13
 
+## call to vsearch outputs basic help (more than 10 lines)
+DESCRIPTION="issue 13: vsearch documentation (call to vsearch outputs basic help)"
+"${VSEARCH}" 2>&1 | \
+    awk 'END {exit NR > 10 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 13: vsearch documentation (state that vsearch --help exists)"
+"${VSEARCH}" 2>&1 | \
+    grep -q "vsearch --help" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 13: vsearch documentation (state that man vsearch exists)"
+"${VSEARCH}" 2>&1 | \
+    grep -q "man vsearch" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 13: vsearch documentation (vsearch --help exists)"
+"${VSEARCH}" \
+    --help 2> /dev/null | \
+    awk 'END {exit NR > 10 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
