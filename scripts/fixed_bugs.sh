@@ -165,6 +165,44 @@ unset s1 s2 s3
 ##
 ## https://github.com/torognes/vsearch/issues/8
 
+DESCRIPTION="issue 8: search both strands (default is plus/normal strand)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">s1\nA\n>s2\nT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --blast6out - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 8: search both strands (explicit plus strand)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">s1\nA\n>s2\nT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --strand plus \
+    --quiet \
+    --blast6out - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 8: search both strands"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">s1\nA\n>s2\nT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --strand both \
+    --quiet \
+    --blast6out - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
