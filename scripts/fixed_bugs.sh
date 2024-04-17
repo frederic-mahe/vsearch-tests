@@ -147,9 +147,165 @@ unset s1 s2 s3
 ##
 ## https://github.com/torognes/vsearch/issues/6
 
-## DUST masking method by Tatusov and Lipman
+## DUST masking method by Tatusov and Lipman (unpublished),
+## originaly implemented as a blast module
 
-## check if the original paper gives examples, if yes create tests
+## --maskfasta default is to mask using DUST
+q1="AAACAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA"
+DESCRIPTION="issue 6: sequence masking (no low-complexity region)"
+"${VSEARCH}" \
+    --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+    --quiet \
+    --output - | \
+    grep -wq "${q1}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+q1="AAAAAAA"
+DESCRIPTION="issue 6: sequence masking (shortest unmasked)"
+"${VSEARCH}" \
+    --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+    --quiet \
+    --output - | \
+    grep -wq "${q1}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## DUST masking sets to lowercase
+q1="AAAAAAAA"
+DESCRIPTION="issue 6: sequence masking (shortest masked)"
+"${VSEARCH}" \
+    --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+    --quiet \
+    --output - | \
+    grep -wq "${q1,,}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## mix case is converted to uppercase
+q1="AaAaAaA"
+DESCRIPTION="issue 6: sequence masking (shortest unmasked, mixed case)"
+"${VSEARCH}" \
+    --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+    --quiet \
+    --output - | \
+    grep -wq "${q1^^}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## masked mix case is converted to lowercase
+q1="AaAaAaAa"
+DESCRIPTION="issue 6: sequence masking (shortest masked, mixed case)"
+"${VSEARCH}" \
+    --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+    --quiet \
+    --output - | \
+    grep -wq "${q1,,}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## "A Fast and Symmetric DUST Implementation to Mask Low-Complexity DNA
+## Sequences" by Morgulis et al. (2006) Journal of Computational
+## Biology (https://kodomo.fbb.msu.ru/FBB/year_10/ppt/DUST.pdf)
+
+## DUST is asymmetrical
+
+# DUST masks positions 56–64 in the forward sequence and positions 26–64
+# in the reverse complement.  SDUST masks positions 26–64 in both
+# cases. The subsequence of length 89 was selected so that the portion
+# masked by SDUST is centered with 25 unmasked nucleotides on either
+# side.
+
+## masked positions:
+#  - 56-64 DUST
+#  - 26-64 SDUST
+#  - 24-64 vsearch's DUST
+#  0....5...10...15...20...25...30...35...40...45...50...55...60...65...70...75...80...85...90
+#                            |                                     |
+##                           taaaacttaaagtataataataataaaattaaaaaaaaa
+q1="ACCTGCACATTGTGCACATGTACCCTAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAATGCTACAGTATGACCCCACTCCTGG"
+masked_region="taaaacttaaagtataataataataaaattaaaaaaaaa"
+DESCRIPTION="issue 6: sequence masking (Morgulis tests: asymmetry #1)"
+"${VSEARCH}" \
+    --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+    --quiet \
+    --output - | \
+    grep -Ewq "[ACGT]+${masked_region}[ACGT]+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## masked positions:
+#  - 26-64 DUST
+#  - 26-64 SDUST
+#  - 24-64 vsearch's DUST
+#  0....5...10...15...20...25...30...35...40...45...50...55...60...65...70...75...80...85...90
+#                          |                                       |
+#                          catttttttttaattttattattattatactttaagtttta
+# q2 is the reverse-complement of q1
+q2="CCAGGAGTGGGGTCATACTGTAGCATTTTTTTTTAATTTTATTATTATTATACTTTAAGTTTTAGGGTACATGTGCACAATGTGCAGGT"
+masked_region_rev_comp="catttttttttaattttattattattatactttaagtttta"
+DESCRIPTION="issue 6: sequence masking (Morgulis tests: asymmetry #2)"
+"${VSEARCH}" \
+    --maskfasta <(printf ">q2\n%s\n" ${q2}) \
+    --quiet \
+    --output - | \
+    grep -Ewq "[ACGT]+${masked_region_rev_comp}[ACGT]+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## DUST is context-sensitive:
+
+# The second anomaly we sought to correct is that DUST is context
+# sensitive. Two sequences may contain an identical low-complexity
+# subsequence, but that subsequence may be masked in one and not in the
+# other.
+
+# In the first sequence, the run of Ts has two longer runs of As nearby
+# on both sides, while in the second sequence the runs of As are changed
+# to some high-complexity sequences. DUST masks both runs of As
+# (intervals 26–34 and 61–73) but leaves the run of Ts in the first
+# sequence unmasked. However, the run of Ts in the second sequence
+# (interval 46–52) is masked by DUST. SDUST masks the run of Ts in both
+# cases.
+
+## masked positions:
+#  - 26–34 and 61–73 DUST
+#  - 26–34 and 46-52 and 61–73 SDUST
+#  - 26–34 and 61–73 vsearch's DUST
+#  0....5...10...15...20...25...30...35...40...45...50...55...60...65...70...75...80...85...90
+#                            |       |           |     |        |           |
+#   ACCTGCACATTGTGCACATGTACCCaaaaaaaaaGCGCGCGCGCGTTTTTTTACAGTATGaaaaaaaaaaaaaCCCCACTCCTGG
+q1="ACCTGCACATTGTGCACATGTACCCAAAAAAAAAGCGCGCGCGCGTTTTTTTACAGTATGAAAAAAAAAAAAACCCCACTCCTGG"
+masked_region="ACCTGCACATTGTGCACATGTACCCaaaaaaaaaGCGCGCGCGCGTTTTTTTACAGTATGaaaaaaaaaaaaaCCCCACT"
+DESCRIPTION="issue 6: sequence masking (Morgulis tests: context-sensitive #1)"
+"${VSEARCH}" \
+    --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+    --quiet \
+    --output - | \
+    grep -Ewq "${masked_region}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## masked positions:
+#  - 46-52 DUST
+#  - 46-52 SDUST
+#  - none vsearch's DUST
+#  0....5...10...15...20...25...30...35...40...45...50...55...60...65...70...75...80...85...90
+#                                                |     |
+#   ACCTGCACATTGTGCACATGTACCCACAGTATCCGCGCGCGCGCGTTTTTTTACAGTATGACAGTATGACAGTCCCCACTCCTGG
+q2="ACCTGCACATTGTGCACATGTACCCACAGTATCCTGCACATTGGCTTTTTTTACAGTATGACAGTATGACAGTCCCCACTCCTGG"
+DESCRIPTION="issue 6: sequence masking (Morgulis tests: context-sensitive #2)"
+"${VSEARCH}" \
+    --maskfasta <(printf ">q2\n%s\n" ${q2}) \
+    --quiet \
+    --output - | \
+    grep -Ewq "[ACGT]+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset q1 q2 masked_region
 
 
 #******************************************************************************#
