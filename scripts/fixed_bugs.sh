@@ -6285,65 +6285,69 @@ unset REVCOMP
 # gap than opening an additional gap in 5' end, because the score
 # would be better.
 
+## Weirdly, vsearch produces the correct alignment if the long
+## sequence is the query, not if it is a db sequence. I am not sure
+## why there is an asymmetry here.
+
 PADDING="CCC"
 
-# # t1	1	20
-# DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, one match)"
-# "${VSEARCH}" \
-#     --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
-#     --db <(printf ">t1\n%s%s%s\n" "${SEQUENCE}" "${PADDING}") \
-#     --minseqlength 1 \
-#     --id 1.0 \
-#     --quiet \
-#     --userfields target+tilo+tihi \
-#     --userout - | \
-#     awk '{exit $3 == 20 ? 0 : 1}' && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# t1	1	20
+DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, one match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
+    --db <(printf ">t1\n%s%s%s\n" "${SEQUENCE}" "${PADDING}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk '{exit $3 == 20 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-# # t1	1	20
-# DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, two matches)"
-# "${VSEARCH}" \
-#     --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
-#     --db <(printf ">t1\n%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" "${PADDING}") \
-#     --minseqlength 1 \
-#     --id 1.0 \
-#     --quiet \
-#     --userfields target+tilo+tihi \
-#     --userout - | \
-#     awk '{exit $3 == 20 ? 0 : 1}' && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# t1	1	20
+DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, two matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" "${PADDING}") \
+    --db <(printf ">t1\n%s\n" "${SEQUENCE}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk '{exit $3 == 20 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-# # t1	1	20
-# DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, three matches)"
-# "${VSEARCH}" \
-#     --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
-#     --db <(printf ">t1\n%s%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" \
-#                   "${SEQUENCE}" "${PADDING}") \
-#     --minseqlength 1 \
-#     --id 1.0 \
-#     --quiet \
-#     --userfields target+tilo+tihi \
-#     --userout - | \
-#     awk '{exit $3 == 20 ? 0 : 1}' && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# t1	1	20
+DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, three matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" \
+                              "${SEQUENCE}" "${PADDING}") \
+    --db <(printf ">t1\n%s\n" "${SEQUENCE}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk '{exit $3 == 20 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-# # t1	1	20
-# DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, four matches)"
-# "${VSEARCH}" \
-#     --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
-#     --db <(printf ">t1\n%s%s%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" \
-#                   "${SEQUENCE}" "${SEQUENCE}" "${PADDING}") \
-#     --minseqlength 1 \
-#     --id 1.0 \
-#     --quiet \
-#     --userfields target+tilo+tihi \
-#     --userout - | \
-#     awk '{exit $3 == 20 ? 0 : 1}' && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# t1	1	20
+DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, four matches)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\n%s%s%s%s%s\n" "${SEQUENCE}" "${SEQUENCE}" \
+                              "${SEQUENCE}" "${SEQUENCE}" "${PADDING}") \
+    --db <(printf ">t1\n%s\n" "${SEQUENCE}") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --userfields target+tilo+tihi \
+    --userout - | \
+    awk '{exit $3 == 20 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 unset SEQUENCE REVCOMP PADDING
 
