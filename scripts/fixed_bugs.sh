@@ -8685,6 +8685,127 @@ printf "@s\nAAAA\n+\nIIII\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#       Question about the query file of -usearch_global command               #
+#                when creating OTU tables (issue 552)                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/552
+
+## - --usearch_global accepts fastq input
+## - --search_exact accepts fastq input
+
+## ------------------------------------------------------------- usearch_global
+
+DESCRIPTION="issue 552: usearch_global accepts fasta input"
+${VSEARCH} \
+    --usearch_global <(printf ">q\nA\n") \
+    --db <(printf ">t\nA\n") \
+    --minseqlength 1 \
+    --id 1.00 \
+    --quiet \
+    --uc - | \
+    awk 'END {exit $1 == "H" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 552: usearch_global accepts fastq input"
+${VSEARCH} \
+    --usearch_global <(printf "@q\nA\n+\nI\n") \
+    --db <(printf "@t\nA\n+\nI\n") \
+    --minseqlength 1 \
+    --id 1.00 \
+    --quiet \
+    --uc - | \
+    awk 'END {exit $1 == "H" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 552: usearch_global accepts fastq input and fasta db"
+${VSEARCH} \
+    --usearch_global <(printf "@q\nA\n+\nI\n") \
+    --db <(printf ">t\nA\n") \
+    --minseqlength 1 \
+    --id 1.00 \
+    --quiet \
+    --uc - | \
+    awk 'END {exit $1 == "H" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 552: usearch_global accepts fasta input and fastq db"
+${VSEARCH} \
+    --usearch_global <(printf ">q\nA\n") \
+    --db <(printf "@t\nA\n+\nI\n") \
+    --minseqlength 1 \
+    --id 1.00 \
+    --quiet \
+    --uc - | \
+    awk 'END {exit $1 == "H" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --------------------------------------------------------------- search_exact
+
+DESCRIPTION="issue 552: search_exact accepts fasta input"
+${VSEARCH} \
+    --search_exact <(printf ">q\nA\n") \
+    --db <(printf ">t\nA\n") \
+    --quiet \
+    --uc - | \
+    awk 'END {exit $1 == "H" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 552: search_exact accepts fastq input"
+${VSEARCH} \
+    --search_exact <(printf "@q\nA\n+\nI\n") \
+    --db <(printf "@t\nA\n+\nI\n") \
+    --quiet \
+    --uc - | \
+    awk 'END {exit $1 == "H" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 552: search_exact accepts fastq input and fasta db"
+${VSEARCH} \
+    --search_exact <(printf "@q\nA\n+\nI\n") \
+    --db <(printf ">t\nA\n") \
+    --quiet \
+    --uc - | \
+    awk 'END {exit $1 == "H" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 552: search_exact accepts fasta input and fastq db"
+${VSEARCH} \
+    --search_exact <(printf ">q\nA\n") \
+    --db <(printf "@t\nA\n+\nI\n") \
+    --quiet \
+    --uc - | \
+    awk 'END {exit $1 == "H" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## expect:
+# #OTU ID	S1	S2
+# t	1	1
+DESCRIPTION="issue 552: usearch_global can map fastq reads and fasta db"
+${VSEARCH} \
+    --usearch_global <(printf "@q1;sample=S1\nA\n+\nI\n@q2;sample=S2\nA\n+\nI\n") \
+    --db <(printf ">t\nA\n") \
+    --minseqlength 1 \
+    --id 1.00 \
+    --quiet \
+    --otutabout - | \
+    awk 'END {exit $2 == 1 && $3 == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #       Convert Qiime2 database (2 files) into fasta database (1 file)         #
 #           for taxonomic assignment in vsearch (issue 553)                    #
 #                                                                              #
