@@ -172,7 +172,7 @@ DESCRIPTION="issue 6: sequence masking (shortest unmasked)"
         failure "${DESCRIPTION}"
 
 ## DUST masking sets to lowercase
-q1="AAAAAAAA"
+q1="AAAAAAAA"  # minimal length is 8?
 DESCRIPTION="issue 6: sequence masking (shortest masked)"
 "${VSEARCH}" \
     --maskfasta <(printf ">q1\n%s\n" ${q1}) \
@@ -291,7 +291,7 @@ DESCRIPTION="issue 6: sequence masking (Morgulis tests: context-sensitive #1)"
 ## masked positions:
 #  - 46-52 DUST
 #  - 46-52 SDUST
-#  - none vsearch's DUST
+#  - none with vsearch's DUST
 #  0....5...10...15...20...25...30...35...40...45...50...55...60...65...70...75...80...85...90
 #                                                |     |
 #   ACCTGCACATTGTGCACATGTACCCACAGTATCCGCGCGCGCGCGTTTTTTTACAGTATGACAGTATGACAGTCCCCACTCCTGG
@@ -304,6 +304,16 @@ DESCRIPTION="issue 6: sequence masking (Morgulis tests: context-sensitive #2)"
     grep -Ewq "[ACGT]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+## if the number of Ts increases (7 -> 10), then the masking of the
+## first series of As is lost
+# q1="ACCTGCACATTGTGCACATGTACCCAAAAAAAAAGCGCGCGCGCGTTTTTTTTTTACAGTATGAAAAAAAAAAAAACCCCACTCCTGG"
+# masked_region="ACCTGCACATTGTGCACATGTACCCAAAAAAAAAGCGCGCGCGCGttttttttttACAGTATGaaaaaaaaaaaaaCCCC"
+# DESCRIPTION="issue 6: sequence masking (Morgulis tests: context-sensitive #3)"
+# "${VSEARCH}" \
+#     --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+#     --quiet \
+#     --output -
 
 unset q1 q2 masked_region
 
