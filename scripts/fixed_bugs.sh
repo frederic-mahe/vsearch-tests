@@ -8967,6 +8967,132 @@ unset q1 s1 s2 s3
 ## issue with static binaries, not testable
 
 
+#******************************************************************************#
+#                                                                              #
+#       usearch_global command eats my sample IDs (issue 558)                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/558
+
+## --otutabout: The OTU and sample identifiers are extracted from the
+## FASTA headers of the sequences (see the --sample option).
+
+## --sample value is used as column name
+DESCRIPTION="issue 558: usearch_global, use sample IDs in query"
+"${VSEARCH}" \
+    --usearch_global <(printf ">MS-A;sample=MS-A\nA\n") \
+    --db <(printf ">MS-A\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --otutabout - | \
+    awk 'NR == 1 {exit $NF == "MS-A" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## sample annotation must be in the query, not db
+DESCRIPTION="issue 558: usearch_global, sample IDs in db are not used"
+"${VSEARCH}" \
+    --usearch_global <(printf ">MS-A\nA\n") \
+    --db <(printf ">MS-A;sample=MS-A\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --otutabout - | \
+    awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## sample string can contain almost any visible character (alpha-num and punctuations)
+DESCRIPTION="issue 558: usearch_global, sample IDs are truncated after ';'"
+"${VSEARCH}" \
+    --usearch_global <(printf ">MS-A;sample=MS;A\nA\n") \
+    --db <(printf ">MS-A\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --otutabout - | \
+    awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 558: usearch_global, sample IDs are truncated after ' ' (space)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">MS-A;sample=MS A\nA\n") \
+    --db <(printf ">MS-A\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --otutabout - | \
+    awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## If ;sample=ABC is not present, otutabout seems to use the OTU name,
+## but truncated... What are the rules?
+DESCRIPTION="issue 558: usearch_global, missing sample ID (default to sequence identifier)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">MS1\nA\n") \
+    --db <(printf ">MS-A\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --otutabout - | \
+    awk 'NR == 1 {exit $NF == "MS1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 558: usearch_global, missing sample ID (truncate sequence identifier at '-')"
+"${VSEARCH}" \
+    --usearch_global <(printf ">MS-A\nA\n") \
+    --db <(printf ">MS-A\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --otutabout - | \
+    awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 558: usearch_global, missing sample ID (truncate sequence identifier at ';')"
+"${VSEARCH}" \
+    --usearch_global <(printf ">MS;A\nA\n") \
+    --db <(printf ">MS-A\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --otutabout - | \
+    awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 558: usearch_global, missing sample ID (truncate sequence identifier at '.')"
+"${VSEARCH}" \
+    --usearch_global <(printf ">MS.A\nA\n") \
+    --db <(printf ">MS-A\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --otutabout - | \
+    awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# no truncation after a alphabetical, numerical, or '_'
+DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')"
+"${VSEARCH}" \
+    --usearch_global <(printf ">MS_A\nA\n") \
+    --db <(printf ">MS-A\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --otutabout - | \
+    awk 'NR == 1 {exit $NF == "MS_A" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
 
 # TODO: issue 529
