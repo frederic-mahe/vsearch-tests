@@ -9116,6 +9116,483 @@ unset q1 s1 s2 s3
 
 #******************************************************************************#
 #                                                                              #
+#             is there a major vote fraction parameter of                      #
+#         a vsearch clustered consensus sequence? (issue 557)                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/557
+
+## The consensus algorithm simply chooses the most common base in each
+## position, so it could be almost down to 25%. If there are two
+## equally common bases, it chooses the first in the alphabet of A, C,
+## G, or T. If there are no ordinary bases, but at least one N, it
+## uses N. If there are more gap symbols (-) than bases in a column,
+## it uses a gap symbol.
+
+## consensus algorithm keeps common bases
+DESCRIPTION="issue 557: consout consensus keeps common bases (A)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nA\n>q2\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --consout - | \
+    grep -wq "A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout consensus keeps common bases (C)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nC\n>q2\nC\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --consout - | \
+    grep -wq "C" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout consensus keeps common bases (G)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nG\n>q2\nG\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --consout - | \
+    grep -wq "G" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout consensus keeps common bases (T)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nT\n>q2\nT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --consout - | \
+    grep -wq "T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout consensus is not case-sensitive (A-a)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nA\n>q2\na\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --consout - | \
+    grep -wq "A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout consensus is not case-sensitive (a-A)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\na\n>q2\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --consout - | \
+    grep -wq "A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout consensus is not case-sensitive (a-a)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\na\n>q2\na\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --consout - | \
+    grep -wq "A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout common bases are uppercased"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\na\n>q2\na\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --consout - | \
+    grep -wq "A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks most common base (2/3rd AA)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAA\n>q2\nAA\n>q3\nAC\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout does not pick least common base (1/3rd AC)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAA\n>q2\nAA\n>q3\nAC\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AC" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks most common base (3/5th AA)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAA\n>q2\nAA\n>q3\nAA\n>q4\nAC\n>q5\nAC\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout does not pick least common base (2/5th AC)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAA\n>q2\nAA\n>q3\nAA\n>q4\nAC\n>q5\nAC\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AC" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks most common base (1/2 AT)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAT\n>q2\nAT\n>q3\nAA\n>q4\nAC\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks most common base (2/5 AT)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAT\n>q2\nAT\n>q3\nAA\n>q4\nAC\n>q5\nAG\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks most common base (3/9 AT)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAT\n>q2\nAT\n>q3\nAT\n>q4\nAA\n>q5\nAA\n>q6\nAC\n>q7\nAC\n>q8\nAG\n>q9\nAG\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks most common base (4/13 AT)"
+(printf ">s\nAT\n"
+ for ((i=1 ; i<=3 ; i++)) ; do
+     printf ">s\nAT\n"
+     printf ">s\nAA\n"
+     printf ">s\nAC\n"
+     printf ">s\nAG\n"
+ done
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --consout - | \
+    grep -wq "AT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks most common base (5/17 AT)"
+(printf ">s\nAT\n"
+ for ((i=1 ; i<=4 ; i++)) ; do
+     printf ">s\nAT\n"
+     printf ">s\nAA\n"
+     printf ">s\nAC\n"
+     printf ">s\nAG\n"
+ done
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --consout - | \
+    grep -wq "AT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks most common base (6/21 AT)"
+(printf ">s\nAT\n"
+ for ((i=1 ; i<=5 ; i++)) ; do
+     printf ">s\nAT\n"
+     printf ">s\nAA\n"
+     printf ">s\nAC\n"
+     printf ">s\nAG\n"
+ done
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --consout - | \
+    grep -wq "AT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks most common base (100/397 AT)"
+(printf ">s\nAT\n"
+ for ((i=1 ; i<=99 ; i++)) ; do
+     printf ">s\nAT\n"
+     printf ">s\nAA\n"
+     printf ">s\nAC\n"
+     printf ">s\nAG\n"
+ done
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --consout - | \
+    grep -wq "AT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## circa 25.01%
+DESCRIPTION="issue 557: consout picks most common base (1000/3997 AT)"
+(printf ">s\nAT\n"
+ for ((i=1 ; i<=999 ; i++)) ; do
+     printf ">s\nAT\n"
+     printf ">s\nAA\n"
+     printf ">s\nAC\n"
+     printf ">s\nAG\n"
+ done
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --consout - | \
+    grep -wq "AT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## If there are two equally common bases, it chooses the first in the
+## alphabet of A, C, G, or T
+DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (A before C)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAC\n>q2\nAA\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (A before G)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAG\n>q2\nAA\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (A before T)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAT\n>q2\nAA\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (C before G)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAG\n>q2\nAC\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (C before T)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAT\n>q2\nAC\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (G before T)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAT\n>q2\nAG\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## what about lowercase sequences? case-insensitive
+DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (case-insensitive)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAC\n>q2\nAa\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# If there are no ordinary bases, but at least one N, it uses N.
+
+DESCRIPTION="issue 557: consout picks any base rather than N (A)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAN\n>q2\nAA\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks any base rather than N (C)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAN\n>q2\nAC\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks any base rather than N (G)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAN\n>q2\nAG\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks any base rather than N (T)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAN\n>q2\nAT\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks any base rather than N (t, case-insensitive)"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nAN\n>q2\nAt\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks N if there are no other base"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nNA\n>q2\nA\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "NA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks N if there is only Ns"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nNA\n>q2\nNA\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "NA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks a base, even if there are several Ns"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nNA\n>q2\nNA\n>q3\nAA\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# If there are more gap symbols (-) than bases in a column, it uses a
+# gap symbol.
+DESCRIPTION="issue 557: consout picks a gap if gaps are dominant (not in 5')"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nACGT\n>q2\nCGT\n>q3\nCGT\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "CGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: consout picks a gap if gaps are dominant (not in 3')"
+"${VSEARCH}" \
+    --cluster_size <(printf ">q1\nCGTA\n>q2\nCGT\n>q3\nCGT\n") \
+    --minseqlength 1 \
+    --id 0.5 \
+    --quiet \
+    --consout - | \
+    grep -wq "CGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# note: opening a gap in the middle of an alignment is hard
+
+
+#******************************************************************************#
+#                                                                              #
 #       usearch_global command eats my sample IDs (issue 558)                  #
 #                                                                              #
 #******************************************************************************#
@@ -9242,6 +9719,7 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')
 
 exit 0
 
+# DONE: issues x to y
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
