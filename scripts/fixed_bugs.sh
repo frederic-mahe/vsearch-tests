@@ -8791,7 +8791,7 @@ ${VSEARCH} \
 ## expect:
 # #OTU ID	S1	S2
 # t	1	1
-DESCRIPTION="issue 552: usearch_global can map fastq reads and fasta db"
+DESCRIPTION="issue 552: usearch_global can map fastq reads onto fasta references (db)"
 ${VSEARCH} \
     --usearch_global <(printf "@q1;sample=S1\nA\n+\nI\n@q2;sample=S2\nA\n+\nI\n") \
     --db <(printf ">t\nA\n") \
