@@ -30,6 +30,15 @@ DESCRIPTION="check if vsearch is executable"
         failure "${DESCRIPTION}"
 
 
+## vsearch 2.28.1
+## The valid options for the sortbysize command are:
+## --bzip2_decompress --fasta_width --fastq_ascii --fastq_qmax
+## --fastq_qmin --gzip_decompress --label_suffix --lengthout --log
+## --maxseqlength --maxsize --minseqlength --minsize --no_progress
+## --notrunclabels --output --quiet --relabel --relabel_keep
+## --relabel_md5 --relabel_self --relabel_sha1 --sample --sizein
+## --sizeout --threads --topn --xee --xlength --xsize
+
 #*****************************************************************************#
 #                                                                             #
 #                            median abundance                                 #
