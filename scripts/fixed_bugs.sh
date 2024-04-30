@@ -9565,8 +9565,8 @@ DESCRIPTION="issue 557: consout picks a base, even if there are several Ns"
 
 
 # If there are more gap symbols (-) than bases in a column, it uses a
-# gap symbol.
-DESCRIPTION="issue 557: consout picks a gap if gaps are dominant (not in 5')"
+# base nonetheless (different from --msaout!)
+DESCRIPTION="issue 557: consout never picks a gap even if gaps are dominant (5')"
 "${VSEARCH}" \
     --cluster_size <(printf ">q1\nACGT\n>q2\nCGT\n>q3\nCGT\n") \
     --minseqlength 1 \
@@ -9577,7 +9577,7 @@ DESCRIPTION="issue 557: consout picks a gap if gaps are dominant (not in 5')"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 557: consout picks a gap if gaps are dominant (not in 3')"
+DESCRIPTION="issue 557: consout never picks a gap even if gaps are dominant (3')"
 "${VSEARCH}" \
     --cluster_size <(printf ">q1\nCGTA\n>q2\nCGT\n>q3\nCGT\n") \
     --minseqlength 1 \
@@ -9589,6 +9589,87 @@ DESCRIPTION="issue 557: consout picks a gap if gaps are dominant (not in 3')"
         failure "${DESCRIPTION}"
 
 # note: opening a gap in the middle of an alignment is hard
+DESCRIPTION="issue 557: consout never picks a gap even if gaps are dominant (middle)"
+SEQ="ATATATAT"
+printf ">q1\n%sC%s\n>q2\n%s%s\n>q3\n%s%s\n" ${SEQ} ${SEQ} ${SEQ} ${SEQ} ${SEQ} ${SEQ} | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --consout - | \
+    grep -wq "ATATATATATATATAT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+DESCRIPTION="issue 557: unlike consout, msaout picks a gap if gaps are dominant (middle)"
+SEQ="ATATATAT"
+printf ">q1\n%sC%s\n>q2\n%s%s\n>q3\n%s%s\n" ${SEQ} ${SEQ} ${SEQ} ${SEQ} ${SEQ} ${SEQ} | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --msaout - | \
+    grep -wq "ATATATAT-ATATATAT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+## expect:
+# >centroid=q1;seqs=2
+# 0	T	0	0	0	2	0	0
+DESCRIPTION="issue 557: profile output (U is counted as a T) (T first)"
+printf ">q1\nT\n>q2\nU\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --profile - | \
+    awk 'NR == 2 {exit $6 == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: profile output (U is counted as a T) (U first)"
+printf ">q1\nU\n>q2\nT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --profile - | \
+    awk 'NR == 2 {exit $6 == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: profile output (RSWKMBDHV are counted as a N)"
+printf ">q1\nR\n>q2\nS\n>q3\nW\n>q4\nK\n>q5\nM\n>q6\nB\n>q7\nD\n>q8\nH\n>q9\nV\n>q10\nN\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --profile - | \
+    awk 'NR == 2 {exit $NF == 10 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 557: profile output (Y is counted as a N)"
+printf ">q1\nY\n>q2\nN\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 1 \
+        --id 0.5 \
+        --quiet \
+        --profile - | \
+    awk 'NR == 2 {exit $NF == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## warning: clustering results are sometimes different in debug mode!!
+## could be due to threading?
 
 
 #******************************************************************************#
