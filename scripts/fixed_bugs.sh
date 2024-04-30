@@ -32,6 +32,33 @@ DESCRIPTION="check if vsearch is executable"
 
 #******************************************************************************#
 #                                                                              #
+#                                regressions                                   #
+#                                                                              #
+#******************************************************************************#
+
+## bugs not listed as GitHub issues
+
+## commit c4b218ffe84134c42732a5cb752391a4fecc3ed2 (Dec 20, 2023)
+## - Change causes a segfault in the case the function is called with a
+##   nullptr for the hp argument, which may happen when the blast6out
+##   and output_no_hits options are used
+## - bug was never part of a release
+## - fixed with commit 58a05bef0e3714d8aeca24504e061466b23dab8b (Apr 26, 2024)
+DESCRIPTION="regression c4b218ffe (segfault)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAA\n") \
+    --db <(printf ">t1\nGG\n") \
+    --minseqlength 1 \
+    --id 0.97 \
+    --quiet \
+    --blast6out /dev/null \
+    --output_no_hits && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #         Improve selection of unique kmers in query (issue 1)                 #
 #                                                                              #
 #******************************************************************************#
