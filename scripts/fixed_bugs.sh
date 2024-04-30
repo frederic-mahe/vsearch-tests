@@ -9798,6 +9798,17 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#           USEARCH wants to go open-source? (issue 559)                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/559
+
+## not testable
+
+
 exit 0
 
 # DONE: issues x to y
