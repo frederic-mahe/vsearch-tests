@@ -1,11 +1,11 @@
 #!/bin/bash
 
 ## Launch all tests
-for s in fastq_parsing.sh \
-             test_accepted_chars.sh \
-             derep_fulllength.sh \
+for s in derep_fulllength.sh \
+             fastq_parsing.sh \
+             fixed_bugs.sh \
              sortbysize.sh \
-             fixed_bugs.sh ; do
+             test_accepted_chars.sh ; do
     bash "./scripts/${s}" "${1}" || exit 1
     echo
 done
