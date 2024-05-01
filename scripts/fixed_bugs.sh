@@ -568,6 +568,53 @@ printf ">s1\nA\n>s2\nA\n" | bzip2 -c | \
 ##
 ## https://github.com/torognes/vsearch/issues/11
 
+DESCRIPTION="issue 11: --cluster_fast is available"
+"${VSEARCH}" \
+    --cluster_fast <(printf ">t1\nAAA\n>t2\nAAC\n") \
+    --minseqlength 1 \
+    --id 0.6 \
+    --quiet \
+    --sizeout \
+    --centroids - | \
+    grep -qw ">t1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 11: --cluster_smallmem is available"
+"${VSEARCH}" \
+    --cluster_smallmem <(printf ">t1\nAAA\n>t2\nAAC\n") \
+    --minseqlength 1 \
+    --id 0.6 \
+    --quiet \
+    --sizeout \
+    --centroids - | \
+    grep -qw ">t1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 11: --cluster_smallmem is available"
+"${VSEARCH}" \
+    --cluster_size <(printf ">t1\nAAA\n>t2\nAAC\n") \
+    --minseqlength 1 \
+    --id 0.6 \
+    --quiet \
+    --sizeout \
+    --centroids - | \
+    grep -qw ">t1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 11: --cluster_otus is not implemented"
+"${VSEARCH}" \
+    --cluster_otus <(printf ">t1\nAAA\n>t2\nAAC\n") \
+    --minseqlength 1 \
+    --id 0.6 \
+    --quiet \
+    --sizeout \
+    --centroids /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
