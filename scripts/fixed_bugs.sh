@@ -557,6 +557,8 @@ printf ">s1\nA\n>s2\nA\n" | bzip2 -c | \
 ##
 ## https://github.com/torognes/vsearch/issues/10
 
+## planning, not testable
+
 
 #******************************************************************************#
 #                                                                              #
