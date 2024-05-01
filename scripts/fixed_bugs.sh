@@ -353,6 +353,64 @@ unset q1 q2 masked_region
 ##
 ## https://github.com/torognes/vsearch/issues/7
 
+## test that both --acceptall and --maxaccepts are accepted
+DESCRIPTION="issue 7: --acceptall is available"
+"${VSEARCH}" \
+    --allpairs_global <(printf ">q1\nAAA\n") \
+    --acceptall \
+    --quiet \
+    --alnout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 7: --acceptall forces the output of all pairwise alignment results"
+"${VSEARCH}" \
+    --allpairs_global <(printf ">q1\nAAA\n>q2\nCCC\n") \
+    --acceptall \
+    --quiet \
+    --alnout - | \
+    grep -qw "0%" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 7: --maxaccepts is available"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --maxaccepts 1 \
+    --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 7: --maxaccepts limits the number of matches (2 matches, accepts 2)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAA\n>t2\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --maxaccepts 2 \
+    --blast6out - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 7: --maxaccepts limits the number of matches (2 matches, accepts 1)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAA\n>t2\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --maxaccepts 1 \
+    --blast6out - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
