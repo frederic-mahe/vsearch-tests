@@ -604,6 +604,7 @@ DESCRIPTION="issue 11: --cluster_smallmem is available"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## usearch --cluster_otus is deprecated, replaced with uparse
 DESCRIPTION="issue 11: --cluster_otus is not implemented"
 "${VSEARCH}" \
     --cluster_otus <(printf ">t1\nAAA\n>t2\nAAC\n") \
