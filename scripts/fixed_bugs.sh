@@ -1088,6 +1088,37 @@ DESCRIPTION="issue 20: --blast6out outputs 12 columns (no match)"
 ##
 ## https://github.com/torognes/vsearch/issues/23
 
+DESCRIPTION="issue 23: --rowlen 0 eliminates wrapping (default rowlen)"
+#    1...5...10...15...20...25...30...35...40...45...50...55...60...65...70...75
+SEQ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" ${SEQ}) \
+    --db <(printf ">t\n%s\n" ${SEQ}) \
+    --id 1.0 \
+    --quiet \
+    --alnout - | \
+    grep "^Qry" | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+DESCRIPTION="issue 23: --rowlen 0 eliminates wrapping (rowlen 0)"
+#    1...5...10...15...20...25...30...35...40...45...50...55...60...65...70...75
+SEQ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" ${SEQ}) \
+    --db <(printf ">t\n%s\n" ${SEQ}) \
+    --id 1.0 \
+    --quiet \
+    --rowlen 0 \
+    --alnout - | \
+    grep "^Qry" | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
 
 #******************************************************************************#
 #                                                                              #
