@@ -950,7 +950,6 @@ DESCRIPTION="issue 19: --iddef is implemented (0)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --alnout - \
     --userfield "id0" \
     --userout - | \
     grep -qw "50.0" && \
@@ -969,7 +968,6 @@ DESCRIPTION="issue 19: --iddef is implemented (1)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --alnout - \
     --userfield "id1" \
     --userout - | \
     grep -qw "28.6" && \
@@ -988,7 +986,6 @@ DESCRIPTION="issue 19: --iddef is implemented (2)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --alnout - \
     --userfield "id2" \
     --userout - | \
     grep -qw "100.0" && \
@@ -1010,7 +1007,6 @@ DESCRIPTION="issue 19: --iddef is implemented (3)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --alnout - \
     --userfield "id3" \
     --userout - | \
     grep -qw "60.0" && \
@@ -1025,7 +1021,6 @@ DESCRIPTION="issue 19: --iddef is implemented (4)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --alnout - \
     --userfield "id4" \
     --userout - | \
     grep -qw "28.6" && \
