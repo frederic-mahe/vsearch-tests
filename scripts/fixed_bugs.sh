@@ -10750,7 +10750,7 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')
 
 exit 0
 
-# DONE: issues 1 to 14
+# DONE: issues 1 to 23
 # TODO : incomplete 554
 # DONE: issues 555 to 559
 # TODO: issue 529
