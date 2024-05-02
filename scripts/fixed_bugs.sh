@@ -1079,6 +1079,8 @@ DESCRIPTION="issue 20: --blast6out outputs 12 columns (no match)"
 ##
 ## https://github.com/torognes/vsearch/issues/22
 
+## not testable (not enough details)
+
 
 #******************************************************************************#
 #                                                                              #
