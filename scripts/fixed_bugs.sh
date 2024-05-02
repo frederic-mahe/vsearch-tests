@@ -592,7 +592,7 @@ DESCRIPTION="issue 11: --cluster_smallmem is available"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 11: --cluster_smallmem is available"
+DESCRIPTION="issue 11: --cluster_size is available"
 "${VSEARCH}" \
     --cluster_size <(printf ">t1\nAAA\n>t2\nAAC\n") \
     --minseqlength 1 \
