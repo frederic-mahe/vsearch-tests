@@ -1575,6 +1575,8 @@ unset SEQ
 ##
 ## https://github.com/torognes/vsearch/issues/25
 
+## msaout, consout and --cons_truncate
+
 
 #******************************************************************************#
 #                                                                              #
