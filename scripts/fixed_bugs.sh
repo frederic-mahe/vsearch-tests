@@ -1676,7 +1676,7 @@ DESCRIPTION="issue 24: --maxrejects 0 scans all targets until --maxaccepts is fu
 ##
 ## https://github.com/torognes/vsearch/issues/25
 
-## msaout, consout and --cons_truncate
+## --msaout, --consout and --cons_truncate
 
 
 #******************************************************************************#
