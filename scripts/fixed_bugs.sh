@@ -1090,8 +1090,9 @@ DESCRIPTION="issue 20: --blast6out outputs 12 columns (no match)"
 ##
 ## https://github.com/torognes/vsearch/issues/23
 
+## default rowlen is 64
 DESCRIPTION="issue 23: --rowlen 0 eliminates wrapping (default rowlen)"
-#    1...5...10...15...20...25...30...35...40...45...50...55...60...65...70...75
+#    1...5...10...15...20...25...30...35...40...45...50...55...60...65...70
 SEQ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 "${VSEARCH}" \
     --usearch_global <(printf ">q\n%s\n" ${SEQ}) \
@@ -1106,7 +1107,7 @@ SEQ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 unset SEQ
 
 DESCRIPTION="issue 23: --rowlen 0 eliminates wrapping (rowlen 0)"
-#    1...5...10...15...20...25...30...35...40...45...50...55...60...65...70...75
+#    1...5...10...15...20...25...30...35...40...45...50...55...60...65...70
 SEQ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 "${VSEARCH}" \
     --usearch_global <(printf ">q\n%s\n" ${SEQ}) \
