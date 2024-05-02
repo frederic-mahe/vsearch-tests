@@ -1584,6 +1584,8 @@ unset SEQ
 ##
 ## https://github.com/torognes/vsearch/issues/26
 
+## not testable (compilation issue)
+
 
 #******************************************************************************#
 #                                                                              #
