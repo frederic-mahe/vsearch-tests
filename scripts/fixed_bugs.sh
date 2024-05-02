@@ -568,7 +568,7 @@ printf ">s1\nA\n>s2\nA\n" | bzip2 -c | \
 ##
 ## https://github.com/torognes/vsearch/issues/11
 
-DESCRIPTION="issue 11: --cluster_fast is available"
+DESCRIPTION="issue 11: --cluster_fast is implemented"
 "${VSEARCH}" \
     --cluster_fast <(printf ">t1\nAAA\n>t2\nAAC\n") \
     --minseqlength 1 \
@@ -580,7 +580,7 @@ DESCRIPTION="issue 11: --cluster_fast is available"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 11: --cluster_smallmem is available"
+DESCRIPTION="issue 11: --cluster_smallmem is implemented"
 "${VSEARCH}" \
     --cluster_smallmem <(printf ">t1\nAAA\n>t2\nAAC\n") \
     --minseqlength 1 \
@@ -592,7 +592,7 @@ DESCRIPTION="issue 11: --cluster_smallmem is available"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 11: --cluster_size is available"
+DESCRIPTION="issue 11: --cluster_size is implemented"
 "${VSEARCH}" \
     --cluster_size <(printf ">t1\nAAA\n>t2\nAAC\n") \
     --minseqlength 1 \
