@@ -780,6 +780,8 @@ DESCRIPTION="issue 15: --wordlength is accepted"
 ##
 ## https://github.com/torognes/vsearch/issues/16
 
+## not testable (implementation detail)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -788,6 +790,8 @@ DESCRIPTION="issue 15: --wordlength is accepted"
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/17
+
+## not testable (implementation detail)
 
 
 #******************************************************************************#
