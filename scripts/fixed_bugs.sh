@@ -802,6 +802,117 @@ DESCRIPTION="issue 15: --wordlength is accepted"
 ##
 ## https://github.com/torognes/vsearch/issues/18
 
+# tlo = 1, tilo = 3 (ignoring terminal gaps)
+#         1  4
+# target: ACGT--
+#           ||
+# query:  --GTCA
+#           1  4
+
+DESCRIPTION="issue 18: userfield values are correct (qlo)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --userfield "qlo" \
+    --userout - | \
+    grep -qw "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 18: userfield values are correct (qilo)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --userfield "qilo" \
+    --userout - | \
+    grep -qw "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 18: userfield values are correct (qhi)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --userfield "qhi" \
+    --userout - | \
+    grep -qw "4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 18: userfield values are correct (qihi)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --userfield "qihi" \
+    --userout - | \
+    grep -qw "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 18: userfield values are correct (tlo)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --userfield "tlo" \
+    --userout - | \
+    grep -qw "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 18: userfield values are correct (tilo)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --userfield "tilo" \
+    --userout - | \
+    grep -qw "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 18: userfield values are correct (thi)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --userfield "thi" \
+    --userout - | \
+    grep -qw "4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 18: userfield values are correct (tihi)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --userfield "tihi" \
+    --userout - | \
+    grep -qw "4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
