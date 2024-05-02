@@ -937,6 +937,101 @@ DESCRIPTION="issue 18: userfield values are correct (tihi)"
 ##
 ## https://github.com/torognes/vsearch/issues/19
 
+## iddef:
+# 0.  CD-HIT definition: (matching columns) / (shortest sequence length)
+# target: AACGT--
+#            ||
+# query:  ---GTCA
+# expect: 2 / 4
+DESCRIPTION="issue 19: --iddef is implemented (0)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nAACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --alnout - \
+    --userfield "id0" \
+    --userout - | \
+    grep -qw "50.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 1.  edit distance: (matching columns) / (alignment length)
+# target: AACGT--
+#            ||
+# query:  ---GTCA
+# expect: 2 / 7
+DESCRIPTION="issue 19: --iddef is implemented (1)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nAACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --alnout - \
+    --userfield "id1" \
+    --userout - | \
+    grep -qw "28.6" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 2.  edit distance excluding terminal gaps (default definition for --id)
+# target: AACGT--
+#            ||
+# query:  ---GTCA
+# expect: 2 / 2
+DESCRIPTION="issue 19: --iddef is implemented (2)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nAACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --alnout - \
+    --userfield "id2" \
+    --userout - | \
+    grep -qw "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 3.  Marine Biological Lab definition counting each gap opening
+#     (internal or terminal) as a single mismatch, whether or not the gap
+#     was extended: 1.0 - [(mismatches + gap openings)/(longest sequence
+#     length)]
+# target: AACGT--
+#            ||
+# query:  ---GTCA
+# expect: 1 - (2 / 5) = 3 / 5
+DESCRIPTION="issue 19: --iddef is implemented (3)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nAACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --alnout - \
+    --userfield "id3" \
+    --userout - | \
+    grep -qw "60.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 4.  BLAST definition, equivalent to --iddef 1 for global pairwise alignments
+DESCRIPTION="issue 19: --iddef is implemented (4)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nAACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --alnout - \
+    --userfield "id4" \
+    --userout - | \
+    grep -qw "28.6" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
