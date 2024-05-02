@@ -809,6 +809,21 @@ DESCRIPTION="issue 15: --wordlength is accepted"
 # query:  --GTCA
 #           1  4
 
+# raw score is the sum of match rewards minus mismatch penalties, gap
+# openings and gap extensions
+DESCRIPTION="issue 18: userfield values are correct (raw)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nGTCA\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 0.5 \
+    --quiet \
+    --userfield "raw" \
+    --userout - | \
+    grep -qw "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="issue 18: userfield values are correct (qlo)"
 "${VSEARCH}" \
     --usearch_global <(printf ">query\nGTCA\n") \
