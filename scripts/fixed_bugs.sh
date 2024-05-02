@@ -1698,6 +1698,33 @@ DESCRIPTION="issue 24: --maxrejects 0 scans all targets until --maxaccepts is fu
 ##
 ## https://github.com/torognes/vsearch/issues/27
 
+DESCRIPTION="issue 27: --shuffle --randseed seed always gives the same results"
+RUN1=$("${VSEARCH}" \
+           --shuffle <(printf ">s1\nA\n>s2\nT\n") \
+           --randseed 1 \
+           --quiet \
+           --output - | \
+           md5sum -)
+RUN2=$("${VSEARCH}" \
+           --shuffle <(printf ">s1\nA\n>s2\nT\n") \
+           --randseed 1 \
+           --quiet \
+           --output - | \
+           md5sum -)
+[[ "${RUN1}" = "${RUN2}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset RUN1 RUN2
+
+DESCRIPTION="issue 27: --shuffle --randseed 0 to use a PRNG seed"
+"${VSEARCH}" \
+    --shuffle <(printf ">s1\nA\n>s2\nT\n") \
+    --randseed 0 \
+    --quiet \
+    --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
