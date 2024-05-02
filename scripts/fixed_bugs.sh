@@ -730,6 +730,47 @@ DESCRIPTION="issue 13: vsearch documentation (vsearch --help mentions manpage)"
 ##
 ## https://github.com/torognes/vsearch/issues/15
 
+## --slots is ignored (with a warning)
+DESCRIPTION="issue 15: --slots is accepted but ignored"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">s1\nA\n") \
+    --slots 2801 \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --blast6out /dev/null 2>&1 | \
+    grep -q "WARNING" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --pattern is ignored (with a warning)
+DESCRIPTION="issue 15: --pattern is accepted but ignored"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">s1\nA\n") \
+    --pattern "10111011" \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --blast6out /dev/null 2>&1 | \
+    grep -q "WARNING" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --wordlength is accepted (also accepted by --orient and --udb)
+DESCRIPTION="issue 15: --wordlength is accepted"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">s1\nA\n") \
+    --wordlength 12 \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
