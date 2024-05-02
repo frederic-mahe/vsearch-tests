@@ -1036,6 +1036,31 @@ DESCRIPTION="issue 19: --iddef is implemented (4)"
 ##
 ## https://github.com/torognes/vsearch/issues/20
 
+DESCRIPTION="issue 20: --blast6out outputs 12 columns (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --blast6out - | \
+    awk '{exit NF == 12 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 20: --blast6out outputs 12 columns (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --blast6out - | \
+    awk '{exit NF == 12 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
