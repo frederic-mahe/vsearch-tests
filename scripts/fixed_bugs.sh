@@ -625,6 +625,49 @@ DESCRIPTION="issue 11: --cluster_otus is not implemented"
 ##
 ## https://github.com/torognes/vsearch/issues/12
 
+# simple (simplest?) positive example
+DESCRIPTION="issue 12: --uchime_denovo is implemented"
+#        1...5...10...15...20...25...30...35
+A_START="TCCAGCTCCAATAGCGTATACTAAAGTTGTTGC"  # shorter does not work
+B_START="AGTTCATGGGCAGGGGCTCCCCGTCATTTACTG"
+A_END=$(rev <<< ${A_START})
+B_END=$(rev <<< ${B_START})
+(
+    printf ">parentA;size=50\n%s\n" "${A_START}${A_END}"
+    printf ">parentB;size=49\n%s\n" "${B_START}${B_END}"
+    printf ">chimeraAB;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --qmask none \
+        --quiet \
+        --chimeras - | \
+    grep -qw ">chimeraAB;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START B_START A_END B_END
+
+# simple (simplest?) positive example
+DESCRIPTION="issue 12: --uchime_ref is implemented"
+#        1...5...10...15...20...25...30...35
+A_START="TCCAGCTCCAATAGCGTATACTAAAGTTGTTGC"  # shorter does not work
+B_START="AGTTCATGGGCAGGGGCTCCCCGTCATTTACTG"
+A_END=$(rev <<< ${A_START})
+B_END=$(rev <<< ${B_START})
+"${VSEARCH}" \
+    --uchime_ref <(printf ">chimeraAB\n%s\n" "${A_START}${B_END}") \
+    --db <(printf ">parentA\n%s\n" "${A_START}${A_END}"
+           printf ">parentB\n%s\n" "${B_START}${B_END}") \
+               --qmask none \
+               --quiet \
+               --chimeras - | \
+    grep -qw ">chimeraAB" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START B_START A_END B_END
+
 
 #******************************************************************************#
 #                                                                              #
