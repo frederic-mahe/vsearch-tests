@@ -1566,6 +1566,107 @@ unset SEQ
 ##
 ## https://github.com/torognes/vsearch/issues/24
 
+DESCRIPTION="issue 24: --maxaccepts 1 match by default"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAA\n>t2\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --blast6out - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 24: --maxaccepts limits the number of matches (2 matches, accepts 1)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAA\n>t2\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --maxaccepts 1 \
+    --blast6out - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 24: --maxaccepts 0 removes the limit on the number of matches"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAA\n>t2\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --maxaccepts 0 \
+    --blast6out - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 24: --maxrejects breaks after 32 bad matches (by default)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(for i in {1..32} ; do printf ">t%d\nAAT\n" $i ; done ; printf ">t33\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --blast6out - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 24: --maxrejects accepts hits after 31 bad matches (by default)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(for i in {1..31} ; do printf ">t%d\nAAT\n" $i ; done ; printf ">t33\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --blast6out - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 24: --maxrejects 1 breaks after 1 bad match"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAT\n>t2\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --maxrejects 1 \
+    --blast6out - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 24: --maxrejects 2 breaks after 2 bad matches (2nd target is tested and accepted)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAT\n>t2\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --maxrejects 2 \
+    --blast6out - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 24: --maxrejects 0 scans all targets until --maxaccepts is fulfilled"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAT\n>t2\nAAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --maxrejects 0 \
+    --blast6out - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
