@@ -763,7 +763,7 @@ DESCRIPTION="issue 15: --wordlength is accepted"
 "${VSEARCH}" \
     --usearch_global <(printf ">q1\nA\n") \
     --db <(printf ">s1\nA\n") \
-    --wordlength 12 \
+    --wordlength 8 \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
