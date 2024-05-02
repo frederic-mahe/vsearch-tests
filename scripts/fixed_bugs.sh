@@ -1070,6 +1070,441 @@ DESCRIPTION="issue 20: --blast6out outputs 12 columns (no match)"
 ##
 ## https://github.com/torognes/vsearch/issues/21
 
+# - alnout, blast6out, userout, uc
+# - match or no match
+# - with output_no_hits
+# - with uc_allhits
+# - with both
+# (4 + 4) * 4 = 32 tests
+#
+# ------------------------------------------------------------------ no options
+DESCRIPTION="issue 21: --alnout (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --alnout - | \
+    grep -qw "^Qry" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --alnout (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --alnout - | \
+    grep -qw "^Qry" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --blast6out (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --blast6out - | \
+    grep -qw "^query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --blast6out (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --blast6out - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --userout (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --userfields query \
+    --userout - | \
+    grep -qw "query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --userout (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --userfields query \
+    --userout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --uc (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --uc - | \
+    grep -qw "H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --uc (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --uc - | \
+    grep -qw "N" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --------------------------------------------------------- with output_no_hits
+DESCRIPTION="issue 21: --alnout --output_no_hits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --alnout - | \
+    grep -qw "^Qry" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --alnout --output_no_hits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --alnout - | \
+    grep -qw "^Qry" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --blast6out --output_no_hits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --blast6out - | \
+    grep -qw "^query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --blast6out --output_no_hits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --blast6out - | \
+    grep -q "^query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --userout --output_no_hits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --userfields query \
+    --userout - | \
+    grep -qw "query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --userout --output_no_hits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --userfields query \
+    --userout - | \
+    grep -qw "query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --uc --output_no_hits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --uc - | \
+    grep -qw "H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --uc --output_no_hits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --uc - | \
+    grep -qw "N" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ------------------------------------------------------------- with uc_allhits
+DESCRIPTION="issue 21: --alnout --uc_allhits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --uc_allhits \
+    --alnout - | \
+    grep -qw "^Qry" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --alnout --uc_allhits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --uc_allhits \
+    --alnout - | \
+    grep -qw "^Qry" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --blast6out --uc_allhits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --uc_allhits \
+    --blast6out - | \
+    grep -qw "^query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --blast6out --uc_allhits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --uc_allhits \
+    --blast6out - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --userout --uc_allhits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --uc_allhits \
+    --userfields query \
+    --userout - | \
+    grep -qw "query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --userout --uc_allhits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --uc_allhits \
+    --userfields query \
+    --userout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --uc --uc_allhits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --uc_allhits \
+    --uc - | \
+    grep -qw "H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --uc --uc_allhits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --uc_allhits \
+    --uc - | \
+    grep -qw "N" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ------------------------------------------ with output_no_hits and uc_allhits
+DESCRIPTION="issue 21: --alnout --output_no_hits --uc_allhits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --uc_allhits \
+    --alnout - | \
+    grep -qw "^Qry" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --alnout --output_no_hits --uc_allhits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --uc_allhits \
+    --alnout - | \
+    grep -qw "^Qry" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --blast6out --output_no_hits --uc_allhits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --uc_allhits \
+    --blast6out - | \
+    grep -qw "^query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --blast6out --output_no_hits --uc_allhits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --uc_allhits \
+    --blast6out - | \
+    grep -qw "^query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --userout --output_no_hits --uc_allhits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --uc_allhits \
+    --userfields query \
+    --userout - | \
+    grep -qw "query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --userout --output_no_hits --uc_allhits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --uc_allhits \
+    --userfields query \
+    --userout - | \
+    grep -qw "query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --uc --output_no_hits --uc_allhits (match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGT\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --uc_allhits \
+    --uc - | \
+    grep -qw "H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 21: --uc --output_no_hits --uc_allhits (no match)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">query\nACGT\n") \
+    --db <(printf ">target\nACGA\n") \
+    --minseqlength 4 \
+    --id 1.0 \
+    --quiet \
+    --output_no_hits \
+    --uc_allhits \
+    --uc - | \
+    grep -qw "N" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
