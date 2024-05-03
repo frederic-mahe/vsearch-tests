@@ -813,14 +813,14 @@ DESCRIPTION="issue 15: --wordlength is accepted"
 # openings and gap extensions
 DESCRIPTION="issue 18: userfield values are correct (raw)"
 "${VSEARCH}" \
-    --usearch_global <(printf ">query\nGTCA\n") \
+    --usearch_global <(printf ">query\nACGT\n") \
     --db <(printf ">target\nACGT\n") \
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
     --userfield "raw" \
     --userout - | \
-    grep -qw "1" && \
+    grep -qw "8" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
