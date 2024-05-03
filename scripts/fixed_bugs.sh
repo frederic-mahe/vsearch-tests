@@ -1678,6 +1678,38 @@ DESCRIPTION="issue 24: --maxrejects 0 scans all targets until --maxaccepts is fu
 
 ## --msaout, --consout and --cons_truncate
 
+DESCRIPTION="issue 25: --cluster_fast accepts --msaout"
+"${VSEARCH}" \
+    --cluster_fast <(printf ">q1\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --msaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 25: --cluster_fast accepts --consout"
+"${VSEARCH}" \
+    --cluster_fast <(printf ">q1\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --consout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 25: --cluster_fast --cons_truncate is not implemented"
+"${VSEARCH}" \
+    --cluster_fast <(printf ">q1\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --cons_truncate /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# Note: msaout and consout outputs are tested in later issues
+
 
 #******************************************************************************#
 #                                                                              #
