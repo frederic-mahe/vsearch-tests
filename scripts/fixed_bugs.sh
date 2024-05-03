@@ -10811,6 +10811,40 @@ ${VSEARCH} \
 
 unset q1 s1 s2 s3
 
+## ----- weak hits are not deduced from maxaccepts but count towards maxrejects
+## weak hit is processed first, maxaccepts is still 1, search continues
+DESCRIPTION="issue 554: with weak_id, weak hits counts towards maxrejects (find weak hit first, continue)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACGT\n") \
+    --db <(printf ">s1\nACGA\n>s2\nACGT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --weak_id 0.75 \
+    --maxaccepts 1 \
+    --quiet \
+    --blast6out - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## weak hit is processed first, rejects is incremented, maxrejects == 1, search stops
+DESCRIPTION="issue 554: with weak_id, weak hits counts towards maxrejects (find weak hit first, stop)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nACGT\n") \
+    --db <(printf ">s1\nACGA\n>s2\nACGT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --weak_id 0.75 \
+    --maxaccepts 0 \
+    --maxrejects 1 \
+    --quiet \
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+exit
+
 
 #******************************************************************************#
 #                                                                              #
