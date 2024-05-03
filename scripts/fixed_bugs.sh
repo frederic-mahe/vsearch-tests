@@ -2041,6 +2041,406 @@ DESCRIPTION="issue 29: --derep_fulllength --maxuniquesize discards abundances gr
 ##
 ## https://github.com/torognes/vsearch/issues/30
 
+DESCRIPTION="issue 30: --maskfasta (should not discard sequences)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaa\n>s2\naaaaaaaaaa\n") \
+    --quiet \
+    --output - | \
+    awk '/^>/ {counter += 1} END {exit counter == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask none (should not discard sequences)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaa\n>s2\naaaaaaaaaa\n") \
+    --quiet \
+    --qmask none \
+    --output - | \
+    awk '/^>/ {counter += 1} END {exit counter == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask soft (should not discard sequences)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaa\n>s2\naaaaaaaaaa\n") \
+    --quiet \
+    --qmask soft \
+    --output - | \
+    awk '/^>/ {counter += 1} END {exit counter == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask dust (should not discard sequences)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaa\n>s2\naaaaaaaaaa\n") \
+    --quiet \
+    --qmask dust \
+    --output - | \
+    awk '/^>/ {counter += 1} END {exit counter == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ----------------------------------------------------------- sequence masking
+# 1	nohardmask,defaultmasking,lowercase,complex
+# 2	nohardmask,defaultmasking,lowercase,monotonous
+# 3	nohardmask,defaultmasking,uppercase,complex
+# 4	nohardmask,defaultmasking,uppercase,monotonous
+DESCRIPTION="issue 30: --maskfasta (lowercase, complex -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nacgtacgtacgt\n") \
+    --quiet \
+    --output - | \
+    grep -qw "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta (upppercase, complex -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nACGTACGTACGT\n") \
+    --quiet \
+    --output - | \
+    grep -qw "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta (lowercase, monotonous -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaaaa\n") \
+    --quiet \
+    --output - | \
+    grep -qw "aaaaaaaaaaaa" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta (upppercase, monotonous -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nAAAAAAAAAAAA\n") \
+    --quiet \
+    --output - | \
+    grep -qw "aaaaaaaaaaaa" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 5	nohardmask,none,lowercase,complex
+# 6	nohardmask,none,lowercase,monotonous
+# 7	nohardmask,none,uppercase,complex
+# 8	nohardmask,none,uppercase,monotonous
+DESCRIPTION="issue 30: --maskfasta --qmask none (lowercase, complex -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nacgtacgtacgt\n") \
+    --quiet \
+    --qmask none \
+    --output - | \
+    grep -qw "acgtacgtacgt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask none (upppercase, complex -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nACGTACGTACGT\n") \
+    --quiet \
+    --qmask none \
+    --output - | \
+    grep -qw "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask none (lowercase, monotonous -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaaaa\n") \
+    --quiet \
+    --qmask none \
+    --output - | \
+    grep -qw "aaaaaaaaaaaa" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask none (upppercase, monotonous -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nAAAAAAAAAAAA\n") \
+    --quiet \
+    --qmask none \
+    --output - | \
+    grep -qw "AAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 9	nohardmask,soft,lowercase,complex
+# 10	nohardmask,soft,lowercase,monotonous
+# 11	nohardmask,soft,uppercase,complex
+# 12	nohardmask,soft,uppercase,monotonous
+DESCRIPTION="issue 30: --maskfasta --qmask soft (lowercase, complex -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nacgtacgtacgt\n") \
+    --quiet \
+    --qmask soft \
+    --output - | \
+    grep -qw "acgtacgtacgt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask soft (upppercase, complex -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nACGTACGTACGT\n") \
+    --quiet \
+    --qmask soft \
+    --output - | \
+    grep -qw "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask soft (lowercase, monotonous -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaaaa\n") \
+    --quiet \
+    --qmask soft \
+    --output - | \
+    grep -qw "aaaaaaaaaaaa" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask soft (upppercase, monotonous -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nAAAAAAAAAAAA\n") \
+    --quiet \
+    --qmask soft \
+    --output - | \
+    grep -qw "AAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 13	nohardmask,dust,lowercase,complex
+# 14	nohardmask,dust,lowercase,monotonous
+# 15	nohardmask,dust,uppercase,complex
+# 16	nohardmask,dust,uppercase,monotonous
+DESCRIPTION="issue 30: --maskfasta --qmask dust (lowercase, complex -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nacgtacgtacgt\n") \
+    --quiet \
+    --qmask dust \
+    --output - | \
+    grep -qw "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask dust (upppercase, complex -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nACGTACGTACGT\n") \
+    --quiet \
+    --qmask dust \
+    --output - | \
+    grep -qw "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask dust (lowercase, monotonous -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaaaa\n") \
+    --quiet \
+    --qmask dust \
+    --output - | \
+    grep -qw "aaaaaaaaaaaa" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask dust (upppercase, monotonous -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nAAAAAAAAAAAA\n") \
+    --quiet \
+    --qmask dust \
+    --output - | \
+    grep -qw "aaaaaaaaaaaa" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 17	hardmask,defaultmasking,lowercase,complex
+# 18	hardmask,defaultmasking,lowercase,monotonous
+# 19	hardmask,defaultmasking,uppercase,complex
+# 20	hardmask,defaultmasking,uppercase,monotonous
+DESCRIPTION="issue 30: --maskfasta --hardmask (lowercase, complex -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nacgtacgtacgt\n") \
+    --quiet \
+    --hardmask \
+    --output - | \
+    grep -qw "acgtacgtacgt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --hardmask (upppercase, complex -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nACGTACGTACGT\n") \
+    --quiet \
+    --hardmask \
+    --output - | \
+    grep -qw "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --hardmask (lowercase, monotonous -> Ns)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaaaa\n") \
+    --quiet \
+    --hardmask \
+    --output - | \
+    grep -qw "NNNNNNNNNNNN" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --hardmask (upppercase, monotonous -> Ns)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nAAAAAAAAAAAA\n") \
+    --quiet \
+    --hardmask \
+    --output - | \
+    grep -qw "NNNNNNNNNNNN" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 21	hardmask,none,lowercase,complex
+# 22	hardmask,none,lowercase,monotonous
+# 23	hardmask,none,uppercase,complex
+# 24	hardmask,none,uppercase,monotonous
+DESCRIPTION="issue 30: --maskfasta --qmask none --hardmask (lowercase, complex -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nacgtacgtacgt\n") \
+    --quiet \
+    --qmask none \
+    --hardmask \
+    --output - | \
+    grep -qw "acgtacgtacgt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask none --hardmask (upppercase, complex -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nACGTACGTACGT\n") \
+    --quiet \
+    --qmask none \
+    --hardmask \
+    --output - | \
+    grep -qw "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask none --hardmask (lowercase, monotonous -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaaaa\n") \
+    --quiet \
+    --qmask none \
+    --hardmask \
+    --output - | \
+    grep -qw "aaaaaaaaaaaa" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask none --hardmask (upppercase, monotonous -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nAAAAAAAAAAAA\n") \
+    --quiet \
+    --qmask none \
+    --hardmask \
+    --output - | \
+    grep -qw "AAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 25	hardmask,soft,lowercase,complex
+# 26	hardmask,soft,lowercase,monotonous
+# 27	hardmask,soft,uppercase,complex
+# 28	hardmask,soft,uppercase,monotonous
+DESCRIPTION="issue 30: --maskfasta --qmask soft --hardmask (lowercase, complex -> Ns)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nacgtacgtacgt\n") \
+    --quiet \
+    --qmask soft \
+    --hardmask \
+    --output - | \
+    grep -qw "NNNNNNNNNNNN" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask soft --hardmask (upppercase, complex -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nACGTACGTACGT\n") \
+    --quiet \
+    --qmask soft \
+    --hardmask \
+    --output - | \
+    grep -qw "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask soft --hardmask (lowercase, monotonous -> Ns)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaaaa\n") \
+    --quiet \
+    --qmask soft \
+    --hardmask \
+    --output - | \
+    grep -qw "NNNNNNNNNNNN" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask soft --hardmask (upppercase, monotonous -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nAAAAAAAAAAAA\n") \
+    --quiet \
+    --qmask soft \
+    --hardmask \
+    --output - | \
+    grep -qw "AAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 29	hardmask,dust,lowercase,complex
+# 30	hardmask,dust,lowercase,monotonous
+# 31	hardmask,dust,uppercase,complex
+# 32	hardmask,dust,uppercase,monotonous
+DESCRIPTION="issue 30: --maskfasta --qmask dust --hardmask (lowercase, complex -> lowercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nacgtacgtacgt\n") \
+    --quiet \
+    --qmask dust \
+    --hardmask \
+    --output - | \
+    grep -qw "acgtacgtacgt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask dust --hardmask (upppercase, complex -> uppercase)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nACGTACGTACGT\n") \
+    --quiet \
+    --qmask dust \
+    --hardmask \
+    --output - | \
+    grep -qw "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask dust --hardmask (lowercase, monotonous -> Ns)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\naaaaaaaaaaaa\n") \
+    --quiet \
+    --qmask dust \
+    --hardmask \
+    --output - | \
+    grep -qw "NNNNNNNNNNNN" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 30: --maskfasta --qmask dust --hardmask (upppercase, monotonous -> Ns)"
+${VSEARCH} \
+    --maskfasta <(printf ">s1\nAAAAAAAAAAAA\n") \
+    --quiet \
+    --qmask dust \
+    --hardmask \
+    --output - | \
+    grep -qw "NNNNNNNNNNNN" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
