@@ -30,6 +30,8 @@ DESCRIPTION="check if vsearch is executable"
         failure "${DESCRIPTION}"
 
 
+## see issue 30 for more tests
+
 #*****************************************************************************#
 #                                                                             #
 #                               Maskfasta                                     #
