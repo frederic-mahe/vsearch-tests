@@ -11531,9 +11531,7 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')
 
 exit 0
 
-# DONE: issues 1 to 30
-# TODO : incomplete 554
-# DONE: issues 555 to 559
+# DONE: issues 1 to 30 and 550 to 559
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
