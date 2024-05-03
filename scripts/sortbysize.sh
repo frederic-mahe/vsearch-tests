@@ -39,6 +39,7 @@ DESCRIPTION="check if vsearch is executable"
 ## --relabel_md5 --relabel_self --relabel_sha1 --sample --sizein
 ## --sizeout --threads --topn --xee --xlength --xsize
 
+## see also issue 28 for some initial tests
 
 #*****************************************************************************#
 #                                                                             #
