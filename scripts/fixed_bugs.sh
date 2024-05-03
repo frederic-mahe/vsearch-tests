@@ -1910,6 +1910,96 @@ DESCRIPTION="issue 28: --sortbysize --minsize discards abundances lesser than va
 ##
 ## https://github.com/torognes/vsearch/issues/29
 
+## Note: sizein is not required
+
+## -------------------------------------------------------------- minuniquesize
+DESCRIPTION="issue 29: --derep_fulllength accepts --minuniquesize"
+"${VSEARCH}" \
+    --derep_fulllength <(printf ">s1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --minuniquesize 1 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 29: --derep_fulllength --minuniquesize discards abundances lesser than value (>)"
+"${VSEARCH}" \
+    --derep_fulllength <(printf ">s1\nA\n>s2\nA\n>s3\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --minuniquesize 2 \
+    --output - | \
+    grep -qw ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 29: --derep_fulllength --minuniquesize discards abundances lesser than value (=)"
+"${VSEARCH}" \
+    --derep_fulllength <(printf ">s1\nA\n>s2\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --minuniquesize 2 \
+    --output - | \
+    grep -qw ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 29: --derep_fulllength --minuniquesize discards abundances lesser than value (<)"
+"${VSEARCH}" \
+    --derep_fulllength <(printf ">s1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --minuniquesize 2 \
+    --output - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## -------------------------------------------------------------- maxuniquesize
+DESCRIPTION="issue 29: --derep_fulllength accepts --maxuniquesize"
+"${VSEARCH}" \
+    --derep_fulllength <(printf ">s1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --maxuniquesize 1 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 29: --derep_fulllength --maxuniquesize discards abundances greater than value (>)"
+"${VSEARCH}" \
+    --derep_fulllength <(printf ">s1\nA\n>s2\nA\n>s3\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --maxuniquesize 2 \
+    --output - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 29: --derep_fulllength --maxuniquesize discards abundances greater than value (=)"
+"${VSEARCH}" \
+    --derep_fulllength <(printf ">s1\nA\n>s2\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --maxuniquesize 2 \
+    --output - | \
+    grep -qw ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 29: --derep_fulllength --maxuniquesize discards abundances greater than value (<)"
+"${VSEARCH}" \
+    --derep_fulllength <(printf ">s1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --maxuniquesize 2 \
+    --output - | \
+    grep -qw ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
