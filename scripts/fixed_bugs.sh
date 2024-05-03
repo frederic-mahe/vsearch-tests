@@ -10599,18 +10599,18 @@ s2="AAACAAGAATACCACGACTAGCAGGAGTATGATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA" # weak m
 #                    substitution ^
 s3="GGGTGGCGGAGTTGTCGTAGCTGCCGCAGATGACGAATTTCTTATCCTCATACTAACCCACAAAGG"  # no match, but 100% of kmers
 
-## normal search:
+## -------------------------------------------------------------- normal search
 
-DESCRIPTION="issue 554: without weak_id, no good match"
+DESCRIPTION="issue 554: without weak_id, no good match (but perfect kmer match)"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${q1}") \
     --db <(printf ">s3\n%s\n" "${s3}") \
     --id 1.0 \
     --quiet \
-    --uc - |
+    --uc - | \
     awk '{exit $1 == "N" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 554: without weak_id, weak match"
 ${VSEARCH} \
@@ -10618,21 +10618,10 @@ ${VSEARCH} \
     --db <(printf ">s2\n%s\n" "${s2}") \
     --id 1.0 \
     --quiet \
-    --uc - |
+    --uc - | \
     awk '{exit $1 == "N" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
-
-DESCRIPTION="issue 554: without weak_id, no match (but perfect kmer match)"
-${VSEARCH} \
-    --usearch_global <(printf ">q1\n%s\n" "${q1}") \
-    --db <(printf ">s3\n%s\n" "${s3}") \
-    --id 1.0 \
-    --quiet \
-    --uc - |
-    awk '{exit $1 == "N" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 554: without weak_id, good match"
 ${VSEARCH} \
@@ -10640,10 +10629,10 @@ ${VSEARCH} \
     --db <(printf ">s1\n%s\n" "${s1}") \
     --id 1.0 \
     --quiet \
-    --uc - |
+    --uc - | \
     awk '{exit $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 554: without weak_id, weak match, good match"
 ${VSEARCH} \
@@ -10651,10 +10640,10 @@ ${VSEARCH} \
     --db <(printf ">s2\n%s\n>s1\n%s\n" "${s2}" "${s1}") \
     --id 1.0 \
     --quiet \
-    --uc - |
-    awk '{exit $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 554: without weak_id, no match (but perfect kmer), good match"
 ${VSEARCH} \
@@ -10662,10 +10651,10 @@ ${VSEARCH} \
     --db <(printf ">s3\n%s\n>s1\n%s\n" "${s3}" "${s1}") \
     --id 1.0 \
     --quiet \
-    --uc - |
-    awk '{exit $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 554: without weak_id, good match, weak match"
 ${VSEARCH} \
@@ -10673,10 +10662,10 @@ ${VSEARCH} \
     --db <(printf ">s1\n%s\n>s2\n%s\n" "${s1}" "${s2}") \
     --id 1.0 \
     --quiet \
-    --uc - |
-    awk '{exit $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 554: without weak_id, good match, no match (but perfect kmer)"
 ${VSEARCH} \
@@ -10684,13 +10673,12 @@ ${VSEARCH} \
     --db <(printf ">s1\n%s\n>s3\n%s\n" "${s1}" "${s3}") \
     --id 1.0 \
     --quiet \
-    --uc - |
-    awk '{exit $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-
-## with option --weak_id:
+## ------------------------------------------------------ with option --weak_id
 
 DESCRIPTION="issue 554: with weak_id, no good match"
 ${VSEARCH} \
@@ -10699,10 +10687,10 @@ ${VSEARCH} \
     --id 1.0 \
     --weak_id 0.98 \
     --quiet \
-    --uc - |
-    awk '{exit $1 == "N" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 554: with weak_id, weak match"
 ${VSEARCH} \
@@ -10711,10 +10699,10 @@ ${VSEARCH} \
     --id 1.0 \
     --weak_id 0.98 \
     --quiet \
-    --uc - |
-    awk '{exit $NF == "s2" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s2" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 554: with weak_id, no match (but perfect kmer match)"
 ${VSEARCH} \
@@ -10723,10 +10711,10 @@ ${VSEARCH} \
     --id 1.0 \
     --weak_id 0.98 \
     --quiet \
-    --uc - |
-    awk '{exit $1 == "N" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 554: with weak_id, good match"
 ${VSEARCH} \
@@ -10735,64 +10723,65 @@ ${VSEARCH} \
     --id 1.0 \
     --weak_id 0.98 \
     --quiet \
-    --uc - |
-    awk '{exit $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 554: with weak_id, weak match, good match (only one match)"
+# only one match because of maxaccepts = 1 by default
+DESCRIPTION="issue 554: with weak_id, weak match, good match"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${q1}") \
     --db <(printf ">s2\n%s\n>s1\n%s\n" "${s2}" "${s1}") \
     --id 1.0 \
     --weak_id 0.98 \
     --quiet \
-    --uc - |
-    awk 'END {exit NR == 1 && $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 554: with weak_id, no match (but perfect kmer), good match (only one match)"
+DESCRIPTION="issue 554: with weak_id, no match (but perfect kmer), good match"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${q1}") \
     --db <(printf ">s3\n%s\n>s1\n%s\n" "${s3}" "${s1}") \
     --id 1.0 \
     --weak_id 0.98 \
     --quiet \
-    --uc - |
-    awk 'END {exit NR == 1 && $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 554: with weak_id, good match, weak match (only one match)"
+# only one match because of maxaccepts = 1 by default
+DESCRIPTION="issue 554: with weak_id, good match, weak match"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${q1}") \
     --db <(printf ">s1\n%s\n>s2\n%s\n" "${s1}" "${s2}") \
     --id 1.0 \
     --weak_id 0.98 \
     --quiet \
-    --uc - |
-    awk '{exit $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 554: with weak_id, good match, no match (but perfect kmer) (only one match)"
+DESCRIPTION="issue 554: with weak_id, good match, no match (but perfect kmer)"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${q1}") \
     --db <(printf ">s1\n%s\n>s3\n%s\n" "${s1}" "${s3}") \
     --id 1.0 \
     --weak_id 0.98 \
     --quiet \
-    --uc - |
-    awk '{exit $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
-## with unlimited accepts and rejects
-
-## expect two matches? no, only one match
-DESCRIPTION="issue 554: with weak_id, unlimited accepts and rejects, weak match, good match (only one match)"
+## ----------------------------------------- with unlimited accepts and rejects
+## expect two matches
+DESCRIPTION="issue 554: with weak_id, unlimited accepts and rejects, weak match, good match"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${q1}") \
     --db <(printf ">s2\n%s\n>s1\n%s\n" "${s2}" "${s1}") \
@@ -10801,12 +10790,12 @@ ${VSEARCH} \
     --maxaccepts 0 \
     --maxrejects 0 \
     --quiet \
-    --uc - |
-    awk 'END {exit NR == 1 && $NF == "s1" ? 0 : 1}' && \
+    --blast6out - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 554: with weak_id, unlimited accepts and rejects, good match, weak match (only one match)"
+DESCRIPTION="issue 554: with weak_id, unlimited accepts and rejects, good match, weak match"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${q1}") \
     --db <(printf ">s1\n%s\n>s2\n%s\n" "${s1}" "${s2}") \
@@ -10815,36 +10804,12 @@ ${VSEARCH} \
     --maxaccepts 0 \
     --maxrejects 0 \
     --quiet \
-    --uc - |
-    awk 'END {exit NR == 1 && $NF == "s1" ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
+    --blast6out - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 unset q1 s1 s2 s3
-
-## incomplete test! fail to capture weak_id match and good match at the same time
-
-# DESCRIPTION="issue 554: with weak_id, unlimited accepts and rejects, weak match before good match"
-# # case where the weak hit is found before the true hit??
-
-# q1="AAACAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA"
-# s2="AAACAAGAATACCACGACTAGCAGGAGTATGATGATTCCCGCCACGGCGTCTGCTTGGGTGTTTAA" # weak match (97.0%)
-# #                   substitutions ^            ^
-# s3="GTCCAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA" # weaker match (95.5%), higher kmer similarity?
-# #   ^^^
-
-# # s3 must be kmer-sorted before s2: maybe two terminal mismatches?
-
-# vsearch \
-#     --usearch_global <(printf ">q1\n%s\n" "${q1}") \
-#     --db <(printf ">s3\n%s\n>s2\n%s\n" "${s3}" "${s2}") \
-#     --id 0.97 \
-#     --weak_id 0.95 \
-#     --maxaccepts 0 \
-#     --maxrejects 0 \
-#     --quiet \
-#     --alnout - \
-#     --uc -
 
 
 #******************************************************************************#
