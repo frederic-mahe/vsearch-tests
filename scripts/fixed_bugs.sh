@@ -2514,6 +2514,58 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/32
 
+DESCRIPTION="issue 32: --usearch_global query headers are truncated at first space"
+${VSEARCH} \
+    --usearch_global <(printf ">q1 junk\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --userfields query \
+    --userout - | \
+    awk 'BEGIN {FS = "\t"} {exit $1 == "q1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 32: --usearch_global query headers are truncated at first space (#2)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1 junk junk2\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --userfields query \
+    --userout - | \
+    awk 'BEGIN {FS = "\t"} {exit $1 == "q1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 32: --usearch_global target headers are truncated at first space"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1 junk\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --userfields target \
+    --userout - | \
+    awk 'BEGIN {FS = "\t"} {exit $1 == "t1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 32: --usearch_global target headers are truncated at first space (#2)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1 junk junk2\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --userfields target \
+    --userout - | \
+    awk 'BEGIN {FS = "\t"} {exit $1 == "t1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
