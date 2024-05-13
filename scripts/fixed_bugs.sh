@@ -2450,6 +2450,60 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/31
 
+## 11th field. evalue: expectancy-value (not computed for nucleotide
+## alignments). Always set to -1.
+DESCRIPTION="issue 31: --blast6out evalue is set to -1"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --blast6out - | \
+    awk '{exit $11 == -1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 31: --userout evalue is set to -1"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --userfields evalue \
+    --userout - | \
+    awk '{exit $1 == -1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## 12th field. bits: bit score (not computed for nucleotide
+## alignments). Always set to 0.
+DESCRIPTION="issue 31: --blast6out bits is set to 0"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --blast6out - | \
+    awk '{exit $12 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 31: --userout bits is set to -1"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --userfields bits \
+    --userout - | \
+    awk '{exit $1 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -11638,7 +11692,7 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')
 
 exit 0
 
-# DONE: issues 1 to 30 and 549 to 561
+# DONE: issues 1 to 31 and 549 to 561
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
