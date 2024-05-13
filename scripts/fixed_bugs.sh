@@ -10347,7 +10347,43 @@ unset Q t1 t2
 ##
 ## https://github.com/torognes/vsearch/issues/549
 
-# not testable?
+# continuation of issue 474
+# NextSeq and RTA3 (2023) quality values are: 2, 14, 21, 27, 32, and 36
+
+# 33                        59   64       73                            104                   126
+#  |                         |    |        |                              |                     |
+#  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+#    |           |      |     |    |   |
+#    2..........14.....21....27...32..36
+#                                   |           |      |     |    |   |
+#                                   2..........14.....21....27...32..36
+
+# |   RTA3 |     |     |
+# | offset | +33 | +64 |
+# |--------+-----+-----|
+# |      2 | '#' | 'B' |
+# |     14 | '/' | 'N' |
+# |     21 | '6' | 'U' |
+# |     27 | '<' | '[' |
+# |     32 | 'A' | '`' |
+# |     36 | 'E' | 'd' |
+# |--------+-----+-----|
+
+for OFFSET in 33 64 ; do
+    for i in 2 14 21 27 32 36 ; do
+        DESCRIPTION="issue 549: RTA3 quality score ${i} is accepted (offset +${OFFSET})"
+        OCTAL=$(printf "\%04o" $(( ${i} + ${OFFSET} )) )
+        echo -e "@s\nA\n+\n${OCTAL}\n" | \
+            "${VSEARCH}" \
+                --fastq_eestats - \
+                --fastq_ascii ${OFFSET} \
+                --quiet \
+                --output /dev/null 2> /dev/null && \
+            success "${DESCRIPTION}" || \
+                failure "${DESCRIPTION}"
+    done
+done
+unset OCTAL OFFSET DESCRIPTION
 
 
 #******************************************************************************#
