@@ -2612,6 +2612,33 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/34
 
+DESCRIPTION="issue 34: --usearch_global returns multiple hit"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAC\n>t2\nAAG\n>t3\nAAA\n") \
+    --minseqlength 3 \
+    --maxaccepts 0 \
+    --quiet \
+    --id 0.6 \
+    --blast6out - | \
+    awk 'END {exit NR == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 34: --usearch_global --top_hits_only returns best hit"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAC\n>t2\nAAG\n>t3\nAAA\n") \
+    --minseqlength 3 \
+    --maxaccepts 0 \
+    --quiet \
+    --id 0.6 \
+    --top_hits_only \
+    --blast6out - | \
+    awk 'END {exit $2 == "t3" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
