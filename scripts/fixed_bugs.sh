@@ -2578,6 +2578,8 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/45
 
+# not testable
+
 
 #******************************************************************************#
 #                                                                              #
@@ -2586,6 +2588,21 @@ ${VSEARCH} \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/46
+
+DESCRIPTION="issue 46: --help writes to stdout"
+"${VSEARCH}" \
+    --help 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 46: --help is cancelled by --quiet"
+"${VSEARCH}" \
+    --help \
+    --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 #******************************************************************************#
