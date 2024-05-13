@@ -11608,9 +11608,20 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')
 ## not testable
 
 
+#******************************************************************************#
+#                                                                              #
+#                vsearch.1: typo choosen -> chosen (issue 561)                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/561
+
+## pull request, not testable
+
+
 exit 0
 
-# DONE: issues 1 to 30 and 549 to 560
+# DONE: issues 1 to 30 and 549 to 561
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
