@@ -2648,6 +2648,124 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/35
 
+DESCRIPTION="issue 35: --derep_fulllength treats T and U as identical (U first)"
+${VSEARCH} \
+    --derep_fulllength <(printf ">s1\nU\n>s2\nT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1U" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 35: --derep_fulllength treats T and U as identical (T first)"
+${VSEARCH} \
+    --derep_fulllength <(printf ">s1\nT\n>s2\nU\n") \
+    --minseqlength 1 \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 35: --derep_id treats T and U as identical (U first)"
+${VSEARCH} \
+    --derep_id <(printf ">s1\nU\n>s2\nT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1U" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 35: --derep_id treats T and U as identical (T first)"
+${VSEARCH} \
+    --derep_id <(printf ">s1\nT\n>s2\nU\n") \
+    --minseqlength 1 \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 35: --derep_prefix treats T and U as identical (U first)"
+${VSEARCH} \
+    --derep_prefix <(printf ">s1\nU\n>s2\nT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1U" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 35: --derep_prefix treats T and U as identical (T first)"
+${VSEARCH} \
+    --derep_prefix <(printf ">s1\nT\n>s2\nU\n") \
+    --minseqlength 1 \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 35: --fastx_uniques treats T and U as identical (U first)"
+${VSEARCH} \
+    --fastx_uniques <(printf ">s1\nU\n>s2\nT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --fastaout - | \
+    tr -d "\n" | \
+    grep -wq ">s1U" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 35: --fastx_uniques treats T and U as identical (T first)"
+${VSEARCH} \
+    --fastx_uniques <(printf ">s1\nT\n>s2\nU\n") \
+    --minseqlength 1 \
+    --quiet \
+    --fastaout - | \
+    tr -d "\n" | \
+    grep -wq ">s1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 35: --derep_smallmem treats T and U as identical (U first)"
+TMP_FASTA=$(mktemp)
+printf ">s1\nU\n>s2\nT\n" > "${TMP_FASTA}"
+${VSEARCH} \
+    --derep_smallmem "${TMP_FASTA}" \
+    --minseqlength 1 \
+    --quiet \
+    --fastaout - | \
+    tr -d "\n" | \
+    grep -wq ">s1U" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP_FASTA}"
+unset TMP_FASTA
+
+DESCRIPTION="issue 35: --derep_smallmem treats T and U as identical (T first)"
+TMP_FASTA=$(mktemp)
+printf ">s1\nT\n>s2\nU\n" > "${TMP_FASTA}"
+${VSEARCH} \
+    --derep_smallmem "${TMP_FASTA}" \
+    --minseqlength 1 \
+    --quiet \
+    --fastaout - | \
+    tr -d "\n" | \
+    grep -wq ">s1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP_FASTA}"
+unset TMP_FASTA
+
 
 #******************************************************************************#
 #                                                                              #
