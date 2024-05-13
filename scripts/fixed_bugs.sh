@@ -2523,6 +2523,34 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/33
 
+## 3rd field. id: percentage of identity (real value ranging from 0.0 to 100.0)
+DESCRIPTION="issue 33: --blast6out id is set to 0.0 when there is no alignment"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --output_no_hits \
+    --blast6out - | \
+    awk '{exit $3 == "0.0" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 33: --userout id is set to 0.0 when there is no alignment"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nT\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --output_no_hits \
+    --userfields id \
+    --userout - | \
+    awk '{exit $1 == "0.0" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
