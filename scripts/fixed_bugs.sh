@@ -3072,6 +3072,15 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/44
 
+DESCRIPTION="issue 44: --fastq_mergepairs is implemented"
+${VSEARCH} \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --quiet \
+    --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
