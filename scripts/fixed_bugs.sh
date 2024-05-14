@@ -2865,6 +2865,56 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/37
 
+# - unknown option
+# - known but not applicable
+# - allowed but has no effect (silent)
+# - threads > 1 (warning)
+
+DESCRIPTION="issue 37: --fasta2fastq (no illegal option)"
+${VSEARCH} \
+    --fasta2fastq <(printf ">s1\nA\n") \
+    --quiet \
+    --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 37: --fasta2fastq (unknown option)"
+${VSEARCH} \
+    --fasta2fastq <(printf ">s1\nA\n") \
+    --unknown_option \
+    --quiet \
+    --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 37: --fasta2fastq (illegal option)"
+${VSEARCH} \
+    --fasta2fastq <(printf ">s1\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 37: --fasta2fastq (allowed option)"
+${VSEARCH} \
+    --fasta2fastq <(printf ">s1\nA\n") \
+    --threads 1 \
+    --quiet \
+    --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 37: --fasta2fastq (allowed option with warning)"
+${VSEARCH} \
+    --fasta2fastq <(printf ">s1\nA\n") \
+    --threads 2 \
+    --quiet \
+    --fastqout /dev/null 2>&1 | \
+    grep -iq "warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
