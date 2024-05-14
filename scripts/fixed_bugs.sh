@@ -2775,6 +2775,87 @@ unset TMP_FASTA
 ##
 ## https://github.com/torognes/vsearch/issues/36
 
+DESCRIPTION="issue 36: --cluster_fast --centroids"
+${VSEARCH} \
+    --cluster_fast <(printf ">s1\nA\n>s2\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# note the absence of a semi-colon at the end (added in version 1.0.1,
+# removed some time later)
+DESCRIPTION="issue 36: --cluster_fast --centroids --sizeout"
+${VSEARCH} \
+    --cluster_fast <(printf ">s1\nA\n>s2\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=2A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 36: --cluster_fast --centroids --sizein"
+${VSEARCH} \
+    --cluster_fast <(printf ">s1;size=2\nA\n>s2;size=1\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --sizein \
+    --quiet \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=2A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 36: --cluster_fast --centroids --sizeout"
+${VSEARCH} \
+    --cluster_fast <(printf ">s1;size=2\nA\n>s2;size=1\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=3A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 36: --usearch_global --dbmatched"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --dbmatched - | \
+    tr -d "\n" | \
+    grep -wq ">t1A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 36: --usearch_global --dbmatched --sizeout"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nA\n") \
+    --db <(printf ">t1\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizeout \
+    --dbmatched - | \
+    tr -d "\n" | \
+    grep -wq ">t1;size=1A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
