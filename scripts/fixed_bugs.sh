@@ -3016,6 +3016,8 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/40
 
+# not testable
+
 
 #******************************************************************************#
 #                                                                              #
