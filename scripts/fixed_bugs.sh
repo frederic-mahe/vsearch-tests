@@ -3041,6 +3041,17 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/42
 
+# not implemented yet
+# DESCRIPTION="issue 42: --usearch_global accepts amino-acid sequences"
+# ${VSEARCH} \
+#     --usearch_global <(printf ">q1\nARNDCEQGHILKMFPSTWYV\n") \
+#     -db <(printf ">t1\nARNDCEQGHILKMFPSTWYV\n") \
+#     --id 1.0 \
+#     --quiet \
+#     --blast6out /dev/null && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
