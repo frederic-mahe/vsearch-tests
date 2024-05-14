@@ -3061,6 +3061,8 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/43
 
+# cython API for core-functionalities: noy implemented
+
 
 #******************************************************************************#
 #                                                                              #
