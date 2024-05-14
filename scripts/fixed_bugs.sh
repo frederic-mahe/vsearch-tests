@@ -3125,6 +3125,26 @@ DESCRIPTION="issue 46: --help is cancelled by --quiet"
 ##
 ## https://github.com/torognes/vsearch/issues/47
 
+DESCRIPTION="issue 47: --allpairs_global is implemented (--id)"
+${VSEARCH} \
+    --allpairs_global <(printf ">s1\nA\n>s2\nA\n") \
+    --quiet \
+    --id 1.0 \
+    --blast6out - | \
+    grep -q "^s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 47: --allpairs_global is implemented (--acceptall)"
+${VSEARCH} \
+    --allpairs_global <(printf ">s1\nA\n>s2\nA\n") \
+    --quiet \
+    --acceptall \
+    --blast6out - | \
+    grep -q "^s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
