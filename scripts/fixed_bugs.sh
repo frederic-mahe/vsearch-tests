@@ -3007,6 +3007,9 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/39
 
+# - reading from stdin and compressed stdin has already been tested in issue 9
+# - writing to stdout has already been tested in issue 2
+
 
 #******************************************************************************#
 #                                                                              #
