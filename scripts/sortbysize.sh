@@ -163,6 +163,54 @@ DESCRIPTION="--sortbysize accepts --topn"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sortbysize --topn must be greater than zero"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 0 \
+    --output - /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --topn can be larger than the number of entries"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 2 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --topn can be larger than the number of entries (no effect on output)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 2 \
+    --output - | \
+    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --topn can be equal to the number of entries (no effect on output)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n>s2;size=1\nTT\n") \
+    --quiet \
+    --topn 2 \
+    --output - | \
+    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --topn keeps n first entries"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n>s2;size=1\nTT\n") \
+    --quiet \
+    --topn 1 \
+    --output - | \
+    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
