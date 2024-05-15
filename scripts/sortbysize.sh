@@ -74,7 +74,7 @@ unset TMP
 #*****************************************************************************#
 
 # sort by size ...
-DESCRIPTION="issue 38: --sortbysize single entry, no sorting"
+DESCRIPTION="--sortbysize single entry, no sorting"
 ${VSEARCH} \
     --sortbysize <(printf ">s1;size=2\nA\n") \
     --quiet \
@@ -84,7 +84,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 38: --sortbysize sorts by size (already ordered)"
+DESCRIPTION="--sortbysize sorts by size (already ordered)"
 ${VSEARCH} \
     --sortbysize <(printf ">s1;size=2\nA\n>s2;size=1\nT\n") \
     --quiet \
@@ -94,7 +94,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 38: --sortbysize sorts by size (reverse order)"
+DESCRIPTION="--sortbysize sorts by size (reverse order)"
 ${VSEARCH} \
     --sortbysize <(printf ">s2;size=1\nT\n>s1;size=2\nA\n") \
     --quiet \
@@ -105,7 +105,7 @@ ${VSEARCH} \
         failure "${DESCRIPTION}"
 
 # ... then by label
-DESCRIPTION="issue 38: --sortbysize sorts by size then by label (already ordered)"
+DESCRIPTION="--sortbysize sorts by size then by label (already ordered)"
 ${VSEARCH} \
     --sortbysize <(printf ">s1;size=1\nA\n>s2;size=1\nT\n") \
     --quiet \
@@ -115,7 +115,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 38: --sortbysize sorts by size then by label (reverse order)"
+DESCRIPTION="--sortbysize sorts by size then by label (reverse order)"
 ${VSEARCH} \
     --sortbysize <(printf ">s2;size=1\nT\n>s1;size=1\nA\n") \
     --quiet \
@@ -126,7 +126,7 @@ ${VSEARCH} \
         failure "${DESCRIPTION}"
 
 # ... then by input order
-DESCRIPTION="issue 38: --sortbysize sorts by size then by label then by input order (reversed sequence order)"
+DESCRIPTION="--sortbysize sorts by size then by label then by input order (reversed sequence order)"
 ${VSEARCH} \
     --sortbysize <(printf ">s1;size=1\nT\n>s1;size=1\nA\n") \
     --quiet \
@@ -136,7 +136,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 38: --sortbysize sorts by size then by label then by input order (normal sequence order)"
+DESCRIPTION="--sortbysize sorts by size then by label then by input order (normal sequence order)"
 ${VSEARCH} \
     --sortbysize <(printf ">s1;size=1\nA\n>s1;size=1\nT\n") \
     --quiet \
