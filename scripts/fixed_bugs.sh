@@ -3208,6 +3208,8 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/56
 
+# not testable
+
 
 #******************************************************************************#
 #                                                                              #
@@ -12152,7 +12154,7 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')
 
 exit 0
 
-# DONE: issues 1-47 and 549 to 561
+# DONE: issues 1-52 and 549 to 561
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
