@@ -195,5 +195,26 @@ printf ">s1;size=1\nA\n>s2;size=2\nA\n>s3;size=3\nA\n>s4;size=4\nA\n>s5;size=5\n
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# when using --quiet, the median is not printed
+DESCRIPTION="--sortbysize median abundance is not printed when --quiet"
+printf ">s1;size=6\nA\n>s2;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --output /dev/null 2>&1 | \
+    grep -qw "^Median" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# when using --log, the median is printed in the log file
+DESCRIPTION="--sortbysize --log median abundance is printed to a log"
+printf ">s1;size=6\nA\n>s2;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null \
+        --log - 2>/dev/null | \
+    grep -qw "^Median" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 exit 0
