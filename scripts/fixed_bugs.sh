@@ -3014,6 +3014,7 @@ ${VSEARCH} \
 ## https://github.com/torognes/vsearch/issues/48
 
 # insufficient memory allocated for the alignment sequences (vsearch v1.0.5)
+# (data from https://github.com/jooolia/testing_vsearch)
 DESCRIPTION="issue 48: --uchime_ref insufficient memory allocated (double free)"
 TMP_QUERY=$(mktemp)
 (printf ">query\n"
