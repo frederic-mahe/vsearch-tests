@@ -3088,6 +3088,28 @@ unset TMP_DB TMP_QUERY
 ##
 ## https://github.com/torognes/vsearch/issues/49
 
+# global option, test on --cut rather than --uchime_ref
+DESCRIPTION="issue 49: --cut --log is accepted"
+${VSEARCH} \
+    --cut <(printf ">s\nACGT\n") \
+    --cut_pattern "^GT_" \
+    --quiet \
+    --fastaout /dev/null \
+    --log /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 49: --cut --log is not empty"
+${VSEARCH} \
+    --cut <(printf ">s\nACGT\n") \
+    --cut_pattern "^GT_" \
+    --quiet \
+    --fastaout /dev/null \
+    --log - | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
