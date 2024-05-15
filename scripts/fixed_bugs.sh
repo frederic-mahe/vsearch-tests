@@ -3159,6 +3159,8 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/51
 
+# not testable
+
 
 #******************************************************************************#
 #                                                                              #
@@ -3167,6 +3169,8 @@ ${VSEARCH} \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/52
+
+# not testable (test would require a large amount of memory)
 
 
 #******************************************************************************#
