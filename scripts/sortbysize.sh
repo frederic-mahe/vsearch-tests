@@ -39,7 +39,7 @@ DESCRIPTION="check if vsearch is executable"
 ## --relabel_md5 --relabel_self --relabel_sha1 --sample --sizein
 ## --sizeout --threads --topn --xee --xlength --xsize
 
-## see also issues 28 and 38 for some initial tests
+## see also issue 28 for some initial tests
 
 #*****************************************************************************#
 #                                                                             #
@@ -73,7 +73,7 @@ unset TMP
 #                                                                             #
 #*****************************************************************************#
 
-# sort by size ...
+# (from issue 38) sort by size ...
 DESCRIPTION="--sortbysize single entry, no sorting"
 ${VSEARCH} \
     --sortbysize <(printf ">s1;size=2\nA\n") \
