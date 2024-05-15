@@ -69,6 +69,103 @@ unset TMP
 
 #*****************************************************************************#
 #                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+## -------------------------------------------------------------------- maxsize
+DESCRIPTION="--sortbysize accepts --maxsize"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=1\nAA\n") \
+    --quiet \
+    --maxsize 2 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --maxsize discards abundances greater than value (<)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=1\nAA\n") \
+    --quiet \
+    --maxsize 2 \
+    --output - | \
+    grep -qw ">s1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --maxsize discards abundances greater than value (=)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=2\nAA\n") \
+    --quiet \
+    --maxsize 2 \
+    --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --maxsize discards abundances greater than value (>)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --maxsize 2 \
+    --output - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## -------------------------------------------------------------------- minsize
+DESCRIPTION="--sortbysize accepts --minsize"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --minsize 2 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --minsize discards abundances lesser than value (>)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --minsize 2 \
+    --output - | \
+    grep -qw ">s1;size=3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --minsize discards abundances lesser than value (=)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=2\nAA\n") \
+    --quiet \
+    --minsize 2 \
+    --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --minsize discards abundances lesser than value (<)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=1\nAA\n") \
+    --quiet \
+    --minsize 2 \
+    --output - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ----------------------------------------------------------------------- topn
+DESCRIPTION="--sortbysize accepts --topn"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 1 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                                 sorting                                     #
 #                                                                             #
 #*****************************************************************************#

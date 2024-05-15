@@ -1773,6 +1773,8 @@ DESCRIPTION="issue 27: --shuffle --randseed 0 to use a PRNG seed"
 # (--sortbylength). Label sorting assumes that all sequences have
 # unique labels.
 
+# (see sortbysize.sh for corresponding tests)
+
 ## --------------------------------------------------------------- sortbylength
 DESCRIPTION="issue 28: --sortbylength sorts by decreasing sequence length"
 "${VSEARCH}" \
@@ -1851,85 +1853,6 @@ DESCRIPTION="issue 28: --sortbylength does not accept --maxsize"
     --quiet \
     --maxsize 2 \
     --output /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-## --------------------------------------------------------------- sortbysize
-DESCRIPTION="issue 28: --sortbysize accepts --maxsize"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=1\nAA\n") \
-    --quiet \
-    --maxsize 2 \
-    --output /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="issue 28: --sortbysize accepts --minsize"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --minsize 2 \
-    --output /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="issue 28: --sortbysize --maxsize discards abundances greater than value (<)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=1\nAA\n") \
-    --quiet \
-    --maxsize 2 \
-    --output - | \
-    grep -qw ">s1;size=1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="issue 28: --sortbysize --maxsize discards abundances greater than value (=)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=2\nAA\n") \
-    --quiet \
-    --maxsize 2 \
-    --output - | \
-    grep -qw ">s1;size=2" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="issue 28: --sortbysize --maxsize discards abundances greater than value (>)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --maxsize 2 \
-    --output - | \
-    grep -q "." && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="issue 28: --sortbysize --minsize discards abundances lesser than value (>)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --minsize 2 \
-    --output - | \
-    grep -qw ">s1;size=3" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="issue 28: --sortbysize --minsize discards abundances lesser than value (=)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=2\nAA\n") \
-    --quiet \
-    --minsize 2 \
-    --output - | \
-    grep -qw ">s1;size=2" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="issue 28: --sortbysize --minsize discards abundances lesser than value (<)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=1\nAA\n") \
-    --quiet \
-    --minsize 2 \
-    --output - | \
-    grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
