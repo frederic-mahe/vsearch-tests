@@ -3119,6 +3119,37 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/50
 
+# When this option is in effect only errors or warnings are printed to stderr
+DESCRIPTION="issue 50: --cut (messages on stderr)"
+${VSEARCH} \
+    --cut <(printf ">s\nACGT\n") \
+    --cut_pattern "^GT_" \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 50: --cut --quiet (nothing on stderr)"
+${VSEARCH} \
+    --cut <(printf ">s\nACGT\n") \
+    --cut_pattern "^GT_" \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 50: --cut --quiet (warning on stderr)"
+${VSEARCH} \
+    --cut <(printf ">s\nACGT\n") \
+    --cut_pattern "^GT_" \
+    --quiet \
+    --top_hits_only \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
