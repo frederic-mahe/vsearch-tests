@@ -69,6 +69,86 @@ unset TMP
 
 #*****************************************************************************#
 #                                                                             #
+#                                 sorting                                     #
+#                                                                             #
+#*****************************************************************************#
+
+# sort by size ...
+DESCRIPTION="issue 38: --sortbysize single entry, no sorting"
+${VSEARCH} \
+    --sortbysize <(printf ">s1;size=2\nA\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=2A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 38: --sortbysize sorts by size (already ordered)"
+${VSEARCH} \
+    --sortbysize <(printf ">s1;size=2\nA\n>s2;size=1\nT\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=2A>s2;size=1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 38: --sortbysize sorts by size (reverse order)"
+${VSEARCH} \
+    --sortbysize <(printf ">s2;size=1\nT\n>s1;size=2\nA\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=2A>s2;size=1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ... then by label
+DESCRIPTION="issue 38: --sortbysize sorts by size then by label (already ordered)"
+${VSEARCH} \
+    --sortbysize <(printf ">s1;size=1\nA\n>s2;size=1\nT\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=1A>s2;size=1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 38: --sortbysize sorts by size then by label (reverse order)"
+${VSEARCH} \
+    --sortbysize <(printf ">s2;size=1\nT\n>s1;size=1\nA\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=1A>s2;size=1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ... then by input order
+DESCRIPTION="issue 38: --sortbysize sorts by size then by label then by input order (reversed sequence order)"
+${VSEARCH} \
+    --sortbysize <(printf ">s1;size=1\nT\n>s1;size=1\nA\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=1T>s1;size=1A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 38: --sortbysize sorts by size then by label then by input order (normal sequence order)"
+${VSEARCH} \
+    --sortbysize <(printf ">s1;size=1\nA\n>s1;size=1\nT\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=1A>s1;size=1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                            median abundance                                 #
 #                                                                             #
 #*****************************************************************************#
