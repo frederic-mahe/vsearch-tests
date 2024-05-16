@@ -3215,6 +3215,242 @@ unset A_START B_START A_END B_END TMP
 ##
 ## https://github.com/torognes/vsearch/issues/54
 
+# The userfields qlo, qhi, tlo and thi now contain the start and end of
+# the query and target sequences. So tlo will always be 1 and thi will
+# always be equal to the length of the target. Unless the matching is on
+# the reverse strand qlo will always be 1 and qhi will always be equal
+# to the length of the query. If the match is on the reverse strand, qhi
+# will be 1 and qlo will be equal to length of the query.
+
+# The new qilo, qihi, tilo, and tihi userfields will contain the
+# coordinates of the alignment ignoring terminal gaps (like qlo, qhi,
+# tlo and thi was previously).
+
+# (assuming that only the query is reverse-complemented)
+
+DESCRIPTION="issue 54: --usearch_global --userout qlo (always 1)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAA\n") \
+    --db <(printf ">t1\nAAA\n") \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields qlo \
+    --userout - | \
+    grep -wq "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout qlo (= qlen if reversed)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nTTT\n") \
+    --strand both \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields qlo \
+    --userout - | \
+    grep -wq "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout qilo (first aligned position in the query)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nTTAA\n") \
+    --db <(printf ">t1\nAA\n") \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields qilo \
+    --userout - | \
+    grep -wq "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Qry 3 - TTT 1
+#         |||
+# Tgt 1 + TTT 3
+DESCRIPTION="issue 54: --usearch_global --userout qilo (first aligned position in the reversed query)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAAG\n") \
+    --db <(printf ">t1\nTTT\n") \
+    --strand both \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --alnout - \
+    --userfields qilo \
+    --userout - | \
+    grep -wq "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout qhi (= qlen)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAA\n") \
+    --db <(printf ">t1\nAAA\n") \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields qhi \
+    --userout - | \
+    grep -wq "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout qhi (always 1 if reversed)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nTTT\n") \
+    --strand both \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields qhi \
+    --userout - | \
+    grep -wq "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout qihi (!= qlen)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAAG\n") \
+    --db <(printf ">t1\nAAA\n") \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields qihi \
+    --userout - | \
+    grep -wq "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout qihi (last aligned position in the reversed query)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nGAAAG\n") \
+    --db <(printf ">t1\nTTT\n") \
+    --strand both \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --alnout - \
+    --userfields qihi \
+    --userout - | \
+    grep -wq "4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout tlo (always 1)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAA\n") \
+    --db <(printf ">t1\nAAA\n") \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields tlo \
+    --userout - | \
+    grep -wq "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout tlo (always 1 if reversed)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nTTT\n") \
+    --strand both \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields tlo \
+    --userout - | \
+    grep -wq "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout tilo (first aligned position in the target)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAA\n") \
+    --db <(printf ">t1\nTTAA\n") \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields tilo \
+    --userout - | \
+    grep -wq "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout tilo (first aligned position in the target)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAAG\n") \
+    --db <(printf ">t1\nTTT\n") \
+    --strand both \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --alnout - \
+    --userfields tilo \
+    --userout - | \
+    grep -wq "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout thi (= tlen)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAA\n") \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields thi \
+    --userout - | \
+    grep -wq "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout thi (= tlen)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nTTT\n") \
+    --strand both \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields thi \
+    --userout - | \
+    grep -wq "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout tihi (!= tlen)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nAAA\n") \
+    --db <(printf ">t1\nAAAG\n") \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --userfields tihi \
+    --userout - | \
+    grep -wq "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 54: --usearch_global --userout tihi (last aligned position in the target)"
+${VSEARCH} \
+    --usearch_global <(printf ">q1\nTTT\n") \
+    --db <(printf ">t1\nGAAAG\n") \
+    --strand both \
+    --minseqlength 2 \
+    --id 0.5 \
+    --quiet \
+    --alnout - \
+    --userfields tihi \
+    --userout - | \
+    grep -wq "4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
