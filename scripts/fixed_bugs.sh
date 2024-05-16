@@ -3834,6 +3834,8 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/68
 
+# not testable
+
 
 #******************************************************************************#
 #                                                                              #
