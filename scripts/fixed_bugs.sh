@@ -3518,7 +3518,7 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/58
 
-# already tested
+# already tested (issue 11)
 
 
 #******************************************************************************#
