@@ -3499,6 +3499,16 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/57
 
+DESCRIPTION="issue 57: --search_exact --uc column 8 is always = (equal sign)"
+${VSEARCH} \
+    --search_exact <(printf ">q1\nT\n") \
+    --db <(printf ">t1\nT\n") \
+    --quiet \
+    --uc - | \
+    awk '{exit $8 == "=" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
