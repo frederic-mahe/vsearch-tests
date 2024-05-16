@@ -7489,15 +7489,15 @@ printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 506: reading --db from '-' (stdin) is not accepted"
+DESCRIPTION="issue 506: reading --db from '-' (stdin) is accepted"
 printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
     "${VSEARCH}" \
         --uchime_ref <(printf ">query\nAAGG\n") \
         --db - \
         --quiet \
         --uchimeout /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
