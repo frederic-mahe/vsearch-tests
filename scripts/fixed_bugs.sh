@@ -2849,9 +2849,9 @@ ${VSEARCH} \
 
 # stable sort implemented in:
 # - sortbysize (size, label, original order),
-# - sortbylength (length, label, original order),
+# - sortbylength (length, size, label, original order),
 # - derep_fulllength (size, label, original order),
-# - cluster_fast (length, label, original order),
+# - cluster_fast (length, size, label, original order),
 # - uchime_denovo (size, label, original order)
 #
 # (see corresponding test scripts)
