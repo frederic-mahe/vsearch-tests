@@ -3181,6 +3181,28 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/53
 
+# --uchime_denovo outputs extra lines with score 0.0000 to the file
+# specified with the --uchimeout option for some non-chimeric
+# sequences
+# (unable to reproduce the bug with v1.0.6)
+DESCRIPTION="issue 53: --uchime_denovo --uchimeout extra lines"
+#        1...5...10...15...20...25...30...35
+A_START="TCCAGCTCCAATAGCGTATACTAAAGTTGTTGC"
+B_START="AGTTCATGGGCAGGGGCTCCCCGTCATTTACTG"
+A_END=$(rev <<< ${A_START})
+B_END=$(rev <<< ${B_START})
+TMP=$(mktemp)
+(
+    printf ">parentA;size=50\n%s\n" "${A_START}${A_END}"
+    printf ">parentB;size=49\n%s\n" "${B_START}${B_END}"
+    printf ">nonchimeraA;size=1\n%s\n" "${A_START}${A_END}"
+) > "${TMP}"
+${VSEARCH} \
+    --uchime_denovo "${TMP}" \
+    --uchimeout /dev/stdout 2> /dev/null
+rm -f "${TMP}"
+unset A_START B_START A_END B_END TMP
+
 
 #******************************************************************************#
 #                                                                              #
