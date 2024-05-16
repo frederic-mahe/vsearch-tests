@@ -3772,6 +3772,21 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/63
 
+DESCRIPTION="issue 63: --cluster_size accepts large sequences (> 16,000 nucleotides)"
+TMP=$(mktemp)
+(printf ">s1\n"
+ yes A | head -n 16386
+ printf ">s2\n"
+ yes A | head -n 100) > "${TMP}"
+${VSEARCH} \
+    --cluster_fast "${TMP}" \
+    --id 0.95 \
+    --centroids /dev/null > /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
 
 #******************************************************************************#
 #                                                                              #
