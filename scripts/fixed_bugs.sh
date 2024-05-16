@@ -3540,6 +3540,8 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/60
 
+# not testable
+
 
 #******************************************************************************#
 #                                                                              #
