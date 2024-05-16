@@ -3460,6 +3460,25 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/55
 
+DESCRIPTION="issue 55: --search_exact accepts --samout"
+${VSEARCH} \
+    --search_exact <(printf ">q1\nT\n") \
+    --db <(printf ">t1\nT\n") \
+    --quiet \
+    --samout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 55: --search_exact --samout outputs data"
+${VSEARCH} \
+    --search_exact <(printf ">q1\nT\n") \
+    --db <(printf ">t1\nT\n") \
+    --quiet \
+    --samout - | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
