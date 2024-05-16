@@ -3706,6 +3706,63 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/62
 
+# clustering output must take into account the --sizein option
+# (for dereplication: see derep_fulllength.sh)
+
+DESCRIPTION="issue 62: --cluster_size adds abundances (implicit abundances)"
+${VSEARCH} \
+    --cluster_size <(printf ">s1\nA\n>s2\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=2A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 62: --cluster_size adds abundances (implicit abundances + sizein)"
+${VSEARCH} \
+    --cluster_size <(printf ">s1\nA\n>s2\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=2A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 62: --cluster_size adds abundances (explicit abundances)"
+${VSEARCH} \
+    --cluster_size <(printf ">s1;size=2\nA\n>s2;size=1\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=2A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 62: --cluster_size adds abundances (explicit abundances + sizein)"
+${VSEARCH} \
+    --cluster_size <(printf ">s1;size=2\nA\n>s2;size=1\nA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=3A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
