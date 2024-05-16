@@ -3199,7 +3199,10 @@ TMP=$(mktemp)
 ) > "${TMP}"
 ${VSEARCH} \
     --uchime_denovo "${TMP}" \
-    --uchimeout /dev/stdout 2> /dev/null
+    --uchimeout /dev/stdout 2> /dev/null | \
+    awk 'END {exit NR == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm -f "${TMP}"
 unset A_START B_START A_END B_END TMP
 
