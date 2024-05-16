@@ -3552,6 +3552,150 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/61
 
+# sortbylength (already tested in issue 28)
+
+## --------------------------------------------------------------- cluster_fast
+DESCRIPTION="issue 61: --cluster_fast sorts by length"
+${VSEARCH} \
+    --cluster_fast <(printf ">s1;size=1\nAA\n>s2;size=1\nT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=1AA>s2;size=1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 61: --cluster_fast sorts by length (reverse input order)"
+${VSEARCH} \
+    --cluster_fast <(printf ">s1;size=1\nT\n>s2;size=1\nAA\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s2;size=1AA>s1;size=1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 61: --cluster_fast sorts by length, then by abundance"
+${VSEARCH} \
+    --cluster_fast <(printf ">s1;size=2\nAA\n>s2;size=1\nTT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=2AA>s2;size=1TT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 61: --cluster_fast sorts by length, then by abundance (reverse input order)"
+${VSEARCH} \
+    --cluster_fast <(printf ">s1;size=1\nAA\n>s2;size=2\nTT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s2;size=2TT>s1;size=1AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 61: --cluster_fast sorts by length, then by abundance, then by identifier"
+${VSEARCH} \
+    --cluster_fast <(printf ">s1;size=1\nAA\n>s2;size=1\nTT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=1AA>s2;size=1TT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 61: --cluster_fast sorts by length, then by abundance, then by identifier (reverse input order)"
+${VSEARCH} \
+    --cluster_fast <(printf ">s2;size=1\nAA\n>s1;size=1\nTT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=1TT>s2;size=1AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --------------------------------------------------------------- cluster_size
+DESCRIPTION="issue 61: --cluster_size sorts by abundance"
+${VSEARCH} \
+    --cluster_size <(printf ">s1;size=2\nAA\n>s2;size=1\nTT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=2AA>s2;size=1TT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 61: --cluster_size sorts by abundance (reverse input order)"
+${VSEARCH} \
+    --cluster_size <(printf ">s1;size=1\nAA\n>s2;size=2\nTT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s2;size=2TT>s1;size=1AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 61: --cluster_size sorts by abundance, then by identifier"
+${VSEARCH} \
+    --cluster_size <(printf ">s1;size=1\nAA\n>s2;size=1\nTT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=1AA>s2;size=1TT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 61: --cluster_size sorts by abundance, then by identifier (reverse input order)"
+${VSEARCH} \
+    --cluster_size <(printf ">s2;size=1\nAA\n>s1;size=1\nTT\n") \
+    --minseqlength 1 \
+    --id 1.0 \
+    --quiet \
+    --sizein \
+    --sizeout \
+    --centroids - | \
+    tr -d "\n" | \
+    grep -wq ">s1;size=1TT>s2;size=1AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
