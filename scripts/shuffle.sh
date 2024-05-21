@@ -744,7 +744,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-## ---------------------------------------------------------------- relabel_sha1
+## --------------------------------------------------------------- relabel_sha1
 
 DESCRIPTION="--shuffle --relabel_sha1 is accepted"
 printf ">s\nA\n" | \
@@ -790,7 +790,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --------------------------------------------------------------- relabel_self
+## --------------------------------------------------------------------- sample
 
 DESCRIPTION="--shuffle --sample is accepted"
 printf ">s\nA\n" | \
