@@ -424,7 +424,6 @@ printf ">s\nA\n" | \
 
 ## --------------------------------------------------------------- label_suffix
 
-# 
 DESCRIPTION="--shuffle --label_suffix is accepted"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
