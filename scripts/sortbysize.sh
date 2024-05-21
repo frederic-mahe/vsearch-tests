@@ -466,4 +466,950 @@ printf ">s1;size=6\nA\n>s2;size=1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#*****************************************************************************#
+#                                                                             #
+#                            secondary options                                #
+#                                                                             #
+#*****************************************************************************#
+
+## for each secondary option below, write at least two tests: 1)
+## accepts option, 2) check basic option effect (if applicable)
+
+## ----------------------------------------------------------- bzip2_decompress
+
+DESCRIPTION="--sortbysize --bzip2_decompress is accepted (empty input)"
+printf "" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --bzip2_decompress \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --bzip2_decompress accepts compressed stdin"
+printf ">s\nA\n" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --bzip2_decompress \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ---------------------------------------------------------------- fasta_width
+
+DESCRIPTION="--sortbysize --fasta_width is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --fasta_width 1 \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --fasta_width wraps fasta output"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --fasta_width 1 \
+        --output - | \
+    awk 'END {exit NR == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ---------------------------------------------------------------- fastq_ascii
+
+DESCRIPTION="--sortbysize --fastq_ascii is accepted"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --fastq_ascii 33 \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## ----------------------------------------------------------------- fastq_qmax
+
+DESCRIPTION="--sortbysize --fastq_qmax is accepted"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --fastq_qmax 41 \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --fastq_qmax has no effect"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --fastq_qmax 40 \
+        --output - | \
+    tr -d "\n" | \
+    grep -wq ">sA" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## ----------------------------------------------------------------- fastq_qmin
+
+DESCRIPTION="--sortbysize --fastq_qmin is accepted"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --fastq_qmin 1 \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --fastq_qmin has no effect"
+printf "@s\nA\n+\nH\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --fastq_qmin 40 \
+        --output - | \
+    tr -d "\n" | \
+    grep -wq ">sA" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## ------------------------------------------------------------ gzip_decompress
+
+DESCRIPTION="--sortbysize --gzip_decompress is accepted (empty input)"
+printf "" | \
+    gzip | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --gzip_decompress \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --gzip_decompress accepts compressed stdin"
+printf ">s\nA\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --gzip_decompress \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --------------------------------------------------------------- label_suffix
+
+DESCRIPTION="--sortbysize --label_suffix is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --label_suffix "_suffix" \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --label_suffix adds the suffix 'string' to sequence headers"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --label_suffix "_suffix" \
+        --output - | \
+    grep -wq ">s_suffix" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --label_suffix adds the suffix 'string' (before annotations)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --label_suffix "_suffix" \
+        --lengthout \
+        --output - | \
+    grep -wq ">s_suffix;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------------------------ lengthout
+
+DESCRIPTION="--sortbysize --lengthout is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --lengthout \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --lengthout adds length annotations to output"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --lengthout \
+        --output - | \
+    grep -wq ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------------------------------ log
+
+DESCRIPTION="--sortbysize --log is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --log /dev/null \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --log writes to a file"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --output /dev/null \
+        --log - | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --log does not prevent messages to be sent to stderr"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null \
+        --log /dev/null 2>&1 | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --------------------------------------------------------------- maxseqlength
+
+DESCRIPTION="--sortbysize --maxseqlength is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --maxseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# note: the 'sequence discarded' message is not silenced by --quiet
+DESCRIPTION="--sortbysize --maxseqlength removes sequences longer than n"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --maxseqlength 1 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+## --------------------------------------------------------------- minseqlength
+
+DESCRIPTION="--sortbysize --minseqlength is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# note: the 'sequence discarded' message is not silenced by --quiet
+DESCRIPTION="--sortbysize --minseqlength removes sequences shorter than n"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --minseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+## ---------------------------------------------------------------- no_progress
+
+DESCRIPTION="--sortbysize --no_progress is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --no_progress \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## note: progress is not written to the log file
+DESCRIPTION="--sortbysize --no_progress removes progressive report on stderr (no visible effect)"
+printf ">s extra\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --no_progress \
+        --output /dev/null 2>&1 | \
+    grep -iq "^sorting" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------------------------- notrunclabels
+
+DESCRIPTION="--sortbysize --notrunclabels is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --notrunclabels \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --notrunclabels preserves full headers"
+printf ">s extra\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --notrunclabels \
+        --output - | \
+    grep -wq ">s extra" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## ---------------------------------------------------------------------- quiet
+
+DESCRIPTION="--sortbysize --quiet is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --quiet eliminates all (normal) messages to stderr"
+printf ">s extra\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --output /dev/null 2>&1 | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --quiet allows error messages to be sent to stderr"
+printf ">s extra\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --quiet2 \
+        --output /dev/null 2>&1 | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## -------------------------------------------------------------------- relabel
+
+DESCRIPTION="--sortbysize --relabel is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "label" \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel renames sequence (label + ticker)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "label" \
+        --output - | \
+    grep -wq ">label1" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel renames sequence (empty label, only ticker)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "" \
+        --output - | \
+    grep -wq ">1" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel cannot combine with --relabel_md5"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "label" \
+        --relabel_md5 \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel cannot combine with --relabel_sha1"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "label" \
+        --relabel_sha1 \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+## --------------------------------------------------------------- relabel_keep
+
+DESCRIPTION="--sortbysize --relabel_keep is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "label" \
+        --relabel_keep \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_keep renames and keeps original sequence name"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "label" \
+        --relabel_keep \
+        --output - | \
+    grep -wq ">label1 s" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## ---------------------------------------------------------------- relabel_md5
+
+DESCRIPTION="--sortbysize --relabel_md5 is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_md5 \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_md5 relabels using MD5 hash of sequence"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_md5 \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## --------------------------------------------------------------- relabel_sha1
+
+DESCRIPTION="--sortbysize --relabel_sha1 is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_sha1 \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_sha1 relabels using SHA1 hash of sequence"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_sha1 \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --------------------------------------------------------------- relabel_self
+
+DESCRIPTION="--sortbysize --relabel_self is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_self \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_self relabels using sequence as label"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_self \
+        --output - | \
+    grep -qw ">A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --------------------------------------------------------------------- sample
+
+DESCRIPTION="--sortbysize --sample is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --sample "ABC" \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --sample adds sample name to sequence headers"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --sample "ABC" \
+        --output - | \
+    grep -qw ">s;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --------------------------------------------------------------------- sizein
+
+DESCRIPTION="--sortbysize --sizein is accepted (no size)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --sizein \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --sizein is accepted (with size)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --sizein \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --sizein (no size)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --output - | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize size annotations are present in output (with --sizein)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --sizein \
+        --output - | \
+    grep -qw ">s;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize size annotations are present in output (without --sizein)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --output - | \
+    grep -qw ">s;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------------------------------- sizeout
+
+# When using --relabel, --relabel_self, --relabel_md5 or --relabel_sha1,
+# preserve and report abundance annotations to the output fasta file
+# (using the pattern ';size=integer;').
+
+DESCRIPTION="--sortbysize --sizeout is accepted (no size)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --sizeout \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --sizeout is accepted (with size)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --sizeout \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --sizeout missing size annotations are not added (no size)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --output - | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize size annotations are present in output (with --sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -qw ">s;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize size annotations are present in output (without --sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --output - | \
+    grep -qw ">s;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## add abundance annotations
+DESCRIPTION="--sortbysize --relabel no size annotations (without --sizeout)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "label" \
+        --output - | \
+    grep -qw ">label1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel --sizeout adds size annotations"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "label" \
+        --sizeout \
+        --output - | \
+    grep -qw ">label1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_self no size annotations (without --sizeout)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_self \
+        --output - | \
+    grep -qw ">A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_self --sizeout adds size annotations"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_self \
+        --sizeout \
+        --output - | \
+    grep -qw ">A;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_md5 no size annotations (without --sizeout)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_md5 \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_md5 --sizeout adds size annotations"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_md5 \
+        --sizeout \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_sha1 no size annotations (without --sizeout)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_sha1 \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_sha1 --sizeout adds size annotations"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_sha1 \
+        --sizeout \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## preserve abundance annotations
+DESCRIPTION="--sortbysize --relabel no size annotations (without --sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "label" \
+        --output - | \
+    grep -qw ">label1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel --sizeout preserves size annotations"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel "label" \
+        --sizeout \
+        --output - | \
+    grep -qw ">label1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_self no size annotations (without --sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_self \
+        --output - | \
+    grep -qw ">A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_self --sizeout preserves size annotations"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_self \
+        --sizeout \
+        --output - | \
+    grep -qw ">A;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_md5 no size annotations (without --sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_md5 \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_md5 --sizeout preserves size annotations"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_md5 \
+        --sizeout \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_sha1 no size annotations (without --sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_sha1 \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --relabel_sha1 --sizeout preserves size annotations"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --relabel_sha1 \
+        --sizeout \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------------------------------- threads
+
+DESCRIPTION="--sortbysize --threads is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --threads 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --threads > 1 triggers a warning (not multithreaded)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --threads 2 \
+        --quiet \
+        --output /dev/null 2>&1 | \
+    grep -iq "warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------------------------------ xee
+
+DESCRIPTION="--sortbysize --xee is accepted"
+printf "@s;ee=1.00\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --xee \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --xee removes expected error annotations from input"
+printf "@s;ee=1.00\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --xee \
+        --quiet \
+        --output - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------------------------------- xlength
+
+DESCRIPTION="--sortbysize --xlength is accepted"
+printf ">s;length=1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --xlength \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --xlength removes length annotations from input"
+printf ">s;length=1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --xlength \
+        --quiet \
+        --output - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --xlength removes length annotations (input), lengthout adds them (output)"
+printf ">s;length=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --xlength \
+        --lengthout \
+        --quiet \
+        --output - | \
+    grep -wq ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ---------------------------------------------------------------------- xsize
+
+DESCRIPTION="--sortbysize --xsize is accepted"
+printf ">s;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --xsize \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --xsize removes abundance annotations from input"
+printf ">s;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --xsize \
+        --quiet \
+        --output - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# does not work as expected!
+# DESCRIPTION="--sortbysize --xsize removes abundance annotations (input), sizeout adds them (output)"
+# printf ">s;size=2\nA\n" | \
+#     "${VSEARCH}" \
+#         --sortbysize - \
+#         --xsize \
+#         --quiet \
+#         --sizeout \
+#         --output - | \
+#     grep -wq ">s;size=1" && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+
 exit 0
+
+# status: complete (v2.28.1, 2024-05-21)
