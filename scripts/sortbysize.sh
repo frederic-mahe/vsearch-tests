@@ -94,154 +94,11 @@ printf "" | \
 
 #*****************************************************************************#
 #                                                                             #
-#                              core options                                   #
+#                            core functionality                               #
 #                                                                             #
 #*****************************************************************************#
 
-## -------------------------------------------------------------------- maxsize
-DESCRIPTION="--sortbysize accepts --maxsize"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=1\nAA\n") \
-    --quiet \
-    --maxsize 2 \
-    --output /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --maxsize discards abundances greater than value (<)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=1\nAA\n") \
-    --quiet \
-    --maxsize 2 \
-    --output - | \
-    grep -qw ">s1;size=1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --maxsize discards abundances greater than value (=)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=2\nAA\n") \
-    --quiet \
-    --maxsize 2 \
-    --output - | \
-    grep -qw ">s1;size=2" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --maxsize discards abundances greater than value (>)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --maxsize 2 \
-    --output - | \
-    grep -q "." && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-## -------------------------------------------------------------------- minsize
-DESCRIPTION="--sortbysize accepts --minsize"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --minsize 2 \
-    --output /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --minsize discards abundances lesser than value (>)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --minsize 2 \
-    --output - | \
-    grep -qw ">s1;size=3" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --minsize discards abundances lesser than value (=)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=2\nAA\n") \
-    --quiet \
-    --minsize 2 \
-    --output - | \
-    grep -qw ">s1;size=2" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --minsize discards abundances lesser than value (<)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=1\nAA\n") \
-    --quiet \
-    --minsize 2 \
-    --output - | \
-    grep -q "." && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-## ----------------------------------------------------------------------- topn
-DESCRIPTION="--sortbysize accepts --topn"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --topn 1 \
-    --output /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --topn must be greater than zero"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --topn 0 \
-    --output - /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --topn can be larger than the number of entries"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --topn 2 \
-    --output /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --topn can be larger than the number of entries (no effect on output)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --topn 2 \
-    --output - | \
-    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 1 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --topn can be equal to the number of entries (no effect on output)"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n>s2;size=1\nTT\n") \
-    --quiet \
-    --topn 2 \
-    --output - | \
-    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbysize --topn keeps n first entries"
-"${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n>s2;size=1\nTT\n") \
-    --quiet \
-    --topn 1 \
-    --output - | \
-    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 1 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                                 sorting                                     #
-#                                                                             #
-#*****************************************************************************#
+## -------------------------------------------------------------------- sorting
 
 # (from issue 38) sort by size ...
 DESCRIPTION="--sortbysize single entry, no sorting"
@@ -316,12 +173,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
-#*****************************************************************************#
-#                                                                             #
-#                            median abundance                                 #
-#                                                                             #
-#*****************************************************************************#
+## -------------------------------------------------------------- median length
 
 # The sortbysize command outputs on the stderr or in a log file the
 # median abundance value of processed fasta sequences. To refactor the
@@ -490,6 +342,151 @@ printf ">s1;size=6\nA\n>s2;size=1\nA\n" | \
         --output /dev/null \
         --log - 2>/dev/null | \
     grep -qw "^Median" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+## -------------------------------------------------------------------- maxsize
+DESCRIPTION="--sortbysize accepts --maxsize"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=1\nAA\n") \
+    --quiet \
+    --maxsize 2 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --maxsize discards abundances greater than value (<)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=1\nAA\n") \
+    --quiet \
+    --maxsize 2 \
+    --output - | \
+    grep -qw ">s1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --maxsize discards abundances greater than value (=)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=2\nAA\n") \
+    --quiet \
+    --maxsize 2 \
+    --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --maxsize discards abundances greater than value (>)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --maxsize 2 \
+    --output - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## -------------------------------------------------------------------- minsize
+DESCRIPTION="--sortbysize accepts --minsize"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --minsize 2 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --minsize discards abundances lesser than value (>)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --minsize 2 \
+    --output - | \
+    grep -qw ">s1;size=3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --minsize discards abundances lesser than value (=)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=2\nAA\n") \
+    --quiet \
+    --minsize 2 \
+    --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --minsize discards abundances lesser than value (<)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=1\nAA\n") \
+    --quiet \
+    --minsize 2 \
+    --output - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ----------------------------------------------------------------------- topn
+DESCRIPTION="--sortbysize accepts --topn"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 1 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --topn must be greater than zero"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 0 \
+    --output - /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --topn can be larger than the number of entries"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 2 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --topn can be larger than the number of entries (no effect on output)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 2 \
+    --output - | \
+    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --topn can be equal to the number of entries (no effect on output)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n>s2;size=1\nTT\n") \
+    --quiet \
+    --topn 2 \
+    --output - | \
+    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --topn keeps n first entries"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nAA\n>s2;size=1\nTT\n") \
+    --quiet \
+    --topn 1 \
+    --output - | \
+    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
