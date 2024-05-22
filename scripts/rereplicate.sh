@@ -432,6 +432,16 @@ printf ">s;size=1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# log: stderr output when there are missing abundance annotations
+DESCRIPTION="--rereplicate --log does not prevent messages to be sent to stderr (missing abundance)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --output /dev/null \
+        --log /dev/null 2>&1 | \
+    grep -iq "warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## ---------------------------------------------------------------- no_progress
 
