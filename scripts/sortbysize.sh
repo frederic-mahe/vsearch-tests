@@ -74,6 +74,23 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sortbysize accepts empty input"
+printf "" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize empty input -> empty output"
+printf "" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
