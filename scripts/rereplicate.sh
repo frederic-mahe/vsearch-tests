@@ -65,13 +65,6 @@ printf ">s1;size=1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
-#*****************************************************************************#
-#                                                                             #
-#                            default behaviour                                #
-#                                                                             #
-#*****************************************************************************#
-
 DESCRIPTION="--rereplicate accepts empty input"
 printf "" | \
     "${VSEARCH}" \
@@ -79,6 +72,22 @@ printf "" | \
         --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--rereplicate empty input -> empty output"
+printf "" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            core functionality                               #
+#                                                                             #
+#*****************************************************************************#
 
 # The output file does not contain abundance information (unless
 # --sizeout is used)
