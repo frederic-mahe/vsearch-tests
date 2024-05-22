@@ -4,6 +4,7 @@
 for s in derep_fulllength.sh \
              fastq_parsing.sh \
              fixed_bugs.sh \
+             rereplicate.sh \
              shuffle.sh \
              sortbylength.sh \
              sortbysize.sh \
