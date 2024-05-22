@@ -36,6 +36,7 @@ DESCRIPTION="check if vsearch is executable"
 #                                                                             #
 #*****************************************************************************#
 
+## --------------------------------------------------------------------- output
 DESCRIPTION="--shuffle requires --output"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -53,6 +54,16 @@ printf ">s\nA\n" | \
         success "${DESCRIPTION}"
 chmod u+w ${TMP} && rm -f ${TMP}
 unset TMP
+
+DESCRIPTION="--shuffle outputs in fasta format"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --shuffle - \
+        --output - 2> /dev/null | \
+    tr -d "\n" | \
+    grep -wq ">s1A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#

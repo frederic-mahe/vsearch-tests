@@ -65,6 +65,16 @@ printf ">s1;size=9\nA\n" | \
 chmod u+w ${TMP} && rm -f ${TMP}
 unset TMP
 
+DESCRIPTION="--sortbylength outputs in fasta format"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --output - 2> /dev/null | \
+    tr -d "\n" | \
+    grep -wq ">s1A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
