@@ -75,173 +75,31 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
-#*****************************************************************************#
-#                                                                             #
-#                              core options                                   #
-#                                                                             #
-#*****************************************************************************#
-
-## --------------------------------------------------------------- maxseqlength
-
-DESCRIPTION="--sortbylength --maxseqlength is accepted"
-printf ">s\nA\n" | \
+DESCRIPTION="--sortbylength accepts empty input"
+printf "" | \
     "${VSEARCH}" \
         --sortbylength - \
-        --maxseqlength 1 \
-        --quiet \
-        --output /dev/null && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-# note: the 'sequence discarded' message is not silenced by --quiet
-DESCRIPTION="--sortbylength --maxseqlength removes sequences longer than n"
-printf ">s\nAA\n" | \
-    "${VSEARCH}" \
-        --sortbylength - \
-        --maxseqlength 1 \
-        --quiet \
-        --output - 2> /dev/null | \
-    grep -q "." && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
-
-DESCRIPTION="--sortbylength --maxseqlength keeps sequences of length n"
-printf ">s\nAA\n" | \
-    "${VSEARCH}" \
-        --sortbylength - \
-        --maxseqlength 2 \
-        --quiet \
-        --output - 2> /dev/null | \
-    tr -d "\n" | \
-    grep -wq ">sAA" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbylength --maxseqlength keeps sequences shorter than n"
-printf ">s\nA\n" | \
-    "${VSEARCH}" \
-        --sortbylength - \
-        --maxseqlength 2 \
-        --quiet \
-        --output - 2> /dev/null | \
-    tr -d "\n" | \
-    grep -wq ">sA" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-## --------------------------------------------------------------- minseqlength
-
-DESCRIPTION="--sortbylength --minseqlength is accepted"
-printf ">s\nA\n" | \
-    "${VSEARCH}" \
-        --sortbylength - \
-        --minseqlength 1 \
-        --quiet \
-        --output /dev/null && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-# note: the 'sequence discarded' message is not silenced by --quiet
-DESCRIPTION="--sortbylength --minseqlength removes sequences shorter than n"
-printf ">s\nA\n" | \
-    "${VSEARCH}" \
-        --sortbylength - \
-        --minseqlength 2 \
-        --quiet \
-        --output - 2> /dev/null | \
-    grep -q "." && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
-
-DESCRIPTION="--sortbylength --minseqlength keeps sequences of length n"
-printf ">s\nAA\n" | \
-    "${VSEARCH}" \
-        --sortbylength - \
-        --minseqlength 2 \
-        --quiet \
-        --output - 2> /dev/null | \
-    tr -d "\n" | \
-    grep -wq ">sAA" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbylength --minseqlength keeps sequences longer than n"
-printf ">s\nAAA\n" | \
-    "${VSEARCH}" \
-        --sortbylength - \
-        --minseqlength 2 \
-        --quiet \
-        --output - 2> /dev/null | \
-    tr -d "\n" | \
-    grep -wq ">sAAA" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-## ----------------------------------------------------------------------- topn
-DESCRIPTION="--sortbylength accepts --topn"
-"${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --topn 1 \
-    --output /dev/null 2> /dev/null && \
+        --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--sortbylength --topn must be greater than zero"
-"${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --topn 0 \
-    --output - /dev/null 2> /dev/null && \
+DESCRIPTION="--sortbylength empty input -> empty output"
+printf "" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --output - 2> /dev/null | \
+    grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--sortbylength --topn can be larger than the number of entries"
-"${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --topn 2 \
-    --output /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbylength --topn can be larger than the number of entries (no effect on output)"
-"${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=3\nAA\n") \
-    --quiet \
-    --topn 2 \
-    --output - | \
-    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 1 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbylength --topn can be equal to the number of entries (no effect on output)"
-"${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=3\nAA\n>s2;size=1\nTT\n") \
-    --quiet \
-    --topn 2 \
-    --output - | \
-    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--sortbylength --topn keeps n first entries"
-"${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=3\nAA\n>s2;size=1\nTT\n") \
-    --quiet \
-    --topn 1 \
-    --output - | \
-    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 1 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
 
 #*****************************************************************************#
 #                                                                             #
-#                                 sorting                                     #
+#                            core functionality                               #
 #                                                                             #
 #*****************************************************************************#
+
+## -------------------------------------------------------------------- sorting
 
 DESCRIPTION="--sortbylength single entry, no sorting"
 ${VSEARCH} \
@@ -337,12 +195,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
-#*****************************************************************************#
-#                                                                             #
-#                               median length                                 #
-#                                                                             #
-#*****************************************************************************#
+## -------------------------------------------------------------- median length
 
 # The sortbylength command outputs on the stderr or in a log file the
 # median length of processed fasta sequences. To refactor the
@@ -503,6 +356,167 @@ printf ">s1\nAAAAAA\n>s2\nA\n" | \
         --output /dev/null \
         --log - 2>/dev/null | \
     grep -iqw "^Median" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+## --------------------------------------------------------------- maxseqlength
+
+DESCRIPTION="--sortbylength --maxseqlength is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --maxseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# note: the 'sequence discarded' message is not silenced by --quiet
+DESCRIPTION="--sortbylength --maxseqlength removes sequences longer than n"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --maxseqlength 1 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--sortbylength --maxseqlength keeps sequences of length n"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --maxseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    tr -d "\n" | \
+    grep -wq ">sAA" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbylength --maxseqlength keeps sequences shorter than n"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --maxseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    tr -d "\n" | \
+    grep -wq ">sA" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## --------------------------------------------------------------- minseqlength
+
+DESCRIPTION="--sortbylength --minseqlength is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# note: the 'sequence discarded' message is not silenced by --quiet
+DESCRIPTION="--sortbylength --minseqlength removes sequences shorter than n"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --minseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--sortbylength --minseqlength keeps sequences of length n"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --minseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    tr -d "\n" | \
+    grep -wq ">sAA" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbylength --minseqlength keeps sequences longer than n"
+printf ">s\nAAA\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --minseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    tr -d "\n" | \
+    grep -wq ">sAAA" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## ----------------------------------------------------------------------- topn
+DESCRIPTION="--sortbylength accepts --topn"
+"${VSEARCH}" \
+    --sortbylength <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 1 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbylength --topn must be greater than zero"
+"${VSEARCH}" \
+    --sortbylength <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 0 \
+    --output - /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sortbylength --topn can be larger than the number of entries"
+"${VSEARCH}" \
+    --sortbylength <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 2 \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbylength --topn can be larger than the number of entries (no effect on output)"
+"${VSEARCH}" \
+    --sortbylength <(printf ">s1;size=3\nAA\n") \
+    --quiet \
+    --topn 2 \
+    --output - | \
+    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbylength --topn can be equal to the number of entries (no effect on output)"
+"${VSEARCH}" \
+    --sortbylength <(printf ">s1;size=3\nAA\n>s2;size=1\nTT\n") \
+    --quiet \
+    --topn 2 \
+    --output - | \
+    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbylength --topn keeps n first entries"
+"${VSEARCH}" \
+    --sortbylength <(printf ">s1;size=3\nAA\n>s2;size=1\nTT\n") \
+    --quiet \
+    --topn 1 \
+    --output - | \
+    awk '{if ($1 ~ /^>/) {entries++}} END {exit entries == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
