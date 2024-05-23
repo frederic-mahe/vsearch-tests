@@ -1,7 +1,7 @@
 #!/bin/bash -
 
 ## Print a header
-SCRIPT_NAME="shuffling options"
+SCRIPT_NAME="shuffle"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
