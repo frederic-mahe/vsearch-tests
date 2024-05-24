@@ -359,6 +359,16 @@ printf ">s1\nAAAAAA\n>s2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sortbylength median length is computed before topn"
+printf ">s1\nAAA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --topn 1 \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qw "Median length: 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #

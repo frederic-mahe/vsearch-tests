@@ -365,6 +365,16 @@ printf ">s1;size=6\nA\n>s2;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sortbysize median abundance is computed before topn"
+printf ">s1;size=6\nA\n>s2;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --topn 1 \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qw "Median abundance: 4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
