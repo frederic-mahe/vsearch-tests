@@ -345,6 +345,26 @@ printf ">s1;size=6\nA\n>s2;size=1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sortbysize median abundance is computed after maxsize"
+printf ">s1;size=6\nA\n>s2;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --maxsize 5 \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qw "Median abundance: 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize median abundance is computed after minsize"
+printf ">s1;size=6\nA\n>s2;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --minsize 3 \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qw "Median abundance: 6" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
