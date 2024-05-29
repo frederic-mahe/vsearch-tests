@@ -3,6 +3,7 @@
 ## Launch all tests
 for s in derep_fulllength.sh \
              fastq_parsing.sh \
+             fastx_subsample.sh \
              fixed_bugs.sh \
              rereplicate.sh \
              shuffle.sh \
