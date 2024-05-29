@@ -630,7 +630,7 @@ printf ">s\nA\n" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--shuffle --quiet eliminates all (normal) messages to stderr"
-printf ">s extra\nA\n" | \
+printf ">s\nA\n" | \
     "${VSEARCH}" \
         --shuffle - \
         --quiet \
@@ -640,7 +640,7 @@ printf ">s extra\nA\n" | \
 	success "${DESCRIPTION}"
 
 DESCRIPTION="--shuffle --quiet allows error messages to be sent to stderr"
-printf ">s extra\nA\n" | \
+printf ">s\nA\n" | \
     "${VSEARCH}" \
         --shuffle - \
         --quiet \
