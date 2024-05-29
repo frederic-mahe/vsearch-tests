@@ -115,7 +115,7 @@ DESCRIPTION="fastq_mergepairs option fastq_allowmergestagger is accepted"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option fastq_ascii is accepted"
+DESCRIPTION="fastq_mergepairs option fastq_ascii is accepted (33)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -123,6 +123,24 @@ DESCRIPTION="fastq_mergepairs option fastq_ascii is accepted"
     --fastaout /dev/null > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_ascii is accepted (64)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_ascii 64 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs option fastq_ascii rejects values other than 33 or 64"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_ascii 32 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs option fastq_eeout is accepted"
 "${VSEARCH}" \
