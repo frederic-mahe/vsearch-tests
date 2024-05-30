@@ -973,7 +973,6 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
 ## ------------------------------------------------------------------- randseed
 
 DESCRIPTION="--fastx_subsample accepts --randseed"
