@@ -960,6 +960,20 @@ printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# use four output files at the same time (must be fastq input)
+DESCRIPTION="--fastx_subsample can output to four files at the same time"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --fastaout /dev/null \
+        --fastaout_discarded /dev/null \
+        --fastqout /dev/null \
+        --fastqout_discarded /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## ------------------------------------------------------------------- randseed
 
 DESCRIPTION="--fastx_subsample accepts --randseed"
