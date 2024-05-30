@@ -177,6 +177,16 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_subsample can output both fasta and fastq"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --fastaout /dev/null \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------------------------------------------------------------- sample_size
 
 DESCRIPTION="--fastx_subsample accepts --sample_size"
