@@ -1,7 +1,8 @@
 #!/bin/bash
 
 ## Launch all tests
-for s in derep_fulllength.sh \
+for s in vsearch.sh \
+             derep_fulllength.sh \
              fastq_parsing.sh \
              fastx_subsample.sh \
              fixed_bugs.sh \
