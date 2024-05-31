@@ -542,6 +542,19 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# final number of reads = 100 * 10.9 / 100.0 = 10.9 -> 10 (not 11)
+DESCRIPTION="--fastx_subsample --sample_pct final number of reads is floored, not rounded"
+for i in {1..100} ; do
+    printf ">s%s\nA\n" ${i}
+done | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct 10.9 \
+        --fastaout - 2> /dev/null | \
+    awk '/^>/ {s += 1} END {exit s == 10 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
