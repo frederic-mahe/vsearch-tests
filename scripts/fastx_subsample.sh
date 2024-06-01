@@ -730,6 +730,34 @@ cmp --quiet \
                success "${DESCRIPTION}"
 unset SEED
 
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+    TMP=$(mktemp)
+    valgrind \
+        --log-fd=1 \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --fastx_subsample <(printf "@s;size=100\nA\n+\nI\n") \
+        --sample_size 10 \
+        --sizein \
+        --quiet \
+        --sizeout \
+        --fastqout /dev/null \
+        --fastaout /dev/null \
+        --fastqout_discarded /dev/null \
+        --fastaout_discarded /dev/null > "${TMP}"
+    DESCRIPTION="--fastx_subsample valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--fastx_subsample valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${TMP}"
+    unset TMP
+fi
+
 
 #*****************************************************************************#
 #                                                                             #
