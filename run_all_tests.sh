@@ -6,6 +6,7 @@ for s in vsearch.sh \
              fastq_parsing.sh \
              fastx_subsample.sh \
              fixed_bugs.sh \
+             help.sh \
              rereplicate.sh \
              shuffle.sh \
              sortbylength.sh \
