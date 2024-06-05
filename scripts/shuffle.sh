@@ -1236,6 +1236,49 @@ printf ">s;size=1\nA\n" | \
 #     success "${DESCRIPTION}" || \
 #         failure "${DESCRIPTION}"
 
+
+#*****************************************************************************#
+#                                                                             #
+#                              invalid options                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+    TMP=$(mktemp)
+    valgrind \
+        --log-file="${TMP}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --shuffle <(printf ">s1\nA\n") \
+        --output /dev/null 2> /dev/null
+    DESCRIPTION="--fastx_subsample valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--fastx_subsample valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${TMP}"
+    unset TMP
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    notes                                    #
+#                                                                             #
+#*****************************************************************************#
+
+
 exit 0
 
-# status: complete (v2.28.1, 2024-05-17)
+# status: complete (v2.28.1, 2024-06-05)
