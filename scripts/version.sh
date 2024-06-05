@@ -54,9 +54,22 @@ DESCRIPTION="--version is a valid command"
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+DESCRIPTION="--version is a valid command (-v)"
+"${VSEARCH}" \
+    -v > /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 DESCRIPTION="--version outputs version number to stderr"
 "${VSEARCH}" \
     --version 2>&1 > /dev/null | \
+    grep -Eq "^vsearch v[0-9]+\.[0-9]+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--version outputs version number to stderr (-v)"
+"${VSEARCH}" \
+    -v 2>&1 > /dev/null | \
     grep -Eq "^vsearch v[0-9]+\.[0-9]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
