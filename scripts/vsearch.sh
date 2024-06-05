@@ -92,6 +92,32 @@ DESCRIPTION="vsearch rejects mixed commands"
 
 #*****************************************************************************#
 #                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+    TMP=$(mktemp)
+    valgrind \
+        --log-file="${TMP}" \
+        --leak-check=full \
+        "${VSEARCH}" 2> /dev/null
+    DESCRIPTION="vsearch valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="vsearch valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${TMP}"
+    unset TMP
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
 #                                    notes                                    #
 #                                                                             #
 #*****************************************************************************#
