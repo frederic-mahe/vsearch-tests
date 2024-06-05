@@ -2041,7 +2041,7 @@ printf ">s;size=1\nA\n" | \
 if which valgrind > /dev/null 2>&1 ; then
     TMP=$(mktemp)
     valgrind \
-        --log-fd=1 \
+        --log-file="${TMP}" \
         --leak-check=full \
         "${VSEARCH}" \
         --fastx_subsample <(printf "@s;size=100\nA\n+\nI\n") \
@@ -2052,7 +2052,7 @@ if which valgrind > /dev/null 2>&1 ; then
         --fastqout /dev/null \
         --fastaout /dev/null \
         --fastqout_discarded /dev/null \
-        --fastaout_discarded /dev/null > "${TMP}"
+        --fastaout_discarded /dev/null
     DESCRIPTION="--fastx_subsample valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${TMP}" && \
         success "${DESCRIPTION}" || \
