@@ -1259,11 +1259,11 @@ if which valgrind > /dev/null 2>&1 ; then
         "${VSEARCH}" \
         --shuffle <(printf ">s1\nA\n") \
         --output /dev/null 2> /dev/null
-    DESCRIPTION="--fastx_subsample valgrind (no leak memory)"
+    DESCRIPTION="--shuffle valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${TMP}" && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
-    DESCRIPTION="--fastx_subsample valgrind (no errors)"
+    DESCRIPTION="--shuffle valgrind (no errors)"
     grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
