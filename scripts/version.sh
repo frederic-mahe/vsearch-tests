@@ -177,6 +177,33 @@ DESCRIPTION="--version --threads > 1 triggers a warning (not multithreaded)"
 
 #*****************************************************************************#
 #                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+    TMP=$(mktemp)
+    valgrind \
+        --log-file="${TMP}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --version > /dev/null 2> /dev/null
+    DESCRIPTION="--version valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--version valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${TMP}"
+    unset TMP
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
 #                                    notes                                    #
 #                                                                             #
 #*****************************************************************************#
