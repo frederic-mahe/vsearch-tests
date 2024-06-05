@@ -1453,6 +1453,42 @@ DESCRIPTION="--sortbylength rejects --minsize"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+    TMP=$(mktemp)
+    valgrind \
+        --log-file="${TMP}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --sortbylength <(printf ">s1\nA\n>s2\nAA\n") \
+        --output /dev/null 2> /dev/null
+    DESCRIPTION="--sortbylength valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--sortbylength valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${TMP}"
+    unset TMP
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    notes                                    #
+#                                                                             #
+#*****************************************************************************#
+
+
 exit 0
 
-# status: complete (v2.28.1, 2024-05-21)
+# status: complete (v2.28.1, 2024-06-05)
