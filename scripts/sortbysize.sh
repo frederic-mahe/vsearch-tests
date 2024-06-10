@@ -520,6 +520,29 @@ DESCRIPTION="--sortbysize --topn keeps n first entries"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sortbysize --topn is applied after size filtering (--maxsize)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=3\nA\n>s2;size=1\nT\n") \
+    --maxsize 2 \
+    --quiet \
+    --topn 1 \
+    --output - | \
+    grep -qw ">s2;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --topn is applied after size filtering (--minsize)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=4\nA\n>s2;size=2\nT\n>s3;size=1\nC\n") \
+    --maxsize 3 \
+    --minsize 2 \
+    --quiet \
+    --topn 1 \
+    --output - | \
+    grep -qw ">s2;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
