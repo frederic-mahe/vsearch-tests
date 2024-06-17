@@ -837,7 +837,7 @@ printf ">s\nA\n" | \
 
 ## note: progress is not written to the log file
 DESCRIPTION="--sortbysize --no_progress removes progressive report on stderr (no visible effect)"
-printf ">s extra\nA\n" | \
+printf ">s\nA\n" | \
     "${VSEARCH}" \
         --sortbysize - \
         --no_progress \
