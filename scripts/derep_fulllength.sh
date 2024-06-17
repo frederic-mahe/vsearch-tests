@@ -319,7 +319,7 @@ printf ">s1\nU\n" | \
 DESCRIPTION="--maxuniquesize is accepted"
 printf ">s1\nA\n>s2\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 2 \
         --quiet \
@@ -330,7 +330,7 @@ printf ">s1\nA\n>s2\nA\n" | \
 DESCRIPTION="--maxuniquesize accepts lesser dereplicated sizes (<)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 2 \
         --quiet \
@@ -342,7 +342,7 @@ printf ">s\nA\n" | \
 DESCRIPTION="--maxuniquesize accepts equal dereplicated sizes (=)"
 printf ">s\nA\n>s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 2 \
         --quiet \
@@ -354,7 +354,7 @@ printf ">s\nA\n>s\nA\n" | \
 DESCRIPTION="--maxuniquesize rejects greater dereplicated sizes (>)"
 printf ">s\nA\n>s\nA\n>s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 2 \
         --quiet \
@@ -366,7 +366,7 @@ printf ">s\nA\n>s\nA\n>s\nA\n" | \
 DESCRIPTION="--maxuniquesize must be an integer (not a double)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 1.0 \
         --quiet \
@@ -377,7 +377,7 @@ printf ">s\nA\n" | \
 DESCRIPTION="--maxuniquesize must be an integer (not a char)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize A \
         --quiet \
@@ -388,7 +388,7 @@ printf ">s\nA\n" | \
 DESCRIPTION="--maxuniquesize must be a positive integer"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize -1 \
         --quiet \
@@ -399,7 +399,7 @@ printf ">s\nA\n" | \
 DESCRIPTION="--maxuniquesize must be greater than zero"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 0 \
         --quiet \
@@ -410,7 +410,7 @@ printf ">s\nA\n" | \
 DESCRIPTION="--maxuniquesize accepts a value of 1 (no dereplication)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 1 \
         --quiet \
@@ -422,7 +422,7 @@ printf ">s\nA\n" | \
 DESCRIPTION="--maxuniquesize accepts large values (2^8)"
 printf ">s\nA\n>s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 256 \
         --quiet \
@@ -434,7 +434,7 @@ printf ">s\nA\n>s\nA\n" | \
 DESCRIPTION="--maxuniquesize accepts large values (2^16)"
 printf ">s\nA\n>s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 65536 \
         --quiet \
@@ -446,7 +446,7 @@ printf ">s\nA\n>s\nA\n" | \
 DESCRIPTION="--maxuniquesize accepts large values (2^32)"
 printf ">s\nA\n>s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 4294967296 \
         --quiet \
@@ -458,7 +458,7 @@ printf ">s\nA\n>s\nA\n" | \
 DESCRIPTION="--maxuniquesize accepts large values (2^32)"
 printf ">s\nA\n>s\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --maxuniquesize 4294967296 \
         --quiet \
@@ -467,11 +467,11 @@ printf ">s\nA\n>s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-# - combine with sizein
+# combine with sizein
 DESCRIPTION="--maxuniquesize --sizein accepts lesser dereplicated sizes (<)"
 printf ">s;size=1\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --sizein \
         --maxuniquesize 2 \
@@ -484,7 +484,7 @@ printf ">s;size=1\nA\n" | \
 DESCRIPTION="--maxuniquesize --sizein accepts equal dereplicated sizes (=)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --sizein \
         --maxuniquesize 2 \
@@ -497,7 +497,7 @@ printf ">s;size=2\nA\n" | \
 DESCRIPTION="--maxuniquesize --sizein rejects greater dereplicated sizes (>)"
 printf ">s;size=3\nA\n" | \
     "${VSEARCH}" \
-        --derep_prefix - \
+        --derep_fulllength - \
         --minseqlength 1 \
         --sizein \
         --maxuniquesize 2 \
@@ -507,14 +507,241 @@ printf ">s;size=3\nA\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-exit
-
-
 ## -------------------------------------------------------------- minuniquesize
 
-# --minuniquesize INT         minimum abundance for output from dereplication
+# minimum abundance for output from dereplication
 
-# combine min-max?
+DESCRIPTION="--minuniquesize is accepted"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 1 \
+        --quiet \
+        --output /dev/null > /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize rejects lesser dereplicated sizes (<)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 2 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize accepts equal dereplicated sizes (=)"
+printf ">s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 2 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize accepts greater dereplicated sizes (>)"
+printf ">s\nA\n>s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 2 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize must be an integer (not a double)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 1.0 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize must be an integer (not a char)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize A \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize must be a positive integer"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize -1 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize must be greater than zero"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 0 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize accepts a value of 1"
+printf ">s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 1 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize accepts large values (2^8)"
+printf ">s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 256 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize accepts large values (2^16)"
+printf ">s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 65536 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize accepts large values (2^32)"
+printf ">s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 4294967296 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize accepts large values (2^32)"
+printf ">s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 4294967296 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+# combine with sizein
+DESCRIPTION="--minuniquesize --sizein rejects lesser dereplicated sizes (<)"
+printf ">s;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --minuniquesize 2 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize --sizein accepts equal dereplicated sizes (=)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --minuniquesize 2 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize --sizein accepts greater dereplicated sizes (>)"
+printf ">s;size=3\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --minuniquesize 2 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# combine min-max? normal, same, inverted
+DESCRIPTION="--minuniquesize --maxuniquesize accepts dereplicated sizes (normal usage)"
+printf ">s\nA\n>s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 2 \
+        --maxuniquesize 4 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize --maxuniquesize accepts dereplicated sizes (same threshold)"
+printf ">s\nA\n>s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 3 \
+        --maxuniquesize 3 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# should warn that minuniquesize > maxuniquesize (output always empty)
+DESCRIPTION="--minuniquesize --maxuniquesize rejects dereplicated sizes (swapped threshold)"
+printf ">s\nA\n>s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 3 \
+        --maxuniquesize 2 \
+        --quiet \
+        --output - | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
 ## --------------------------------------------------------------------- strand
 
@@ -574,8 +801,66 @@ printf ">s1\nA\n" | \
 
 ## --------------------------------------------------------------------- sizein
 
-# --sizein                    propagate abundance annotation from input
+DESCRIPTION="--sizein is accepted (no size annotation)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
+DESCRIPTION="--sizein is accepted (size annotation)"
+printf ">s;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sizein (no size in, no size out)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output - | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sizein --sizeout assumes size=1 (no size annotation)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -qw ">s;size=1" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sizein propagates size annotations (sizeout is implied)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output - | \
+    grep -qw ">s;size=2" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+exit
 
 #*****************************************************************************#
 #                                                                             #
