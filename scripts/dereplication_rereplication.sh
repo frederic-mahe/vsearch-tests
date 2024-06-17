@@ -1,7 +1,7 @@
 #!/bin/bash -
 
 ## Print a header
-SCRIPT_NAME="Dereplication/rereplication options"
+SCRIPT_NAME="Dereplication/rereplication options --- DEPRECATED"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
