@@ -729,7 +729,7 @@ printf ">s\nA\n>s\nA\n>s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-# should warn that minuniquesize > maxuniquesize (output always empty)
+# should warn that minuniquesize > maxuniquesize (output always empty)?
 DESCRIPTION="--minuniquesize --maxuniquesize rejects dereplicated sizes (swapped threshold)"
 printf ">s\nA\n>s\nA\n>s\nA\n" | \
     "${VSEARCH}" \
@@ -860,7 +860,6 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-exit
 
 #*****************************************************************************#
 #                                                                             #
@@ -869,6 +868,18 @@ exit
 #*****************************************************************************#
 
 ## ----------------------------------------------------------- bzip2_decompress
+
+DESCRIPTION="--derep_fulllength --bzip2_decompress is accepted (empty input)"
+printf "" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --bzip2_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_fulllength rejects compressed stdin (bzip2)"
 printf ">s\nA\n" | \
@@ -921,6 +932,17 @@ printf ">s\nA\n" | \
 # Fasta files produced by vsearch are wrapped (sequences are written on
 # lines of integer nucleotides, 80 by default). Set the value to zero to
 # eliminate the wrapping.
+
+DESCRIPTION="--derep_fulllength --fasta_width is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --fasta_width 1 \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
 # 80 nucleotides, expect 2 lines (header + one sequence line)
 DESCRIPTION="--derep_fulllength fasta output is not wrapped (80 nucleotides or less)"
@@ -991,6 +1013,18 @@ printf ">s\n%081s\n" | tr " " "A" | \
 
 ## ------------------------------------------------------------ gzip_decompress
 
+DESCRIPTION="--derep_fulllength --gzip_decompress is accepted (empty input)"
+printf "" | \
+    gzip | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --gzip_decompress \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--derep_fulllength rejects compressed stdin (gzip)"
 printf ">s\nA\n" | \
     gzip | \
@@ -1051,10 +1085,207 @@ printf "" | \
         success "${DESCRIPTION}"
 
 ## ------------------------------------------------------------------ lengthout
+
+DESCRIPTION="--derep_fulllength --lengthout is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --lengthout \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --lengthout adds length annotations to output"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --lengthout \
+        --output - | \
+    grep -wq ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ------------------------------------------------------------------------ log
+
+DESCRIPTION="--derep_fulllength --log is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --log /dev/null \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --log writes to a file"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null \
+        --log - | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --log does not prevent messages to be sent to stderr"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --output /dev/null \
+        --log /dev/null 2>&1 | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- maxseqlength
+
+DESCRIPTION="--derep_fulllength --maxseqlength is accepted"
+printf ">s\n%081s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --maxseqlength 81 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --maxseqlength must be an integer"
+printf ">s\n%081s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --maxseqlength A \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+# ## missing check in vsearch code!
+# DESCRIPTION="--derep_fulllength --maxseqlength must be a positive integer"
+# printf ">s\n%081s\n" | tr " " "A" | \
+#     "${VSEARCH}" \
+#         --derep_fulllength - \
+#         --maxseqlength -1 \
+#         --quiet \
+#         --output /dev/null 2> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+# 	success "${DESCRIPTION}"
+
+# ## missing check in vsearch code! 
+# DESCRIPTION="--derep_fulllength --maxseqlength must be greater than zero"
+# printf ">s\n%081s\n" | tr " " "A" | \
+#     "${VSEARCH}" \
+#         --derep_fulllength - \
+#         --maxseqlength 0 \
+#         --quiet \
+#         --output /dev/null 2> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+# 	success "${DESCRIPTION}"
+
+# note: the 'sequence discarded' message is not silenced by --quiet
+DESCRIPTION="--derep_fulllength --maxseqlength removes sequences longer than n"
+printf ">s\n%081s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --maxseqlength 80 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- minseqlength
+
+DESCRIPTION="--derep_fulllength --minseqlength is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --minseqlength must be an integer"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength A \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+# ## missing check in vsearch code!
+# DESCRIPTION="--derep_fulllength --minseqlength must be a positive integer"
+# printf ">s\nA\n" | \
+#     "${VSEARCH}" \
+#         --derep_fulllength - \
+#         --minseqlength -1 \
+#         --quiet \
+#         --output /dev/null 2> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+# 	success "${DESCRIPTION}"
+
+# ## missing check in vsearch code!
+# DESCRIPTION="--derep_fulllength --minseqlength must be greater than zero"
+# printf ">s\nA\n" | \
+#     "${VSEARCH}" \
+#         --derep_fulllength - \
+#         --minseqlength 0 \
+#         --quiet \
+#         --output /dev/null 2> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+# 	success "${DESCRIPTION}"
+
+# note: the 'sequence discarded' message is not silenced by --quiet
+DESCRIPTION="--derep_fulllength --minseqlength removes sequences shorter than n"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
 ## ---------------------------------------------------------------- no_progress
+
+DESCRIPTION="--derep_fulllength --no_progress is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --no_progress \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## note: progress is not written to the log file
+DESCRIPTION="--derep_fulllength --no_progress removes progressive report on stderr (no visible effect)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --no_progress \
+        --output /dev/null 2>&1 | \
+    grep -iq "^sorting" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+exit
+
+# combine min/maxseqlength (normal, equal, swapped)...
+
 ## -------------------------------------------------------------- notrunclabels
 ## ---------------------------------------------------------------------- quiet
 ## -------------------------------------------------------------------- relabel
@@ -1398,7 +1629,6 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --xsize strips abundance values (removes the ";size=INT[;]" annotations)
 DESCRIPTION="--xsize strips abundance values"
 printf ">s;size=1;\nA\n" | \
     "${VSEARCH}" \
@@ -1412,7 +1642,6 @@ printf ">s;size=1;\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-## --xsize strips abundance values (removes the ";size=INT[;]" annotations)
 DESCRIPTION="--xsize strips abundance values (without --sizein)"
 printf ">s;size=1;\nA\n" | \
     "${VSEARCH}" \
@@ -1425,26 +1654,6 @@ printf ">s;size=1;\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-
-#*****************************************************************************#
-#                                                                             #
-#                                   --topn                                    #
-#                                                                             #
-#*****************************************************************************#
-
-#*****************************************************************************#
-#                                                                             #
-#                                    --uc                                     #
-#                                                                             #
-#*****************************************************************************#
-
-#*****************************************************************************#
-#                                                                             #
-#                                   --xsize                                   #
-#                                                                             #
-#*****************************************************************************#
-
-
 exit 0
 
 ## TODO:
@@ -1454,38 +1663,3 @@ exit 0
 # xsize + sizein + sizeout + relabel_keep: ?
 # lengthout: if length, then remove, else no effect?
 # eeout + lengthout + sizeout? is the order relevant?
-
-## list of options available when using the --derep_fulllength command
-
-# lengthout
-# log
-# maxseqlength
-# maxuniquesize
-# minseqlength
-# minuniquesize
-# no_progress
-# notrunclabels
-# relabel
-# relabel_keep
-# relabel_md5
-# relabel_self
-# relabel_sha1
-# sample
-# sizein
-# sizeout
-# strand
-# threads
-# topn
-# uc
-# xee
-# xlength
-# xsize
-
-
-## options tested so far:
-
-# bzip2_decompress
-# gzip_decompress
-# fasta_width
-# quiet
-# output
