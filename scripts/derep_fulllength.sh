@@ -32,7 +32,7 @@ DESCRIPTION="check if vsearch is executable"
 
 #*****************************************************************************#
 #                                                                             #
-#                             --derep_fulllength                              #
+#                           mandatory options                                 #
 #                                                                             #
 #*****************************************************************************#
 
@@ -55,6 +55,17 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
         2> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
+
+DESCRIPTION="--rereplicate fails if unable to open output file for writing"
+TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output ${TMP} 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+w ${TMP} && rm -f ${TMP}
+unset TMP
 
 DESCRIPTION="--derep_fulllength accepts empty input"
 printf "" | \
@@ -153,6 +164,12 @@ printf ">s\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#*****************************************************************************#
+#                                                                             #
+#                            core functionality                               #
+#                                                                             #
+#*****************************************************************************#
 
 ## ----------------------------------------------------- test general behaviour
 
@@ -291,9 +308,86 @@ printf ">s1\nU\n" | \
 
 #*****************************************************************************#
 #                                                                             #
-#               --bzip2_decompress and --gzip_decompress                      #
+#                              core options                                   #
 #                                                                             #
 #*****************************************************************************#
+
+## -------------------------------------------------------------- maxuniquesize
+
+# --maxuniquesize INT         maximum abundance for output from dereplication
+
+## -------------------------------------------------------------- minuniquesize
+
+# --minuniquesize INT         minimum abundance for output from dereplication
+
+## --------------------------------------------------------------------- strand
+
+## --strand is accepted
+DESCRIPTION="--strand is accepted"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --strand both \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## --strand both allow dereplication of strand plus and minus (--derep_fulllength)
+DESCRIPTION="--strand allow dereplication of strand plus and minus (--derep_fulllength)"
+printf ">s1;size=1;\nA\n>s2;size=1;\nT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --sizein \
+        --sizeout \
+        --minseqlength 1 \
+        --strand both \
+        --quiet \
+        --output - | \
+    grep -wqE ">s1;size=2;?" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## --strand plus does not change default behaviour
+DESCRIPTION="--strand plus does not change default behaviour"
+printf ">s1;size=1;\nA\n>s2;size=1;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --strand plus \
+        --output - | \
+    grep -wqE ">s1;size=2;?" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## --strand fails if an unknown argument is given
+DESCRIPTION="--strand fails if an unknown argument is given"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --strand unknown \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+## --------------------------------------------------------------------- sizein
+
+# --sizein                    propagate abundance annotation from input
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            secondary options                                #
+#                                                                             #
+#*****************************************************************************#
+
+## ----------------------------------------------------------- bzip2_decompress
 
 DESCRIPTION="--derep_fulllength rejects compressed stdin (bzip2)"
 printf ">s\nA\n" | \
@@ -341,71 +435,7 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--derep_fulllength rejects compressed stdin (gzip)"
-printf ">s\nA\n" | \
-    gzip | \
-    "${VSEARCH}" \
-        --derep_fulllength - \
-        --minseqlength 1 \
-        --quiet \
-        --output - 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--derep_fulllength --gzip_decompress is accepted (empty input)"
-printf "" | \
-    gzip | \
-    "${VSEARCH}" \
-        --derep_fulllength - \
-        --gzip_decompress \
-        --minseqlength 1 \
-        --quiet \
-        --output /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--derep_fulllength --gzip_decompress accepts compressed stdin"
-printf ">s\nA\n" | \
-    gzip | \
-    "${VSEARCH}" \
-        --derep_fulllength - \
-        --gzip_decompress \
-        --minseqlength 1 \
-        --quiet \
-        --output /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-# more flexible than bzip2
-DESCRIPTION="--derep_fulllength --gzip_decompress accepts uncompressed stdin"
-printf ">s\nA\n" | \
-    "${VSEARCH}" \
-        --derep_fulllength - \
-        --gzip_decompress \
-        --minseqlength 1 \
-        --quiet \
-        --output /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--derep_fulllength rejects --bzip2_decompress + --gzip_decompress"
-printf "" | \
-    "${VSEARCH}" \
-        --derep_fulllength - \
-        --bzip2_decompress \
-        --gzip_decompress \
-        --minseqlength 1 \
-        --quiet \
-        --output /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                               --fasta_width                                 #
-#                                                                             #
-#*****************************************************************************#
+## ---------------------------------------------------------------- fasta_width
 
 # Fasta files produced by vsearch are wrapped (sequences are written on
 # lines of integer nucleotides, 80 by default). Set the value to zero to
@@ -478,73 +508,83 @@ printf ">s\n%081s\n" | tr " " "A" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## ------------------------------------------------------------ gzip_decompress
 
-#*****************************************************************************#
-#                                                                             #
-#                                  --strand                                   #
-#                                                                             #
-#*****************************************************************************#
-
-## --strand is accepted
-DESCRIPTION="--strand is accepted"
-printf ">s1\nA\n" | \
+DESCRIPTION="--derep_fulllength rejects compressed stdin (gzip)"
+printf ">s\nA\n" | \
+    gzip | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
-        --strand both \
+        --quiet \
+        --output - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --gzip_decompress is accepted (empty input)"
+printf "" | \
+    gzip | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --gzip_decompress \
+        --minseqlength 1 \
         --quiet \
         --output /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+        failure "${DESCRIPTION}"
 
-## --strand both allow dereplication of strand plus and minus (--derep_fulllength)
-DESCRIPTION="--strand allow dereplication of strand plus and minus (--derep_fulllength)"
-printf ">s1;size=1;\nA\n>s2;size=1;\nT\n" | \
+DESCRIPTION="--derep_fulllength --gzip_decompress accepts compressed stdin"
+printf ">s\nA\n" | \
+    gzip | \
     "${VSEARCH}" \
         --derep_fulllength - \
-        --sizein \
-        --sizeout \
+        --gzip_decompress \
         --minseqlength 1 \
-        --strand both \
         --quiet \
-        --output - | \
-    grep -wqE ">s1;size=2;?" && \
+        --output /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+        failure "${DESCRIPTION}"
 
-## --strand plus does not change default behaviour
-DESCRIPTION="--strand plus does not change default behaviour"
-printf ">s1;size=1;\nA\n>s2;size=1;\nA\n" | \
+# more flexible than bzip2
+DESCRIPTION="--derep_fulllength --gzip_decompress accepts uncompressed stdin"
+printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
+        --gzip_decompress \
         --minseqlength 1 \
-        --sizein \
-        --sizeout \
         --quiet \
-        --strand plus \
-        --output - | \
-    grep -wqE ">s1;size=2;?" && \
+        --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+        failure "${DESCRIPTION}"
 
-## --strand fails if an unknown argument is given
-DESCRIPTION="--strand fails if an unknown argument is given"
-printf ">s1\nA\n" | \
+DESCRIPTION="--derep_fulllength rejects --bzip2_decompress + --gzip_decompress"
+printf "" | \
     "${VSEARCH}" \
         --derep_fulllength - \
+        --bzip2_decompress \
+        --gzip_decompress \
         --minseqlength 1 \
-        --strand unknown \
         --quiet \
         --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+        success "${DESCRIPTION}"
 
-
-#*****************************************************************************#
-#                                                                             #
-#                                   --topn                                    #
-#                                                                             #
-#*****************************************************************************#
+## ------------------------------------------------------------------ lengthout
+## ------------------------------------------------------------------------ log
+## --------------------------------------------------------------- maxseqlength
+## --------------------------------------------------------------- minseqlength
+## ---------------------------------------------------------------- no_progress
+## -------------------------------------------------------------- notrunclabels
+## ---------------------------------------------------------------------- quiet
+## -------------------------------------------------------------------- relabel
+## --------------------------------------------------------------- relabel_keep
+## ---------------------------------------------------------------- relabel_md5
+## --------------------------------------------------------------- relabel_self
+## --------------------------------------------------------------- relabel_sha1
+## --------------------------------------------------------------------- sample
+## -------------------------------------------------------------------- sizeout
+## -------------------------------------------------------------------- threads
+## ----------------------------------------------------------------------- topn
 
 ## --topn is accepted
 DESCRIPTION="--topn is accepted"
@@ -645,12 +685,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-
-#*****************************************************************************#
-#                                                                             #
-#                                    --uc                                     #
-#                                                                             #
-#*****************************************************************************#
+## ------------------------------------------------------------------------- uc
 
 # Ten tab-separated columns.
 # Column content varies with the type of entry (S, H or C):
@@ -867,12 +902,9 @@ printf ">s1\nAA\n>s2\nAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
-#*****************************************************************************#
-#                                                                             #
-#                                   --xsize                                   #
-#                                                                             #
-#*****************************************************************************#
+## ------------------------------------------------------------------------ xee
+## -------------------------------------------------------------------- xlength
+## ---------------------------------------------------------------------- xsize
 
 ## --xsize is accepted
 DESCRIPTION="--xsize is accepted"
@@ -911,6 +943,26 @@ printf ">s;size=1;\nA\n" | \
     grep -q "^>s;size=1" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                   --topn                                    #
+#                                                                             #
+#*****************************************************************************#
+
+#*****************************************************************************#
+#                                                                             #
+#                                    --uc                                     #
+#                                                                             #
+#*****************************************************************************#
+
+#*****************************************************************************#
+#                                                                             #
+#                                   --xsize                                   #
+#                                                                             #
+#*****************************************************************************#
+
 
 exit 0
 
