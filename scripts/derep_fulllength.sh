@@ -56,7 +56,7 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-DESCRIPTION="--rereplicate fails if unable to open output file for writing"
+DESCRIPTION="--derep_fulllength fails if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
 printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
@@ -74,6 +74,14 @@ printf "" | \
         --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength rejects fastq input"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--derep_fulllength rejects non-fasta input (#1)"
 printf "\n" | \
@@ -1109,6 +1117,20 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# lengthout + sizeout? is the order relevant?
+DESCRIPTION="--derep_fulllength --lengthout --sizeout add annotations to output (size first)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --lengthout \
+        --sizeout \
+        --output - | \
+    grep -wq ">s;size=1;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ------------------------------------------------------------------------ log
 
 DESCRIPTION="--derep_fulllength --log is accepted"
@@ -1157,6 +1179,40 @@ printf ">s\n%081s\n" | tr " " "A" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+DESCRIPTION="--derep_fulllength --maxseqlength accepts shorter lengths (<)"
+printf ">s\n%080s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --maxseqlength 81 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --maxseqlength accepts equal lengths (=)"
+printf ">s\n%081s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --maxseqlength 81 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# note: the 'sequence discarded' message is not silenced by --quiet
+DESCRIPTION="--derep_fulllength --maxseqlength rejects longer sequences (>)"
+printf ">s\n%082s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --maxseqlength 81 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
 DESCRIPTION="--derep_fulllength --maxseqlength must be an integer"
 printf ">s\n%081s\n" | tr " " "A" | \
     "${VSEARCH}" \
@@ -1189,18 +1245,6 @@ printf ">s\n%081s\n" | tr " " "A" | \
 #     failure "${DESCRIPTION}" || \
 # 	success "${DESCRIPTION}"
 
-# note: the 'sequence discarded' message is not silenced by --quiet
-DESCRIPTION="--derep_fulllength --maxseqlength removes sequences longer than n"
-printf ">s\n%081s\n" | tr " " "A" | \
-    "${VSEARCH}" \
-        --derep_fulllength - \
-        --maxseqlength 80 \
-        --quiet \
-        --output - 2> /dev/null | \
-    grep -q "." && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
-
 ## --------------------------------------------------------------- minseqlength
 
 DESCRIPTION="--derep_fulllength --minseqlength is accepted"
@@ -1210,6 +1254,40 @@ printf ">s\nA\n" | \
         --minseqlength 1 \
         --quiet \
         --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+# note: the 'sequence discarded' message is not silenced by --quiet
+DESCRIPTION="--derep_fulllength --minseqlength rejects shorter sequences (<)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --minseqlength accepts equal lengths (=)"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --minseqlength accepts longer sequences (>)"
+printf ">s\nAAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1245,12 +1323,37 @@ printf ">s\nA\n" | \
 #     failure "${DESCRIPTION}" || \
 # 	success "${DESCRIPTION}"
 
-# note: the 'sequence discarded' message is not silenced by --quiet
-DESCRIPTION="--derep_fulllength --minseqlength removes sequences shorter than n"
-printf ">s\nA\n" | \
+# combine min/maxseqlength (normal, equal, swapped)
+DESCRIPTION="--derep_fulllength --minseqlength --maxseqlength (normal usage)"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --maxseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --minseqlength --maxseqlength (equal)"
+printf ">s\nAA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 2 \
+        --maxseqlength 2 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --minseqlength --maxseqlength (swapped threshold)"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 2 \
+        --maxseqlength 1 \
         --quiet \
         --output - 2> /dev/null | \
     grep -q "." && \
@@ -1282,20 +1385,613 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-exit
-
-# combine min/maxseqlength (normal, equal, swapped)...
-
 ## -------------------------------------------------------------- notrunclabels
+
+DESCRIPTION="--derep_fulllength --notrunclabels is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --notrunclabels \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --notrunclabels preserves full headers"
+printf ">s extra\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --notrunclabels \
+        --output - | \
+    grep -wq ">s extra" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 ## ---------------------------------------------------------------------- quiet
+
+DESCRIPTION="--derep_fulllength --quiet is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --quiet eliminates all (normal) messages to stderr"
+printf ">s extra\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null 2>&1 | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --quiet allows error messages to be sent to stderr"
+printf ">s extra\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --quiet2 \
+        --output /dev/null 2>&1 | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------------- relabel
+
+DESCRIPTION="--derep_fulllength --relabel is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "label" \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel renames sequence (label + ticker)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "label" \
+        --output - | \
+    grep -wq ">label1" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel renames sequence (empty label, only ticker)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "" \
+        --output - | \
+    grep -wq ">1" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel cannot combine with --relabel_md5"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "label" \
+        --relabel_md5 \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel cannot combine with --relabel_sha1"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "label" \
+        --relabel_sha1 \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- relabel_keep
+
+DESCRIPTION="--derep_fulllength --relabel_keep is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "label" \
+        --relabel_keep \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_keep renames and keeps original sequence name"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "label" \
+        --relabel_keep \
+        --output - | \
+    grep -wq ">label1 s" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 ## ---------------------------------------------------------------- relabel_md5
+
+DESCRIPTION="--derep_fulllength --relabel_md5 is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_md5 \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_md5 relabels using MD5 hash of sequence"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_md5 \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- relabel_self
+
+DESCRIPTION="--derep_fulllength --relabel_self is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_self \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_self relabels using sequence as label"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_self \
+        --output - | \
+    grep -qw ">A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- relabel_sha1
+
+DESCRIPTION="--derep_fulllength --relabel_sha1 is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_sha1 \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_sha1 relabels using SHA1 hash of sequence"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_sha1 \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------------- sample
+
+DESCRIPTION="--derep_fulllength --sample is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --sample "ABC" \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --sample adds sample name to sequence headers"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --sample "ABC" \
+        --output - | \
+    grep -qw ">s;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------------- sizeout
+
+# When using --relabel, --relabel_self, --relabel_md5 or --relabel_sha1,
+# preserve and report abundance annotations to the output fasta file
+# (using the pattern ';size=integer;').
+
+DESCRIPTION="--derep_fulllength --sizeout is accepted (no size)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --sizeout \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --sizeout is accepted (with size)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --sizeout \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --sizeout missing size annotations are not added (no size)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# without sizein, annotations are discarded, and replaced with dereplication results
+DESCRIPTION="--derep_fulllength size annotations are replaced (without sizein, with sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -qw ">s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength size annotations are replaced (with sizein and sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -qw ">s;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength size annotations are left untouched (without sizein and sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    grep -qw ">s;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## add abundance annotations
+DESCRIPTION="--derep_fulllength --relabel no size annotations (without --sizeout)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "label" \
+        --output - | \
+    grep -qw ">label1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel --sizeout adds size annotations"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "label" \
+        --sizeout \
+        --output - | \
+    grep -qw ">label1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_self no size annotations (without --sizeout)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_self \
+        --output - | \
+    grep -qw ">A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_self --sizeout adds size annotations"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_self \
+        --sizeout \
+        --output - | \
+    grep -qw ">A;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_md5 no size annotations (without --sizeout)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_md5 \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_md5 --sizeout adds size annotations"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_md5 \
+        --sizeout \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_sha1 no size annotations (without --sizeout)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_sha1 \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_sha1 --sizeout adds size annotations"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_sha1 \
+        --sizeout \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## preserve abundance annotations
+DESCRIPTION="--derep_fulllength --relabel no size annotations (without --sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "label" \
+        --output - | \
+    grep -qw ">label1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel --sizeout updates size annotations (without sizein)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel "label" \
+        --sizeout \
+        --output - | \
+    grep -qw ">label1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel --sizeout updates size annotations (with sizein)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --relabel "label" \
+        --sizeout \
+        --output - | \
+    grep -qw ">label1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_self no size annotations (without --sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_self \
+        --output - | \
+    grep -qw ">A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_self --sizeout updates size annotations (without sizein)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_self \
+        --sizeout \
+        --output - | \
+    grep -qw ">A;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_self --sizeout preserves size annotations (with sizein)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --relabel_self \
+        --sizeout \
+        --output - | \
+    grep -qw ">A;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_md5 no size annotations (without --sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_md5 \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_md5 --sizeout updates size annotations"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_md5 \
+        --sizeout \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_md5 --sizeout preserves size annotations (with sizein)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --relabel_md5 \
+        --sizeout \
+        --output - | \
+    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_sha1 no size annotations (without --sizeout)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_sha1 \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_sha1 --sizeout updates size annotations"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --relabel_sha1 \
+        --sizeout \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --relabel_sha1 --sizeout preserves size annotations (with sizein)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --relabel_sha1 \
+        --sizeout \
+        --output - | \
+    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------------- threads
+
+DESCRIPTION="--derep_fulllength --threads is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --threads 1 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --threads > 1 triggers a warning (not multithreaded)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --threads 2 \
+        --quiet \
+        --output /dev/null 2>&1 | \
+    grep -iq "warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ----------------------------------------------------------------------- topn
 
 ## --topn is accepted
@@ -1421,6 +2117,18 @@ printf ">s\nA\n" | \
         --uc /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength fails if unable to open uc file for writing"
+TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --uc ${TMP} 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+w ${TMP} && rm -f ${TMP}
+unset TMP
 
 ## --uc fails if no output redirection is given (filename, device or -)
 DESCRIPTION="--uc fails if no output redirection is given"
@@ -1615,7 +2323,80 @@ printf ">s1\nAA\n>s2\nAA\n" | \
         failure "${DESCRIPTION}"
 
 ## ------------------------------------------------------------------------ xee
+
+DESCRIPTION="--derep_fulllength --xee is accepted"
+printf ">s;ee=1.00\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xee \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --xee removes expected error annotations from input"
+printf ">s;ee=1.00\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xee \
+        --quiet \
+        --output - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------------- xlength
+
+DESCRIPTION="--derep_fulllength --xlength is accepted"
+printf ">s;length=1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xlength \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --xlength removes length annotations from input"
+printf ">s;length=1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xlength \
+        --quiet \
+        --output - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --xlength accepts input without length annotations"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xlength \
+        --quiet \
+        --output - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --xlength removes length annotations (input), lengthout adds them (output)"
+printf ">s;length=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xlength \
+        --lengthout \
+        --quiet \
+        --output - | \
+    grep -wq ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------------------------------------------------------------------- xsize
 
 ## --xsize is accepted
@@ -1654,12 +2435,215 @@ printf ">s;size=1;\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-exit 0
+# xsize + sizein + sizeout + relabel_keep: ?
+DESCRIPTION="--xsize + sizeout (new size)"
+printf ">s;size=2;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xsize \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -wq ">s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize + sizein (no size)"
+printf ">s;size=2;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizeout \
+        --xsize \
+        --quiet \
+        --output - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize + sizein + sizeout (new size)"
+printf ">s;size=2;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizeout \
+        --xsize \
+        --quiet \
+        --output - | \
+    grep -wq ">s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize + sizein + sizeout + relabel_keep (keep old size)"
+printf ">s;size=2;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --relabel_keep \
+        --sizein \
+        --xsize \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -wq ">s;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# xsize + sizein + sizeout + notrunclabels: ?
+DESCRIPTION="sizeout + notrunclabels (trim and reinsert new size at the end)"
+printf ">s;size=2; extra\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --notrunclabels \
+        --quiet \
+        --sizeout \
+        --output - | \
+    grep -wq ">s; extra;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="sizein + sizeout + notrunclabels (trim and reinsert old size at the end)"
+printf ">s;size=2; extra\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --notrunclabels \
+        --quiet \
+        --sizein \
+        --sizeout \
+        --output - | \
+    grep -wq ">s; extra;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize + sizein + sizeout + notrunclabels (trim and reinsert old size at the end)"
+printf ">s;size=2; extra\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --notrunclabels \
+        --quiet \
+        --xsize \
+        --sizein \
+        --sizeout \
+        --output - | \
+    grep -wq ">s; extra;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize + notrunclabels (without space, no final ;)"
+printf ">s;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xsize \
+        --notrunclabels \
+        --quiet \
+        --output - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize + notrunclabels (without space, final ;)"
+printf ">s;size=2;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xsize \
+        --notrunclabels \
+        --quiet \
+        --output - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize + notrunclabels (with space and final ;)"
+printf ">s;size=2; \nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xsize \
+        --notrunclabels \
+        --quiet \
+        --output - | \
+    grep -wq ">s; " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize + notrunclabels (with space and no final ;)"
+printf ">s;size=2 \nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xsize \
+        --notrunclabels \
+        --quiet \
+        --output - | \
+    grep -wq ">s;size=2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# vsearch truncates removes annotations, but keeps dangling ";" 
+DESCRIPTION="--xsize + notrunclabels (no size, no space, and final ;)"
+printf ">s;\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --xsize \
+        --notrunclabels \
+        --quiet \
+        --output - | \
+    grep -wq ">s;" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              invalid options                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+    TMP=$(mktemp)
+    valgrind \
+        --log-file="${TMP}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --derep_fulllength <(printf ">s1\nA\n>s2\nA\n") \
+        --minseqlength 1 \
+        --output /dev/null 2> /dev/null
+    DESCRIPTION="--derep_fulllength valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--derep_fulllength valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${TMP}"
+    unset TMP
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    notes                                    #
+#                                                                             #
+#*****************************************************************************#
 
 ## TODO:
-# sizein + no sizeout = xsize: change output order?
-# xsize + sizein + sizeout: ? is the order important?
-# xsize + sizein + sizeout + notrunclabels: ?
-# xsize + sizein + sizeout + relabel_keep: ?
-# lengthout: if length, then remove, else no effect?
-# eeout + lengthout + sizeout? is the order relevant?
+# missing checks in vsearch code (min/max mismatches)
+
+exit 0
+
