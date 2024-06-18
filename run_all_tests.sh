@@ -5,6 +5,7 @@ for s in vsearch.sh \
              derep_fulllength.sh \
              fastq_parsing.sh \
              fastx_subsample.sh \
+             fastx_uniques.sh \
              fixed_bugs.sh \
              help.sh \
              rereplicate.sh \
