@@ -127,6 +127,23 @@ printf ">s\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# attempt to trigger a special case of seqcmp()
+DESCRIPTION="--derep_fulllength compare two empty fasta entries"
+printf ">s1\n>s2\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# attempt to trigger a special case of seqcmp()
+DESCRIPTION="--derep_fulllength compare two fasta entries (one is empty)"
+printf ">s1\nA\n>s2\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## ---------------------- options for simpler tests: --quiet and --minseqlength
 
@@ -310,6 +327,21 @@ printf ">s1\nU\n" | \
         --output - | \
     tr "\n" "@" | \
     grep -q "^>s1@U@$" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## --derep_fulllength accepts more than 1,024 unique sequences
+## (trigger reallocation)
+DESCRIPTION="--derep_fulllength accepts more than 1,024 unique sequences"
+(for i in {1..1025} ; do
+    printf ">s%d\n" ${i}
+    yes A | head -n ${i}
+ done) | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1164,6 +1196,16 @@ printf ">s\nA\n" | \
         --output /dev/null \
         --log /dev/null 2>&1 | \
     grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength accepts empty input (0 unique sequences)"
+printf "" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output /dev/null \
+        --log - 2> /dev/null | \
+    grep -q "0 unique sequences" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
