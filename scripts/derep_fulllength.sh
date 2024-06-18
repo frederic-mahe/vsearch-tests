@@ -278,6 +278,88 @@ printf ">s2\nA\n>s1\nG\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+
+# sort by decreasing abundance: s1 > s2 and s2 > s1
+DESCRIPTION="--derep_fulllength sort clusters by decreasing abundance (natural order)"
+printf ">s1;size=3\nA\n>s2;size=1\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -qw ">s1;size=3@A@>s2;size=1@C@$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength sort clusters by decreasing abundance (reversed input order)"
+printf ">s1;size=1\nA\n>s2;size=3\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -qw ">s2;size=3@C@>s1;size=1@A@$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# same abundance, compare headers: s1 > s2 and s2 > s1
+DESCRIPTION="--derep_fulllength then sort clusters by comparing headers (natural order)"
+printf ">s1;size=2\nA\n>s2;size=2\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -qw ">s1;size=2@A@>s2;size=2@C@$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength then sort clusters by comparing headers (reversed input order)"
+printf ">s2;size=2\nA\n>s1;size=2\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -qw ">s1;size=2@C@>s2;size=2@A@$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# same abundance, same headers, compare input order: s1 > s2 and s2 > s1
+DESCRIPTION="--derep_fulllength then sort clusters by input order (natural order)"
+printf ">s1;size=2\nC\n>s1;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -qw ">s1;size=2@C@>s1;size=2@A@$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength then sort clusters by input order (reversed input order)"
+printf ">s1;size=2\nA\n>s1;size=2\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -qw ">s1;size=2@A@>s1;size=2@C@$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --derep_fulllength sequence comparison is case insensitive
 DESCRIPTION="--derep_fulllength sequence comparison is case insensitive"
 printf ">s1\nA\n>s2\na\n" | \
@@ -547,6 +629,29 @@ printf ">s;size=3\nA\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
+DESCRIPTION="--maxuniquesize restricts number of clusters (without --quiet)"
+printf ">s1\nA\n>s2\nA\n>s3\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --maxuniquesize 2 \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--maxuniquesize restricts number of clusters (with --log)"
+printf ">s1\nA\n>s2\nA\n>s3\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --maxuniquesize 2 \
+        --log /dev/null \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
 ## -------------------------------------------------------------- minuniquesize
 
 # minimum abundance for output from dereplication
@@ -780,6 +885,29 @@ printf ">s\nA\n>s\nA\n>s\nA\n" | \
         --quiet \
         --output - | \
     grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize restricts number of clusters (without --quiet)"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 2 \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize restricts number of clusters (with --log)"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 2 \
+        --log /dev/null \
+        --output - 2> /dev/null | \
+    grep -q "." && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
@@ -1255,6 +1383,17 @@ printf ">s\n%082s\n" | tr " " "A" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
+DESCRIPTION="--derep_fulllength --maxseqlength accepts shorter lengths (--log)"
+printf ">s\n%080s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --maxseqlength 81 \
+        --log /dev/null \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 DESCRIPTION="--derep_fulllength --maxseqlength must be an integer"
 printf ">s\n%081s\n" | tr " " "A" | \
     "${VSEARCH}" \
@@ -1328,6 +1467,17 @@ printf ">s\nAAA\n" | \
         --derep_fulllength - \
         --minseqlength 1 \
         --quiet \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --minseqlength accepts longer sequences (--log)"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --log /dev/null \
         --output - 2> /dev/null | \
     grep -q "." && \
     success "${DESCRIPTION}" || \
