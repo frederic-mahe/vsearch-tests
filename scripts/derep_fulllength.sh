@@ -1394,6 +1394,17 @@ printf ">s\n%080s\n" | tr " " "A" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+DESCRIPTION="--derep_fulllength --maxseqlength discards longer lengths (--log)"
+printf ">s\n%080s\n" | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --maxseqlength 79 \
+        --log /dev/null \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
 DESCRIPTION="--derep_fulllength --maxseqlength must be an integer"
 printf ">s\n%081s\n" | tr " " "A" | \
     "${VSEARCH}" \
@@ -1482,6 +1493,17 @@ printf ">s\nAA\n" | \
     grep -q "." && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --minseqlength discards short sequences (--log)"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 3 \
+        --log /dev/null \
+        --output - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
 DESCRIPTION="--derep_fulllength --minseqlength must be an integer"
 printf ">s\nA\n" | \
