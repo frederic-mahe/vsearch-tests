@@ -278,7 +278,6 @@ printf ">s2\nA\n>s1\nG\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-
 # sort by decreasing abundance: s1 > s2 and s2 > s1
 DESCRIPTION="--derep_fulllength sort clusters by decreasing abundance (natural order)"
 printf ">s1;size=3\nA\n>s2;size=1\nC\n" | \
