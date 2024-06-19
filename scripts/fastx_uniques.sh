@@ -554,6 +554,23 @@ printf "@s\nA\n+\nT\n@s\nA\n+\n^\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# special case when Q < 2: Q0 ('!') and Q1 ('"')
+# average Q1 ('"') + Q1 ('"') = Q1 ('"')
+# p = 0.75 + 0.75 = 0.75
+# Q = -10 log p ~ 1.25
+# (Q1 < 1.25 < Q2) -> Q1 ('"')
+# reason: log 1 = 0 and log 0 = -INF
+DESCRIPTION="--fastx_uniques reports average quality score (special case for Q < 2)"
+printf "@s\nA\n+\n\"\n@s\nA\n+\n\"\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@\"@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
