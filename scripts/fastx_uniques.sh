@@ -478,6 +478,82 @@ DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences"
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+## ---------------------------------------- report average fastq quality values
+
+DESCRIPTION="--fastx_uniques reports average quality score (singleton)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@I@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques reports average quality score (doubleton, same value)"
+printf "@s\nA\n+\nI\n@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@I@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques reports average quality score (doubleton, I+J)"
+printf "@s\nA\n+\nI\n@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@I@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## average of quality values? no, otherwise it would report 'I'
+DESCRIPTION="--fastx_uniques reports average quality score (doubleton, H + J)"
+printf "@s\nA\n+\nH\n@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@H@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# average Q20 ('5') + Q30 ('?') = Q22 ('7')
+# p = Q20 + Q30  = 10^-2 + 10^-3 = 5.5.10^-3
+# Q = -10 log p = 22.596373105 ~ 22.6
+# (Q22 < 22.6 < Q23) -> Q22 ('7', conservative rounding or simple truncation)
+DESCRIPTION="--fastx_uniques reports average quality score (doubleton, 5 + ?)"
+printf "@s\nA\n+\n?\n@s\nA\n+\n5\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@7@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## offset 64, Q22 -> 'V'
+DESCRIPTION="--fastx_uniques reports average quality score (doubleton, T + ^, offset 64)"
+printf "@s\nA\n+\nT\n@s\nA\n+\n^\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastq_ascii 64 \
+        --fastq_asciiout 64 \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@V@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -1184,7 +1260,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastx_uniques - \
         --fastq_ascii 33 \
         --quiet \
-        --fastaout /dev/null && \
+        --fastqout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1194,7 +1270,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastx_uniques - \
         --fastq_ascii 33 \
         --quiet \
-        --fastaout /dev/null && \
+        --fastqout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1204,7 +1280,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastx_uniques - \
         --fastq_ascii 64 \
         --quiet \
-        --fastaout /dev/null && \
+        --fastqout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1214,7 +1290,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastx_uniques - \
         --fastq_ascii 63 \
         --quiet \
-        --fastaout /dev/null 2> /dev/null && \
+        --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -1229,7 +1305,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastx_uniques - \
         --fastq_asciiout 33 \
         --quiet \
-        --fastaout /dev/null && \
+        --fastqout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1239,7 +1315,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastx_uniques - \
         --fastq_asciiout 33 \
         --quiet \
-        --fastaout /dev/null && \
+        --fastqout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1249,7 +1325,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastx_uniques - \
         --fastq_asciiout 64 \
         --quiet \
-        --fastaout /dev/null && \
+        --fastqout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1259,7 +1335,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastx_uniques - \
         --fastq_asciiout 63 \
         --quiet \
-        --fastaout /dev/null 2> /dev/null && \
+        --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -1319,30 +1395,613 @@ printf "@s\nA\n+\nh\n" | \
 
 ## ----------------------------------------------------------------- fastq_qmax
 
-#   --fastq_qmax INT            maximum base quality value for FASTQ input (41)
-
-# --fastq_qmax positive integer
-# Specify the maximum quality score accepted when reading FASTQ files. The default is 41, which is usual for recent Sanger/Illumina 1.8+ files.
-
 DESCRIPTION="--fastx_uniques --fastq_qmax is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
         --fastq_qmax 41 \
         --quiet \
-        --fastaout /dev/null && \
+        --fastqout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## default is 41
-## lowest is 0?
-## qmax if offset is 33 -> ?? (test below, equal, greater)
-## qmax if offset is 64 -> ?? (test below, equal, greater)
+DESCRIPTION="--fastx_uniques --fastq_qmax accepts lower quality values (H = 39)"
+printf "@s\nA\n+\nH\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmax 40 \
+        --quiet \
+        --fastqout - | \
+    grep -qw "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-## qmin == qmax?
-## qmin > qmax?
+DESCRIPTION="--fastx_uniques --fastq_qmax accepts equal quality values (I = 40)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmax 40 \
+        --quiet \
+        --fastqout - | \
+    grep -qw "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-exit
+## fastq_qmax has no effect!
+# DESCRIPTION="--fastx_uniques --fastq_qmax rejects higher quality values (J = 41)"
+# printf "@s\nA\n+\nJ\n" | \
+#     "${VSEARCH}" \
+#         --fastx_uniques - \
+#         --fastq_qmax 40 \
+#         --quiet \
+#         --fastqout - | \
+#      grep -q "." && \
+#      failure "${DESCRIPTION}" || \
+#          success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmax must be a positive integer"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmax -1 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmax can be set to zero"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmax 0 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmax can be set to 93 (offset 33)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --fastq_qmax 93 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmax cannot be greater than 93 (offset 33)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --fastq_qmax 94 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmax can be set to 62 (offset 64)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 64 \
+        --fastq_qmax 62 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmax cannot be greater than 62 (offset 64)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 64 \
+        --fastq_qmax 63 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ----------------------------------------------------------------- fastq_qmaxout
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout is accepted"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmaxout 41 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout caps output quality values at 41 (default)"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmaxout 41 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@J@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ## fastq_qmaxout has no effect!
+# DESCRIPTION="--fastx_uniques --fastq_qmaxout caps output quality values at 40"
+# printf "@s\nA\n+\nJ\n" | \
+#     "${VSEARCH}" \
+#         --fastx_uniques - \
+#         --fastq_qmaxout 40 \
+#         --quiet \
+#         --fastqout - | \
+#     tr "\n" "@" | \
+#     grep -qw "@s@A@+@I@" && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout must be a positive integer"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmaxout -1 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout can be set to zero"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmaxout 0 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout can be set to 93 (offset 33)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --fastq_qmaxout 93 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout cannot be greater than 93 (offset 33)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --fastq_qmaxout 94 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout can be set to 62 (offset 64)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 64 \
+        --fastq_qmaxout 62 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ## missing check in vsearch!
+# DESCRIPTION="--fastx_uniques --fastq_qmaxout cannot be greater than 62 (offset 64)"
+# printf "@s\nA\n+\nI\n" | \
+#     "${VSEARCH}" \
+#         --fastx_uniques - \
+#         --fastq_ascii 64 \
+#         --fastq_qmaxout 63 \
+#         --quiet \
+#         --fastqout /dev/null 2> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+#         success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout can be greater than fastq_qmax"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmax 40 \
+        --fastq_qmaxout 41 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout can be smaller than fastq_qmax"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmax 40 \
+        --fastq_qmaxout 39 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout can be greater than fastq_qmin"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 10 \
+        --fastq_qmaxout 11 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmaxout can be smaller than fastq_qmin"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 11 \
+        --fastq_qmaxout 10 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ----------------------------------------------------------------- fastq_qmin
+
+DESCRIPTION="--fastx_uniques --fastq_qmin is accepted"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 0 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmin accepts higher quality values (0 = 15)"
+printf "@s\nA\n+\n0\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 14 \
+        --quiet \
+        --fastqout - | \
+    grep -qw "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmin accepts equal quality values (0 = 15)"
+printf "@s\nA\n+\n0\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 15 \
+        --quiet \
+        --fastqout - | \
+    grep -qw "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ## fastq_qmin has no effect!
+# DESCRIPTION="--fastx_uniques --fastq_qmin rejects lower quality values (0 = 15)"
+# printf "@s\nA\n+\n0\n" | \
+#     "${VSEARCH}" \
+#         --fastx_uniques - \
+#         --fastq_qmin 16 \
+#         --quiet \
+#         --fastqout - | \
+#      grep -q "." && \
+#      failure "${DESCRIPTION}" || \
+#          success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmin must be a positive integer"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin -1 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmin can be set to zero (default)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 0 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmin can be lower than fastq_qmax (41 by default)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 40 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## allows to select only reads with a specific Q value
+DESCRIPTION="--fastx_uniques --fastq_qmin can be equal to fastq_qmax (41 by default)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 41 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmin cannot be higher than fastq_qmax (41 by default)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 42 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# but not higher, as it cannot be greater than qmax
+DESCRIPTION="--fastx_uniques --fastq_qmin can be set to 93 (offset 33)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --fastq_qmin 93 \
+        --fastq_qmax 93 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# but not higher, as it cannot be greater than qmax
+DESCRIPTION="--fastx_uniques --fastq_qmin can be set to 62 (offset 64)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 64 \
+        --fastq_qmin 62 \
+        --fastq_qmax 62 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ----------------------------------------------------------------- fastq_qminout
+
+DESCRIPTION="--fastx_uniques --fastq_qminout is accepted"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qminout 0 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qminout floors output quality values at 0 (default)"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qminout 0 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@J@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ## fastq_qminout has no effect!
+# DESCRIPTION="--fastx_uniques --fastq_qminout floors output quality values at 16 (0 = 15)"
+# printf "@s\nA\n+\n0\n" | \
+#     "${VSEARCH}" \
+#         --fastx_uniques - \
+#         --fastq_qminout 16 \
+#         --quiet \
+#         --fastqout - | \
+#     tr "\n" "@" | \
+#     grep -qw "@s@A@+@I@" && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+
+## fix: should vsearch accept negative values? 
+DESCRIPTION="--fastx_uniques --fastq_qminout must be a positive integer"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qminout -1 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qminout can be set to zero"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qminout 0 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Fatal error: The argument to --fastq_qminout cannot be larger than --fastq_qmaxout
+DESCRIPTION="--fastx_uniques --fastq_qminout can be lower than fastq_qmaxout (41 by default)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qminout 40 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qminout can be equal to fastq_qmaxout (41 by default)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qminout 41 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qminout cannot be larger than fastq_qmaxout (41 by default)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qminout 42 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qminout can be set to 93 (offset 33)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --fastq_qminout 93 \
+        --fastq_qmaxout 93 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qminout can be set to 62 (offset 64)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 64 \
+        --fastq_qminout 62 \
+        --fastq_qmaxout 62 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## missing check in vsearch!
+# DESCRIPTION="--fastx_uniques --fastq_qminout cannot be greater than 62 (offset 64)"
+# printf "@s\nA\n+\nI\n" | \
+#     "${VSEARCH}" \
+#         --fastx_uniques - \
+#         --fastq_ascii 64 \
+#         --fastq_qminout 63 \
+#         --fastq_qmaxout 63 \
+#         --quiet \
+#         --fastqout /dev/null 2> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+#         success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qminout can be greater than fastq_qmax"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmax 40 \
+        --fastq_qminout 41 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qminout can be smaller than fastq_qmax"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmax 40 \
+        --fastq_qminout 39 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qminout can be greater than fastq_qmin"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 10 \
+        --fastq_qminout 11 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qminout can be smaller than fastq_qmin"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 11 \
+        --fastq_qminout 10 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------------------- fastq_qout_max
+
+DESCRIPTION="--fastx_uniques --fastq_qout_max is accepted"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qout_max \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qout_max reports highest quality score (singleton)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qout_max \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@I@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qout_max reports highest quality score (doubleton)"
+printf "@s\nA\n+\nI\n@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qout_max \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@J@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qout_max reports highest quality score (doubleton, different order)"
+printf "@s\nA\n+\nJ\n@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qout_max \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@J@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## take into account 'K' (Q42), but limit best value to 'J' Q41?
+DESCRIPTION="--fastx_uniques --fastq_qout_max reports highest quality score (cap values at 41 by default)"
+printf "@s\nA\n+\nK\n@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qout_max \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qw "@s@A@+@J@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## ------------------------------------------------------------ gzip_decompress
 
@@ -2342,6 +3001,246 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## ------------------------------------------------------------------ tabbedout
+
+#   Column 1 contains the original label/header of the sequence.  Column 2  contains  the label of the output sequence which is equal to the label/header of the first sequence in each cluster, but potentially relabelled. Column 3 contains the cluster number, starting from 0. Column 4 contains the sequence number within each cluster, starting at 0. Column 5 contains the number of sequences in the cluster. Column 6 contains the original label/header of the first sequence in the cluster before any potential relabelling. This option is only valid for the --fastx_uniques command.
+
+## --tabbedout is accepted
+DESCRIPTION="--tabbedout is accepted"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --tabbedout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques fails if unable to open tabbedout file for writing"
+TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --tabbedout ${TMP} 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+w ${TMP} && rm -f ${TMP}
+unset TMP
+
+## --tabbedout fails if no output redirection is given (filename, device or -)
+DESCRIPTION="--tabbedout fails if no output redirection is given"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --tabbedout &> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --tabbedout outputs data
+DESCRIPTION="--tabbedout outputs data"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout returns a tab-delimited table with 6 fields"
+printf "@s\nA\n+\nI\n@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'NF != 6 {c += 1} END {exit c == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# s1	s1	0	0	2	s1
+# s2	s1	0	1	2	s1
+DESCRIPTION="--tabbedout returns a row for each input sequence"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    cut --fields=1 | \
+    tr "\n" "@" | \
+    grep -qw "s1@s2@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 1 contains the original label/header of the sequence"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit $1 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 2 contains the label of the first sequence in the cluster"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'NR == 2 {exit $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 2 contains the label of the first sequence in the cluster (relabel)"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --relabel "seed_" \
+        --tabbedout - | \
+    awk 'NR == 2 {exit $2 == "seed_1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 3 contains the cluster number, starting from 0 (1 cluster)"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'END {exit $3 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 3 contains the cluster number, starting from 0 (2 clusters)"
+printf "@s1\nA\n+\nI\n@s2\nC\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'END {exit $3 == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 3 contains the cluster number, starting from 0 (3 clusters)"
+printf "@s1\nA\n+\nI\n@s2\nC\n+\nI\n@s3\nG\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'END {exit $3 == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 3 contains the cluster number, starting from 0 (4 clusters)"
+printf "@s1\nA\n+\nI\n@s2\nC\n+\nI\n@s3\nG\n+\nI\n@s4\nT\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'END {exit $3 == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 4 contains the sequence number within each cluster (starting at 0)"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'END {exit $4 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 4 contains the sequence number within each cluster (cluster of two)"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'END {exit $4 == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 4 contains the sequence number within each cluster (cluster of three)"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n@s3\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'END {exit $4 == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 4 contains the sequence number within each cluster (restarts at zero)"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n@s3\nA\n+\nI\n@s4\nC\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'END {exit $4 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 5 contains the number of sequences in the cluster (cluster of one)"
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'BEGIN {c = 0} $5 != 1 {c += 1} END {exit c == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 5 contains the number of sequences in the cluster (cluster of two)"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'BEGIN {c = 0} $5 != 2 {c += 1} END {exit c == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 5 contains the number of sequences in the cluster (cluster of three)"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n@s3\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'BEGIN {c = 0} $5 != 3 {c += 1} END {exit c == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 5 contains the number of sequences in the cluster (restart at one)"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n@s3\nC\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'NR == 3 {exit $5 == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 6 contains the original label of the first sequence in the cluster"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk 'NR == 2 {exit $6 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--tabbedout column 6 contains the original label of the first sequence in the cluster (relabel)"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --relabel "seed_" \
+        --tabbedout - | \
+    awk 'NR == 2 {exit $6 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------------- threads
 
 DESCRIPTION="--fastx_uniques --threads is accepted"
@@ -2972,38 +3871,6 @@ fi
 #                                    notes                                    #
 #                                                                             #
 #*****************************************************************************#
-
-# The valid options for the fastx_uniques command are: --bzip2_decompress --fasta_width --fastaout --fastq_ascii --fastq_asciiout --fastq_qmax --fastq_qmaxout --fastq_qmin --fastq_qminout --fastq_qout_max --fastqout --gzip_decompress --label_suffix --lengthout --log --maxseqlength --maxuniquesize --minseqlength --minuniquesize --no_progress --notrunclabels --quiet --relabel --relabel_keep --relabel_md5 --relabel_self --relabel_sha1 --sample --sizein --sizeout --strand --tabbedout --threads --topn --uc --xee --xlength --xsize
-
-# new options: --fastq_qmax --fastq_qmaxout --fastq_qmin --fastq_qminout --fastq_qout_max --tabbedout
-
-#   --fastq_qmax INT            maximum base quality value for FASTQ input (41)
-#   --fastq_qmaxout INT         maximum base quality value for FASTQ output (41)
-#   --fastq_qmin INT            minimum base quality value for FASTQ input (0)
-#   --fastq_qminout INT         minimum base quality value for FASTQ output (0)
-#   --tabbedout FILENAME        write cluster info to tsv file for fastx_uniques
-
-# --fastq_qmax positive integer
-#          Specify the maximum quality score accepted when reading FASTQ files. The default is 41, which is usual for recent Sanger/Illumina 1.8+ files.
-
-# --fastq_qmaxout positive integer
-#          Specify  the  maximum  quality  score  used when writing FASTQ files. The default is 41, which is usual for recent Sanger/Illumina 1.8+ files. Older formats may use a maximum quality score of 40.
-
-# --fastq_qmin positive integer
-#          Specify the minimum quality score accepted for FASTQ files. The default is 0, which is usual for recent Sanger/Illumina 1.8+ files. Older formats may use scores between -5 and 2.
-
-# --fastq_qminout positive integer
-#          Specify the minimum quality score used when writing FASTQ files. The default is 0, which is usual for Sanger/Illumina 1.8+ files. Older versions of the format may use scores  between -5 and 2.
-
-# --fastq_qout_max
-#          For --fastx_uniques, indicate that the new quality scores computed when dereplicating FASTQ files should be equal to the maximum (best) of the input quality scores for each position (corresponding to the lowest error probability). The default is to output a quality score corresponding to the average of the error probabilities for each position.
-
-# --fastx_uniques filename
-#          By default, the quality scores in FASTQ output files will correspond to the average error probability of the nucleotides in the each  position.  If  the  --fastq_qout_max  option  is given, the quality score will be the highest (best) quality score observed in each position.
-
-# --tabbedout filename
-#          Output clustering info to the specified tab-separated text file with 6 columns and a row for each input sequence. Column 1 contains the original label/header of the sequence.  Column 2  contains  the label of the output sequence which is equal to the label/header of the first sequence in each cluster, but potentially relabelled. Column 3 contains the cluster number, starting from 0. Column 4 contains the sequence number within each cluster, starting at 0. Column 5 contains the number of sequences in the cluster. Column 6 contains the original label/header of the first sequence in the cluster before any potential relabelling. This option is only valid for the --fastx_uniques command.
-
 
 ## TODO:
 # - missing checks in vsearch code (min/max mismatches)
