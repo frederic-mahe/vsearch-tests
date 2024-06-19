@@ -3378,6 +3378,19 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+# special case when 'relabel_count == opt_topn'
+DESCRIPTION="--topn --relabel (topn is used to stop output iteration)"
+printf "@s1\nA\n+\nI\n@s2\nC\n+\nI\n@s3\nG\n+\nI\n@s4\nT\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --relabel "seed_" \
+        --topn 3 \
+        --quiet \
+        --fastqout - | \
+    awk '/^@/ {c +=1} END {exit c == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 ## ------------------------------------------------------------------------- uc
 
 # Ten tab-separated columns.
