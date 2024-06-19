@@ -3589,6 +3589,35 @@ printf ">s1\nAA\n>s2\nAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# # 5. Match orientation + or - (H), or set to ’*’ (S, C).
+DESCRIPTION="--uc strand orientation is correct (H line, 5th column)"
+printf ">s1;size=1;\nA\n>s2;size=1;\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --sizein \
+        --sizeout \
+        --strand both \
+        --quiet \
+        --fastaout /dev/null \
+        --uc - | \
+    awk '/^H/ {exit $5 == "+" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--uc strand orientation is correct (H line, 5th column, reverse strand)"
+printf ">s1;size=1;\nA\n>s2;size=1;\nT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --sizein \
+        --sizeout \
+        --strand both \
+        --quiet \
+        --fastaout /dev/null \
+        --uc - | \
+    awk '/^H/ {exit $5 == "-" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## trigger reallocation of extra space for uc or tabbedout
 DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences"
 (for i in {1..1025} ; do
