@@ -478,21 +478,6 @@ DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences"
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-## trigger reallocation of extra space for uc or tabbedout
-DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences"
-(for i in {1..1025} ; do
-    printf ">s%d\n" ${i}
-    yes A | head -n ${i}
- done) | \
-    "${VSEARCH}" \
-        --fastx_uniques - \
-        --quiet \
-        --fastaout /dev/null \
-        --uc /dev/null && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-
 ## ---------------------------------------- report average fastq quality values
 
 DESCRIPTION="--fastx_uniques reports average quality score (singleton)"
@@ -3603,6 +3588,20 @@ printf ">s1\nAA\n>s2\nAA\n" | \
     awk '/^H/ {exit $3 == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+## trigger reallocation of extra space for uc or tabbedout
+DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences"
+(for i in {1..1025} ; do
+    printf ">s%d\n" ${i}
+    yes A | head -n ${i}
+ done) | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastaout /dev/null \
+        --uc /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
 ## ------------------------------------------------------------------------ xee
 
