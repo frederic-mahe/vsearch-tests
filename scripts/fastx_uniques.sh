@@ -3908,7 +3908,14 @@ printf ">s;\nA\n" | \
 #                                                                             #
 #*****************************************************************************#
 
-# --output
+DESCRIPTION="--output is rejected"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
