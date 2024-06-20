@@ -2940,7 +2940,7 @@ printf ">s;\nA\n" | \
 #*****************************************************************************#
 
 DESCRIPTION="--strand is rejected"
-printf ">s1\nA\n" | \
+printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --minseqlength 1 \
