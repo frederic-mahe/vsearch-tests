@@ -2986,15 +2986,6 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-# --derep_prefix filename
-# Merge sequences with identical prefixes contained in filename.  A
-# short sequence identical to an initial segment (prefix) of another
-# sequence is considered a replicate of the longer sequence. If a
-# sequence is identical to the prefix of two or more longer sequences,
-# it is clustered with the shortest of them. If they are equally long,
-# it is clustered with the most abundant. Remaining ties are solved
-# using sequence headers and sequence input order.
-
 ## TODO:
 # - missing check for output files (--output and --uc)
 # - missing check for fastq input
