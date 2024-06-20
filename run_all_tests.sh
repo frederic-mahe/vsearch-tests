@@ -3,6 +3,8 @@
 ## Launch all tests
 for s in vsearch.sh \
              derep_fulllength.sh \
+             derep_id.sh \
+             derep_prefix.sh \
              fastq_parsing.sh \
              fastx_subsample.sh \
              fastx_uniques.sh \
