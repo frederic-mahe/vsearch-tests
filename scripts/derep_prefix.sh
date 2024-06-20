@@ -1346,9 +1346,10 @@ DESCRIPTION="--derep_prefix --label_suffix is accepted"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
+        --minseqlength 1 \
         --quiet \
         --label_suffix "suffix" \
-        --fastaout /dev/null && \
+        --output /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1356,9 +1357,10 @@ DESCRIPTION="--derep_prefix --label_suffix adds suffix (fasta in, fasta out)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
+        --minseqlength 1 \
         --quiet \
         --label_suffix ";suffix" \
-        --fastaout - | \
+        --output - | \
     grep -qw ">s;suffix" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -1367,9 +1369,10 @@ DESCRIPTION="--derep_prefix --label_suffix adds suffix (empty suffix string)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
+        --minseqlength 1 \
         --quiet \
         --label_suffix "" \
-        --fastaout - | \
+        --output - | \
     grep -qw ">s" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
