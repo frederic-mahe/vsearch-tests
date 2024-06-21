@@ -219,7 +219,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -q "^>s1@A@$" && \
+    grep -qw ">s1@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -246,7 +246,7 @@ printf ">s2\nA\n>s1\nA\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -q "^>s2@A@$" && \
+    grep -qw ">s2@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -260,7 +260,7 @@ printf ">s2\nA\n>s1\nG\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -q "^>s1@G@>s2@A@$" && \
+    grep -qw ">s1@G@>s2@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -274,7 +274,7 @@ printf ">s2\nA\n>s1\nG\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -q "^>s1@G@>s2@A@$" && \
+    grep -qw ">s1@G@>s2@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -288,7 +288,7 @@ printf ">s1;size=3\nA\n>s2;size=1\nC\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=3@A@>s2;size=1@C@$" && \
+    grep -qw ">s1;size=3@A@>s2;size=1@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -301,7 +301,7 @@ printf ">s1;size=1\nA\n>s2;size=3\nC\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s2;size=3@C@>s1;size=1@A@$" && \
+    grep -qw ">s2;size=3@C@>s1;size=1@A@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -315,7 +315,7 @@ printf ">s1;size=2\nA\n>s2;size=2\nC\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@A@>s2;size=2@C@$" && \
+    grep -qw ">s1;size=2@A@>s2;size=2@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -328,7 +328,7 @@ printf ">s2;size=2\nA\n>s1;size=2\nC\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@C@>s2;size=2@A@$" && \
+    grep -qw ">s1;size=2@C@>s2;size=2@A@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -342,7 +342,7 @@ printf ">s1;size=2\nC\n>s1;size=2\nA\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@C@>s1;size=2@A@$" && \
+    grep -qw ">s1;size=2@C@>s1;size=2@A@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -355,7 +355,7 @@ printf ">s1;size=2\nA\n>s1;size=2\nC\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@A@>s1;size=2@C@$" && \
+    grep -qw ">s1;size=2@A@>s1;size=2@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -368,7 +368,7 @@ printf ">s1\nA\n>s2\na\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -q "^>s1@A@$" && \
+    grep -qw ">s1@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -381,7 +381,7 @@ printf ">s1\na\n>s2\nA\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -q "^>s1@a@$" && \
+    grep -qw ">s1@a@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -394,7 +394,7 @@ printf ">s1\nT\n>s2\nU\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -q "^>s1@T@$" && \
+    grep -qw ">s1@T@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -407,7 +407,7 @@ printf ">s1\nU\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -q "^>s1@U@$" && \
+    grep -qw ">s1@U@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -2241,7 +2241,7 @@ printf ">s1;size=1;\nA\n>s2;size=2;\nC\n" | \
         --topn 1 \
         --output - | \
     tr "\n" "@" | \
-    grep -q "^>s2;size=2;@C@$" &&\
+    grep -qw ">s2;size=2;@C@" &&\
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -2258,7 +2258,7 @@ printf ">s1;size=1;\nA\n>s2;size=2;\nC\n>s3;size=2;\nA\n" | \
         --topn 1 \
         --output - | \
     tr "\n" "@" | \
-    grep -qE "^>s1;size=3;?@A@$" && \
+    grep -qwE ">s1;size=3;?@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
