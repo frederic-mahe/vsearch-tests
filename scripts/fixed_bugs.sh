@@ -6030,7 +6030,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -Eq "^>s1;size=2;?$" && \
+    grep -Ewq ">s1;size=2;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6044,7 +6044,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         --sizein \
         --sizeout \
         --output - | \
-    grep -Eq "^>s1;size=3;?$" && \
+    grep -Ewq ">s1;size=3;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6056,7 +6056,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --minseqlength 1 \
         --quiet \
         --output - | \
-    grep -Eq "^>s1$" && \
+    grep -Ewq ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6069,10 +6069,9 @@ printf ">s1\nA\n>s2\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -Eq "^>s1;size=2;?$" && \
+    grep -Ewq ">s1;size=2;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
 
 # With abundance annotations in the input, with --sizein but no --sizeout:
 DESCRIPTION="issue 323: placement of semicolons in dereplicated headers # 5"
@@ -6083,7 +6082,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         --quiet \
         --sizein \
         --output - | \
-    grep -Eq "^>s1;size=2;?$" && \
+    grep -Ewq ">s1;size=2;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6428,7 +6427,7 @@ printf "@s;size=1;\nA\n+\nI\n" | \
         --xsize \
         --quiet \
         --fastqout - | \
-    grep -q "^@s$" && \
+    grep -qw "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6440,7 +6439,7 @@ printf "@s;size=1;\r\nA\n+\nI\n" | \
         --xsize \
         --quiet \
         --fastqout - | \
-    grep -q "^@s$" && \
+    grep -qw "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7082,7 +7081,7 @@ printf ">s1\nA\n" | \
         --quiet \
         --label "s1" \
         --fastaout - | \
-    grep -q "^>s1$" && \
+    grep -qw ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7093,10 +7092,9 @@ printf ">s1\nA\n" | \
         --quiet \
         --label "S1" \
         --fastaout - | \
-    grep -q "^>s1$" && \
+    grep -qw ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
 
 DESCRIPTION="issue 488: fastx_getseqs label does not match header with size annotation"
 printf ">s1;size=1\nA\n" | \
@@ -7105,7 +7103,7 @@ printf ">s1;size=1\nA\n" | \
         --quiet \
         --label "s1" \
         --fastaout - | \
-    grep -q "^>s1$" && \
+    grep -qw ">s1" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -7119,7 +7117,7 @@ printf ">s1\nA\n" | \
         --label "s1" \
         --label_substr_match \
         --fastaout - | \
-    grep -q "^>s1$" && \
+    grep -qw ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7131,7 +7129,7 @@ printf ">s11\nA\n" | \
         --label "s1" \
         --label_substr_match \
         --fastaout - | \
-    grep -q "^>s11$" && \
+    grep -qw ">s11" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7143,7 +7141,7 @@ printf ">s11\nA\n" | \
         --label "S1" \
         --label_substr_match \
         --fastaout - | \
-    grep -q "^>s11$" && \
+    grep -qw ">s11" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7158,7 +7156,7 @@ printf ">s1\nA\n" | \
         --quiet \
         --label_word "s1" \
         --fastaout - | \
-    grep -q "^>s1$" && \
+    grep -qw ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7169,7 +7167,7 @@ printf ">s1;size=1\nA\n" | \
         --quiet \
         --label_word "s1" \
         --fastaout - | \
-    grep -q "^>s1;size=1$" && \
+    grep -qw ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7180,7 +7178,7 @@ printf ">s11;size=1\nA\n" | \
         --quiet \
         --label_word "s1" \
         --fastaout - | \
-    grep -q "^>s1;size=1$" && \
+    grep -qw ">s1;size=1" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -7191,7 +7189,7 @@ printf ">s1;size=1\nA\n" | \
         --quiet \
         --label_word "S1" \
         --fastaout - | \
-    grep -q "^>s1;size=1$" && \
+    grep -qw ">s1;size=1" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
