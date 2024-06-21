@@ -588,7 +588,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --fastx_uniques - \
         --maxuniquesize 2 \
         --quiet \
-        --fastaout /dev/null > /dev/null && \
+        --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -788,7 +788,7 @@ printf ">s1\nA\n" | \
         --fastx_uniques - \
         --minuniquesize 1 \
         --quiet \
-        --fastaout /dev/null > /dev/null && \
+        --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 

@@ -589,7 +589,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --minseqlength 1 \
         --maxuniquesize 2 \
         --quiet \
-        --output /dev/null > /dev/null && \
+        --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -807,7 +807,7 @@ printf ">s1\nA\n" | \
         --minseqlength 1 \
         --minuniquesize 1 \
         --quiet \
-        --output /dev/null > /dev/null && \
+        --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 

@@ -1011,7 +1011,7 @@ printf ">s1\nA\n" > ${TMP}
     --derep_smallmem ${TMP} \
     --minuniquesize 1 \
     --quiet \
-    --fastaout /dev/null > /dev/null && \
+    --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f ${TMP}
