@@ -545,6 +545,190 @@ TMP=$(mktemp)
 rm -f ${TMP}
 unset TMP
 
+## --------------------------------------------------------------------- median
+
+# v < cand
+# printf ">s1\nA\n>s2\nC\n>s3\nA\n>s4\nC\n>s5\nG\n" > tmp.fas
+
+DESCRIPTION="--derep_smallmem outputs a median cluster size"
+TMP=$(mktemp)
+printf ">s1\nA\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (empty entry, no median)"
+TMP=$(mktemp)
+printf "" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (single entry, median = 1)"
+TMP=$(mktemp)
+printf ">s1\nA\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (single entry with size annotation, median = 2)"
+TMP=$(mktemp)
+printf ">s1;size=2\nA\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --sizein \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (two entries, median = 1)"
+TMP=$(mktemp)
+printf ">s1\nA\n>s2\nC\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (two entries with equal size annotations, median = 2)"
+TMP=$(mktemp)
+printf ">s1;size=2\nA\n>s2;size=2\nC\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --sizein \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+## Banker's rounding (round half to even)
+DESCRIPTION="--derep_smallmem median (1 + 2 -> median = 2)"
+TMP=$(mktemp)
+printf ">s1;size=1\nA\n>s2;size=2\nC\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --sizein \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (1 + 3 -> median = 2)"
+TMP=$(mktemp)
+printf ">s1;size=1\nA\n>s2;size=3\nC\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --sizein \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (1 + 4 -> median = 2)"
+TMP=$(mktemp)
+printf ">s1;size=1\nA\n>s2;size=4\nC\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --sizein \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (1 + 5 -> median = 3)"
+TMP=$(mktemp)
+printf ">s1;size=1\nA\n>s2;size=5\nC\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --sizein \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (1 + 6 -> median = 4)"
+TMP=$(mktemp)
+printf ">s1;size=1\nA\n>s2;size=6\nC\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --sizein \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (1 + 7 -> median = 4)"
+TMP=$(mktemp)
+printf ">s1;size=1\nA\n>s2;size=7\nC\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --sizein \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (1 + 8 -> median = 4)"
+TMP=$(mktemp)
+printf ">s1;size=1\nA\n>s2;size=8\nC\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --sizein \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem median (1 + 9 -> median = 5)"
+TMP=$(mktemp)
+printf ">s1;size=1\nA\n>s2;size=9\nC\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --sizein \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
 
 #*****************************************************************************#
 #                                                                             #
