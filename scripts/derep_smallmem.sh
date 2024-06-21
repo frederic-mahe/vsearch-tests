@@ -307,7 +307,7 @@ printf ">s1\nA\n>s2\nA\n" > ${TMP}
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -q "^>s1@A@$" && \
+    grep -qw ">s1@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f ${TMP}
@@ -462,7 +462,7 @@ printf ">s1;size=2\nA\n>s1;size=2\nC\n" > ${TMP}
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@A@>s1;size=2@C@$" && \
+    grep -qw ">s1;size=2@A@>s1;size=2@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f ${TMP}
@@ -477,7 +477,7 @@ printf ">s1\nA\n>s2\na\n" > ${TMP}
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -q "^>s1@A@$" && \
+    grep -qw ">s1@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f ${TMP}
@@ -492,7 +492,7 @@ printf ">s1\na\n>s2\nA\n" > ${TMP}
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -q "^>s1@a@$" && \
+    grep -qw ">s1@a@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f ${TMP}
@@ -507,7 +507,7 @@ printf ">s1\nT\n>s2\nU\n" > ${TMP}
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -q "^>s1@T@$" && \
+    grep -qw ">s1@T@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f ${TMP}
@@ -522,7 +522,7 @@ printf ">s1\nU\n" > ${TMP}
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -q "^>s1@U@$" && \
+    grep -qw ">s1@U@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f ${TMP}
