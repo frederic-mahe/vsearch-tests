@@ -528,6 +528,23 @@ printf ">s1\nU\n" > ${TMP}
 rm -f ${TMP}
 unset TMP
 
+## --derep_smallmem accepts more than 1,024 unique sequences
+## (trigger reallocation)
+DESCRIPTION="--derep_smallmem accepts more than 1,024 unique sequences"
+TMP=$(mktemp)
+(for i in {1..1025} ; do
+    printf ">s%d\n" ${i}
+    yes A | head -n ${i}
+ done) > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --quiet \
+    --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
 
 #*****************************************************************************#
 #                                                                             #
