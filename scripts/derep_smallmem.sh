@@ -547,9 +547,6 @@ unset TMP
 
 ## --------------------------------------------------------------------- median
 
-# v < cand
-# printf ">s1\nA\n>s2\nC\n>s3\nA\n>s4\nC\n>s5\nG\n" > tmp.fas
-
 DESCRIPTION="--derep_smallmem outputs a median cluster size"
 TMP=$(mktemp)
 printf ">s1\nA\n" > ${TMP}
@@ -724,6 +721,19 @@ printf ">s1;size=1\nA\n>s2;size=9\nC\n" > ${TMP}
     --sizein \
     --fastaout /dev/null 2>&1 | \
     grep -q "median 5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+## trigger specific case for coverage
+DESCRIPTION="--derep_smallmem cluster size is smaller than the candidate size for the median"
+TMP=$(mktemp)
+printf ">s1\nA\n>s2\nC\n>s3\nA\n>s4\nC\n>s5\nG\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "median 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f ${TMP}
