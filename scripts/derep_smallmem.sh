@@ -563,7 +563,7 @@ printf ">s1\nA\n>s2\nA\n" > ${TMP}
     --derep_smallmem ${TMP} \
     --maxuniquesize 2 \
     --quiet \
-    --fastaout /dev/null > /dev/null && \
+    --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f ${TMP}
