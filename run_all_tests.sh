@@ -6,6 +6,7 @@ for s in vsearch.sh \
              derep_id.sh \
              derep_prefix.sh \
              derep_smallmem.sh \
+             fasta2fastq.sh \
              fastq_parsing.sh \
              fastx_subsample.sh \
              fastx_uniques.sh \
