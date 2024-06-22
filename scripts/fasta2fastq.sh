@@ -93,6 +93,17 @@ printf "@s\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--fasta2fastq fails if unable to open input file for reading"
+TMP=$(mktemp) && chmod u-r ${TMP}  # remove read permission
+printf ">s\nA\n" > ${TMP}
+"${VSEARCH}" \
+    --fasta2fastq ${TMP} \
+    --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+r ${TMP} && rm -f ${TMP}
+unset TMP
+
 
 #*****************************************************************************#
 #                                                                             #
