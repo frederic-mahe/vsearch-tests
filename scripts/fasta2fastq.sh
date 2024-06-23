@@ -199,7 +199,19 @@ printf ">s\n%080s\n" | \
     "${VSEARCH}" \
         --fasta2fastq - \
         --fastqout - 2> /dev/null | \
-    awk 'NR == 3 {length($1) == 80 ? 0 : 1}' && \
+    awk 'NR == 4 {length($1) == 80 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fasta2fastq length of consecutive quality lines is correct (1025, then 80)"
+(printf ">s1\n%01025s\n" | \
+     tr " " "A"
+ printf ">s2\n%080s\n" | \
+     tr " " "A") | \
+    "${VSEARCH}" \
+        --fasta2fastq - \
+        --fastqout - 2> /dev/null | \
+    awk 'NR == 8 {length($1) == 80 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
