@@ -2,6 +2,7 @@
 
 ## Launch all tests
 for s in vsearch.sh \
+             cut.sh \
              derep_fulllength.sh \
              derep_id.sh \
              derep_prefix.sh \
