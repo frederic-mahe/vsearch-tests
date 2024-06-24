@@ -86,8 +86,6 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-# note: pattern can contain ^_ and IUPAC but nothing else 
-
 DESCRIPTION="--cut --cut_pattern can be in lowercase"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
