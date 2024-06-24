@@ -51,11 +51,21 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cut --cut_pattern requires a pattern"
+DESCRIPTION="--cut --cut_pattern requires a pattern string"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --cut - \
-        --cut_pattern 2> /dev/null && \
+        --cut_pattern \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--cut --cut_pattern cannot be empty"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "" \
+        --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
