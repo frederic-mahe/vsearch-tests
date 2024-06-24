@@ -1845,7 +1845,6 @@ fi
 
 # missing check! exactly one cutting site on each strand must be indicated
 
-## next: stage, commit, test coverage, add missing tests, propagate parameters
 
 exit 0
 
