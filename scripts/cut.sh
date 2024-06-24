@@ -218,7 +218,7 @@ printf ">s\nA\n" | \
     "${VSEARCH}" \
         --cut - \
         --cut_pattern G^AATT_C \
-        --fastaout ${TMP} 2> /dev/null && \
+        --fastaout_discarded ${TMP} 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 chmod u+w ${TMP} && rm -f ${TMP}
@@ -230,7 +230,7 @@ printf ">s\nA\n" | \
     "${VSEARCH}" \
         --cut - \
         --cut_pattern G^AATT_C \
-        --fastaout_rev ${TMP} 2> /dev/null && \
+        --fastaout_discarded_rev ${TMP} 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 chmod u+w ${TMP} && rm -f ${TMP}
