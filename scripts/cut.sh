@@ -587,6 +587,86 @@ printf ">s\nACATGK\n" | \
 # V        not T (V comes after T and U)   A or C or G         B
 # W        weak                            A or T              W
 
+DESCRIPTION="--cut reports number of cuts (no cut)"
+printf ">s\nTCATGK\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "ACATG^_K" \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "cut 0 time" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut reports number of uncut sequences (no uncut)"
+printf ">s\nACATGK\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "ACATG^_K" \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "0 sequence(s) never cut" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut reports number of uncut sequences (1 uncut)"
+printf ">s\nTCATGK\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "ACATG^_K" \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "1 sequence(s) never cut" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut reports number of cuts (1 cut)"
+printf ">s\nACATGK\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "ACATG^_K" \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "cut 1 time" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut reports number of cuts (2 cuts)"
+printf ">s\nACATGKACATGK\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "ACATG^_K" \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "cut 2 time" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut reports number of cut sequences (0 cut sequence)"
+printf ">s\nTCATGK\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "ACATG^_K" \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "0 sequence(s) cut" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut reports number of cut sequences (1 cut sequence)"
+printf ">s\nACATGK\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "ACATG^_K" \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "1 sequence(s) cut" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut reports number of cut sequences (2 cut sequences)"
+printf ">s1\nACATGK\n>s2\nACATGK\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "ACATG^_K" \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "2 sequence(s) cut" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------------------------------------------------------------------- EcoRI
 
 # 5'-G|AATT-C-3'
