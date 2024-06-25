@@ -69,6 +69,15 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--cut --cut_pattern cannot be empty (only cut signs)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "^_" \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--cut --cut_pattern can be inside quotes"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
