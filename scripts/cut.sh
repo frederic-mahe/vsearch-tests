@@ -168,23 +168,25 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--cut --cut_pattern accepts only one cutting site per strand (normal strand)"
-printf ">s\nA\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern G^AA^TT_C \
-        --fastaout /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+# ## compatible with versions > 2.28.1
+# DESCRIPTION="--cut --cut_pattern accepts only one cutting site per strand (normal strand)"
+# printf ">s\nA\n" | \
+#     "${VSEARCH}" \
+#         --cut - \
+#         --cut_pattern G^AA^TT_C \
+#         --fastaout /dev/null 2> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+# 	success "${DESCRIPTION}"
 
-DESCRIPTION="--cut --cut_pattern accepts only one cutting site per strand (reverse strand)"
-printf ">s\nA\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern G^AA_TT_C \
-        --fastaout /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+# ## compatible with versions > 2.28.1
+# DESCRIPTION="--cut --cut_pattern accepts only one cutting site per strand (reverse strand)"
+# printf ">s\nA\n" | \
+#     "${VSEARCH}" \
+#         --cut - \
+#         --cut_pattern G^AA_TT_C \
+#         --fastaout /dev/null 2> /dev/null && \
+#     failure "${DESCRIPTION}" || \
+# 	success "${DESCRIPTION}"
 
 ## --------------------------------------------------------------- output files
 
