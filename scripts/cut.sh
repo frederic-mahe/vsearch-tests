@@ -1849,9 +1849,7 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-# missing check! exactly one cutting site on each strand must be indicated
-
 
 exit 0
 
-# status: complete (v2.28.1, 2024-06-24)
+# status: complete (v2.28.1, 2024-06-25)
