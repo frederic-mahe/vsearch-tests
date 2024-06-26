@@ -385,216 +385,198 @@ printf ">s\nGGGGGG\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (R -> A)"
-printf ">s\nACATGA\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_R" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+## -------------------------------------------------------------- IUPAC matches
 
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (R -> G)"
-printf ">s\nACATGG\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_R" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+##   IUPAC matches and complements
+##   -----------------------------
+##
+## A: A D H M N R V W      C G T U B K S Y
+## C: C B H M N S V Y      A G T U D K R W
+## G: G B D K N R S V      A C T U H M W Y
+## T: T U B D H K N W Y      A C G M R S V
+## U: T U B D H K N W Y      A C G M R S V
+## B: C G T U B D H K M N R S V W Y      A
+## D: A G T U B D H K M N R S V W Y      C
+## H: A C T U B D H K M N R S V W Y      G
+## V: A C G B D H K M N R S V W Y      T U
+## K: G T U B D H K N R S V W Y      A C M
+## M: A C B D H M N R S V W Y      G T U K
+## N: A C G T U B D H K M N R S V W Y    -
+## R: A G B D H K M N R S V W      C T U Y
+## S: C G B D H K M N R S V Y      A T U W
+## W: A T U B D H K M N R V W Y      C G S
+## Y: C T U B D H K M N S V W Y      A G R
 
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (R -> R)"
-printf ">s\nACATGR\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_R" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+(
+    ## A should match:
+    for c in A D H M N R V W ; do
+        printf "A\t%s\n" ${c}
+    done
+    ## C should match:
+    for c in C B H M N S V Y ; do
+        printf "C\t%s\n" ${c}
+    done
+    ## G should match:
+    for c in G B D K N R S V ; do
+        printf "G\t%s\n" ${c}
+    done
+    ## T should match:
+    for c in T U B D H K N W Y ; do
+        printf "T\t%s\n" ${c}
+    done
+    ## U should match:
+    for c in T U B D H K N W Y ; do
+        printf "U\t%s\n" ${c}
+    done
+    ## B should match:
+    for c in C G T U B D H K M N R S V W Y ; do
+        printf "B\t%s\n" ${c}
+    done
+    ## D should match:
+    for c in A G T U B D H K M N R S V W Y ; do
+        printf "D\t%s\n" ${c}
+    done
+    ## H should match:
+    for c in A C T U B D H K M N R S V W Y ; do
+        printf "H\t%s\n" ${c}
+    done
+    ## N should match everything:
+    for c in A C G T U B D H K M N R S V W Y ; do
+        printf "N\t%s\n" ${c}
+    done
+    ## V should match:
+    for c in A C G B D H K M N R S V W Y ; do
+        printf "V\t%s\n" ${c}
+    done
+    ## K should match:
+    for c in G T U B D H K N R S V W Y ; do
+        printf "K\t%s\n" ${c}
+    done
+    ## M should match:
+    for c in A C B D H M N R S V W Y ; do
+        printf "M\t%s\n" ${c}
+    done
+    ## R should match:
+    for c in A G B D H K M N R S V W ; do
+        printf "R\t%s\n" ${c}
+    done
+    ## S should match:
+    for c in C G B D H K M N R S V Y ; do
+        printf "S\t%s\n" ${c}
+    done
+    ## W should match:
+    for c in A T U B D H K M N R V W Y ; do
+        printf "W\t%s\n" ${c}
+    done
+    ## Y should match:
+    for c in C T U B D H K M N S V W Y ; do
+        printf "Y\t%s\n" ${c}
+    done
+) | \
+    while read A B; do
+        DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (${A} -> ${B})"
+        printf ">s\nACATG%s\n" "${B}" | \
+            "${VSEARCH}" \
+                --cut - \
+                --cut_pattern "ACATG^_${A}" \
+                --fastaout - 2> /dev/null | \
+            awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
+            success "${DESCRIPTION}" || \
+                failure "${DESCRIPTION}"
 
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (Y -> C)"
-printf ">s\nACATGC\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_Y" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+        if [[ ${A} != ${B} ]] ; then
+            DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (${B} -> ${A})"
+            printf ">s\nACATG%s\n" "${A}" | \
+                "${VSEARCH}" \
+                    --cut - \
+                    --cut_pattern "ACATG^_${B}" \
+                    --fastaout - 2> /dev/null | \
+                awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
+                success "${DESCRIPTION}" || \
+                    failure "${DESCRIPTION}"
+        fi
+    done
 
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (Y -> T)"
-printf ">s\nACATGT\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_Y" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+(
+    ## A should not match:
+    for c in C G T U B K S Y ; do
+        printf "A\t%s\n" ${c}
+    done
+    ## C should not match:
+    for c in A G T U D K R W ; do
+        printf "C\t%s\n" ${c}
+    done
+    ## G should not match:
+    for c in A C T U H M W Y ; do
+        printf "G\t%s\n" ${c}
+    done
+    ## T should not match:
+    for c in A C G M R S V ; do
+        printf "T\t%s\n" ${c}
+    done
+    ## U should not match:
+    for c in A C G M R S V ; do
+        printf "U\t%s\n" ${c}
+    done
+    ## B should not match A
+    printf "B\tA\n"
+    ## D should not match C
+    printf "D\tC\n"
+    ## H should not match G
+    printf "H\tG\n"
+    ## V should not match T or U
+    printf "V\tT\n"
+    printf "V\tU\n"
+    ## K should not match:
+    for c in A C M ; do
+        printf "K\t%s\n" ${c}
+    done
+    ## M should not match:
+    for c in G T U K ; do
+        printf "M\t%s\n" ${c}
+    done
+    ## R should not match:
+    for c in C T U Y ; do
+        printf "R\t%s\n" ${c}
+    done
+    ## S should not match:
+    for c in A T U W ; do
+        printf "S\t%s\n" ${c}
+    done
+    ## W should not match:
+    for c in C G S ; do
+        printf "W\t%s\n" ${c}
+    done
+    ## W should not match:
+    for c in A G R ; do
+        printf "Y\t%s\n" ${c}
+    done
+) | \
+    while read A B; do
+        DESCRIPTION="--cut --cut_pattern does not match unequivalent nucleotides (${A} -> ${B})"
+        printf ">s\nACATG%s\n" "${B}" | \
+            "${VSEARCH}" \
+                --cut - \
+                --cut_pattern "ACATG^_${A}" \
+                --fastaout - 2> /dev/null | \
+            grep -q "."  && \
+            failure "${DESCRIPTION}" || \
+                success "${DESCRIPTION}"
 
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (Y -> Y)"
-printf ">s\nACATGY\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_Y" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+        if [[ ${A} != ${B} ]] ; then
+            DESCRIPTION="--cut --cut_pattern does not match unequivalent nucleotides (${B} -> ${A})"
+            printf ">s\nACATG%s\n" "${A}" | \
+                "${VSEARCH}" \
+                    --cut - \
+                    --cut_pattern "ACATG^_${B}" \
+                    --fastaout - 2> /dev/null | \
+                grep -q "."  && \
+                failure "${DESCRIPTION}" || \
+                    success "${DESCRIPTION}"
+        fi
+    done
 
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (N -> A)"
-printf ">s\nACATGA\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_N" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (N -> C)"
-printf ">s\nACATGC\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_N" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (N -> G)"
-printf ">s\nACATGG\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_N" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (N -> T)"
-printf ">s\nACATGT\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_N" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (N -> N)"
-printf ">s\nACATGN\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_N" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (U -> T)"
-printf ">s\nACATGT\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_U" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (U -> U)"
-printf ">s\nACATGU\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_U" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (T -> U)"
-printf ">s\nACATGU\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_T" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (M -> A)"
-printf ">s\nACATGA\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_M" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (M -> C)"
-printf ">s\nACATGC\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_M" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (M -> M)"
-printf ">s\nACATGM\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_M" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (K -> G)"
-printf ">s\nACATGG\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_K" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (K -> T)"
-printf ">s\nACATGT\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_K" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (K -> K)"
-printf ">s\nACATGK\n" | \
-    "${VSEARCH}" \
-        --cut - \
-        --cut_pattern "ACATG^_K" \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## assume matches for these other IUPAC symbols too:
-# 
-# Symbol   Description                     Bases represented   Complement
-# ────────────────────────────────────────────────────────────────────────
-# B        not A (B comes after A)         C or G or T         V
-# D        not C (D comes after C)         A or G or T         H
-# H        not H (H comes after G)         A or C or T         D
-# S        strong                          C or G              S
-# V        not T (V comes after T and U)   A or C or G         B
-# W        weak                            A or T              W
+## ---------------------------------------------------------------------- stats
 
 DESCRIPTION="--cut reports number of cuts (no cut)"
 printf ">s\nTCATGK\n" | \
