@@ -374,6 +374,20 @@ printf ">s\nCCWGG\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## test capacity to store (allocate) increasingly long rev-comp sequences
+DESCRIPTION="--cut can process increasingly long sequences"
+(
+    printf ">s1\n%0160s\n" | tr " " "A"
+    printf ">s2\n%0320s\n" | tr " " "A"
+) | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "GG^_GG" \
+        --fastaout_discarded - 2> /dev/null | \
+    awk '! /^>/ {s += length($1)} END {exit s == 480 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # pattern occurrences can overlap: GG^_GG -> GG|G|G|GG
 DESCRIPTION="--cut --cut_pattern pattern occurrences can overlap (GG|G|G|GG)"
 printf ">s\nGGGGGG\n" | \
