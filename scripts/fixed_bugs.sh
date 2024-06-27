@@ -59,6 +59,50 @@ DESCRIPTION="regression c4b218ffe (segfault)"
 
 #******************************************************************************#
 #                                                                              #
+#                           vsearch forum issues                               #
+#                                                                              #
+#******************************************************************************#
+
+## OTU Table Labels (Marita White) 2024-06-26
+# - filenames are trunctated to first hyphen when building OTU tables
+# - solution is to use ;sample=NAME annotations
+DESCRIPTION="forum (2024-06-26): OTU table labels"
+SAMPLE1=$(mktemp)
+SAMPLE2=$(mktemp)
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sample "sample1-ITS1-good" \
+        --quiet \
+        --fastaout ${SAMPLE1}
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sample "sample2-ITS1-good" \
+        --quiet \
+        --fastaout ${SAMPLE2}
+
+cat ${SAMPLE1} ${SAMPLE2} | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s\nA\n") \
+        --minseqlength 1 \
+        --id 1.0 \
+        --quiet \
+        --otutabout - 2> /dev/null | \
+    grep -q "sample[12]-ITS1-good" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm ${SAMPLE1} ${SAMPLE2}
+unset SAMPLE1 SAMPLE2
+
+# expect:
+# #OTU ID	sample1-ITS1-good	sample2-ITS1-good
+# s	1	1
+
+
+#******************************************************************************#
+#                                                                              #
 #         Improve selection of unique kmers in query (issue 1)                 #
 #                                                                              #
 #******************************************************************************#
