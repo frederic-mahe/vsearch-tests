@@ -64,6 +64,7 @@ DESCRIPTION="regression c4b218ffe (segfault)"
 #******************************************************************************#
 
 ## OTU Table Labels (Marita White) 2024-06-26
+# how to pass sample names to option otutabout?
 # - filenames are trunctated to first hyphen when building OTU tables
 # - solution is to use ;sample=NAME annotations
 DESCRIPTION="forum (2024-06-26): OTU table labels"
