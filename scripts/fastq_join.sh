@@ -517,6 +517,44 @@ printf "@s1\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## coverage tests: trigger memory reverse sequence reallocation (fastq
+## entries with more than 1,024 nucleotides)
+DESCRIPTION="--fastq_join long reverse entry (> 1,024 nucleotides)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\n%01025s\n" | tr " " "A"
+                    printf "+\n%01025s\n" | tr " " "I") \
+        --fastqout - 2> /dev/null | \
+    awk 'NR == 2 {exit length($1) > 1025 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_join long reverse entry (> 1,024 quality symbols)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\n%01025s\n" | tr " " "A"
+                    printf "+\n%01025s\n" | tr " " "I") \
+        --fastqout - 2> /dev/null | \
+    awk 'NR == 4 {exit length($1) > 1025 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## default pre-allocated length is 1,024 + 8 + 1,024 = 2,056
+DESCRIPTION="--fastq_join long reverse entry (> 2,056 nucleotides)"
+(
+    printf "@s\n%02056s\n" | tr " " "A"
+    printf "+\n%02056s\n" | tr " " "I"
+) | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nA\n+\nI\n") \
+        --fastqout - 2> /dev/null | \
+    awk 'NR == 2 {exit length($1) > 2056 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -2234,24 +2272,9 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-
-# The valid options for the fastq_join command are: --bzip2_decompress
-# --fasta_width --fastaout --fastq_ascii --fastq_qmax --fastq_qmin
-# --fastqout --gzip_decompress --join_padgap --join_padgapq
-# --label_suffix --lengthout --log --no_progress --quiet --relabel
-# --relabel_keep --relabel_md5 --relabel_self --relabel_sha1 --reverse
-# --sizein --sizeout --threads --xee --xlength --xsize
-
-
-## initial state and coverage:
-# - 54 clang-tidy warnings (excluding misc-use-internal-linkage)
-# - File 'fastqjoin.cc' Lines executed:0.00% of 97
-
-## TODO:
-
 # - sizein is accepted but has no effect?
 # - sizeout is accepted but has no effect?
-# - lots of differences with other commands in the way size annotations are dealt with
+
 
 exit 0
 
