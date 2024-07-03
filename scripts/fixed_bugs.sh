@@ -5846,6 +5846,16 @@ printf ">seq1;size=5;\nACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/237
 
+DESCRIPTION="issue 237: --fastq_chars --log --quiet does no write to stderr"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - \
+        --quiet \
+        --log /dev/null 2>&1 | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5854,6 +5864,14 @@ printf ">seq1;size=5;\nACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/238
+
+DESCRIPTION="issue 238: --fastq_chars guesses quality offset +33 (when ambiguous)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -q "\-fastq_ascii 33$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -6017,6 +6035,24 @@ printf ">seq1;size=5;\nACGT\n" | \
 # 14 cols, 10 ids (71.4%), 4 gaps (28.6%)
 # q1	0	r1	1	255	5M4D5M	*	0	0	gggggggggg	*	AS:i:71	XN:i:0	XM:i:0	XO:i:1	XG:i:4	NM:i:4	MD:Z:5^CCCC5	YT:Z:UU
 
+
+#******************************************************************************#
+#                                                                              #
+#   Segmentation fault with certain characters in FASTQ files (issue 267)      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/267
+
+# The header is empty, the sequence line is empty and the quality line
+# contains an extended ascii character (here in octal notation)
+DESCRIPTION="issue 267: --fastq_chars segmentation fault (non-ASCII symbols)"
+printf "@\n\n+\n\351\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -qi "Fatal error" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
