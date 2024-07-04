@@ -322,6 +322,22 @@ printf "@s\nN\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_chars outputs an additional quality range for 'n' (Q=I..J)"
+printf "@s\nnn\n+\nIJ\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -qE "[[:blank:]]N[[:blank:]].*[[:blank:]]Q=I..J$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_chars outputs an additional quality range for 'n' (no range, single value)"
+printf "@s\nn\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -qE "[[:blank:]]N[[:blank:]].*[[:blank:]]Q=I$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ------------------------------------------------------------- quality string
 
 # For each character present in the quality strings, --fastq_chars
