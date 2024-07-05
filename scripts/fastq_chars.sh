@@ -130,6 +130,17 @@ printf "@s\nD\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_chars outputs sequence symbols in ASCII order"
+printf "@s\nCBA\n+\nIII\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -oE "^[[:blank:]]+[ABC]" | \
+    tr -d " " | \
+    tr -d "\n" | \
+    grep -wq "ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastq_chars counts each sequence symbol (one A)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
@@ -385,6 +396,18 @@ printf "@s\nA\n+\n \n" | \
         --fastq_chars - 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_chars outputs quality symbols in ASCII order"
+printf "@s\nNNN\n+\nCBA\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -oE "^[[:blank:]]+'[ABC]'" | \
+    tr -d " " | \
+    tr -d "'" | \
+    tr -d "\n" | \
+    grep -wq "ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_chars gives the frequency of each quality symbol (100.0 percent J)"
 printf "@s\nA\n+\nJ\n" | \
