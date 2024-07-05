@@ -812,6 +812,48 @@ printf "@s\nAA\n+\n@I\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## -------------------------------------------------------- fastq version guess
+
+DESCRIPTION="--fastq_chars reports the most likely version (ascii 59 to 104 -> Solexa +64)"
+printf "@s\nAA\n+\n;h\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -q "Solexa" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_chars reports the most likely version (ascii 64 to 104 -> Illumina 1.3 +64)"
+printf "@s\nAA\n+\n@h\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -q "Illumina 1\.3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_chars reports the most likely version (ascii 66 to 104 -> Illumina 1.5 +64)"
+printf "@s\nAA\n+\nBh\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -q "Illumina 1\.5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_chars reports the most likely version (ascii 33 to 73 -> Sanger +33)"
+printf "@s\nAA\n+\n!I\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -q "Sanger" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_chars reports the most likely version (ascii 33 to 74 -> Illumina 1.8 +33)"
+printf "@s\nAA\n+\n!J\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -q "Illumina 1\.8" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
