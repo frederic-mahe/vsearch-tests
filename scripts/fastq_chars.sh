@@ -1289,9 +1289,8 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-# input accepts any ASCII character in sequence (permissive? as should be a diagnostic tool?)
-# sequence symbols are listed in ASCII order (hard to test)
-# length of the longest run of that symbol: off-by-one error?
+# input accepts any ASCII character in sequence (permissive? as should
+# be a diagnostic tool?)
 
 
 exit 0
