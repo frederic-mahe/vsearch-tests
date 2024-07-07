@@ -2837,6 +2837,7 @@ if which valgrind > /dev/null 2>&1 ; then
         "${VSEARCH}" \
         --derep_fulllength <(printf ">s1\nA\n>s2\nA\n") \
         --minseqlength 1 \
+        --uc /dev/null \
         --output /dev/null 2> /dev/null
     DESCRIPTION="--derep_fulllength valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${TMP}" && \
