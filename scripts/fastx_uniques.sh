@@ -3932,6 +3932,7 @@ if which valgrind > /dev/null 2>&1 ; then
         --leak-check=full \
         "${VSEARCH}" \
         --fastx_uniques <(printf ">s1\nA\n>s2\nA\n") \
+        --uc /dev/null \
         --fastaout /dev/null 2> /dev/null
     DESCRIPTION="--fastx_uniques valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${TMP}" && \
@@ -3944,6 +3945,10 @@ if which valgrind > /dev/null 2>&1 ; then
     rm -f "${TMP}"
     unset TMP
 fi
+
+## issue with:
+# --fastqout /dev/null \
+# --tabbedout /dev/null \
 
 
 #*****************************************************************************#
