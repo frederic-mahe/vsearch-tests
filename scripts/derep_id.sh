@@ -2912,13 +2912,6 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-# --derep_id FILENAME   dereplicate using both identifiers and sequences
-
-# --derep_id filename
-# Merge strictly identical sequences contained in filename, as with
-# the --derep_fulllength command, but the sequence labels
-# (identifiers) on the header line need to be identical too.
-
 ## TODO:
 
 # sequence labels need to be identical, including size annotations?
