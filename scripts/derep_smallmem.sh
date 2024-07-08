@@ -3688,6 +3688,8 @@ if which valgrind > /dev/null 2>&1 ; then
         --leak-check=full \
         "${VSEARCH}" \
         --derep_smallmem ${INPUT} \
+        --strand both \
+        --log /dev/null \
         --fastaout /dev/null 2> /dev/null
     DESCRIPTION="--derep_smallmem valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" ${TMP} && \
