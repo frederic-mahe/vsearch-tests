@@ -970,21 +970,21 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-## segmentation fault! To be fixed
-# ## --strand both allow dereplication of strand plus and minus (--derep_id)
-# DESCRIPTION="--strand allow dereplication of strand plus and minus (--derep_id)"
-# printf ">s1;size=1;\nA\n>s1;size=1;\nT\n" | \
-#     "${VSEARCH}" \
-#         --derep_id - \
-#         --sizein \
-#         --sizeout \
-#         --minseqlength 1 \
-#         --strand both \
-#         --quiet \
-#         --output - | \
-#     grep -wqE ">s1;size=2;?" && \
-#     success "${DESCRIPTION}" || \
-# 	failure "${DESCRIPTION}"
+## segmentation fault (fixed)
+## --strand both allow dereplication of strand plus and minus (--derep_id)
+DESCRIPTION="--strand allow dereplication of strand plus and minus (--derep_id)"
+printf ">s1;size=1;\nA\n>s1;size=1;\nT\n" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --sizein \
+        --sizeout \
+        --minseqlength 1 \
+        --strand both \
+        --quiet \
+        --output - | \
+    grep -wqE ">s1;size=2;?" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
 ## --strand plus does not change default behaviour
 DESCRIPTION="--strand plus does not change default behaviour"
@@ -2917,7 +2917,6 @@ fi
 # sequence labels need to be identical, including size annotations?
 
 ## does not work as expected:
-# - segfault: --strand both allow dereplication of strand plus and minus (--derep_id)
 # --topn returns only the n most abundant sequences after full length
 
 exit 0
