@@ -462,6 +462,28 @@ DESCRIPTION="--sortbysize --minsize discards abundances lesser than value (<)"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--sortbysize --minsize equals --maxsize (select a specific abundance value)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=2\nAA\n") \
+    --quiet \
+    --minsize 2 \
+    --maxsize 2 \
+    --output - | \
+    grep -qw ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize --minsize greater than --maxsize (always empty output)"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=2\nAA\n") \
+    --quiet \
+    --minsize 3 \
+    --maxsize 2 \
+    --output - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## ----------------------------------------------------------------------- topn
 DESCRIPTION="--sortbysize accepts --topn"
 "${VSEARCH}" \
