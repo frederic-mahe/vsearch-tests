@@ -12788,6 +12788,24 @@ DESCRIPTION="issue 568: k-mer prefiltering when clustering short sequences (belo
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## 10/13 kmers: lower the number of required 8-mers, alignment
+DESCRIPTION="issue 568: k-mer prefiltering when clustering short sequences (lower threshold)"
+(
+    printf ">2\nAGCCGGTAGGACTGAACGTA\n"
+    printf ">1\nAGCCGGTAGGACTGAACATA\n"
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 20 \
+        --id 0.8 \
+        --iddef 4 \
+        --minwordmatches 10 \
+        --quiet \
+        --consout - | \
+    awk '/^>/ {c += 1} END {exit c == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # >2  AGCCGGTAGGACTGAACATG
 #     |||||||||||||||||||
 # >1  AGCCGGTAGGACTGAACATA
@@ -12811,6 +12829,7 @@ DESCRIPTION="issue 568: k-mer prefiltering when clustering short sequences (equa
         failure "${DESCRIPTION}"
 
 exit 0
+
 
 # DONE: issues 1-63 and 549 to 561
 # TODO: issue 506 read --db from stream fails in CI runs (works on my machine)
