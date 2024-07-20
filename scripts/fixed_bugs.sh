@@ -12748,6 +12748,68 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')
 ## pull request, not testable
 
 
+#******************************************************************************#
+#                                                                              #
+#       Unexpected behavior when clustering short sequences (issue 568)        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/568
+
+## k-mer prefiltering step as described in the manual:
+
+# That efficient pre-filtering also prevents pairwise alignments with
+# very short, or with weakly matching targets, as there needs to be by
+# default at least 12 shared k-mers to start the pairwise alignment, and
+# at least one out of every 16 k-mers from the query needs to match the
+# target.
+
+## situation: sequences are 20 basepairs long (20 + 1 - 8 = up to 13
+## 8-mers)
+
+# >2  AGCCGGTAGGACTGAACGTA
+#     ||||||||||||||||| ||
+# >1  AGCCGGTAGGACTGAACATA
+
+## 10/13 kmers: not enough common 8-mers, no alignment
+DESCRIPTION="issue 568: k-mer prefiltering when clustering short sequences (below threshold)"
+(
+    printf ">2\nAGCCGGTAGGACTGAACGTA\n"
+    printf ">1\nAGCCGGTAGGACTGAACATA\n"
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 20 \
+        --id 0.8 \
+        --iddef 4 \
+        --quiet \
+        --consout - | \
+    awk '/^>/ {c += 1} END {exit c == 1 ? 0 : 1}' && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# >2  AGCCGGTAGGACTGAACATG
+#     |||||||||||||||||||
+# >1  AGCCGGTAGGACTGAACATA
+
+## if the mismatch is in last position (loose only one k-mer)
+## 12/13 kmers: just enough common 8-mers, alignment
+DESCRIPTION="issue 568: k-mer prefiltering when clustering short sequences (equal to threshold)"
+(
+    printf ">2\nAGCCGGTAGGACTGAACATG\n"
+    printf ">1\nAGCCGGTAGGACTGAACATA\n"
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 20 \
+        --id 0.8 \
+        --iddef 4 \
+        --quiet \
+        --consout - | \
+    awk '/^>/ {c += 1} END {exit c == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 exit 0
 
 # DONE: issues 1-63 and 549 to 561
