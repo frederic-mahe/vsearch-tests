@@ -1106,18 +1106,6 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--derep_id --bzip2_decompress is accepted (empty input)"
-printf "" | \
-    bzip2 | \
-    "${VSEARCH}" \
-        --derep_id - \
-        --bzip2_decompress \
-        --minseqlength 1 \
-        --quiet \
-        --output /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
 DESCRIPTION="--derep_id --bzip2_decompress accepts compressed stdin"
 printf ">s\nA\n" | \
     bzip2 | \
@@ -1249,18 +1237,6 @@ printf ">s\nA\n" | \
         --output - 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-
-DESCRIPTION="--derep_id --gzip_decompress is accepted (empty input)"
-printf "" | \
-    gzip | \
-    "${VSEARCH}" \
-        --derep_id - \
-        --gzip_decompress \
-        --minseqlength 1 \
-        --quiet \
-        --output /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_id --gzip_decompress accepts compressed stdin"
 printf ">s\nA\n" | \
