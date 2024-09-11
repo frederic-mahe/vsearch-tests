@@ -2123,11 +2123,11 @@ if which valgrind > /dev/null 2>&1 ; then
         "${VSEARCH}" \
         --fastq_stats <(printf "@s\nAA\n+\nII\n") \
         --log /dev/null 2> /dev/null
-    DESCRIPTION="--cut valgrind (no leak memory)"
+    DESCRIPTION="--fastq_stats valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${TMP}" && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
-    DESCRIPTION="--cut valgrind (no errors)"
+    DESCRIPTION="--fastq_stats valgrind (no errors)"
     grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
