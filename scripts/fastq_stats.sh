@@ -1365,6 +1365,73 @@ printf "@s\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_stats logs one value when read length is 1 (fifth section)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -A 3 "^Truncate at first Q$" | \
+    tail -n 1 | \
+    grep -qE "^[[:blank:]]+1[[:blank:]]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats logs two values when read length is 2 (fifth section)"
+printf "@s\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -A 4 "^Truncate at first Q$" | \
+    tail -n 1 | \
+    grep -qE "^[[:blank:]]+1[[:blank:]]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats logs three values when read length is 3 (fifth section)"
+printf "@s\nAAA\n+\nIII\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -A 5 "^Truncate at first Q$" | \
+    tail -n 1 | \
+    grep -qE "^[[:blank:]]+1[[:blank:]]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats logs three values when read length is 4 (fifth section)"
+printf "@s\nAAAA\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -A 6 "^Truncate at first Q$" | \
+    tail -n 1 | \
+    grep -q "^[[:blank:]]+1[[:blank:]]" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats logs four values when read length is 6 (fifth section)"
+printf "@s\nAAAAAA\n+\nIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -A 7 "^Truncate at first Q$" | \
+    tail -n 1 | \
+    grep -q "^[[:blank:]]+2[[:blank:]]" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# output floor(length / 2) + 1
+DESCRIPTION="--fastq_stats logs five values when read length is 8 (fifth section)"
+printf "@s\nAAAAAAAA\n+\nIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -A 8 "^Truncate at first Q$" | \
+    tail -n 1 | \
+    grep -q "^[[:blank:]]+3[[:blank:]]" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--fastq_stats logs length value (Len) (fifth section)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
