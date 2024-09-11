@@ -1521,6 +1521,57 @@ printf "@s\nA\n+\n6\n" | \
         failure "${DESCRIPTION}"
 
 
+## ------------------------------------------------------------- coverage tests
+
+# force memory re-allocation (current alloc-realloc implementation
+# allocates for reads of length 512, then reallocates read > length + 1)
+DESCRIPTION="--fastq_stats accepts and allocates for long reads (length = 512)"
+LENGTH=512
+(
+    printf "@s\n"
+    yes A | head -n ${LENGTH}
+    printf "+\n"
+    yes I | head -n ${LENGTH}
+) | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LENGTH
+
+DESCRIPTION="--fastq_stats accepts and allocates for long reads (length = 512 + 1)"
+LENGTH=513
+(
+    printf "@s\n"
+    yes A | head -n ${LENGTH}
+    printf "+\n"
+    yes I | head -n ${LENGTH}
+) | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LENGTH
+
+# trigger reallocation
+DESCRIPTION="--fastq_stats accepts and allocates for long reads (length = 512 + 2)"
+LENGTH=514
+(
+    printf "@s\n"
+    yes A | head -n ${LENGTH}
+    printf "+\n"
+    yes I | head -n ${LENGTH}
+) | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LENGTH
+
+
 #*****************************************************************************#
 #                                                                             #
 #                              core options                                   #
