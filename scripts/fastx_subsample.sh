@@ -148,7 +148,7 @@ printf "" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_subsample discards empty fasta sequences"
+DESCRIPTION="--fastx_subsample discards empty fastq sequences"
 printf "@s\nA\n+\nI\n@s\n\n+\n\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
