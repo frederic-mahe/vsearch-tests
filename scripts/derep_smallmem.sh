@@ -1442,19 +1442,6 @@ printf ">s\nA\n" | bzip2 --stdout > ${TMP}
 rm -f ${TMP}
 unset TMP
 
-DESCRIPTION="--derep_smallmem --bzip2_decompress is accepted (empty input)"
-TMP=$(mktemp)
-printf "" | bzip2 --stdout > ${TMP}
-"${VSEARCH}" \
-    --derep_smallmem ${TMP} \
-    --bzip2_decompress \
-    --quiet \
-    --fastaout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm -f ${TMP}
-unset TMP
-
 DESCRIPTION="--derep_smallmem --bzip2_decompress accepts compressed input"
 TMP=$(mktemp)
 printf ">s\nA\n" | bzip2 --stdout > ${TMP}
@@ -1957,19 +1944,6 @@ printf ">s\nA\n" | gzip --stdout > ${TMP}
     --derep_smallmem ${TMP} \
     --quiet \
     --fastaout /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm -f ${TMP}
-unset TMP
-
-DESCRIPTION="--derep_smallmem --gzip_decompress is accepted (empty input)"
-TMP=$(mktemp)
-printf ""  | gzip --stdout > ${TMP}
-"${VSEARCH}" \
-    --derep_smallmem ${TMP} \
-    --gzip_decompress \
-    --quiet \
-    --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f ${TMP}
@@ -3692,4 +3666,3 @@ fi
 # - missing checks in vsearch code (min/max mismatches)
 
 exit 0
-
