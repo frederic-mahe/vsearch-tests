@@ -2101,7 +2101,7 @@ printf ">s\nA\n" | \
         failure "${DESCRIPTION}"
 
 ## preserve abundance annotations
-DESCRIPTION="--derep_prefix --relabel no size annotations (without --sizeout)"
+DESCRIPTION="--derep_prefix --relabel no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
@@ -2140,7 +2140,7 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--derep_prefix --relabel_self no size annotations (without --sizeout)"
+DESCRIPTION="--derep_prefix --relabel_self no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
@@ -2179,7 +2179,7 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--derep_prefix --relabel_md5 no size annotations (without --sizeout)"
+DESCRIPTION="--derep_prefix --relabel_md5 no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
@@ -2218,7 +2218,7 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--derep_prefix --relabel_sha1 no size annotations (without --sizeout)"
+DESCRIPTION="--derep_prefix --relabel_sha1 no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
