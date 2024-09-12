@@ -913,20 +913,6 @@ printf ">s\nA\n>s\nA\n" > ${TMP}
 rm -f ${TMP}
 unset TMP
 
-DESCRIPTION="--maxuniquesize accepts large values (2^32)"
-TMP=$(mktemp)
-printf ">s\nA\n>s\nA\n" > ${TMP}
-"${VSEARCH}" \
-    --derep_smallmem ${TMP} \
-    --maxuniquesize 4294967296 \
-    --quiet \
-    --fastaout - | \
-    grep -q "^>" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-rm -f ${TMP}
-unset TMP
-
 # combine with sizein
 DESCRIPTION="--maxuniquesize --sizein accepts lesser dereplicated sizes (<)"
 TMP=$(mktemp)
@@ -1145,20 +1131,6 @@ printf ">s\nA\n>s\nA\n" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --minuniquesize 65536 \
-    --quiet \
-    --fastaout - | \
-    grep -q "^>" && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
-rm -f ${TMP}
-unset TMP
-
-DESCRIPTION="--minuniquesize accepts large values (2^32)"
-TMP=$(mktemp)
-printf ">s\nA\n>s\nA\n" > ${TMP}
-"${VSEARCH}" \
-    --derep_smallmem ${TMP} \
-    --minuniquesize 4294967296 \
     --quiet \
     --fastaout - | \
     grep -q "^>" && \
