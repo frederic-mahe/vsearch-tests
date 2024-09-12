@@ -2874,7 +2874,7 @@ printf ">s\nA\n" | \
         failure "${DESCRIPTION}"
 
 ## preserve abundance annotations
-DESCRIPTION="--fastx_uniques --relabel no size annotations (without --sizeout)"
+DESCRIPTION="--fastx_uniques --relabel no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -2910,7 +2910,7 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques --relabel_self no size annotations (without --sizeout)"
+DESCRIPTION="--fastx_uniques --relabel_self no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -2946,7 +2946,7 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques --relabel_md5 no size annotations (without --sizeout)"
+DESCRIPTION="--fastx_uniques --relabel_md5 no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -2982,7 +2982,7 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques --relabel_sha1 no size annotations (without --sizeout)"
+DESCRIPTION="--fastx_uniques --relabel_sha1 no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -3632,7 +3632,7 @@ printf ">s1;size=1;\nA\n>s2;size=1;\nT\n" | \
         failure "${DESCRIPTION}"
 
 ## trigger reallocation of extra space for uc or tabbedout
-DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences"
+DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences (--uc)"
 (for i in {1..1025} ; do
     printf ">s%d\n" ${i}
     yes A | head -n ${i}
