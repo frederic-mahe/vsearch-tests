@@ -131,13 +131,13 @@ for i in 0 9 10 13 32 {33..126} ; do
 done
 unset OCTAL
 
-## Define ASCII characters accepted in fastq headers
+## Define ASCII characters accepted in fasta headers
 #  0: NULL
 # 10: "\n"
 # 13: "\r"
 # 32: SPACE
 for i in 0 9 10 13 {32..126} ; do
-    DESCRIPTION="ascii character ${i} is allowed in fastq header (outside identifier)"
+    DESCRIPTION="ascii character ${i} is allowed in fasta header (outside identifier)"
     OCTAL=$(printf "\%04o" ${i})
     echo -e ">s ${OCTAL}s\nA\n" | \
         "${VSEARCH}" \
@@ -181,7 +181,7 @@ echo -e ">ø\nA\n" | \
 # 13: "\r"
 # and ACGTUacgtu
 for i in 0 {9..13} {32..44} {47..127} ; do
-    DESCRIPTION="ascii character ${i} is allowed in sequences"
+    DESCRIPTION="ascii character ${i} is allowed in fasta sequences"
     OCTAL=$(printf "\%04o" ${i})
     echo -e ">s\nA${OCTAL}A\n" | \
         "${VSEARCH}" \
@@ -198,7 +198,7 @@ unset OCTAL
 # 45: '-'
 # 46: '.'
 for i in {1..8} {14..31} 45 46 ; do
-    DESCRIPTION="ascii character ${i} is not allowed in sequences"
+    DESCRIPTION="ascii character ${i} is not allowed in fasta sequences"
     OCTAL=$(printf "\%04o" ${i})
     echo -e ">s\nA${OCTAL}A\n" | \
         "${VSEARCH}" \
@@ -376,7 +376,7 @@ echo -e "@ø\nA\n+\nI\n" | \
 ## Define ASCII characters accepted in fastq sequences
 # ACGTUacgtu
 for i in {65..68} 71 72 75 77 78 82 83 84 85 86 87 89 97 98 99 100 103 104 107 109 110 114 115 116 117 118 119 121 ; do
-    DESCRIPTION="ascii character ${i} is allowed in sequences"
+    DESCRIPTION="ascii character ${i} is allowed in fastq sequences"
     OCTAL=$(printf "\%04o" ${i})
     echo -e "@s\nA${OCTAL}A\n+\nIII\n" | \
         "${VSEARCH}" \
@@ -393,7 +393,7 @@ unset OCTAL
 # 45: '-'
 # 46: '.'
 for i in {0..64} 127 ; do
-    DESCRIPTION="ascii character ${i} is not allowed in sequences"
+    DESCRIPTION="ascii character ${i} is not allowed in fastq sequences"
     OCTAL=$(printf "\%04o" ${i})
     echo -e "@s\nA${OCTAL}A\n+\nIII\n" | \
         "${VSEARCH}" \
