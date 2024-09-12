@@ -1219,10 +1219,10 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs T, A has a lower Q value)"
 
 # To avoid 'alignment score too low, or score drop too high'
 # 1...5...10.... (length is 14)
-# AAATAAAAAAAAAA (A has a Q value = @ = 0)
+# AAATAAAAAAAAAA (A has a Q value = # = 2)
 # .|||||||||||||
 # TAATAAAAAAAAAA
-DESCRIPTION="fastq_mergepairs consensus output (A vs T, T has a much lower Q value)"
+DESCRIPTION="fastq_mergepairs consensus output (A vs T, A has a much lower Q value)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\n#IIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTA\n+\nIIIIIIIIIIIIII\n") \
