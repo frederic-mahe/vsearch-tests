@@ -909,7 +909,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
         --sample_size 1 \
-        --fastaout /dev/null \
+        --fastqout /dev/null \
         --fastqout_discarded ${TMP} 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
