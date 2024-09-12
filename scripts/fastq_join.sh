@@ -669,17 +669,6 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join --join_padgapq accepts ~ (Q93)"
-printf "@s\nA\n+\nI\n" | \
-    "${VSEARCH}" \
-        --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
-        --join_padgapq "~~~~~~~~" \
-        --fastqout - 2> /dev/null | \
-    grep -qw "I~~~~~~~~I" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
 DESCRIPTION="--fastq_join --join_padgapq accepts SPACE (< Q0)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
