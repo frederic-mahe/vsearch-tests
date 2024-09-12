@@ -1237,7 +1237,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs T, T has a much lower Q val
 # 1...5...10.... (length is 14)
 # TAATAAAAAAAAAA
 # .|||||||||||||
-# AAATAAAAAAAAAA (A has a Q value = @ = 0)
+# AAATAAAAAAAAAA (A has a Q value = # = 2)
 DESCRIPTION="fastq_mergepairs consensus output (T vs A, A has a much lower Q value)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
