@@ -75,7 +75,7 @@ chmod u+w ${TMP} && rm -f ${TMP}
 unset TMP
 
 # Cannot subsample more reads than in the original sample
-DESCRIPTION="--fastx_subsample rejects empty input"
+DESCRIPTION="--fastx_subsample rejects empty input (--fastaout)"
 printf "" | \
     "${VSEARCH}" \
         --fastx_subsample - \
@@ -139,7 +139,7 @@ chmod u+w ${TMP} && rm -f ${TMP}
 unset TMP
 
 # Cannot subsample more reads than in the original sample
-DESCRIPTION="--fastx_subsample rejects empty input"
+DESCRIPTION="--fastx_subsample rejects empty input (--fastqout)"
 printf "" | \
     "${VSEARCH}" \
         --fastx_subsample - \
@@ -1810,7 +1810,7 @@ printf ">s\nA\n" | \
         failure "${DESCRIPTION}"
 
 ## preserve abundance annotations
-DESCRIPTION="--fastx_subsample --relabel no size annotations (without --sizeout)"
+DESCRIPTION="--fastx_subsample --relabel no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
@@ -1835,7 +1835,7 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_subsample --relabel_self no size annotations (without --sizeout)"
+DESCRIPTION="--fastx_subsample --relabel_self no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
@@ -1860,7 +1860,7 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_subsample --relabel_md5 no size annotations (without --sizeout)"
+DESCRIPTION="--fastx_subsample --relabel_md5 no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
@@ -1885,7 +1885,7 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_subsample --relabel_sha1 no size annotations (without --sizeout)"
+DESCRIPTION="--fastx_subsample --relabel_sha1 no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
