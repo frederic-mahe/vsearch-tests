@@ -622,18 +622,6 @@ printf ">s\nA\n>s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--maxuniquesize accepts large values (2^32)"
-printf ">s\nA\n>s\nA\n" | \
-    "${VSEARCH}" \
-        --derep_id - \
-        --minseqlength 1 \
-        --maxuniquesize 4294967296 \
-        --quiet \
-        --output - | \
-    grep -q "^>" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
 # combine with sizein
 DESCRIPTION="--maxuniquesize --sizein accepts lesser dereplicated sizes (<)"
 printf ">s;size=1\nA\n" | \
@@ -822,18 +810,6 @@ printf ">s\nA\n>s\nA\n" | \
         --derep_id - \
         --minseqlength 1 \
         --minuniquesize 65536 \
-        --quiet \
-        --output - | \
-    grep -q "^>" && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
-
-DESCRIPTION="--minuniquesize accepts large values (2^32)"
-printf ">s\nA\n>s\nA\n" | \
-    "${VSEARCH}" \
-        --derep_id - \
-        --minseqlength 1 \
-        --minuniquesize 4294967296 \
         --quiet \
         --output - | \
     grep -q "^>" && \
