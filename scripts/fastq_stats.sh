@@ -226,7 +226,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats separates column headers and values with a horizontal rule"
+DESCRIPTION="--fastq_stats separates column headers and values with a horizontal rule (first section)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -483,7 +483,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats separates column headers and values with a horizontal rule"
+DESCRIPTION="--fastq_stats separates column headers and values with a horizontal rule (second section)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -785,7 +785,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats separates column headers and values with a horizontal rule"
+DESCRIPTION="--fastq_stats separates column headers and values with a horizontal rule (third section)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -1033,7 +1033,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats separates column headers and values with a horizontal rule"
+DESCRIPTION="--fastq_stats separates column headers and values with a horizontal rule (fourth section)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -1321,7 +1321,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats separates column headers and values with a horizontal rule"
+DESCRIPTION="--fastq_stats separates column headers and values with a horizontal rule (fifth section)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
