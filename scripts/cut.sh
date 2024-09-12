@@ -719,7 +719,7 @@ printf ">s\nGAATTC\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cut --cut_pattern EcoRI (fastaout_rev)"
+DESCRIPTION="--cut --cut_pattern EcoRI (fastaout_discarded_rev)"
 printf ">s\nGAATTC\n" | \
     "${VSEARCH}" \
         --cut - \
