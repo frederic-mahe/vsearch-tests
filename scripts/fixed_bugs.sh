@@ -2783,7 +2783,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 36: --cluster_fast --centroids --sizeout"
+DESCRIPTION="issue 36: --cluster_fast --centroids --sizeout (size annotation in)"
 ${VSEARCH} \
     --cluster_fast <(printf ">s1;size=2\nA\n>s2;size=1\nA\n") \
     --minseqlength 1 \
@@ -3413,7 +3413,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 54: --usearch_global --userout tilo (first aligned position in the target)"
+DESCRIPTION="issue 54: --usearch_global --userout tilo (first aligned position in the target = 3)"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\nAA\n") \
     --db <(printf ">t1\nTTAA\n") \
@@ -3426,7 +3426,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 54: --usearch_global --userout tilo (first aligned position in the target)"
+DESCRIPTION="issue 54: --usearch_global --userout tilo (first aligned position in the target = 1)"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\nAAAG\n") \
     --db <(printf ">t1\nTTT\n") \
@@ -3441,7 +3441,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 54: --usearch_global --userout thi (= tlen)"
+DESCRIPTION="issue 54: --usearch_global --userout thi (= tlen = 2)"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\nAAA\n") \
     --db <(printf ">t1\nAA\n") \
@@ -3454,7 +3454,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 54: --usearch_global --userout thi (= tlen)"
+DESCRIPTION="issue 54: --usearch_global --userout thi (= tlen = 3)"
 ${VSEARCH} \
     --usearch_global <(printf ">q1\nAAA\n") \
     --db <(printf ">t1\nTTT\n") \
@@ -8906,7 +8906,7 @@ grep -q "^vsearch" "${TMP}" && \
         failure "${DESCRIPTION}"
 rm "${TMP}"
 
-DESCRIPTION="issue 527: fastq_mergepairs writes header to stderr"
+DESCRIPTION="issue 527: fastq_mergepairs writes header to stderr (with log)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
