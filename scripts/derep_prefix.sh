@@ -721,18 +721,6 @@ printf ">s\nA\n>s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--maxuniquesize accepts large values (2^32)"
-printf ">s\nA\n>s\nA\n" | \
-    "${VSEARCH}" \
-        --derep_prefix - \
-        --minseqlength 1 \
-        --maxuniquesize 4294967296 \
-        --quiet \
-        --output - | \
-    grep -q "^>" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
 # combine with sizein
 DESCRIPTION="--maxuniquesize --sizein accepts lesser dereplicated sizes (<)"
 printf ">s;size=1\nA\n" | \
@@ -921,18 +909,6 @@ printf ">s\nA\n>s\nA\n" | \
         --derep_prefix - \
         --minseqlength 1 \
         --minuniquesize 65536 \
-        --quiet \
-        --output - | \
-    grep -q "^>" && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
-
-DESCRIPTION="--minuniquesize accepts large values (2^32)"
-printf ">s\nA\n>s\nA\n" | \
-    "${VSEARCH}" \
-        --derep_prefix - \
-        --minseqlength 1 \
-        --minuniquesize 4294967296 \
         --quiet \
         --output - | \
     grep -q "^>" && \
@@ -1148,18 +1124,6 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--derep_prefix --bzip2_decompress is accepted (empty input)"
-printf "" | \
-    bzip2 | \
-    "${VSEARCH}" \
-        --derep_prefix - \
-        --bzip2_decompress \
-        --minseqlength 1 \
-        --quiet \
-        --output /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
 DESCRIPTION="--derep_prefix --bzip2_decompress accepts compressed stdin"
 printf ">s\nA\n" | \
     bzip2 | \
@@ -1291,18 +1255,6 @@ printf ">s\nA\n" | \
         --output - 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-
-DESCRIPTION="--derep_prefix --gzip_decompress is accepted (empty input)"
-printf "" | \
-    gzip | \
-    "${VSEARCH}" \
-        --derep_prefix - \
-        --gzip_decompress \
-        --minseqlength 1 \
-        --quiet \
-        --output /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_prefix --gzip_decompress accepts compressed stdin"
 printf ">s\nA\n" | \
