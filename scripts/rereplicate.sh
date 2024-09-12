@@ -611,7 +611,7 @@ printf ">s\nA\n" | \
         failure "${DESCRIPTION}"
 
 ## replace abundance annotations with size=1
-DESCRIPTION="--rereplicate --relabel no size annotations (without --sizeout)"
+DESCRIPTION="--rereplicate --relabel no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --rereplicate - \
@@ -705,7 +705,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--rereplicate --relabel_md5 no size annotations (without --sizeout)"
+DESCRIPTION="--rereplicate --relabel_md5 no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --rereplicate - \
@@ -774,7 +774,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--rereplicate --relabel_sha1 no size annotations (without --sizeout)"
+DESCRIPTION="--rereplicate --relabel_sha1 no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --rereplicate - \
@@ -843,7 +843,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--rereplicate --relabel_self no size annotations (without --sizeout)"
+DESCRIPTION="--rereplicate --relabel_self no size annotations (size annotation in, without --sizeout)"
 printf ">s;size=2\nA\n" | \
     "${VSEARCH}" \
         --rereplicate - \
