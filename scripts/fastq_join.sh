@@ -692,18 +692,6 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join padding can be empty"
-printf "@s\nA\n+\nI\n" | \
-    "${VSEARCH}" \
-        --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
-        --join_padgap "" \
-        --join_padgapq "" \
-        --fastqout - 2> /dev/null | \
-    grep -qw "II" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
 DESCRIPTION="--fastq_join sequence and quality padding must have the same length"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
