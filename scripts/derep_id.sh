@@ -2872,4 +2872,3 @@ fi
 # --topn returns only the n most abundant sequences after full length
 
 exit 0
-
