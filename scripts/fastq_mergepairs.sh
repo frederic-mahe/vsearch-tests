@@ -1064,7 +1064,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #1)"
 # NAATAAAAAAAAAA
 # .|||||||||||||
 # NAATAAAAAAAAAA
-DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #1)"
+DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #2)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\n#IIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIIII\n") \
@@ -3583,7 +3583,7 @@ grep -q "^vsearch" "${TMP}" && \
         failure "${DESCRIPTION}"
 rm "${TMP}"
 
-DESCRIPTION="fastq_mergepairs writes header to stderr"
+DESCRIPTION="fastq_mergepairs writes header to stderr (with --log)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
