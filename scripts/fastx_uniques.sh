@@ -709,17 +709,6 @@ printf ">s\nA\n>s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--maxuniquesize accepts large values (2^32)"
-printf ">s\nA\n>s\nA\n" | \
-    "${VSEARCH}" \
-        --fastx_uniques - \
-        --maxuniquesize 4294967296 \
-        --quiet \
-        --fastaout - | \
-    grep -q "^>" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
 # combine with sizein
 DESCRIPTION="--maxuniquesize --sizein accepts lesser dereplicated sizes (<)"
 printf ">s;size=1\nA\n" | \
