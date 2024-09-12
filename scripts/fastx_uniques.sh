@@ -3918,4 +3918,3 @@ fi
 # - fastq_asciiout (33 -> 64) or (64 -> 33) does not re-encode quality values?
 
 exit 0
-
