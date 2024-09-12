@@ -29,13 +29,6 @@ DESCRIPTION="check if vsearch is in the PATH"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
-#*****************************************************************************#
-#                                                                             #
-#                                 Fasta input                                 #
-#                                                                             #
-#*****************************************************************************#
-
 ## vsearch accepts an empty file
 DESCRIPTION="vsearch handles empty files"
 printf "" | \
@@ -45,6 +38,13 @@ printf "" | \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                 Fasta input                                 #
+#                                                                             #
+#*****************************************************************************#
 
 ## Test empty sequence
 DESCRIPTION="vsearch handles empty sequences"
@@ -231,16 +231,6 @@ printf ">s\nA\n>s\nT\n" | \
 SCRIPT_NAME="test fastq input"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
-
-## vsearch accepts an empty file
-DESCRIPTION="vsearch handles empty files"
-printf "" | \
-    "${VSEARCH}" \
-        --fastx_filter - \
-        --quiet \
-        --fastaout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
 
 ## Test empty sequence
 DESCRIPTION="vsearch handles empty fastq entries"
