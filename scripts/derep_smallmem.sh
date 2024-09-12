@@ -2995,7 +2995,7 @@ rm -f ${TMP}
 unset TMP
 
 ## preserve abundance annotations
-DESCRIPTION="--derep_smallmem --relabel no size annotations (without --sizeout)"
+DESCRIPTION="--derep_smallmem --relabel no size annotations (size annotation in, without --sizeout)"
 TMP=$(mktemp)
 printf ">s;size=2\nA\n" > ${TMP}
 "${VSEARCH}" \
@@ -3040,7 +3040,7 @@ printf ">s;size=2\nA\n" > ${TMP}
 rm -f ${TMP}
 unset TMP
 
-DESCRIPTION="--derep_smallmem --relabel_self no size annotations (without --sizeout)"
+DESCRIPTION="--derep_smallmem --relabel_self no size annotations (size annotation in, without --sizeout)"
 TMP=$(mktemp)
 printf ">s;size=2\nA\n" > ${TMP}
 "${VSEARCH}" \
@@ -3085,7 +3085,7 @@ printf ">s;size=2\nA\n" > ${TMP}
 rm -f ${TMP}
 unset TMP
 
-DESCRIPTION="--derep_smallmem --relabel_md5 no size annotations (without --sizeout)"
+DESCRIPTION="--derep_smallmem --relabel_md5 no size annotations (size annotation in, without --sizeout)"
 TMP=$(mktemp)
 printf ">s;size=2\nA\n" > ${TMP}
 "${VSEARCH}" \
@@ -3130,7 +3130,7 @@ printf ">s;size=2\nA\n" > ${TMP}
 rm -f ${TMP}
 unset TMP
 
-DESCRIPTION="--derep_smallmem --relabel_sha1 no size annotations (without --sizeout)"
+DESCRIPTION="--derep_smallmem --relabel_sha1 no size annotations (size annotation in, without --sizeout)"
 TMP=$(mktemp)
 printf ">s;size=2\nA\n" > ${TMP}
 "${VSEARCH}" \
