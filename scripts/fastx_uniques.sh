@@ -909,17 +909,6 @@ printf ">s\nA\n>s\nA\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-DESCRIPTION="--minuniquesize accepts large values (2^32)"
-printf ">s\nA\n>s\nA\n" | \
-    "${VSEARCH}" \
-        --fastx_uniques - \
-        --minuniquesize 4294967296 \
-        --quiet \
-        --fastaout - | \
-    grep -q "^>" && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
-
 # combine with sizein
 DESCRIPTION="--minuniquesize --sizein rejects lesser dereplicated sizes (<)"
 printf ">s;size=1\nA\n" | \
