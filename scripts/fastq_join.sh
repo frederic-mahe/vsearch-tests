@@ -1842,7 +1842,7 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 ## preserve abundance annotations
-DESCRIPTION="--fastq_join --relabel no size annotations (without --sizeout)"
+DESCRIPTION="--fastq_join --relabel no size annotations (size annotation in, without --sizeout)"
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -1878,7 +1878,7 @@ printf "@s;size=2\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join --relabel_self no size annotations (without --sizeout)"
+DESCRIPTION="--fastq_join --relabel_self no size annotations (size annotation in, without --sizeout)"
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -1914,7 +1914,7 @@ printf "@s;size=2\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join --relabel_md5 no size annotations (without --sizeout)"
+DESCRIPTION="--fastq_join --relabel_md5 no size annotations (size annotation in, without --sizeout)"
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -1950,7 +1950,7 @@ printf "@s;size=2\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join --relabel_sha1 no size annotations (without --sizeout)"
+DESCRIPTION="--fastq_join --relabel_sha1 no size annotations (size annotation in, without --sizeout)"
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
