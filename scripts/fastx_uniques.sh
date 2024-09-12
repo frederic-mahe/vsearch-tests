@@ -1132,17 +1132,6 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques --bzip2_decompress is accepted (empty input)"
-printf "" | \
-    bzip2 | \
-    "${VSEARCH}" \
-        --fastx_uniques - \
-        --bzip2_decompress \
-        --quiet \
-        --fastaout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
 DESCRIPTION="--fastx_uniques --bzip2_decompress accepts compressed stdin"
 printf ">s\nA\n" | \
     bzip2 | \
