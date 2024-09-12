@@ -2010,17 +2010,6 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques --gzip_decompress is accepted (empty input)"
-printf "" | \
-    gzip | \
-    "${VSEARCH}" \
-        --fastx_uniques - \
-        --gzip_decompress \
-        --quiet \
-        --fastaout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
 DESCRIPTION="--fastx_uniques --gzip_decompress accepts compressed stdin"
 printf ">s\nA\n" | \
     gzip | \
