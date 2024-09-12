@@ -62,7 +62,7 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_subsample fails if unable to open output file for writing"
+DESCRIPTION="--fastx_subsample fails if unable to open output file for writing (fasta)"
 TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -126,7 +126,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_subsample fails if unable to open output file for writing"
+DESCRIPTION="--fastx_subsample fails if unable to open output file for writing (fastq)"
 TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
