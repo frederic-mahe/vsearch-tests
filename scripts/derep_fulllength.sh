@@ -2815,4 +2815,3 @@ fi
 # missing checks in vsearch code (min/max mismatches)
 
 exit 0
-
