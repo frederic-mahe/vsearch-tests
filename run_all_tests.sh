@@ -11,6 +11,7 @@ for s in vsearch.sh \
              fastq_chars.sh \
              fastq_join.sh \
              fastq_parsing.sh \
+             fastq_stats.sh \
              fastx_subsample.sh \
              fastx_uniques.sh \
              fixed_bugs.sh \
