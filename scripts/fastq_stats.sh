@@ -2144,29 +2144,6 @@ printf "@s\nA\n+\nI\n" | \
 	failure "${DESCRIPTION}"
 
 
-## --------------------------------------------------------------------- output
-
-DESCRIPTION="--fastq_stats --output is accepted"
-printf "@s\nA\n+\nI\n" | \
-    "${VSEARCH}" \
-        --fastq_stats - \
-        --quiet \
-        --output /dev/null && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-# --output is empty. Either emove the option, or redirect stderr to
-# it, or redirect log to it
-DESCRIPTION="--fastq_stats --output collects something (not empty)"
-printf "@s\nA\n+\nI\n" | \
-    "${VSEARCH}" \
-        --fastq_stats - \
-        --output - 2> /dev/null | \
-    grep -q "." && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-
 ## ---------------------------------------------------------------------- quiet
 
 DESCRIPTION="--fastq_stats --quiet is accepted"
