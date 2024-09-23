@@ -2844,15 +2844,15 @@ DESCRIPTION="fastq_mergepairs fastq_minlen reject sequences of length smaller th
 # sequence. The default is 1.
 
 # should minmergelen = 0 be rejected? should users be allowed to
-# reject all input sequences?
-DESCRIPTION="fastq_mergepairs option fastq_minmergelen rejects a null value (0)"
+# reject all input sequences? yes!
+DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts a null value (0)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
     --fastq_minmergelen 0 \
     --fastqout /dev/null > /dev/null 2>&1 && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values > 0 (1)"
 "${VSEARCH}" \
@@ -3116,7 +3116,7 @@ DESCRIPTION="fastq_mergepairs option fastq_minovlen must be an integer (A)"
 # files. The default is 41, which is usual for recent Sanger/Illumina
 # 1.8+ files.
 
-# int64_t again, values accepted should range from 1 to 93
+# int64_t again, values accepted should range from 0 to 93
 
 DESCRIPTION="fastq_mergepairs option fastq_qmax rejects negative values"
 "${VSEARCH}" \
@@ -3128,14 +3128,14 @@ DESCRIPTION="fastq_mergepairs option fastq_qmax rejects negative values"
         success "${DESCRIPTION}"
 
 # lowest possible qmin is zero, and qmax = qmin + 1
-DESCRIPTION="fastq_mergepairs option fastq_qmax rejects a null value"
+DESCRIPTION="fastq_mergepairs option fastq_qmax accepts a null value"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\n!\n") \
     --reverse <(printf "@s\nT\n+\n!\n") \
     --fastq_qmax 0 \
     --fastaout /dev/null > /dev/null 2>&1 && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs option fastq_qmax accepts positive integers (1)"
 "${VSEARCH}" \
