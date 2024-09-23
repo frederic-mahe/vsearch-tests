@@ -607,7 +607,7 @@ unset A_START A_END B_START B_END
 
 # undocumented!
 
-DESCRIPTION="chimeras_denovo: chimeras_diff_pct is accepted"
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct is accepted"
 printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
@@ -617,13 +617,64 @@ printf ">s;size=1\nA\n" | \
         failure "${DESCRIPTION}"
 
 
-exit
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct accepts floats"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct 10.0 \
+        --chimeras - 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
-# if ((opt_chimeras_diff_pct < 0.0) or (opt_chimeras_diff_pct > 50.0))
-#   {
-#     fatal("The argument to chimeras_diff_pct must be in the range 0.0 to 50.0");
-#   }
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct accepts null value (0.0)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct 0.0 \
+        --chimeras - 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct accepts fifty percents (50.0)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct 50.0 \
+        --chimeras - 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct rejects negative values (-1.0)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct -1.0 \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct rejects values greater than 50.0"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct 50.1 \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct rejects non-numeric values ('A')"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct A \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 ## -------------------------------------------------------- chimeras_length_min
@@ -636,53 +687,6 @@ printf ">s;size=1\nA\n" | \
         --chimeras - 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
-
-# test with chimeric regions of length 9
-DESCRIPTION="chimeras_denovo: chimeras_length_min default is 10"
-#        1...5...9
-A_START="TAGGCCGTG"
-A_END="${A_START}"
-B_START="TGAGCCGTA"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --chimeras - 2> /dev/null | \
-    grep -q "." && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
-
-
-# test with chimeric regions of length 10 and threshold set to 11
-DESCRIPTION="chimeras_denovo: chimeras_length_min rejects chimeric regions shorter than length"
-#        1...5...10
-A_START="GTAGGCCGTG"
-A_END="${A_START}"
-B_START="CTGAGCCGTA"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --chimeras_length_min 11 \
-        --chimeras - 2> /dev/null | \
-    grep -q "." && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
 
 
 DESCRIPTION="chimeras_denovo: chimeras_length_min accepts values starting from 1"
@@ -785,21 +789,214 @@ printf ">s;size=1\nA\n" | \
         success "${DESCRIPTION}"
 
 
-# if (opt_chimeras_length_min < 1)
-#   {
-#     fatal("The argument to chimeras_length_min must be at least 1");
-#   }
+# test with chimeric regions of length 9
+DESCRIPTION="chimeras_denovo: chimeras_length_min default is 10"
+#        1...5...9
+A_START="TAGGCCGTG"
+A_END="${A_START}"
+B_START="TGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
 
 
-exit
-    
+# test with chimeric regions of length 10 and threshold set to 11
+DESCRIPTION="chimeras_denovo: chimeras_length_min rejects chimeric regions shorter than length"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
 
+(
+    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_length_min 11 \
+        --chimeras - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
+unset A_START A_END B_START B_END
 
 
 ## ------------------------------------------------------- chimeras_parents_max
 
-# maximum number of parent sequences (3)
+# maximum number of parent sequences (3 by default)
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max 3 \
+        --chimeras - 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max accepts integers"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max 3 \
+        --chimeras - 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max accepts values ranging from 2 to 20 (2)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max 2 \
+        --chimeras - 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max accepts values ranging from 2 to 20 (20)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max 20 \
+        --chimeras - 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max rejects floats"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max 3.1 \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max rejects non-numeric values ('A')"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max A \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max rejects values < 2"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max 1 \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max rejects values > 20"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max 21 \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max rejects null values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max 0 \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max rejects negative values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max -2 \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max 2 accepts chimeras with 2 parents"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parents_max 2 \
+        --chimeras - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max 2 rejects chimeras with 3 parents"
+# #        1...5...10
+# MODULE_A="AAAAAAAAAAA"
+# MODULE_B="CCCCCCCCCCC"
+# MODULE_C="GGGGGGGGGGG"
+
+# (
+#     printf ">sA;size=9\n%s\n" "${MODULE_A}${MODULE_A}${MODULE_A}"
+#     printf ">sB;size=9\n%s\n" "${MODULE_B}${MODULE_B}${MODULE_B}"
+#     printf ">sC;size=9\n%s\n" "${MODULE_C}${MODULE_C}${MODULE_C}"
+#     printf ">sQ;size=1\n%s\n" "${MODULE_A}${MODULE_B}${MODULE_C}"
+# ) | \
+#     ${VSEARCH} \
+#         --chimeras_denovo - \
+#         --chimeras_parents_max 3 \
+#         --qmask none \
+#         --chimeras - \
+#         --alnout -
+
+
+# 2> /dev/null | \
+#     grep -q "." && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+
+# unset MODULE_A MODULE_B MODULE_C
+
+exit
+
+
+# - test default threshold (3 parents, should reject case with 4 parents, accept case with 3 parents)
+# - test with two parents (should reject case with 3 parents, accept case with 2 parents)
+# - test with four parents (should reject case with 5 parents, accept case with 4 parents)
+
 
 
 ## ------------------------------------------------------------- chimeras_parts
