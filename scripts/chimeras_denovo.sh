@@ -1574,5 +1574,6 @@ exit 0
 ## potential mistakes?
 
 # - fix: --chimeras_diff_pct is undocumented
+# - --chimeras_diff_pct is largely untested (no expected behavior)
 # - no capacity to read bzip2 or gzip?
 # - accept replicated sequences (same names)?
