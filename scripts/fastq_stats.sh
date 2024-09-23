@@ -2202,6 +2202,16 @@ printf "@s\nA\n+\nI\n" | \
 #                                                                             #
 #*****************************************************************************#
 
+## --------------------------------------------------------------------- output
+
+DESCRIPTION="--fastq_stats --output is rejected"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
