@@ -2249,10 +2249,6 @@ fi
 ## TODO: add a warning stating that option --log is recommended? (man
 ## states 'requires', but it is not enforced yet)
 
-## TODO: remove --output option?
-
-# next: check code coverage
-
 ## Discrepancy in reported lengths?
 # In the log, explain why some stats are reported for sequences of
 # length up to 490 nucleotides, and sometimes for lengths of up to only
