@@ -56,6 +56,22 @@ DESCRIPTION="regression c4b218ffe (segfault)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## commit f3cf0ff31c394d6ef2886f6f24425e74e0ebfb35 (Jul, 2024) -
+## - Change causes a segfault in the function dbindex_getbitmap:
+##   comparison of a reference with nullptr called with a nullptr
+## - bug was never part of a release
+## - fixed with commit 19425392e6644063c081336fe25114e085e7448e (Sep 25, 2024)
+DESCRIPTION="regression f3cf0ff31 (segfault)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\nGCTCCTAC\n") \
+    --db <(for i in {1..8} ; do printf ">s\nGTCGCTCCTA\n" ; done) \
+    --minseqlength 8 \
+    --id 0.5 \
+    --quiet \
+    --uc /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
