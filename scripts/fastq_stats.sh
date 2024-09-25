@@ -1272,6 +1272,7 @@ printf "@s1\nA\n+\n!\n@s2\nA\n+\n*\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
 ## ----------------------------- Effect of minimum quality and length filtering
 
 # The first column indicates read lengths (Len). The next four columns
