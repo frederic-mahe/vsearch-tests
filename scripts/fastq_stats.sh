@@ -2264,11 +2264,5 @@ fi
 ## TODO: add a warning stating that option --log is recommended? (man
 ## states 'requires', but it is not enforced yet)
 
-## Discrepancy in reported lengths?
-# In the log, explain why some stats are reported for sequences of
-# length up to 490 nucleotides, and sometimes for lengths of up to only
-# 483 nucleotides.
-# /scratch/mahe/projects/Quercus_suber/data/ITS2_20160805$ cat tmp 
-# /scratch/mahe/bin/vsearch/bin/vsearch --fastq_stats TARA-P2_TGACCT_L001_assembled.fastq --log tmp
 
 exit 0
