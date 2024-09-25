@@ -1145,7 +1145,6 @@ printf "@s\nA\n+\n!\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
 # note: p = 0.5  -> Q =  3 (> 0.5)
 DESCRIPTION="--fastq_stats logs the effect of truncating and maxEE filtering (Q=4, EE < 0.5) (fourth section)"
 printf "@s\nA\n+\n%%\n" | \
