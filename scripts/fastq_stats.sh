@@ -1272,6 +1272,20 @@ printf "@s1\nA\n+\n!\n@s2\nA\n+\n*\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# never report lengths (L) with only null values, start reporting from
+# the first L with a cummulated EE <= 1.0 (here, L = 3 is filtered out
+# as its EE is greater than 1.0, and report starts at L = 2)
+DESCRIPTION="--fastq_stats logs the effect of truncating and maxEE filtering (pre-filter positions with EE > 1.0) (fourth section)"
+printf "@s\nAAA\n+\nII!\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -m 1 -E -A 2 "^[[:blank:]]+L[[:blank:]]+1.0000[[:blank:]]" | \
+    tail -n 1 | \
+    grep -Eq "^[[:blank:]]+2[[:blank:]]+1[[:blank:]]+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 ## ----------------------------- Effect of minimum quality and length filtering
 
