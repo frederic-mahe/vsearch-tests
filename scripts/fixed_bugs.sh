@@ -12847,6 +12847,19 @@ DESCRIPTION="issue 568: k-mer prefiltering when clustering short sequences (equa
 
 #******************************************************************************#
 #                                                                              #
+#     --fastq_stats returns erroneous cumulated percentage for empty reads     #
+#                               (issue 571)                                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/571
+
+## v2.29.0 and more recent
+# already tested in fastq_stats.sh
+
+
+#******************************************************************************#
+#                                                                              #
 #   --fastq_stats: remove option --output from the list of accepted options    #
 #                               (issue 572)                                    #
 #                                                                              #
