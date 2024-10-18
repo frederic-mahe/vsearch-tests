@@ -12880,6 +12880,17 @@ printf "@s\nA\n+\nI\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#     vsearch-2.29.0-linux-x86_64-static segmentation fault (issue 574)        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/574
+
+## not testable
+
+
+#******************************************************************************#
+#                                                                              #
 #   Why Pairwise alignment (--allpairs_global) only support positive strand?   #
 #                               (issue 576)                                    #
 #                                                                              #
