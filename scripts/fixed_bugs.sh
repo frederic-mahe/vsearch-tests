@@ -12847,6 +12847,26 @@ DESCRIPTION="issue 568: k-mer prefiltering when clustering short sequences (equa
 
 #******************************************************************************#
 #                                                                              #
+#   --fastq_stats: remove option --output from the list of accepted options    #
+#                               (issue 572)                                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/572
+
+## v2.29.0 and more recent
+DESCRIPTION="issue 572: --fastq_stats should reject option --output"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #   Why Pairwise alignment (--allpairs_global) only support positive strand?   #
 #                               (issue 576)                                    #
 #                                                                              #
