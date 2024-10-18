@@ -12844,6 +12844,37 @@ DESCRIPTION="issue 568: k-mer prefiltering when clustering short sequences (equa
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+
+#******************************************************************************#
+#                                                                              #
+#   Why Pairwise alignment (--allpairs_global) only support positive strand?   #
+#                               (issue 576)                                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/576
+
+# how to match entries that are in the wrong orientation?
+DESCRIPTION="issue 576: revcomp input so --allpairs_global can search both strands"
+(
+    printf ">s1\nAAAA\n>s2\nTTTT\n"
+    "${VSEARCH}" \
+        --fastx_revcomp <(printf ">s1\nAAAA\n>s2\nTTTT\n") \
+        --quiet \
+        --label_suffix "_rv" \
+        --fastaout -
+) | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --id 0.75 \
+        --iddef 1 \
+        --quiet \
+        --blast6out - | \
+    grep -q "^s1[[:blank:]]s2_rv" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
 
 
