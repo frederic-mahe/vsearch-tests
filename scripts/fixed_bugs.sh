@@ -12766,6 +12766,134 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')
 
 #******************************************************************************#
 #                                                                              #
+#     centroid sequence length after clustering is different from input        #
+#          sequences' length which are all equal to 200n (issue 562)           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/562
+
+## alignment:
+# *A  CGGGAAGCCCAAGGGGGGTGGTGACCGAGTACG-
+#  B  -GGGAAGCCCAAAGGGGGTGGTGACCGAGTACGC
+#  C  -GGGAAGCCCAATGGGGTTGGTGACCGAGTACGC
+#     .----------------.---------------.
+#     -GGGAAGCCCAAAGGGGGTGGTGACCGAGTACG+  consensus
+DESCRIPTION="issue 562: --consout consensus can be shorter than input sequences"
+(
+    printf ">A\nCGGGAAGCCCAAGGGGGGTGGTGACCGAGTACG\n"
+    printf ">B\nGGGAAGCCCAAAGGGGGTGGTGACCGAGTACGC\n"
+    printf ">C\nGGGAAGCCCAATGGGGTTGGTGACCGAGTACGC\n"
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.80 \
+        --iddef 4 \
+        --quiet \
+        --consout - | \
+    grep -qw "GGGAAGCCCAAAGGGGGTGGTGACCGAGTACG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## msaout:
+# >*A
+# CGGGAAGCCCAAGGGGGGTGGTGACCGAGTACG-
+# >B
+# -GGGAAGCCCAAAGGGGGTGGTGACCGAGTACGC
+# >C
+# -GGGAAGCCCAATGGGGTTGGTGACCGAGTACGC
+# >consensus
+# -GGGAAGCCCAAAGGGGGTGGTGACCGAGTACG+
+DESCRIPTION="issue 562: --msaout a star indicates the centroid"
+(
+    printf ">A\nCGGGAAGCCCAAGGGGGGTGGTGACCGAGTACG\n"
+    printf ">B\nGGGAAGCCCAAAGGGGGTGGTGACCGAGTACGC\n"
+    printf ">C\nGGGAAGCCCAATGGGGTTGGTGACCGAGTACGC\n"
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.80 \
+        --iddef 4 \
+        --quiet \
+        --msaout - | \
+    grep -qw ">[*]A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 562: --msaout the last fasta entry is the consensus"
+(
+    printf ">A\nCGGGAAGCCCAAGGGGGGTGGTGACCGAGTACG\n"
+    printf ">B\nGGGAAGCCCAAAGGGGGTGGTGACCGAGTACGC\n"
+    printf ">C\nGGGAAGCCCAATGGGGTTGGTGACCGAGTACGC\n"
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.80 \
+        --iddef 4 \
+        --quiet \
+        --msaout - | \
+    tail -n 2 | \
+    grep -qw ">consensus" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the extra "C" in the beginning is found in a minority of the
+# sequences (only A), and is represented by a gap in the consensus
+DESCRIPTION="issue 562: --msaout consensus sequence retains gaps"
+(
+    printf ">A\nCGGGAAGCCCAAGGGGGGTGGTGACCGAGTACG\n"
+    printf ">B\nGGGAAGCCCAAAGGGGGTGGTGACCGAGTACGC\n"
+    printf ">C\nGGGAAGCCCAATGGGGTTGGTGACCGAGTACGC\n"
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.80 \
+        --iddef 4 \
+        --quiet \
+        --msaout - | \
+    tail -n 1 | \
+    grep -q "^-" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# positions that do not exist in the centroid (A), like the final "C"
+# in sequences B and C, are not included in the consensus
+DESCRIPTION="issue 562: --msaout gaps in the centroid are marked with a +"
+(
+    printf ">A\nCGGGAAGCCCAAGGGGGGTGGTGACCGAGTACG\n"
+    printf ">B\nGGGAAGCCCAAAGGGGGTGGTGACCGAGTACGC\n"
+    printf ">C\nGGGAAGCCCAATGGGGTTGGTGACCGAGTACGC\n"
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.80 \
+        --iddef 4 \
+        --quiet \
+        --msaout - | \
+    tail -n 1 | \
+    grep -q "+$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 562: --consout consensus does not contain gaps"
+(
+    printf ">A\nCGGGAAGCCCAAGGGGGGTGGTGACCGAGTACG\n"
+    printf ">B\nGGGAAGCCCAAAGGGGGTGGTGACCGAGTACGC\n"
+    printf ">C\nGGGAAGCCCAATGGGGTTGGTGACCGAGTACGC\n"
+) | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.80 \
+        --iddef 4 \
+        --quiet \
+        --consout - | \
+    grep -q "[+-]" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #       Unexpected behavior when clustering short sequences (issue 568)        #
 #                                                                              #
 #******************************************************************************#
