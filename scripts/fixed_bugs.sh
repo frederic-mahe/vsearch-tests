@@ -12975,6 +12975,16 @@ DESCRIPTION="issue 568: k-mer prefiltering when clustering short sequences (equa
 
 #******************************************************************************#
 #                                                                              #
+#              Very slow processing sintax vsearch/2.28.1 (issue 570)          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/570
+
+
+
+#******************************************************************************#
+#                                                                              #
 #     --fastq_stats returns erroneous cumulated percentage for empty reads     #
 #                               (issue 571)                                    #
 #                                                                              #
