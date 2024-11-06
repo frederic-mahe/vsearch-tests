@@ -13118,6 +13118,7 @@ unset DATABASE QUERIES
 ## Random seed -> variable results
 # - return different probability values (as expected)
 # - pick species A, even though B is closer (unexpected!)
+# - (if the perfect match is not in first position)
 # q	d:D(1.00),p:P(1.00),c:C(1.00),o:O(1.00),f:F(1.00),g:G(1.00),s:speciesA(0.51)	+
 # q	d:D(1.00),p:P(1.00),c:C(1.00),o:O(1.00),f:F(1.00),g:G(1.00),s:speciesB(0.58)	+
 
