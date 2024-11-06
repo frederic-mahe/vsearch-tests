@@ -13102,6 +13102,90 @@ rm "${DATABASE}" "${QUERIES}"
 unset DATABASE QUERIES
 
 
+#******************************************************************************#
+#                                                                              #
+#   SINTAX taxonomic annotation changes when adding domain rank (issue 578)    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/578
+
+# The sintax algorithm has a random element to it and the confidence
+# values you see may vary slightly from one run to another unless you
+# set a specific random seed with the --randseed option (and possibly
+# --threads 1, but it does not seem to matter in that experiment).
+
+## Random seed -> variable results
+# - return different probability values (as expected)
+# - pick species A, even though B is closer (unexpected!)
+# q	d:D(1.00),p:P(1.00),c:C(1.00),o:O(1.00),f:F(1.00),g:G(1.00),s:speciesA(0.51)	+
+# q	d:D(1.00),p:P(1.00),c:C(1.00),o:O(1.00),f:F(1.00),g:G(1.00),s:speciesB(0.58)	+
+
+DESCRIPTION="issue 578: --sintax has a random element (random seed)"
+TAXO="d:D,p:P,c:C,o:O,f:F,g:G,s:species"
+SEQ="TACTTAATGTTTGCATTATTCTCAGGTTTATTAGGTACAGCATTTTCT"
+REF1="${SEQ}"
+REF2="${SEQ/T/A}"
+RESULTS1=$(mktemp)
+RESULTS2=$(mktemp)
+
+function run_with_random_seed() {
+    for i in {1..10} ; do
+        vsearch \
+            --sintax <(printf ">q\n%s\n" "${SEQ}") \
+            --db <(
+            printf ">s1;tax=%sA;\n%s\n" "${TAXO}" "${REF2}"
+            printf ">s2;tax=%sB;\n%s\n" "${TAXO}" "${REF1}") \
+                --quiet \
+                --threads 1 \
+                --tabbedout -
+    done
+}
+
+run_with_random_seed > "${RESULTS1}"
+run_with_random_seed > "${RESULTS2}"
+
+diff -q "${RESULTS1}" "${RESULTS2}" > /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}" || \
+
+rm "${RESULTS1}" "${RESULTS2}"
+unset TAXO SEQ REF1 REF2 RESULTS1 RESULTS2 run_with_random_seed
+
+
+DESCRIPTION="issue 578: --sintax has a random element (fix seed)"
+TAXO="d:D,p:P,c:C,o:O,f:F,g:G,s:species"
+SEQ="TACTTAATGTTTGCATTATTCTCAGGTTTATTAGGTACAGCATTTTCT"
+REF1="${SEQ}"
+REF2="${SEQ/T/A}"
+RESULTS1=$(mktemp)
+RESULTS2=$(mktemp)
+
+function run_with_fix_seed() {
+    for i in {1..10} ; do
+        vsearch \
+            --sintax <(printf ">q\n%s\n" "${SEQ}") \
+            --db <(
+            printf ">s1;tax=%sA;\n%s\n" "${TAXO}" "${REF2}"
+            printf ">s2;tax=%sB;\n%s\n" "${TAXO}" "${REF1}") \
+                --quiet \
+                --randseed 1 \
+                --threads 1 \
+                --tabbedout -
+    done
+}
+
+run_with_fix_seed > "${RESULTS1}"
+run_with_fix_seed > "${RESULTS2}"
+
+diff -q "${RESULTS1}" "${RESULTS2}" > /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm "${RESULTS1}" "${RESULTS2}"
+unset TAXO SEQ REF1 REF2 RESULTS1 RESULTS2 run_with_fix_seed
+
+
 exit 0
 
 
