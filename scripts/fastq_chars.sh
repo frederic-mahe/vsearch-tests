@@ -995,7 +995,6 @@ printf "@s\nAA\n+\n;J\n" | \
         success "${DESCRIPTION}"
 
 ## next: test the effect of the option
-
 # below, at, after threshold
 
 DESCRIPTION="--fastq_chars --fastq_tail 1 counts a tail-occurrence for each symbol"
