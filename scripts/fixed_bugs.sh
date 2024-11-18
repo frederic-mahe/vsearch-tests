@@ -13187,6 +13187,154 @@ rm "${RESULTS1}" "${RESULTS2}"
 unset TAXO SEQ REF1 REF2 RESULTS1 RESULTS2 run_with_fix_seed
 
 
+#******************************************************************************#
+#                                                                              #
+#    Inconsistent results when using --blast6out or --uc in --usearch_global   #
+#                               (issue 580)                                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/580
+
+SEQ="CACCGCGGTTATACGAGGGGCTCAAATTGATATT"
+REV="AATATCAATTTGAGCCCCTCGTATAACCGCGGTG"  # reverse-complement of SEQ
+
+DESCRIPTION="issue 580: --usearch_global --uc reports best hit by default (single hit)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+    --db <(printf ">s\n%s\n" "${SEQ}") \
+    --id 1.00 \
+    --maxaccepts 0 \
+    --quiet \
+    --uc - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 580: --usearch_global --uc reports best hit by default (single hit on opposite strand)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+    --db <(printf ">s\n%s\n" "${REV}") \
+    --id 1.00 \
+    --maxaccepts 0 \
+    --strand both \
+    --quiet \
+    --uc - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 580: --usearch_global --uc reports best hit by default (two hits)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+    --db <(printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}") \
+    --id 1.00 \
+    --maxaccepts 0 \
+    --quiet \
+    --uc - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 580: --usearch_global --uc reports best hit by default (hits on both strands)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+    --db <(printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${REV}") \
+    --id 1.00 \
+    --maxaccepts 0 \
+    --strand both \
+    --quiet \
+    --uc - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 580: --usearch_global --uc reports best hit by default (two hits on opposite strand)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+    --db <(printf ">s1\n%s\n>s2\n%s\n" "${REV}" "${REV}") \
+    --id 1.00 \
+    --maxaccepts 0 \
+    --strand both \
+    --quiet \
+    --uc - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ----------------------------------------------------- introduce --uc_allhits
+
+DESCRIPTION="issue 580: --usearch_global --uc_allhits reports all hits (single hit)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+    --db <(printf ">s\n%s\n" "${SEQ}") \
+    --id 1.00 \
+    --maxaccepts 0 \
+    --quiet \
+    --uc_allhits \
+    --uc - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 580: --usearch_global --uc_allhits reports all hits (single hit on opposite strand)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+    --db <(printf ">s\n%s\n" "${REV}") \
+    --id 1.00 \
+    --maxaccepts 0 \
+    --strand both \
+    --quiet \
+    --uc_allhits \
+    --uc - | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 580: --usearch_global --uc_allhits reports all hits (two hits)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+    --db <(printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}") \
+    --id 1.00 \
+    --maxaccepts 0 \
+    --quiet \
+    --uc_allhits \
+    --uc - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 580: --usearch_global --uc_allhits reports all hits (hits on both strands)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+    --db <(printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${REV}") \
+    --id 1.00 \
+    --maxaccepts 0 \
+    --strand both \
+    --quiet \
+    --uc_allhits \
+    --uc - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 580: --usearch_global --uc_allhits reports all hits (two hits on opposite strand)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+    --db <(printf ">s1\n%s\n>s2\n%s\n" "${REV}" "${REV}") \
+    --id 1.00 \
+    --maxaccepts 0 \
+    --strand both \
+    --quiet \
+    --uc_allhits \
+    --uc - | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset SEQ REV
+
+
 exit 0
 
 
