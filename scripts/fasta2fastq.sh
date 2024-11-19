@@ -771,6 +771,28 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fasta2fastq --relabel_self preserves U symbols (no conversion)"
+printf ">s\nU\n" | \
+    "${VSEARCH}" \
+        --fasta2fastq - \
+        --quiet \
+        --relabel_self \
+        --fastqout - | \
+    grep -qw "@U" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fasta2fastq --relabel_self preserves case (no conversion)"
+printf ">s\na\n" | \
+    "${VSEARCH}" \
+        --fasta2fastq - \
+        --quiet \
+        --relabel_self \
+        --fastqout - | \
+    grep -qw "@a" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- relabel_sha1
 
 DESCRIPTION="--fasta2fastq --relabel_sha1 is accepted"
