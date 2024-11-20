@@ -793,6 +793,28 @@ printf ">s\na\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fasta2fastq --relabel_self eliminates wrapping"
+printf ">s\nA\nA\n" | \
+    "${VSEARCH}" \
+        --fasta2fastq - \
+        --quiet \
+        --relabel_self \
+        --fastqout - | \
+    grep -qw "@AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fasta2fastq --relabel_self eliminates whitespace (with a warning)"
+printf ">s\nA A\n" | \
+    "${VSEARCH}" \
+        --fasta2fastq - \
+        --quiet \
+        --relabel_self \
+        --fastqout - 2> /dev/null | \
+    grep -qw "@AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- relabel_sha1
 
 DESCRIPTION="--fasta2fastq --relabel_sha1 is accepted"
