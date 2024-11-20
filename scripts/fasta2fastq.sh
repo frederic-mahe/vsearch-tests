@@ -816,6 +816,40 @@ printf ">s\nA A\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fasta2fastq --relabel_self empty sequence makes empty label"
+printf ">s\n\n" | \
+    "${VSEARCH}" \
+        --fasta2fastq - \
+        --quiet \
+        --relabel_self \
+        --fastqout - | \
+    grep -qw "@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fasta2fastq --relabel_self accepts IUPAC sequences"
+printf ">s\nACGTURYSWKMDBHVNacgturyswkmdbhvn\n" | \
+    "${VSEARCH}" \
+        --fasta2fastq - \
+        --quiet \
+        --relabel_self \
+        --fastqout - | \
+    grep -qw "@ACGTURYSWKMDBHVNacgturyswkmdbhvn" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# can output an empty label!
+DESCRIPTION="--fasta2fastq --relabel_self rejects non-IUPAC"
+printf ">s\nX\n" | \
+    "${VSEARCH}" \
+        --fasta2fastq - \
+        --quiet \
+        --relabel_self \
+        --fastqout - 2> /dev/null | \
+    grep -qw "@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- relabel_sha1
 
 DESCRIPTION="--fasta2fastq --relabel_sha1 is accepted"
