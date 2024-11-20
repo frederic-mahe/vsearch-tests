@@ -66,12 +66,13 @@ printf "" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fasta2fastq discards empty fasta sequences"
-printf ">s\nA\n>s\n\n" | \
+DESCRIPTION="--fasta2fastq keeps empty fasta sequences"
+printf ">s\n\n" | \
     "${VSEARCH}" \
         --fasta2fastq - \
+        --quiet \
         --fastqout - 2> /dev/null | \
-    grep -q "." && \
+    grep -wq "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
