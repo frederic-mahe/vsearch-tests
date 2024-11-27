@@ -13335,6 +13335,17 @@ DESCRIPTION="issue 580: --usearch_global --uc_allhits reports all hits (two hits
 unset SEQ REV
 
 
+#******************************************************************************#
+#                                                                              #
+#             Greengenes2 Database Use with VSEARCH (issue 582)                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/582
+
+## not testable
+
+
 exit 0
 
 
