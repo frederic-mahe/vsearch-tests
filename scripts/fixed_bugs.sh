@@ -13346,6 +13346,22 @@ unset SEQ REV
 ## not testable
 
 
+#******************************************************************************#
+#                                                                              #
+#     Segmentation fault (core dumped) with --cluster_unoise (issue 583)       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/583
+
+DESCRIPTION="issue 583: --cluster_unoise segmentation fault when there are no clusters"
+"${VSEARCH}" \
+    --cluster_unoise <(printf ">s\nA\n") \
+    --blast6out /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+    failure "${DESCRIPTION}"
+
+
 exit 0
 
 
