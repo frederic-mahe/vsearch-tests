@@ -200,7 +200,7 @@ printf ">s\n%080s\n" | \
     "${VSEARCH}" \
         --fasta2fastq - \
         --fastqout - 2> /dev/null | \
-    awk 'NR == 4 {length($1) == 80 ? 0 : 1}' && \
+    awk 'NR == 4 {exit length($1) == 80 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -212,7 +212,7 @@ DESCRIPTION="--fasta2fastq length of consecutive quality lines is correct (1025,
     "${VSEARCH}" \
         --fasta2fastq - \
         --fastqout - 2> /dev/null | \
-    awk 'NR == 8 {length($1) == 80 ? 0 : 1}' && \
+    awk 'NR == 8 {exit length($1) == 80 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -223,7 +223,7 @@ printf ">s\n%081s\n" | \
     "${VSEARCH}" \
         --fasta2fastq - \
         --fastqout - 2> /dev/null | \
-    awk 'END {NR == 4 ? 0 : 1}' && \
+    awk 'END {exit NR == 4 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -233,7 +233,7 @@ printf ">s\nA\nA\nA\n" | \
     "${VSEARCH}" \
         --fasta2fastq - \
         --fastqout - 2> /dev/null | \
-    awk 'END {NR == 4 ? 0 : 1}' && \
+    awk 'END {exit NR == 4 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
