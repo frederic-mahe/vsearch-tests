@@ -13409,6 +13409,172 @@ unset SAMPLE1 SAMPLE2
 # #OTU ID	sample1	sample2
 # OTU_1	1	1
 
+
+#******************************************************************************#
+#                                                                              #
+#   cluster nucleotide sequences with identity=1 but ignoring N (issue 586)    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/586
+
+## context: 100% similarity on whole length (--id 1.0 --iddef 1)
+# sequence length: same, different
+# mismatch: none, soft (N), hard (different nucleotide)
+# position (of the mismatch): 5p, middle, 3p
+# order: seed or hit
+
+# notes:
+#  - position and order are meaningless when mismatch is none
+#  - cluster_size and cluster_smallmem only differ in pre-sorting
+#  - length shorter or length longer are mirror cases
+#  - length shorter or length longer: there is always a mismatch
+
+clusterize_identical() {
+    "${VSEARCH}" \
+        --cluster_fast /dev/stdin \
+        --minseqlength 1 \
+        --qmask none \
+        --iddef 1 \
+        --id 1.0 \
+        --quiet \
+        --uc /dev/stdout
+}
+
+expect_one_cluster() {
+    clusterize_identical | \
+        awk '$1 == "C" {count += 1}
+             END {exit count == 1 ? 0 : 1}'
+}
+
+expect_two_clusters() {
+    clusterize_identical | \
+        awk '$1 == "C" {count += 1}
+             END {exit count == 2 ? 0 : 1}'
+}
+
+## ------------------------------------------------------------- positive cases
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: none)"
+printf ">s1\nAAA\n>s2\nAAA\n" | \
+    expect_one_cluster && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: soft, position: 5p, order: hit)"
+printf ">s1\nAAA\n>s2\nNAA\n" | \
+    expect_one_cluster && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: soft, position: middle, order: hit)"
+printf ">s1\nAAA\n>s2\nANA\n" | \
+    expect_one_cluster && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: soft, position: 3p, order: hit)"
+printf ">s1\nAAA\n>s2\nAAN\n" | \
+    expect_one_cluster && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: soft, position: 5p, order: seed)"
+printf ">s1\nNAA\n>s2\nAAA\n" | \
+    expect_one_cluster && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: soft, position: middle, order: seed)"
+printf ">s1\nANA\n>s2\nAAA\n" | \
+    expect_one_cluster && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: soft, position: 3p, order: seed)"
+printf ">s1\nAAN\n>s2\nAAA\n" | \
+    expect_one_cluster && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------------------- negative cases
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: hard, position: 5p, order: hit)"
+printf ">s1\nAAA\n>s2\nTAA\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: hard, position: middle, order: hit)"
+printf ">s1\nAAA\n>s2\nATA\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: hard, position: 3p, order: hit)"
+printf ">s1\nAAA\n>s2\nAAT\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: hard, position: 5p, order: seed)"
+printf ">s1\nTAA\n>s2\nAAA\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: hard, position: middle, order: seed)"
+printf ">s1\nATA\n>s2\nAAA\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: same, mismatch: hard, position: 3p, order: seed)"
+printf ">s1\nAAT\n>s2\nAAA\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## when length is different, there is always a mismatch
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: different, position: 5p, order: hit)"
+printf ">s1\nACG\n>s2\nCG\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: different, position: middle, order: hit)"
+printf ">s1\nACG\n>s2\nAG\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: different, position: 3p, order: hit)"
+printf ">s1\nACG\n>s2\nAC\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: different, position: 5p, order: seed)"
+printf ">s1\nCG\n>s2\nACG\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: different, position: middle, order: seed)"
+printf ">s1\nAG\n>s2\nACG\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 586: cluster identical, ignoring N (length: different, position: 3p, order: seed)"
+printf ">s1\nAC\n>s2\nACG\n" | \
+    expect_two_clusters && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset clusterize_identical expect_one_cluster expect_two_clusters
+
+
 exit 0
 
 
