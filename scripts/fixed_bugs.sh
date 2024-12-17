@@ -13362,6 +13362,53 @@ DESCRIPTION="issue 583: --cluster_unoise segmentation fault when there are no cl
     failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#            same OTUs identifiers for different samples (issue 585)           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/585
+
+# Can I use vsearch to cluster different samples at the same time and
+# have unique otus identifiers appear for all the samples?
+DESCRIPTION="issue 585: same OTUs identifiers for different samples"
+SAMPLE1=$(mktemp)
+SAMPLE2=$(mktemp)
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sample "sample1" \
+        --quiet \
+        --fastaout ${SAMPLE1}
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sample "sample2" \
+        --quiet \
+        --fastaout ${SAMPLE2}
+
+cat ${SAMPLE1} ${SAMPLE2} | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 0.97 \
+        --relabel OTU_ \
+        --sizeout \
+        --quiet \
+        --otutabout - | \
+    tr "\t" "@" | \
+    grep -wq "OTU_1@1@1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm ${SAMPLE1} ${SAMPLE2}
+unset SAMPLE1 SAMPLE2
+
+# expect:
+# #OTU ID	sample1	sample2
+# OTU_1	1	1
+
 exit 0
 
 
