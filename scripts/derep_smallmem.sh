@@ -1669,20 +1669,20 @@ printf "@s\nA\n+\nI\n" > ${TMP}
 rm -f ${TMP}
 unset TMP
 
-## fastq_qmax has no effect!
-# DESCRIPTION="--derep_smallmem --fastq_qmax rejects higher quality values (J = 41)"
-# TMP=$(mktemp)
-# printf "@s\nA\n+\nJ\n" > ${TMP}
-# "${VSEARCH}" \
-#     --derep_smallmem ${TMP} \
-#     --fastq_qmax 40 \
-#     --quiet \
-#     --fastaout - | \
-#     grep -q "." && \
-#     failure "${DESCRIPTION}" || \
-#         success "${DESCRIPTION}"
-# rm -f ${TMP}
-# unset TMP
+## fastq_qmax does not reject higher quality values (J = 41)
+DESCRIPTION="--derep_smallmem --fastq_qmax is ignored and has no effect"
+TMP=$(mktemp)
+printf "@s\nA\n+\nJ\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --fastq_qmax 40 \
+    --quiet \
+    --fastaout - | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
 
 DESCRIPTION="--derep_smallmem --fastq_qmax must be a positive integer"
 TMP=$(mktemp)
@@ -1809,20 +1809,20 @@ printf "@s\nA\n+\n0\n" > ${TMP}
 rm -f ${TMP}
 unset TMP
 
-# ## fastq_qmin has no effect!
-# DESCRIPTION="--derep_smallmem --fastq_qmin rejects lower quality values (0 = 15)"
-# TMP=$(mktemp)
-# printf "@s\nA\n+\n0\n" > ${TMP}
-# "${VSEARCH}" \
-#     --derep_smallmem ${TMP} \
-#     --fastq_qmin 16 \
-#     --quiet \
-#     --fastaout - | \
-#     grep -q "." && \
-#     failure "${DESCRIPTION}" || \
-#         success "${DESCRIPTION}"
-# rm -f ${TMP}
-# unset TMP
+## fastq_qmin does not reject lower quality values (0 = 15)
+DESCRIPTION="--derep_smallmem --fastq_qmin is ignored and has no effect"
+TMP=$(mktemp)
+printf "@s\nA\n+\n0\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --fastq_qmin 16 \
+    --quiet \
+    --fastaout - | \
+    grep -qw ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
 
 DESCRIPTION="--derep_smallmem --fastq_qmin must be a positive integer"
 TMP=$(mktemp)
