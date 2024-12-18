@@ -1412,7 +1412,7 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 ## fastq_qmax does not reject higher quality values (J = 41)
-DESCRIPTION="--fastx_uniques --fastq_qmax has no effect"
+DESCRIPTION="--fastx_uniques --fastq_qmax is ignored and has no effect"
 printf "@s\nA\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
