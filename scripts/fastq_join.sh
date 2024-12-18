@@ -1015,17 +1015,17 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## fastq_qmax has no effect!
-# DESCRIPTION="--fastq_join --fastq_qmax rejects higher quality values (J = 41)"
-# printf "@s\nA\n+\nJ\n" | \
-#     "${VSEARCH}" \
-#         --fastq_join - \
-#         --reverse <(printf "@s\nA\n+\nI\n") \
-#         --fastq_qmax 40 \
-#         --fastqout - 2> /dev/null |\
-#      grep -q "." && \
-#      failure "${DESCRIPTION}" || \
-#          success "${DESCRIPTION}"
+## fastq_qmax does not reject higher quality values (J = 41)
+DESCRIPTION="--fastq_join --fastq_qmax is ignored and has no effect"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nA\n+\nI\n") \
+        --fastq_qmax 40 \
+        --fastqout - 2> /dev/null |\
+    grep -qw "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_join --fastq_qmax must be a positive integer"
 printf "@s\nA\n+\nI\n" | \
@@ -1127,17 +1127,17 @@ printf "@s\nA\n+\n0\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# ## fastq_qmin has no effect!
-# DESCRIPTION="--fastq_join --fastq_qmin rejects lower quality values (0 = 15)"
-# printf "@s\nA\n+\n0\n" | \
-#     "${VSEARCH}" \
-#         --fastq_join - \
-#         --reverse <(printf "@s\nA\n+\nI\n") \
-#         --fastq_qmin 16 \
-#         --fastqout - 2> /dev/null |\
-#      grep -q "." && \
-#      failure "${DESCRIPTION}" || \
-#          success "${DESCRIPTION}"
+## fastq_qmin does not reject lower quality values (0 = 15)
+DESCRIPTION="--fastq_join --fastq_qmin is ignored and has no effect"
+printf "@s\nA\n+\n0\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nA\n+\nI\n") \
+        --fastq_qmin 16 \
+        --fastqout - 2> /dev/null |\
+    grep -qw "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_join --fastq_qmin must be a positive integer"
 printf "@s\nA\n+\nI\n" | \
