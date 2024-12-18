@@ -895,6 +895,19 @@ printf "@s\nAA\n+\nII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## Put low Q values ('5' = Q20) in first position to demonstrate that
+## previous positions are not taken into account
+DESCRIPTION="--fastq_stats AvgQ is the average for this position (third section)"
+printf "@s1\nAA\n+\n5I\n@s2\nAA\n+\n5I\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -m 1 -E -A 2 "^[[:blank:]]+L[[:blank:]]+PctRecs" | \
+    tail -n 1 | \
+    grep -Eq "^[[:blank:]]+2[[:blank:]]+100.0%[[:blank:]]+40.0[[:blank:]]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastq_stats logs error probability corresponding to AvgQ (P(AvgQ)) (third section)"
 printf "@s\nAA\n+\nII\n" | \
     "${VSEARCH}" \
@@ -917,6 +930,19 @@ printf "@s\nAA\n+\nII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## Put big P values ('5': 0.01) in first position to demonstrate that
+## previous positions are not taken into account
+DESCRIPTION="--fastq_stats AvgP is the average for this position (third section)"  # not the cummulated average
+printf "@s1\nAA\n+\n5I\n@s2\nAA\n+\n5I\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -m 1 -E -A 2 "^[[:blank:]]+L[[:blank:]]+PctRecs" | \
+    tail -n 1 | \
+    grep -Eq "^[[:blank:]]+2[[:blank:]]+100.0%[[:blank:]]+40.0[[:blank:]]+0.00010[[:blank:]]+0.000100[[:blank:]]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # note: AvgEE can only increase from one position to the next
 DESCRIPTION="--fastq_stats logs average expected error over all reads up to this position (AvgEE) (third section)"
 printf "@s\nAA\n+\nII\n" | \
@@ -926,6 +952,20 @@ printf "@s\nAA\n+\nII\n" | \
     grep -m 1 -E -A 2 "^[[:blank:]]+L[[:blank:]]+PctRecs" | \
     tail -n 1 | \
     grep -Eq "^[[:blank:]]+2[[:blank:]]+100.0%[[:blank:]]+40.0[[:blank:]]+0.00010[[:blank:]]+0.000100[[:blank:]]+0.00[[:blank:]]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## Use different Q values to demonstrate that all previous positions
+## are taken into account (this test might be a bit fragile; it might
+## break if rounding method changes)
+DESCRIPTION="--fastq_stats AvgEE is the average over all reads up to this position (third section)"
+printf "@s1\nAA\n+\n+-\n@s2\nAA\n+\n25\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -m 1 -E -A 2 "^[[:blank:]]+L[[:blank:]]+PctRecs" | \
+    tail -n 1 | \
+    grep -Eq "^[[:blank:]]+2[[:blank:]]+100.0%[[:blank:]]+16.0[[:blank:]]+0.02512[[:blank:]]+0.036548[[:blank:]]+0.10[[:blank:]]" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
