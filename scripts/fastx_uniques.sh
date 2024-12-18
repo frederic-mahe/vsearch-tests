@@ -1667,17 +1667,17 @@ printf "@s\nA\n+\n0\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# ## fastq_qmin has no effect!
-# DESCRIPTION="--fastx_uniques --fastq_qmin rejects lower quality values (0 = 15)"
-# printf "@s\nA\n+\n0\n" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --fastq_qmin 16 \
-#         --quiet \
-#         --fastqout - | \
-#      grep -q "." && \
-#      failure "${DESCRIPTION}" || \
-#          success "${DESCRIPTION}"
+## fastq_qmin does not reject lower quality values (0 = 15)
+DESCRIPTION="--fastx_uniques --fastq_qmin is ignored and has no effect"
+printf "@s\nA\n+\n0\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 16 \
+        --quiet \
+        --fastqout - | \
+     grep -qw "@s" && \
+     success "${DESCRIPTION}" || \
+         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques --fastq_qmin must be a positive integer"
 printf "@s\nA\n+\nI\n" | \
