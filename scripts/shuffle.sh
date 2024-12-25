@@ -247,6 +247,15 @@ printf ">s1\nA\n>s2\nC\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--shuffle rejects --topn A (not an integer)"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --shuffle - \
+        --topn A \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## ------------------------------------------------------------------- randseed
 
 DESCRIPTION="--shuffle accepts --randseed"
@@ -282,6 +291,7 @@ OUTPUT2=$(
 	failure "${DESCRIPTION}"
 unset SEED OUTPUT1 OUTPUT2
 
+## special seed value
 DESCRIPTION="--shuffle accepts --randseed 0 (free seed)"
 printf ">s1\nA\n>s2\nA\n" | \
     "${VSEARCH}" \
@@ -291,6 +301,25 @@ printf ">s1\nA\n>s2\nA\n" | \
         --output /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+
+DESCRIPTION="--shuffle accepts --randseed -1 (negative integer)"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --shuffle - \
+        --quiet \
+        --randseed -1 \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--shuffle rejects --randseed A (not an integer)"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --shuffle - \
+        --randseed A \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
