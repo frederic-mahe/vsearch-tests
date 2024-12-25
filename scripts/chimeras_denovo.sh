@@ -1081,7 +1081,7 @@ printf ">s;size=1\nA\n" | \
         success "${DESCRIPTION}"
 
 
-# use fale option --quiet2 to trigger an error
+# use fake option --quiet2 to trigger an error
 DESCRIPTION="chimeras_denovo: option quiet does not eliminate error messages"
 printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
