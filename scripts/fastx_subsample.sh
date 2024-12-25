@@ -1034,6 +1034,27 @@ printf ">s1\nA\n>s2\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_subsample accepts --randseed -1 (negative integer)"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --quiet \
+        --randseed -1 \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample rejects --randseed A (not an integer)"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --randseed A \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
 ## --------------------------------------------------------------------- sizein
 
 DESCRIPTION="--fastx_subsample accepts --sizein"
