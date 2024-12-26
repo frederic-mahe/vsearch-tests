@@ -13574,6 +13574,21 @@ printf ">s1\nAC\n>s2\nACG\n" | \
 
 unset clusterize_identical expect_one_cluster expect_two_clusters
 
+# as expected, substrings are considered as different
+DESCRIPTION="issue 586: no clustering of substrings with --iddef 1 --id 1.0"
+printf ">s1\nAA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --qmask none \
+        --iddef 1 \
+        --id 1.0 \
+        --quiet \
+        --uc - | \
+    awk '$1 == "C" {count += 1} END {exit count == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 exit 0
 
