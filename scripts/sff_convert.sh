@@ -29,7 +29,7 @@ DESCRIPTION="check if vsearch is executable"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## create a tiny test file
+## create a single sequence SFF file
 SFF=$(mktemp)
 # quality offset is +33 (no ambiguity),
 # https://github.com/torognes/vsearch/issues/352
@@ -281,6 +281,8 @@ DESCRIPTION="--sff_convert does not write messages to stdout"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## ------------------------------------------------------------ stderr messages
+
 DESCRIPTION="--sff_convert writes messages to stderr"
 "${VSEARCH}" \
     --sff_convert - \
@@ -289,13 +291,474 @@ DESCRIPTION="--sff_convert writes messages to stderr"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sff_convert reports to stderr (Number of reads)"
+"${VSEARCH}" \
+    --sff_convert - \
+    --fastqout /dev/null 2>&1 > /dev/null < "${SFF}" | \
+    grep -iq "^number of reads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-## ------------------------------------------------------------ stderr messages
+DESCRIPTION="--sff_convert reports to stderr (Flows per read)"
+"${VSEARCH}" \
+    --sff_convert - \
+    --fastqout /dev/null 2>&1 > /dev/null < "${SFF}" | \
+    grep -iq "^flows per read" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-## sff_convert reports:
-# Number of reads: 1
-# Flows per read:  1
-# Key sequence:    CAG  <= wrong? should be 'T' with our minimal example?
+DESCRIPTION="--sff_convert reports to stderr (Key sequence)"
+"${VSEARCH}" \
+    --sff_convert - \
+    --fastqout /dev/null 2>&1 > /dev/null < "${SFF}" | \
+    grep -iq "^key sequence" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert does not report to stderr (Index type if no index)"
+"${VSEARCH}" \
+    --sff_convert - \
+    --fastqout /dev/null 2>&1 > /dev/null < "${SFF}" | \
+    grep -iq "^index type" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ------------------------------------------------------ common header section
+
+## The smallest file vsearch can read successfully has 40 bytes
+DESCRIPTION="--sff_convert accepts SFF files with zero reads"
+(
+    printf ".sff"                                  # magic number (string ".sff", uint32)
+    printf "%b" "\x00\x00\x00\x01"                 # version number (integer 1, 4 * uint8)
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00" # index offset (no index, so null uint64)
+    printf "%b" "\x00\x00\x00\x00"                 # index length (no index, so null uint32)
+    printf "%b" "\x00\x00\x00\x00"                 # number of reads (integer 1, uint32)
+    printf "%b" "\x00\x28"                         # header length (40 bytes, 28 in hex, uint16)
+    printf "%b" "\x00\x04"                         # key length (uint16)
+    printf "%b" "\x00\x00"                         # number of flows per read (uint16)
+    printf "%b" "\x01"                             # flowgram format code (1, uint8)
+    printf "TCAG"                                  # key sequence (TCAG)
+    printf "%b" "\x00\x00\x00\x00\x00"             # padding to fill-in 8 bytes (40 - (31 + 4) = 5)    
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# The magic_number field value is 0x2E736666, the uint32_t encoding of
+# the string ".sff"
+DESCRIPTION="--sff_convert rejects invalid SFF files (wrong magic number)"
+(
+    printf ".ssf"                             # magic number (should be ".sff")
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# The version number corresponding to this proposal is 0001, or the
+# byte array "\0\0\0\1".
+DESCRIPTION="--sff_convert rejects invalid SFF files (wrong version number)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x02"        # version number (should be 0001)
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# The number_of_reads field should be set to the number of reads
+# stored in the file.
+DESCRIPTION="--sff_convert rejects invalid SFF files (wrong number of reads)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"              # number of reads (should be 0)
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# flowgram format code should be set to 1
+DESCRIPTION="--sff_convert rejects invalid SFF files (wrong flowgram format code)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x02"                     # flowgram format code (should be 1)
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# key length: vsearch expects a length of 4, but that does not seem to be mandatory
+DESCRIPTION="--sff_convert rejects invalid SFF files (wrong key length)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x20"
+    printf "%b" "\x00\x00"                         # key length (should be 4 for vsearch)
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# file is shorter than header_length (31 bytes received, 31 + 1 = 32
+# bytes expected) (compiler automatically adds +1 padding to align
+# memory)
+DESCRIPTION="--sff_convert rejects invalid SFF files (common header is shorter than expected)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## failed skip flow chars
+DESCRIPTION="--sff_convert rejects invalid SFF files (common header missing flow characters)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "%b" "\x00"  # padding to reach 32 bytes
+    # missing flow characters
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# Unable to read key sequence
+DESCRIPTION="--sff_convert rejects invalid SFF files (common header missing key sequence)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "%b" "\x00"  # padding to reach 32 bytes
+    # missing key sequence
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert rejects invalid SFF files (common header missing padding)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    # missing padding bytes
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## -------------------------------------------------------------- index section
+
+# The index_offset and index_length fields are the offset and length
+# of an optional index of the reads in the SFF file. If no index is
+# included in the file, both fields must be 0.
+
+DESCRIPTION="--sff_convert accepts SFF files without an index"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00" # index offset is 0
+    printf "%b" "\x00\x00\x00\x00"                 # index length is 0
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## The smallest file with an index vsearch can read successfully has 48 bytes
+DESCRIPTION="--sff_convert accepts SFF files with an index"
+(
+    printf ".sff"                                  # magic number (string ".sff", uint32)
+    printf "%b" "\x00\x00\x00\x01"                 # version number (integer 1, 4 * uint8)
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28" # index offset (index after header, so +40 bytes uint64)
+    printf "%b" "\x00\x00\x00\x08"                 # index length (minimal index, so 8 bytes uint32)
+    printf "%b" "\x00\x00\x00\x00"                 # number of reads (integer 1, uint32)
+    printf "%b" "\x00\x28"                         # header length (40 bytes, 28 in hex, uint16)
+    printf "%b" "\x00\x04"                         # key length (uint16)
+    printf "%b" "\x00\x00"                         # number of flows per read (uint16)
+    printf "%b" "\x01"                             # flowgram format code (1, uint8)
+    printf "TCAG"                                  # key sequence (TCAG)
+    printf "%b" "\x00\x00\x00\x00\x00"             # padding to fill-in 8 bytes (40 - (31 + 4) = 5)    
+    printf ".srt"                                  # index_magic_number (uint32_t)
+    printf "1.00"                                  # index_version (char[4])
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert rejects invalid SFF files (truncated index header)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28"
+    printf "%b" "\x00\x00\x00\x08"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # missing index header
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# correct memory alignment
+DESCRIPTION="--sff_convert accepts SFF files with index data (8 bytes)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28"
+    printf "%b" "\x00\x00\x00\x10"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    printf ".srt"
+    printf "1.00"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert rejects invalid SFF files (truncated index data)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28"
+    printf "%b" "\x00\x00\x00\x10"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    printf ".srt"
+    printf "1.00"
+    # missing index data
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# "The index_length given in the common header should include the
+# bytes of these fields and the padding"
+# In practice, vsearch accepts unaligned index_length values, as many
+# files seem to have such values. The SFF documentation could be wrong
+# here.
+# parsed index data includes padding to 8 (if index length is not aligned to 8)
+DESCRIPTION="--sff_convert if index length is not aligned to 8, file should be padded (ok)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28"
+    printf "%b" "\x00\x00\x00\x09"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    printf ".srt"
+    printf "1.00"
+    printf "%b" "\x01"                          # index data (1 byte)
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"  # index data padding (7 bytes)
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert if index length is not aligned to 8, file should be padded (ok if not)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28"
+    printf "%b" "\x00\x00\x00\x09"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    printf ".srt"
+    printf "1.00"
+    printf "%b" "\x01"                          # index data (1 byte)
+    # missing padding
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## -------------------------------------------------------- read header section
+
+# minimal SFF file with a read header (no index from now on)
+
+
+## ---------------------------------------------------------- read data section
+
+
+
+## -------------------------------------------------------------- trailing data
+
+DESCRIPTION="--sff_convert warns if file contains trailing data"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"  # padding
+    printf "%b" "\x00"                  # unexpected trailing byte
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "^warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -1036,13 +1499,83 @@ DESCRIPTION="--sff_convert --sample accepts empty string"
 
 ## -------------------------------------------------------------------- sizeout
 
-# Normal case
-
-# Complex cases:
 # When using --relabel, --relabel_self, --relabel_md5 or
 # --relabel_sha1, preserve and report abundance annotations to the
 # output fastq file (using the pattern ';size=integer;').
 
+DESCRIPTION="--sff_convert --sizeout is accepted"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --fastqout /dev/null \
+    --sizeout && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert --sizeout adds abundance annotation"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sizeout \
+    --fastqout - | \
+    grep -qwE "@s;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert --sizeout adds abundance annotation (size before length)"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sizeout \
+    --lengthout \
+    --fastqout - | \
+    grep -qwE "@s;size=1;length=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert --sizeout adds abundance annotation (relabel)"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sizeout \
+    --relabel "label" \
+    --fastqout - | \
+    grep -qwE "@label1;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert --sizeout adds abundance annotation (relabel_md5)"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sizeout \
+    --relabel_md5 \
+    --fastqout - | \
+    grep -qwE "@b9ece18c950afbfa6b0fdbfa4ff731d3;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert --sizeout adds abundance annotation (relabel_self)"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sizeout \
+    --relabel_self \
+    --fastqout - | \
+    grep -qwE "@T;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert --sizeout adds abundance annotation (relabel_sha1)"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sizeout \
+    --relabel_sha1 \
+    --fastqout - | \
+    grep -qwE "@c2c53d66948214258a26ca9ca845d7ac0c17f8e7;size=1;?" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## -------------------------------------------------------------------- threads
 
