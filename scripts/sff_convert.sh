@@ -74,11 +74,11 @@ SFF=$(mktemp)
 
     ## read ----------------------------------------------
 
-    # read header length (usually 32 characters, here 24 characters,
+    # read header length (usually '16 + name_length + padding' bytes, here 24 bytes,
     # so an hex value of 18, uint16)
     printf "%b" "\x00\x18"
 
-    # length of read name is 1 character (uint8)
+    # length of read name is 1 character (uint8 x 2)
     printf "%b" "\x00\x01"
 
     # number of bases before clipping is 1 (uint32)
