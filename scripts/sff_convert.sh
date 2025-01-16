@@ -728,6 +728,8 @@ DESCRIPTION="--sff_convert if index length is not aligned to 8, file should be p
 
 ## -------------------------------------------------------- read header section
 
+## need a test with header, index, read (to trigger the loop-over-reads path)
+
 # minimal SFF file with a read header (no index from now on)
 
 
@@ -1644,10 +1646,43 @@ fi
 # - fuzzing: stopped after 15 times 0.5 Billion executions of afl-fuzz 2.52b, no issue.
 # - real-life: test against all ENA avalaible SFF files (60,011 files, 2019-01-22), no issue.
 
+# TODO: big endian byteorder in my tests??
 # TODO: check coverage
 # TODO: create a minimal file with a lowercase nucleotide
 # TODO: vsearch should emit a warning when --sample "" (empty string)?
 
+## sff_convert reports:
+# Number of reads: 1
+# Flows per read:  1
+# Key sequence:    CAG  <= wrong? should be 'T' with our minimal example?
+# Index type:      .mft1.00
+
+
+# ==2940572== Memcheck, a memory error detector
+# ==2940572== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+# ==2940572== Using Valgrind-3.19.0 and LibVEX; rerun with -h for copyright info
+# ==2940572== Command: vsearch --sff_convert /home/fred/Science/Projects/BioMarks/data/BioMarKs_Endomyxa/AFI_PoolA2_H3BXEFM03.sff --sff_clip --fastqout /dev/null
+# ==2940572==
+# vsearch v2.28.1_linux_x86_64, 62.7GB RAM, 8 cores
+# https://github.com/torognes/vsearch
+
+# Number of reads: 217922
+# Flows per read:  1600
+# Key sequence:    GACT
+# Converting SFF:  100%
+# Index type:      .mft1.00
+
+# SFF file read successfully.
+# Sequence length: minimum 40, average 330.0, maximum 605
+# ==2940572==
+# ==2940572== HEAP SUMMARY:
+# ==2940572==     in use at exit: 0 bytes in 0 blocks
+# ==2940572==   total heap usage: 653,788 allocs, 653,788 frees, 269,292,320 bytes allocated
+# ==2940572==
+# ==2940572== All heap blocks were freed -- no leaks are possible
+# ==2940572==
+# ==2940572== For lists of detected and suppressed errors, rerun with: -s
+# ==2940572== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
 
 rm "${SFF}"
 
