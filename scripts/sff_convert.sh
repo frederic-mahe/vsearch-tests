@@ -588,6 +588,7 @@ DESCRIPTION="--sff_convert accepts SFF files with an index"
     printf "%b" "\x01"                             # flowgram format code (1, uint8)
     printf "TCAG"                                  # key sequence (TCAG)
     printf "%b" "\x00\x00\x00\x00\x00"             # padding to fill-in 8 bytes (40 - (31 + 4) = 5)
+    # index section -----------------------------
     printf ".srt"                                  # index_magic_number (uint32_t)
     printf "1.00"                                  # index_version (char[4])
 ) | \
@@ -634,6 +635,7 @@ DESCRIPTION="--sff_convert accepts SFF files with index data (8 bytes)"
     printf "%b" "\x01"
     printf "TCAG"
     printf "%b" "\x00\x00\x00\x00\x00"
+    # index section -----------------------------
     printf ".srt"
     printf "1.00"
     printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -658,6 +660,7 @@ DESCRIPTION="--sff_convert rejects invalid SFF files (truncated index data)"
     printf "%b" "\x01"
     printf "TCAG"
     printf "%b" "\x00\x00\x00\x00\x00"
+    # index section -----------------------------
     printf ".srt"
     printf "1.00"
     # missing index data
@@ -688,6 +691,7 @@ DESCRIPTION="--sff_convert if index length is not aligned to 8, file should be p
     printf "%b" "\x01"
     printf "TCAG"
     printf "%b" "\x00\x00\x00\x00\x00"
+    # index section -----------------------------
     printf ".srt"
     printf "1.00"
     printf "%b" "\x01"                          # index data (1 byte)
@@ -713,6 +717,7 @@ DESCRIPTION="--sff_convert if index length is not aligned to 8, file should be p
     printf "%b" "\x01"
     printf "TCAG"
     printf "%b" "\x00\x00\x00\x00\x00"
+    # index section -----------------------------
     printf ".srt"
     printf "1.00"
     printf "%b" "\x01"                          # index data (1 byte)
