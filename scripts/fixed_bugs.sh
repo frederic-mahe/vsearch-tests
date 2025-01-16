@@ -6022,7 +6022,7 @@ printf "@s\nA\n+\nI\n" | \
 # extensions XG and gap opens XO, shouldn't it? Unless gap opens are
 # included in mismatches, which does not seem to be the case.
 
-# vsearch \
+# "${VSEARCH}" \
 #     --usearch_global <(printf '>q1\nGGGGGGGGGG\n') \
 #     --db <(printf '>r1\nGGGGGCCCCGGGGG\n') \
 #     --id 0.5 \
@@ -13132,7 +13132,7 @@ RESULTS2=$(mktemp)
 
 function run_with_random_seed() {
     for i in {1..10} ; do
-        vsearch \
+        "${VSEARCH}" \
             --sintax <(printf ">q\n%s\n" "${SEQ}") \
             --db <(
             printf ">s1;tax=%sA;\n%s\n" "${TAXO}" "${REF2}"
@@ -13164,7 +13164,7 @@ RESULTS2=$(mktemp)
 
 function run_with_fix_seed() {
     for i in {1..10} ; do
-        vsearch \
+        "${VSEARCH}" \
             --sintax <(printf ">q\n%s\n" "${SEQ}") \
             --db <(
             printf ">s1;tax=%sA;\n%s\n" "${TAXO}" "${REF2}"
