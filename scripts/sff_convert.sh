@@ -71,7 +71,7 @@ SFF=$(mktemp)
 
     # ... plus padding to fill-in 8 bytes (4 null bytes)
     printf "%b" "\x00\x00\x00\x00"
-    
+
     ## read ----------------------------------------------
 
     # read header length (usually 32 characters, here 24 characters,
@@ -338,7 +338,7 @@ DESCRIPTION="--sff_convert accepts SFF files with zero reads"
     printf "%b" "\x00\x00"                         # number of flows per read (uint16)
     printf "%b" "\x01"                             # flowgram format code (1, uint8)
     printf "TCAG"                                  # key sequence (TCAG)
-    printf "%b" "\x00\x00\x00\x00\x00"             # padding to fill-in 8 bytes (40 - (31 + 4) = 5)    
+    printf "%b" "\x00\x00\x00\x00\x00"             # padding to fill-in 8 bytes (40 - (31 + 4) = 5)
 ) | \
     "${VSEARCH}" \
         --sff_convert - \
@@ -1270,7 +1270,7 @@ DESCRIPTION="--sff_convert --no_progress is accepted"
     --fastqout /dev/null \
     --no_progress 2> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+        failure "${DESCRIPTION}"
 
 ## note: progress is not written to the log file
 DESCRIPTION="--sff_convert --no_progress removes progressive report on stderr (no visible effect)"
@@ -1290,7 +1290,7 @@ DESCRIPTION="--sff_convert --quiet is accepted"
     --fastqout /dev/null \
     --quiet && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--sff_convert --quiet eliminates all (normal) messages to stderr"
 "${VSEARCH}" \
@@ -1299,7 +1299,7 @@ DESCRIPTION="--sff_convert --quiet eliminates all (normal) messages to stderr"
     --quiet 2>&1 | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--sff_convert --quiet allows error messages to be sent to stderr"
 printf "" | \
@@ -1309,7 +1309,7 @@ printf "" | \
         --quiet 2>&1 | \
     grep -q "." && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+        failure "${DESCRIPTION}"
 
 ## -------------------------------------------------------------------- relabel
 
@@ -1359,7 +1359,7 @@ DESCRIPTION="--sff_convert --relabel cannot combine with --relabel_md5"
     --relabel_md5 \
     --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--sff_convert --relabel cannot combine with --relabel_sha1"
 "${VSEARCH}" \
@@ -1369,7 +1369,7 @@ DESCRIPTION="--sff_convert --relabel cannot combine with --relabel_sha1"
     --relabel_sha1 \
     --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+        success "${DESCRIPTION}"
 
 ## --------------------------------------------------------------- relabel_keep
 
@@ -1586,7 +1586,7 @@ DESCRIPTION="--sff_convert --threads is accepted"
     --quiet \
     --fastqout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--sff_convert --threads > 1 triggers a warning (not multithreaded)"
 "${VSEARCH}" \
