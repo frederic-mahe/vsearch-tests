@@ -78,7 +78,7 @@ SFF=$(mktemp)
     # so an hex value of 18, uint16)
     printf "%b" "\x00\x18"
 
-    # length of read name is 1 character (uint8 x 2)
+    # length of read name is 1 character (uint16)
     printf "%b" "\x00\x01"
 
     # number of bases before clipping is 1 (uint32)
@@ -733,9 +733,421 @@ DESCRIPTION="--sff_convert if index length is not aligned to 8, file should be p
 
 ## -------------------------------------------------------- read header section
 
-## need a test with header, index, read (to trigger the loop-over-reads path)
+# SFF file with an empty read (no nucleotides)?
+DESCRIPTION="--sff_convert accepts SFF files with empty reads (empty sequence)"
+(
+    printf ".sff"                                  # magic number (string ".sff", uint32)
+    printf "%b" "\x00\x00\x00\x01"                 # version number (integer 1, 4 * uint8)
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00" # index offset (no index, so null uint64)
+    printf "%b" "\x00\x00\x00\x00"                 # index length (no index, so null uint32)
+    printf "%b" "\x00\x00\x00\x01"                 # number of reads (integer 1, uint32)
+    printf "%b" "\x00\x28"                         # header length (40 bytes, 28 in hex, uint16)
+    printf "%b" "\x00\x04"                         # key length (uint16)
+    printf "%b" "\x00\x00"                         # number of flows per read (uint16)
+    printf "%b" "\x01"                             # flowgram format code (1, uint8)
+    printf "TCAG"                                  # key sequence (TCAG)
+    printf "%b" "\x00\x00\x00\x00\x00"             # padding to fill-in 8 bytes (40 - (31 + 4) = 5)
+    # read header section -----------------------
+    printf "%b" "\x00\x18"                         # read header length (uint16)
+    printf "%b" "\x00\x01"                         # length of read name (uint16)
+    printf "%b" "\x00\x00\x00\x00"                 # number of bases before clipping (uint32)
+    printf "%b" "\x00\x00"                         # clip qual left (uint16)
+    printf "%b" "\x00\x00"                         # clip qual right (uint16)
+    printf "%b" "\x00\x00"                         # clip adapter left (uint16)
+    printf "%b" "\x00\x00"                         # clip adapter right (uint16)
+    printf "s"                                     # read name (char[*])
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"     # padding
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-# minimal SFF file with a read header (no index from now on)
+DESCRIPTION="--sff_convert reports correct stats (0 sequence)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x00"                 # number of bases before clipping (uint32)
+    printf "%b" "\x00\x00"                         # clip qual left (uint16)
+    printf "%b" "\x00\x00"                         # clip qual right (uint16)
+    printf "%b" "\x00\x00"                         # clip adapter left (uint16)
+    printf "%b" "\x00\x00"                         # clip adapter right (uint16)
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --fastqout /dev/null 2>&1 | \
+    grep -iqw "sequence length: minimum 0, average 0.0, maximum 0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## output "@\n\n+\n\n"
+DESCRIPTION="--sff_convert accepts SFF files with empty reads (empty read name, empty sequence)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x10"                         # read header length (uint16)
+    printf "%b" "\x00\x00"                         # length of read name (uint16)
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    # empty read name
+    # no need for padding
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert can output empty reads (empty read name, empty sequence)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x10"                         # read header length (uint16)
+    printf "%b" "\x00\x00"                         # length of read name (uint16)
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    # empty read name
+    # no need for padding
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -qw "@__+__" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## minimal example with common header, index, and read (trigger the
+## loop-over-reads path)
+DESCRIPTION="--sff_convert accepts SFF files with index before reads"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28"
+    printf "%b" "\x00\x00\x00\x08"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # index section -----------------------------
+    printf ".srt"
+    printf "1.00"
+    # read header section -----------------------
+    printf "%b" "\x00\x10"                         # read header length (uint16)
+    printf "%b" "\x00\x00"                         # length of read name (uint16)
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    # empty read name
+    # no need for padding
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert warns if index before reads"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28"
+    printf "%b" "\x00\x00\x00\x08"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # index section -----------------------------
+    printf ".srt"
+    printf "1.00"
+    # read header section -----------------------
+    printf "%b" "\x00\x10"                         # read header length (uint16)
+    printf "%b" "\x00\x00"                         # length of read name (uint16)
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    # empty read name
+    # no need for padding
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "^warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# The read_header_length should be set to the length of the read
+# header for this read, and should be equal to "16 + name_length"
+# rounded up to the next value divisible by 8.
+DESCRIPTION="--sff_convert rejects invalid SFF files (wrong read header length)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"                         # read header length (24 instead of 16)
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert rejects invalid SFF files (wrong clip qual left)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x02"                         # clip qual left (> read_length)
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -------------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01"
+    printf "T"
+    printf "%b" "\x28"
+    printf "%b" "\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert rejects invalid SFF files (wrong clip qual right)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x02"                         # clip qual right (> read_length)
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -------------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01"
+    printf "T"
+    printf "%b" "\x28"
+    printf "%b" "\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert rejects invalid SFF files (wrong clip adapter left)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x02"                         # clip adapter left (> read_length)
+    printf "%b" "\x00\x00"
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -------------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01"
+    printf "T"
+    printf "%b" "\x28"
+    printf "%b" "\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert rejects invalid SFF files (wrong clip adapter right)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x02"                         # clip adapter right (> read_length)
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -------------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01"
+    printf "T"
+    printf "%b" "\x28"
+    printf "%b" "\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# next:
+# - truncated flowgram values
+# - flow indices
+# - read length
+# - quality scores
+# - read data padding
+
+# (
+#     printf ".sff"                                  # magic number (string ".sff", uint32)
+#     printf "%b" "\x00\x00\x00\x01"                 # version number (integer 1, 4 * uint8)
+#     printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00" # index offset (no index, so null uint64)
+#     printf "%b" "\x00\x00\x00\x00"                 # index length (no index, so null uint32)
+#     printf "%b" "\x00\x00\x00\x01"                 # number of reads (integer 1, uint32)
+#     printf "%b" "\x00\x28"                         # header length (40 bytes, 28 in hex, uint16)
+#     printf "%b" "\x00\x04"                         # key length (uint16)
+#     printf "%b" "\x00\x00"                         # number of flows per read (uint16)
+#     printf "%b" "\x01"                             # flowgram format code (1, uint8)
+#     printf "TCAG"                                  # key sequence (TCAG)
+#     printf "%b" "\x00\x00\x00\x00\x00"             # padding to fill-in 8 bytes (40 - (31 + 4) = 5)
+#     # read header section -----------------------
+#     printf "%b" "\x00\x18"                         # read header length (uint16)
+#     printf "%b" "\x00\x01"                         # length of read name (uint16)
+#     printf "%b" "\x00\x00\x00\x01"                 # number of bases before clipping (uint32)
+#     printf "%b" "\x00\x01"                         # clip qual left (uint16)
+#     printf "%b" "\x00\x01"                         # clip qual right (uint16)
+#     printf "%b" "\x00\x00"                         # clip adapter left (uint16)
+#     printf "%b" "\x00\x00"                         # clip adapter right (uint16)
+#     printf "s"                                     # read name (char[*])
+#     printf "%b" "\x00\x00\x00\x00\x00\x00\x00"     # padding
+#     # read data section -------------------------
+#     printf "%b" "\x00\x64"                         # flow strength (100 = x64) (uint16)
+#     printf "%b" "\x01"                             # flow index per base (uint8)
+#     printf "T"                                     # sequence (char[*])
+#     printf "%b" "\x28"                             # quality score (40 = x28) (char[*])
+#     printf "%b" "\x00\x00\x00"                     # padding
+# )
 
 
 ## ---------------------------------------------------------- read data section
