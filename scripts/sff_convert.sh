@@ -587,7 +587,7 @@ DESCRIPTION="--sff_convert accepts SFF files with an index"
     printf "%b" "\x00\x00"                         # number of flows per read (uint16)
     printf "%b" "\x01"                             # flowgram format code (1, uint8)
     printf "TCAG"                                  # key sequence (TCAG)
-    printf "%b" "\x00\x00\x00\x00\x00"             # padding to fill-in 8 bytes (40 - (31 + 4) = 5)    
+    printf "%b" "\x00\x00\x00\x00\x00"             # padding to fill-in 8 bytes (40 - (31 + 4) = 5)
     printf ".srt"                                  # index_magic_number (uint32_t)
     printf "1.00"                                  # index_version (char[4])
 ) | \
