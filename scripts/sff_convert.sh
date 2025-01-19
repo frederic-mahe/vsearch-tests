@@ -124,7 +124,7 @@ SFF=$(mktemp)
 # combination with afl-fuzz v2.52b to try to trigger crashes when
 # parsing SFF files. A master thread and 14 subordonate threads were
 # launch in parallel, performing a total of 7.5 billion
-# excecutions. No crash was found.
+# executions. No crash was found.
 
 
 #*****************************************************************************#
