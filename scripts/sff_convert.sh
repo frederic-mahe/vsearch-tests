@@ -469,9 +469,35 @@ DESCRIPTION="--sff_convert rejects invalid SFF files (wrong key length)"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## The header_length field should be the total number of bytes
+## required by this set of header fields, and should be equal to "31 +
+## number_of_flows_per_read + key_length" rounded up to the next value
+## divisible by 8
+DESCRIPTION="--sff_convert rejects invalid SFF files (incorrect header length)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x29"                         # header length (41 bytes, x29)
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00\x00"         # padding (41 - (31 + 4) = 6)
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 # file is shorter than header_length (31 bytes received, 31 + 1 = 32
 # bytes expected) (compiler automatically adds +1 padding to align
 # memory)
+# "File may be truncated"
 DESCRIPTION="--sff_convert rejects invalid SFF files (common header is shorter than expected)"
 (
     printf ".sff"
