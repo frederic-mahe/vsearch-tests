@@ -17,6 +17,7 @@ for s in vsearch.sh \
              fixed_bugs.sh \
              help.sh \
              rereplicate.sh \
+             sff_convert.sh \
              shuffle.sh \
              sortbylength.sh \
              sortbysize.sh \
