@@ -2710,14 +2710,15 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-# - fuzzing: stopped after 15 times 0.5 Billion executions of afl-fuzz 2.52b, no issue.
-# - real-life: test against all ENA avalaible SFF files (60,011 files, 2019-01-22), no issue.
-
-## note: it is not possible to clip a 1-nucleotide sequence
+## note:
+# - it is not possible to clip a 1-nucleotide sequence
+# - fuzzing: stopped after 15 times 0.5 Billion executions of afl-fuzz
+#   2.52b, no issue
+# - real-life: test against all ENA avalaible SFF files (60,011 files,
+#   2019-01-22), no issue
+# - 100% code coverage [2025-01-19 dim.]
 
 # TODO: big endian byteorder in my tests??
-# TODO: check coverage
-# TODO: create a minimal file with a lowercase nucleotide
 # TODO: vsearch should emit a warning when --sample "" (empty string)?
 
 ## sff_convert reports:
