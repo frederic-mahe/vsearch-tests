@@ -847,7 +847,28 @@ DESCRIPTION="--sff_convert accepts SFF files with empty reads (empty sequence)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--sff_convert reports correct stats (0 sequence)"
+DESCRIPTION="--sff_convert reports correct stats (no read)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --fastqout /dev/null 2>&1 | \
+    grep -iqw "number of reads: 0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert reports correct stats (null sequence)"
 (
     printf ".sff"
     printf "%b" "\x00\x00\x00\x01"
