@@ -215,6 +215,15 @@ DESCRIPTION="--sff_convert requires an input file"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--sff_convert fails if unable to open input file for reading"
+chmod u-r ${SFF}  # remove read permission
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+r ${SFF}
+
 DESCRIPTION="--sff_convert can read from /dev/stdin (pipe)"
 cat "${SFF}" | \
     "${VSEARCH}" \
@@ -1331,6 +1340,8 @@ DESCRIPTION="--sff_convert --sff_clip is accepted"
     --fastqout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+# work in progress...
 
 # ## no clipping by default (lowercase nucleotides in the output)
 # DESCRIPTION="no clipping by default (lowercase nucleotides in the output)"
