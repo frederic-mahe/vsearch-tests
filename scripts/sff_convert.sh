@@ -402,6 +402,27 @@ DESCRIPTION="--sff_convert rejects invalid SFF files (wrong version number)"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--sff_convert rejects invalid SFF files (incorrect index size)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x07"              # index size (should be null or >= 8)
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 # The number_of_reads field should be set to the number of reads
 # stored in the file.
 DESCRIPTION="--sff_convert rejects invalid SFF files (wrong number of reads)"
