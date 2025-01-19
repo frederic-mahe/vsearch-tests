@@ -1014,6 +1014,42 @@ DESCRIPTION="--sff_convert warns if index before reads"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sff_convert warns if index before reads (log)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28"
+    printf "%b" "\x00\x00\x00\x08"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # index section -----------------------------
+    printf ".srt"
+    printf "1.00"
+    # read header section -----------------------
+    printf "%b" "\x00\x10"                         # read header length (uint16)
+    printf "%b" "\x00\x00"                         # length of read name (uint16)
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    # empty read name
+    # no need for padding
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null \
+        --log - 2> /dev/null | \
+    grep -iq "^warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # The read_header_length should be set to the length of the read
 # header for this read, and should be equal to "16 + name_length"
 # rounded up to the next value divisible by 8.
