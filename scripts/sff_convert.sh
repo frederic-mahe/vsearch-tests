@@ -2721,12 +2721,6 @@ fi
 # TODO: big endian byteorder in my tests??
 # TODO: vsearch should emit a warning when --sample "" (empty string)?
 
-## sff_convert reports:
-# Number of reads: 1
-# Flows per read:  1
-# Key sequence:    CAG  <= wrong? should be 'T' with our minimal example?
-# Index type:      .mft1.00
-
 
 # ==2940572== Memcheck, a memory error detector
 # ==2940572== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
