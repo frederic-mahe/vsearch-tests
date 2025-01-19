@@ -1112,47 +1112,182 @@ DESCRIPTION="--sff_convert rejects invalid SFF files (wrong clip adapter right)"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-# next:
-# - truncated flowgram values
-# - flow indices
-# - read length
-# - quality scores
-# - read data padding
-
-# (
-#     printf ".sff"                                  # magic number (string ".sff", uint32)
-#     printf "%b" "\x00\x00\x00\x01"                 # version number (integer 1, 4 * uint8)
-#     printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00" # index offset (no index, so null uint64)
-#     printf "%b" "\x00\x00\x00\x00"                 # index length (no index, so null uint32)
-#     printf "%b" "\x00\x00\x00\x01"                 # number of reads (integer 1, uint32)
-#     printf "%b" "\x00\x28"                         # header length (40 bytes, 28 in hex, uint16)
-#     printf "%b" "\x00\x04"                         # key length (uint16)
-#     printf "%b" "\x00\x00"                         # number of flows per read (uint16)
-#     printf "%b" "\x01"                             # flowgram format code (1, uint8)
-#     printf "TCAG"                                  # key sequence (TCAG)
-#     printf "%b" "\x00\x00\x00\x00\x00"             # padding to fill-in 8 bytes (40 - (31 + 4) = 5)
-#     # read header section -----------------------
-#     printf "%b" "\x00\x18"                         # read header length (uint16)
-#     printf "%b" "\x00\x01"                         # length of read name (uint16)
-#     printf "%b" "\x00\x00\x00\x01"                 # number of bases before clipping (uint32)
-#     printf "%b" "\x00\x01"                         # clip qual left (uint16)
-#     printf "%b" "\x00\x01"                         # clip qual right (uint16)
-#     printf "%b" "\x00\x00"                         # clip adapter left (uint16)
-#     printf "%b" "\x00\x00"                         # clip adapter right (uint16)
-#     printf "s"                                     # read name (char[*])
-#     printf "%b" "\x00\x00\x00\x00\x00\x00\x00"     # padding
-#     # read data section -------------------------
-#     printf "%b" "\x00\x64"                         # flow strength (100 = x64) (uint16)
-#     printf "%b" "\x01"                             # flow index per base (uint8)
-#     printf "T"                                     # sequence (char[*])
-#     printf "%b" "\x28"                             # quality score (40 = x28) (char[*])
-#     printf "%b" "\x00\x00\x00"                     # padding
-# )
-
-
 ## ---------------------------------------------------------- read data section
 
+DESCRIPTION="--sff_convert rejects invalid SFF files (truncated flowgram values)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"                         # number of flows per read (uint16)
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -------------------------
+    # missing flow strength
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
+DESCRIPTION="--sff_convert rejects invalid SFF files (truncated flow indices)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -------------------------
+    printf "%b" "\x00\x64"
+    # missing flow index per base
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert rejects invalid SFF files (truncated read length)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -------------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01"
+    # missing sequence
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert rejects invalid SFF files (truncated quality scores)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -------------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01"
+    printf "T"
+    # missing quality scores
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert rejects invalid SFF files (truncated read data padding)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -------------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01"
+    printf "T"
+    printf "%b" "\x28"
+    # missing read data padding
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## -------------------------------------------------------------- trailing data
 
@@ -1187,6 +1322,15 @@ DESCRIPTION="--sff_convert warns if file contains trailing data"
 #*****************************************************************************#
 
 ## ------------------------------------------------------------------- sff_clip
+
+DESCRIPTION="--sff_convert --sff_clip is accepted"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sff_clip \
+    --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 # ## no clipping by default (lowercase nucleotides in the output)
 # DESCRIPTION="no clipping by default (lowercase nucleotides in the output)"
