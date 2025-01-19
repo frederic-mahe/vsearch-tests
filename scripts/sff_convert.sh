@@ -868,6 +868,51 @@ DESCRIPTION="--sff_convert reports correct stats (no read)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sff_convert reports correct stats (do not report index type if not present)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "index type:" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert reports correct stats (report index type if present)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28"
+    printf "%b" "\x00\x00\x00\x08"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # index section -----------------------------
+    printf ".srt"
+    printf "1.00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "index type:" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--sff_convert reports correct stats (null sequence)"
 (
     printf ".sff"
