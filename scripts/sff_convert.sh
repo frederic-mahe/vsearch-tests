@@ -815,7 +815,7 @@ DESCRIPTION="--sff_convert warns if partial index data padding (terminal index)"
 
 ## -------------------------------------------------------- read header section
 
-# SFF file with an empty read (no nucleotides)?
+# SFF file with an empty read (no nucleotides, no clipping)
 DESCRIPTION="--sff_convert accepts SFF files with empty reads (empty sequence)"
 (
     printf ".sff"                                  # magic number (string ".sff", uint32)
@@ -1345,6 +1345,196 @@ DESCRIPTION="--sff_convert rejects invalid SFF files (wrong clip adapter right)"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# clipping can be set to zero
+DESCRIPTION="--sff_convert accepts SFF files with null clipping values"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x00"                 # number of bases before clipping (uint32)
+    printf "%b" "\x00\x00"                         # clip qual left (uint16)
+    printf "%b" "\x00\x00"                         # clip qual right (uint16)
+    printf "%b" "\x00\x00"                         # clip adapter left (uint16)
+    printf "%b" "\x00\x00"                         # clip adapter right (uint16)
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# clip_qual_left and clip_adapter_left can have different values
+DESCRIPTION="--sff_convert accepts SFF files different clipping values (left)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"                 # number of bases before clipping
+    printf "%b" "\x00\x00"                         # clip qual left
+    printf "%b" "\x00\x00"                         # clip qual right
+    printf "%b" "\x00\x00"                         # clip adapter left
+    printf "%b" "\x00\x01"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01"
+    printf "T"
+    printf "%b" "\x28"
+    printf "%b" "\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qw "T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# clip_qual_right and clip_adapter_right can have different values
+DESCRIPTION="--sff_convert accepts SFF files different clipping values (right)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"                 # number of bases before clipping
+    printf "%b" "\x00\x00"                         # clip qual left
+    printf "%b" "\x00\x00"                         # clip qual right
+    printf "%b" "\x00\x01"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01"
+    printf "T"
+    printf "%b" "\x28"
+    printf "%b" "\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qw "T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## note: not possible to clip a 1-nucleotide sequence
+DESCRIPTION="--sff_convert clipped values are lowercased (left)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x02"                 # number of bases before clipping
+    printf "%b" "\x00\x02"                         # clip qual left
+    printf "%b" "\x00\x00"                         # clip qual right
+    printf "%b" "\x00\x00"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01"
+    printf "TT"
+    printf "%b" "\x28\x28"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qw "tT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## note: not possible to clip a 1-nucleotide sequence
+DESCRIPTION="--sff_convert clipped values are lowercased (right)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x02"                 # number of bases before clipping
+    printf "%b" "\x00\x00"                         # clip qual left
+    printf "%b" "\x00\x01"                         # clip qual right
+    printf "%b" "\x00\x00"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01"
+    printf "TT"
+    printf "%b" "\x28\x28"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qw "Tt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------------------------------------------------------- read data section
 
 DESCRIPTION="--sff_convert rejects invalid SFF files (truncated flowgram values)"
@@ -1556,6 +1746,12 @@ DESCRIPTION="--sff_convert warns if file contains trailing data"
 
 ## ------------------------------------------------------------------- sff_clip
 
+## workflow:
+## --------
+## - most common encoding is uppercase (usual, but not mandatory),
+## - clipping values are used to convert to lowercase
+## - if --sff_clip is used, lowercase regions are removed
+
 DESCRIPTION="--sff_convert --sff_clip is accepted"
 "${VSEARCH}" \
     --sff_convert "${SFF}" \
@@ -1565,54 +1761,129 @@ DESCRIPTION="--sff_convert --sff_clip is accepted"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# work in progress...
+# clip_qual_right and clip_adapter_right can have different values
+DESCRIPTION="--sff_convert accepts SFF files different clipping values (right)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"                 # number of bases before clipping
+    printf "%b" "\x00\x00"                         # clip qual left
+    printf "%b" "\x00\x00"                         # clip qual right
+    printf "%b" "\x00\x01"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01"
+    printf "T"
+    printf "%b" "\x28"
+    printf "%b" "\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qw "T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-# ## no clipping by default (lowercase nucleotides in the output)
-# DESCRIPTION="no clipping by default (lowercase nucleotides in the output)"
-# "${VSEARCH}" \
-#     --sff_convert "${SFF}" \
-#     --quiet \
-#     --fastqout - | \
-#     "${VSEARCH}" \
-#         --fastx_filter - \
-#         --quiet \
-#         --fastaout - | \
-#     grep -v "^>" | \
-#     grep -qE "[[:lower:]]" && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# clip_qual_left are set to the position of the first base after the
+# clipping point (1-based)
+DESCRIPTION="--sff_convert removes clipped values (left)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x02"                 # number of bases before clipping
+    printf "%b" "\x00\x02"                         # clip qual left
+    printf "%b" "\x00\x00"                         # clip qual right
+    printf "%b" "\x00\x00"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01"
+    printf "TT"
+    printf "%b" "\x27\x28"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --sff_clip \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -qw "@s_T_+_I_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-# ## sff_clip outputs uppercase nucleotides
-# DESCRIPTION="sff_clip outputs uppercase nucleotides"
-# "${VSEARCH}" \
-#     --sff_convert "${SFF}" \
-#     --quiet \
-#     --sff_clip \
-#     --fastqout - | \
-#     "${VSEARCH}" \
-#         --fastx_filter - \
-#         --quiet \
-#         --fastaout - | \
-#     grep -v "^>" | \
-#     grep -qE "[[:upper:]]" && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
-
-# ## sff_clip eliminates all lowercase nucleotides (both ends are clipped)
-# DESCRIPTION="sff_clip eliminates all lowercase nucleotides (both ends are clipped)"
-# "${VSEARCH}" \
-#     --sff_convert "${SFF}" \
-#     --quiet \
-#     --sff_clip \
-#     --fastqout - | \
-#     "${VSEARCH}" \
-#         --fastx_filter - \
-#         --quiet \
-#         --fastaout - | \
-#     grep -v "^>" | \
-#     grep -qE "[[:lower:]]" && \
-#     failure "${DESCRIPTION}" || \
-#         success "${DESCRIPTION}"
+# clip_qual_right and clip_adapter_right fields are set to the
+# position of the last base before the clipping point (1-based)
+DESCRIPTION="--sff_convert removes clipped values (right)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x02"                 # number of bases before clipping
+    printf "%b" "\x00\x00"                         # clip qual left
+    printf "%b" "\x00\x01"                         # clip qual right
+    printf "%b" "\x00\x00"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01"
+    printf "TT"
+    printf "%b" "\x28\x27"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --sff_clip \
+        --fastqout - | \
+    tr "\n" "_" | \
+    grep -qw "@s_T_+_I_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -2441,6 +2712,8 @@ fi
 
 # - fuzzing: stopped after 15 times 0.5 Billion executions of afl-fuzz 2.52b, no issue.
 # - real-life: test against all ENA avalaible SFF files (60,011 files, 2019-01-22), no issue.
+
+## note: it is not possible to clip a 1-nucleotide sequence
 
 # TODO: big endian byteorder in my tests??
 # TODO: check coverage
