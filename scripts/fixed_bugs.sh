@@ -7148,7 +7148,6 @@ DESCRIPTION="issue 481: recover info in fasta header when using sintax (test sin
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-
 DESCRIPTION="issue 481: recover info in fasta header when using sintax (test sintax output #2)"
 "${VSEARCH}" \
     --sintax <(printf ">query\n%s\n" "${SEQ2}") \
