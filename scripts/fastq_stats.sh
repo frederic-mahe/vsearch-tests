@@ -978,9 +978,9 @@ printf "@s1\nAAA\n+\nIII\n@s2\nAA\n+\n\"\"\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -m 1 -E -A 2 "^[[:blank:]]+L[[:blank:]]+PctRecs" | \
+    grep -m 1 -E -A 3 "^[[:blank:]]+L[[:blank:]]+PctRecs" | \
     tail -n 1 | \
-    grep -Eq "^[[:blank:]]+3[[:blank:]]+50.0%[[:blank:]]+40.0[[:blank:]]+0.00010[[:blank:]]+0.00010[[:blank:]]+0.00[[:blank:]]" && \
+    grep -Eq "^[[:blank:]]+3[[:blank:]]+50.0%[[:blank:]]+40.0[[:blank:]]+0.00010[[:blank:]]+0.000100[[:blank:]]+0.00[[:blank:]]" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
