@@ -969,6 +969,21 @@ printf "@s1\nAA\n+\n+-\n@s2\nAA\n+\n25\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_stats AvgEE is not the sum of all probabilities up to that position (third section)"
+# refactoring issue:
+# when trying to deduce the AvgEE from the quality distribution,
+# a partial sum of all probabilities for all sequences produces wrong
+# values (way too large) when sequences differ in length
+printf "@s1\nAAA\n+\nIII\n@s2\nAA\n+\n\"\"\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -m 1 -E -A 2 "^[[:blank:]]+L[[:blank:]]+PctRecs" | \
+    tail -n 1 | \
+    grep -Eq "^[[:blank:]]+3[[:blank:]]+50.0%[[:blank:]]+40.0[[:blank:]]+0.00010[[:blank:]]+0.00010[[:blank:]]+0.00[[:blank:]]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastq_stats logs growth rate of AvgEE between this position and position - 1 (Rate) (third section)"
 printf "@s\nAA\n+\nII\n" | \
     "${VSEARCH}" \
