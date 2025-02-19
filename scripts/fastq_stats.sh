@@ -1327,9 +1327,10 @@ printf "@s1\nA\n+\n!\n@s2\nA\n+\n*\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# never report lengths (L) with only null values, start reporting from
+# Never report lengths (L) with only null values, start reporting from
 # the first L with a cummulated EE <= 1.0 (here, L = 3 is filtered out
 # as its EE is greater than 1.0, and report starts at L = 2)
+# (does not apply to the fifth section)
 DESCRIPTION="--fastq_stats logs the effect of truncating and maxEE filtering (pre-filter positions with EE > 1.0) (fourth section)"
 printf "@s\nAAA\n+\nII!\n" | \
     "${VSEARCH}" \
