@@ -13028,6 +13028,304 @@ printf "@s\nA\n+\nI\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#             Is there a way to filter fastq reads based on Qscore             #
+#                     before paired end merging? (issue 575)                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/575
+
+# Discard reads having any base with a quality score below the given
+# value. The default is 0, which discards none.
+
+
+## --------------------------------------------------------------- fastx_filter
+
+DESCRIPTION="issue 575: --fastx_filter accepts --fastq_minqual"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual 1 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual accepts a null value"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual 0 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual accepts positive values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual 2 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual rejects floating values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual 1.0 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual rejects negative values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual -1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual rejects non-numerical values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual A \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual rejects empty values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# 'I' = Q40
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual (no effect if Q-value is above threshold)"
+printf "@s\nAA\n+\nJI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual 39 \
+        --quiet \
+        --fastaout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'I' = Q40
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual (no effect if Q-value is equal to threshold)"
+printf "@s\nAA\n+\nJI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual 40  \
+        --quiet \
+        --fastaout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'I' = Q40
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual (discard if Q-value is below than threshold)"
+printf "@s\nAA\n+\nJI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual 41 \
+        --quiet \
+        --fastaout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual null keeps all sequences"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual 0 \
+        --quiet \
+        --fastaout - | \
+    grep -wq ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '~' = Q93, the largest possible Q value
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual 94 discards all sequences"
+printf "@s\nA\n+\n~\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_qmax 93 \
+        --fastq_minqual 94 \
+        --quiet \
+        --fastaout - | \
+    grep -wq ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastx_filter --fastq_minqual rejects fasta input"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_minqual 1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --------------------------------------------------------------- fastq_filter
+
+DESCRIPTION="issue 575: --fastq_filter accepts --fastq_minqual"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual 1 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual accepts a null value"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual 0 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual accepts positive values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual 2 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual rejects floating values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual 1.0 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual rejects negative values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual -1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual rejects non-numerical values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual A \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual rejects empty values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# 'I' = Q40
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual (no effect if Q-value is above threshold)"
+printf "@s\nAA\n+\nJI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual 39 \
+        --quiet \
+        --fastaout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'I' = Q40
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual (no effect if Q-value is equal to threshold)"
+printf "@s\nAA\n+\nJI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual 40  \
+        --quiet \
+        --fastaout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 'I' = Q40
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual (discard if Q-value is below than threshold)"
+printf "@s\nAA\n+\nJI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual 41 \
+        --quiet \
+        --fastaout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual null keeps all sequences"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual 0 \
+        --quiet \
+        --fastaout - | \
+    grep -wq "A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '~' = Q93, the largest possible Q value
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual 94 discards all sequences"
+printf "@s\nA\n+\n~\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 93 \
+        --fastq_minqual 94 \
+        --quiet \
+        --fastaout - | \
+    grep -wq ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 575: --fastq_filter --fastq_minqual rejects fasta input"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minqual 1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #   Why Pairwise alignment (--allpairs_global) only support positive strand?   #
 #                               (issue 576)                                    #
 #                                                                              #
