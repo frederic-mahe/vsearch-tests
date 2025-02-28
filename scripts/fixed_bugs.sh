@@ -6377,14 +6377,43 @@ printf ">header meta data\nA\n" | \
 # with a | symbol. This is similar to usearch version 8 and later. The
 # alignment score for aligning to any ambiguous symbol is still 0.
 
-# DESCRIPTION="issue 354"
-# "${VSEARCH}" \
-#     --usearch_global <(printf ">q\nCRA\n") \
-#     --db <(printf ">t\nCYW\n") \
-#     --quiet \
-#     --minseqlength 1 \
-#     --id 0.3 \
-#     --alnout -
+# IUPAC matches are extensively tested in the script 'cut.sh'
+
+DESCRIPTION="issue 354: ambiguous matches are noted with a symbol + in alignments (W -> A)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\nA\n") \
+    --db <(printf ">t\nW\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --alnout - | \
+    grep -Eqw "[[:space:]]+[+]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 354: ambiguous matches are noted with a symbol + in alignments (N -> A)"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\nA\n") \
+    --db <(printf ">t\nN\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --alnout - | \
+    grep -Eqw "[[:space:]]+[+]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 354: regular matches are noted with a symbol | in alignments"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q\nA\n") \
+    --db <(printf ">t\nA\n") \
+    --minseqlength 1 \
+    --quiet \
+    --id 1.0 \
+    --alnout - | \
+    grep -Eqw "[[:space:]]+[|]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
