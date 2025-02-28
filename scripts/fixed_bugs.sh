@@ -6639,6 +6639,197 @@ DESCRIPTION="issue 388: blast6out returns 12 tab-separated columns"
 
 #******************************************************************************#
 #                                                                              #
+#     usearch_global search aligning to Ns with 100% identity (issue 393)      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/393
+
+## When this option is enabled, aligning a residue with an N is always
+## considered a mismatch.
+
+# impact on: allpairs_global, cluster_fast, cluster_size,
+# cluster_smallmem, cluster_unoise, usearch_global
+
+# as of <2025-02-28 ven.>, the concerned source files are:
+# align_simd.cc
+# linmemalign.cc
+# showalign.cc
+
+# pv: Number of positive columns. When working with nucleotide
+# sequences, this is equivalent to the number of matches (zero or
+# positive integer value).
+DESCRIPTION="issue 393: --usearch_global aligns Ns as matches (default)"
+printf ">q\nAAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s\nNNN\n") \
+        --minseqlength 3 \
+        --output_no_hits \
+        --id 1.0 \
+        --quiet \
+        --userfields pv \
+        --userout - | \
+    grep -qw "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --usearch_global --n_mismatch aligns Ns as mismatches"
+printf ">q\nAAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s\nNNN\n") \
+        --minseqlength 3 \
+        --output_no_hits \
+        --id 1.0 \
+        --n_mismatch \
+        --quiet \
+        --userfields pv \
+        --userout - | \
+    grep -qw "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --allpairs_global aligns Ns as matches (default)"
+printf ">q\nAAA\n>s\nNNN\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --minseqlength 3 \
+        --output_no_hits \
+        --quiet \
+        --userfields query+pv \
+        --userout - | \
+    awk '$1 == "q" {exit $2 == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --allpairs_global --n_mismatch aligns Ns as mismatches"
+printf ">q\nAAA\n>s\nNNN\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --minseqlength 3 \
+        --output_no_hits \
+        --n_mismatch \
+        --quiet \
+        --userfields query+pv \
+        --userout - | \
+    awk '$1 == "q" {exit $2 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --cluster_fast aligns Ns as matches (default)"
+printf ">q\nAAA\n>s\nNNN\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 3 \
+        --id 1.0 \
+        --quiet \
+        --userfields pv \
+        --userout - | \
+    grep -qw "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --cluster_fast --n_mismatch aligns Ns as mismatches"
+printf ">q\nAAA\n>s\nNNN\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 3 \
+        --id 1.0 \
+        --n_mismatch \
+        --quiet \
+        --userfields pv \
+        --userout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --cluster_size aligns Ns as matches (default)"
+printf ">q\nAAA\n>s\nNNN\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 3 \
+        --id 1.0 \
+        --quiet \
+        --userfields pv \
+        --userout - | \
+    grep -qw "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --cluster_size --n_mismatch aligns Ns as mismatches"
+printf ">q\nAAA\n>s\nNNN\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --minseqlength 3 \
+        --id 1.0 \
+        --n_mismatch \
+        --quiet \
+        --userfields pv \
+        --userout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --cluster_smallmem aligns Ns as matches (default)"
+printf ">q\nAAA\n>s\nNNN\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --minseqlength 3 \
+        --id 1.0 \
+        --quiet \
+        --userfields pv \
+        --userout - | \
+    grep -qw "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --cluster_smallmem --n_mismatch aligns Ns as mismatches"
+printf ">q\nAAA\n>s\nNNN\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --minseqlength 3 \
+        --id 1.0 \
+        --n_mismatch \
+        --quiet \
+        --userfields pv \
+        --userout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --cluster_unoise aligns Ns as matches (default)"
+printf ">q;size=32;\nAAA\n>s;size=8;\nNNN\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minseqlength 3 \
+        --id 1.0 \
+        --quiet \
+        --userfields pv \
+        --userout - | \
+    grep -qw "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 393: --cluster_unoise --n_mismatch aligns Ns as mismatches"
+printf ">q;size=32;\nAAA\n>s;size=8;\nNNN\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minseqlength 3 \
+        --id 1.0 \
+        --n_mismatch \
+        --quiet \
+        --userfields pv \
+        --userout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #                           vsearch error (issue 396)                          #
 #                                                                              #
 #******************************************************************************#
