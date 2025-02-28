@@ -13591,6 +13591,277 @@ printf ">s1\nAA\n>s2\nA\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#        Make a fastq_truncee_rate option for fastx_filter (issue 587)         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/587
+
+# for a given position, the expected error rate:
+# = (sum of probabilities up to length) / length to position
+# = EE / length to position
+
+## --------------------------------------------------------------- fastx_filter
+
+DESCRIPTION="issue 587: --fastx_filter accepts --fastq_truncee_rate"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate 1 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate accepts null values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate 0 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate accepts positive values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate 2 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate accepts floating values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate 1.0 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate rejects negative values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate -1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate rejects non-numerical values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate A \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate rejects empty values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# 'I' = Q40 = 0.0001
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate (no effect if EE rate is below threshold)"
+printf "@s\nAAA\n+\nIII\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate 0.001 \
+        --quiet \
+        --fastaout - | \
+    grep -wq "AAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '?' = Q30 = 0.001
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate (no effect if EE rate is equal to threshold)"
+printf "@s\nAAA\n+\n???\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate 0.001 \
+        --quiet \
+        --fastaout - | \
+    grep -wq "AAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '?' = Q30 = 0.001 ; '>' = Q29 > 0.001
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate (truncate if EE rate is greater than threshold)"
+printf "@s\nAAA\n+\n??>\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate 0.001 \
+        --quiet \
+        --fastaout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate null discards all sequences"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate 0 \
+        --quiet \
+        --fastaout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastx_filter --fastq_truncee_rate rejects fasta input"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncee_rate 1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --------------------------------------------------------------- fastq_filter
+
+DESCRIPTION="issue 587: --fastq_filter accepts --fastq_truncee_rate"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate 1 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate accepts null values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate 0 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate accepts positive values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate 2 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate accepts floating values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate 1.0 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate rejects negative values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate -1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate rejects non-numerical values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate A \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate rejects empty values"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# 'I' = Q40 = 0.0001
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate (no effect if EE rate is below threshold)"
+printf "@s\nAAA\n+\nIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate 0.001 \
+        --quiet \
+        --fastaout - | \
+    grep -wq "AAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '?' = Q30 = 0.001
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate (no effect if EE rate is equal to threshold)"
+printf "@s\nAAA\n+\n???\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate 0.001 \
+        --quiet \
+        --fastaout - | \
+    grep -wq "AAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '?' = Q30 = 0.001 ; '>' = Q29 > 0.001
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate (truncate if EE rate is greater than threshold)"
+printf "@s\nAAA\n+\n??>\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate 0.001 \
+        --quiet \
+        --fastaout - | \
+    grep -wq "AA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate null discards all sequences"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate 0 \
+        --quiet \
+        --fastaout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 587: --fastq_filter --fastq_truncee_rate rejects fasta input"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee_rate 1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #     change in uchime*_denovo results between v2.22 and v2.29 (issue 591)     #
 #                                                                              #
 #******************************************************************************#
