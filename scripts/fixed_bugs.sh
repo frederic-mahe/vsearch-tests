@@ -7626,6 +7626,92 @@ printf ">q1\n%s\n" ${Q2} | \
 unset Q1 Q2 TAX CUTOFF
 
 
+# ************************************************************************** #
+#                                                                            #
+#                  More than 7 levels in sintax (issue 498)                  #
+#                                                                            #
+# ************************************************************************** #
+#
+## https://github.com/torognes/vsearch/issues/498
+
+# vsearch supports a ninth taxonomy level, strain (t)
+
+Q1="TGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCT"
+Q2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+TAX="tax=d:d,k:k,p:p,c:c,o:o,f:f,g:g,s:s,t:t"
+
+DESCRIPTION="issue 498: --sintax accepts nine levels (dkpcofgst)"
+printf ">q1\n%s\n" ${Q1} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX} ${Q1}) \
+        --sintax_cutoff 0.9 \
+        --quiet \
+        --tabbedout - | \
+    cut -f 2 | \
+    awk -F "," '{exit NF == 9 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 498: --sintax accepts level t (strain)"
+printf ">q1\n%s\n" ${Q1} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX} ${Q1}) \
+        --sintax_cutoff 0.9 \
+        --quiet \
+        --tabbedout - | \
+    grep -q "t:t(1.00)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 498: --sintax accepts level t (strain) alone"
+TAX="tax=t:t"
+printf ">q1\n%s\n" ${Q1} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX} ${Q1}) \
+        --sintax_cutoff 0.9 \
+        --quiet \
+        --tabbedout - | \
+    grep -q "t:t(1.00)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 498: --sintax rejects unexpected level names (not dkpcofgst)"
+TAX="tax=x:x"
+printf ">q1\n%s\n" ${Q1} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX} ${Q1}) \
+        --sintax_cutoff 0.9 \
+        --quiet \
+        --tabbedout - | \
+    grep -q "x:x(1.00)" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 498: --sintax reorder levels (domain before kingdom)"
+TAX="tax=k:k,d:d"
+printf ">q1\n%s\n" ${Q1} | \
+    "${VSEARCH}" \
+        --sintax - \
+        --dbmask none \
+        --db <(printf ">s;%s\n%s\n" ${TAX} ${Q1}) \
+        --sintax_cutoff 0.9 \
+        --quiet \
+        --tabbedout - | \
+    grep -q "d:d(1.00),k:k(1.00)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset Q1 Q2 TAX
+
+
 #******************************************************************************#
 #                                                                              #
 #                   question on edlib vs vsearch (issue 499)                   #
