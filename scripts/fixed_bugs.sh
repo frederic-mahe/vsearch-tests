@@ -14536,6 +14536,19 @@ printf ">s\nA\n" | \
 
 # unset FASTA_INPUT
 
+
+#******************************************************************************#
+#                                                                              #
+#     Element Biosciences AVITI reads can't be PE merged despite good overlap  #
+#           and least conservative merging settings (issue 593)                #
+#                                                                              #
+#******************************************************************************#
+#
+## https://github.com/torognes/vsearch/issues/593
+
+# question, nothing to test
+
+
 exit 0
 
 
