@@ -70,6 +70,17 @@ printf ">s\nA\n" > ${TMP}
 rm -f ${TMP}
 unset TMP
 
+DESCRIPTION="--derep_smallmem complains if output filename is missing (issue 540)"
+TMP=$(mktemp)
+printf ">s\nA\n\n" > "${TMP}"
+${VSEARCH} \
+    --derep_smallmem "${TMP}" 2>&1 | \
+    grep -iq "Output" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${TMP}"
+unset TMP
+
 DESCRIPTION="--derep_smallmem requires an output file (fasta in, fastaout)"
 TMP=$(mktemp)
 printf ">s\nA\n" > ${TMP}
@@ -499,7 +510,7 @@ rm -f ${TMP}
 unset TMP
 
 ## --derep_smallmem T and U are considered the same
-DESCRIPTION="--derep_smallmem T and U are considered the same"
+DESCRIPTION="--derep_smallmem T and U are considered the same (issue 35: T first)"
 TMP=$(mktemp)
 printf ">s1\nT\n>s2\nU\n" > ${TMP}
 "${VSEARCH}" \
@@ -508,6 +519,20 @@ printf ">s1\nT\n>s2\nU\n" > ${TMP}
     --fastaout - | \
     tr "\n" "@" | \
     grep -qw ">s1@T@" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm -f ${TMP}
+unset TMP
+
+DESCRIPTION="--derep_smallmem T and U are considered the same (issue 35: U first)"
+TMP=$(mktemp)
+printf ">s1\nU\n>s2\nT\n" > ${TMP}
+"${VSEARCH}" \
+    --derep_smallmem ${TMP} \
+    --quiet \
+    --fastaout - | \
+    tr "\n" "@" | \
+    grep -qw ">s1@U@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f ${TMP}

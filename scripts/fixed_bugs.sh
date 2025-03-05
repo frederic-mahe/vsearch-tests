@@ -2720,35 +2720,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 35: --derep_smallmem treats T and U as identical (U first)"
-TMP_FASTA=$(mktemp)
-printf ">s1\nU\n>s2\nT\n" > "${TMP_FASTA}"
-${VSEARCH} \
-    --derep_smallmem "${TMP_FASTA}" \
-    --minseqlength 1 \
-    --quiet \
-    --fastaout - | \
-    tr -d "\n" | \
-    grep -wq ">s1U" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm -f "${TMP_FASTA}"
-unset TMP_FASTA
-
-DESCRIPTION="issue 35: --derep_smallmem treats T and U as identical (T first)"
-TMP_FASTA=$(mktemp)
-printf ">s1\nT\n>s2\nU\n" > "${TMP_FASTA}"
-${VSEARCH} \
-    --derep_smallmem "${TMP_FASTA}" \
-    --minseqlength 1 \
-    --quiet \
-    --fastaout - | \
-    tr -d "\n" | \
-    grep -wq ">s1T" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm -f "${TMP_FASTA}"
-unset TMP_FASTA
+## tested in derep_smallmem.sh
 
 
 #******************************************************************************#
@@ -10986,16 +10958,7 @@ ${VSEARCH} \
 ##
 ## https://github.com/torognes/vsearch/issues/540
 
-DESCRIPTION="issue 540: derep_smallmem complains if output filename is missing"
-TMP=$(mktemp)
-printf ">s\nA\n\n" > "${TMP}"
-${VSEARCH} \
-    --derep_smallmem "${TMP}" 2>&1 | \
-    grep -iq "Output" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm "${TMP}"
-unset TMP
+## tested in derep_smallmem.sh
 
 
 #******************************************************************************#
@@ -13298,7 +13261,7 @@ DESCRIPTION="issue 568: k-mer prefiltering when clustering short sequences (equa
 ## https://github.com/torognes/vsearch/issues/571
 
 ## v2.29.0 and more recent
-# already tested in fastq_stats.sh
+## tested in fastq_stats.sh
 
 
 #******************************************************************************#
