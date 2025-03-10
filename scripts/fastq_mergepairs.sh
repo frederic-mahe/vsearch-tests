@@ -3954,4 +3954,41 @@ DESCRIPTION="fastq_mergepairs threads rejects non-integers (A)"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+
+#*****************************************************************************#
+#                                                                             #
+#                                regressions                                  #
+#                                                                             #
+#*****************************************************************************#
+
+# 2025-03-10
+# - regression introduced in commit 91d779ab91eb33184b65c4ec2ee2c7d9ebf2caab
+# - if struct members are not reset, then --eetabbedout contains
+#   erroneous values (only visible after several hundreds of merges)
+# - fixed in commit fd05f30a7dddf11913f87d015311a30c1e402706
+
+MAX=1000
+EXPECTED_MD5="eb6ef175215ad377ad10dd2c52df153c"
+
+function generate_n_entries() {
+    for ((i=0 ; i <= MAX ; i+=1)) ; do
+        printf "@s\n%s\n+\n0000000000\n" "${1}"
+    done
+}
+
+DESCRIPTION="--fastq_mergepairs: fix regression in --eetabbedout (2025-03-10)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(generate_n_entries "AAATAAAAAA") \
+    --reverse <(generate_n_entries "TTTTTTATTT") \
+    --threads 1 \
+    --fastq_allowmergestagger \
+    --quiet \
+    --eetabbedout - 2> /dev/null | \
+    md5sum | \
+    grep -q "${EXPECTED_MD5}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset MAX EXPECTED_MD5 generate_n_entries
+
 exit 0
