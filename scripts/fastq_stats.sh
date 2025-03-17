@@ -1297,6 +1297,19 @@ printf "@s\nAAA\n+\nII+\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# for a non-empty fastq input, section 4 contains at least one line
+# because EE cannot be greater than 1.0 before the second position
+DESCRIPTION="--fastq_stats section four is never empty if fastq is not empty (fourth section)"
+printf "@s\nA\n+\n!\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - 2> /dev/null | \
+    grep -m 1 -E -A 2 "^[[:blank:]]+L[[:blank:]]+1.0000[[:blank:]]" | \
+    tail -n 1 | \
+    grep -Eq "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## expect:
 #     L   1.0000   0.5000   0.2500   0.1000   1.0000   0.5000   0.2500   0.1000
 # -----  -------  -------  -------  -------  -------  -------  -------  -------
