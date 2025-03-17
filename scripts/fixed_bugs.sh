@@ -14448,6 +14448,7 @@ INPUT=$(printf ">s1\n"
         printf "TCAGTTGACCTTGCCATTTTTTCTCTACATTTAGCAGGAATTTCATCAATTCTAGGAGCCGTAAATTTTATTACTACAGTTATTAATATACGATCAACAGGAATTACATTCGATCGAATGCCTTTATTTGTCTGATCAGTAGTTATTACTGCAGTATTATTATTACTTTCATTACCTGTACTTGCAGGAGCTATTACAATACTATTAACAGATCGAAACCTAAATACATCATTTTTTGACCCGGCAGGAGGAGGAGACCCTATTTTATATCAACATCTATTT\n"
         printf ">s3\n"
         printf "AACCCTATACTTCATTTTCGGTGCTTGAGCGGGTATAGTTGGTACTTCACTTAGTATATTAATTCGGGCAGAATTAGGGCACCCCGGATCATTAATTGGAGACGATCAAATTTATAATGTTATTGTAACTGCCCACGCTTTTGTAATAATTTTTTTTATAGTTATACCGATTATAATTGGAGGATTTGGAAATTGACTAGTCCCATTAATATTGGGAGCACCAGACATAGCATTTCCCCGAATAAATAACATAAGATTCTGACTATTACCCCCATCACTAACGCTGCTATTAACATCCTCAATAGTAGAAG\n")
+CIGAR="5D36M6I10M13D31M4I81M3I33M4I73M30I"
 
 DESCRIPTION="issue 589: --allpairs_global outputs expected pairwise alignment results"
 echo "${INPUT}" | \
@@ -14457,25 +14458,81 @@ echo "${INPUT}" | \
         --threads 1 \
         --quiet \
         --uc - | \
-    awk '/^H/ {exit $8 == "5D36M6I10M13D31M4I81M3I33M4I73M30I" ? 0 : 1}' && \
+    awk -v CIGAR="${CIGAR}" '/^H/ {exit $8 == CIGAR ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 589: --usearch_global outputs expected pairwise alignment results"
-head -n 2 <<< "${INPUT}" | \
+echo "${INPUT}" | \
+    head -n 2 | \
     "${VSEARCH}" \
         --usearch_global - \
-        --db <(tail -n 2 <<< "${INPUT}") \
+        --db <(echo "${INPUT}" | tail -n 2) \
         --threads 1 \
         --id 0 \
         --wordlength 7 \
         --quiet \
         --uc - | \
-    awk '/^H/ {exit $8 == "5D36M6I10M13D31M4I81M3I33M4I73M30I" ? 0 : 1}' && \
+    awk -v CIGAR="${CIGAR}" '/^H/ {exit $8 == CIGAR ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-unset INPUT
+INPUT=$(
+    printf ">S1;size=5\n"
+    printf "CCAACAAGCCGAGGATGCGCTTGGAGATGATGTTGTTCTGGATCTCGGCGGAGCCGCCATAGATGGTGGTGGCCTTGCCG\n"
+    printf "CCCAGCCAGTTGCGGACCTGGTTGAGCTCCTCCTCGTCAAAGCCTGGACCTTCCCAGCCCAGCCCCTGCGAACCCATGAT\n"
+    printf "CTCGATGGCCAGCTCGGCCCGGTCCTGACCGACCTTGGAGCCGACGTTCTTCATGATCGAGACGGCGGCTGAGGGACCCT\n"
+    printf "GGTTACCCTTTGACTCCGCCGCCGCGCGCATCAGGGTCAGCATGAAGGCCTTCGCCTCCATCTGGTGGCGGATCACCCGG\n"
+    printf "TTCCTGAGGTCGGTGTCGGCGATGCGACCCTCGTCATCCACGCCGACATAGGTCTTGGCCAATTCCTCGATCGGCACGCC\n"
+    printf "GGCGCCGAACCGTCCGGCCGAACCGCCGCCACCGGACAGGCTGTTGCGCTCGTGCTGCAACAGGCGCTTGCCGATGGTCC\n"
+    printf "AGCCACCGTTGAGCGGCCCGACCAGATTCTCCTTCGGCACCTTCACATCGGT\n"
+    printf ">S2;size=1\n"
+    printf "GGAGCGGAGACCGATGAGCCGGTGCGCGACATGATCGCAGAGCTGCAAAGCAGCGGCATGGTCAAGGTCAGCGGCCGGGC\n"
+    printf "GTTCGAGCCGGACCGGCTGGTGCTGCCGTTGATCAACGAGGCGGCGCTTTGCCTGCAGGAGCACATTGCCAGCCCGGCTG\n"
+    printf "ATATCGACCTGGCGATGGTGGCCGGCACGGGCATGACCTACGGCGCCGAGCGCCTGGGGCCGTTGGCTGTGGCGGACCTG\n"
+    printf "ATGGGATTGGACGACGTTGCCGCGCGGCTCGAGCTGCTGCAAGCGCAGTATGGGGAGCGCTTCCGGCCGGCGCGGCTGCT\n"
+    printf "GCGGACCAAGGTGCGGGCGGGGCATTTGGG\n"
+     )
+CIGAR="10D10M3I7M3I8MD28M3I24M6I28M2D18M12D30M2I23M3I13M7I61M7D28MI40M186I"
+
+DESCRIPTION="issue 589: --cluster_fast outputs expected pairwise alignment results"
+echo "${INPUT}" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --threads 1 \
+        --quiet \
+        --id 0 \
+        --uc - | \
+    awk -v CIGAR="${CIGAR}" '/^H/ {exit $8 == CIGAR ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 589: --cluster_size outputs expected pairwise alignment results"
+echo "${INPUT}" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --threads 1 \
+        --quiet \
+        --id 0 \
+        --uc - | \
+    awk -v CIGAR="${CIGAR}" '/^H/ {exit $8 == CIGAR ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 589: --cluster_smallmem outputs expected pairwise alignment results"
+echo "${INPUT}" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --threads 1 \
+        --quiet \
+        --id 0 \
+        --uc - | \
+    awk -v CIGAR="${CIGAR}" '/^H/ {exit $8 == CIGAR ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset INPUT CIGAR
 
 
 #******************************************************************************#
