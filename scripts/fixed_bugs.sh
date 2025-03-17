@@ -14429,6 +14429,57 @@ printf ">s\nA\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#           Variable results in pairwise alignment  (issue 589)                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/589
+
+# Using -O3 compilation (specifically -ftree-partial-pre) on
+# align_simd.cc introduces a bug in vsearch's sequence pairwise
+# alignments. The -O3 option was turned on in commit 6ddea9c on 1
+# February 2017, 8 years ago. It was later (in commit d007e76)
+# specified at build time.
+
+# Partially fixed in version 2.29.3 (go back to -O2 optimization for
+# align_simd.cc).
+
+INPUT=$(printf ">s1\n"
+        printf "TCAGTTGACCTTGCCATTTTTTCTCTACATTTAGCAGGAATTTCATCAATTCTAGGAGCCGTAAATTTTATTACTACAGTTATTAATATACGATCAACAGGAATTACATTCGATCGAATGCCTTTATTTGTCTGATCAGTAGTTATTACTGCAGTATTATTATTACTTTCATTACCTGTACTTGCAGGAGCTATTACAATACTATTAACAGATCGAAACCTAAATACATCATTTTTTGACCCGGCAGGAGGAGGAGACCCTATTTTATATCAACATCTATTT\n"
+        printf ">s3\n"
+        printf "AACCCTATACTTCATTTTCGGTGCTTGAGCGGGTATAGTTGGTACTTCACTTAGTATATTAATTCGGGCAGAATTAGGGCACCCCGGATCATTAATTGGAGACGATCAAATTTATAATGTTATTGTAACTGCCCACGCTTTTGTAATAATTTTTTTTATAGTTATACCGATTATAATTGGAGGATTTGGAAATTGACTAGTCCCATTAATATTGGGAGCACCAGACATAGCATTTCCCCGAATAAATAACATAAGATTCTGACTATTACCCCCATCACTAACGCTGCTATTAACATCCTCAATAGTAGAAG\n")
+
+DESCRIPTION="issue 589: --allpairs_global outputs expected pairwise alignment results"
+echo "${INPUT}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --threads 1 \
+        --quiet \
+        --uc - | \
+    awk '/^H/ {exit $8 == "5D36M6I10M13D31M4I81M3I33M4I73M30I" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 589: --usearch_global outputs expected pairwise alignment results"
+head -n 2 <<< "${INPUT}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(tail -n 2 <<< "${INPUT}") \
+        --threads 1 \
+        --id 0 \
+        --wordlength 7 \
+        --quiet \
+        --uc - | \
+    awk '/^H/ {exit $8 == "5D36M6I10M13D31M4I81M3I33M4I73M30I" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset INPUT
+
+
+#******************************************************************************#
+#                                                                              #
 #     change in uchime*_denovo results between v2.22 and v2.29 (issue 591)     #
 #                                                                              #
 #******************************************************************************#
