@@ -14532,6 +14532,8 @@ echo "${INPUT}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# Note: --cluster_unoise did not seem to be impacted by issue #589
+
 unset INPUT CIGAR
 
 
