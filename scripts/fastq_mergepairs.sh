@@ -3972,8 +3972,7 @@ EXPECTED_MD5="eb6ef175215ad377ad10dd2c52df153c"
 
 function generate_n_entries() {
     for ((i=0 ; i <= MAX ; i+=1)) ; do
-        # here '0' = Q15
-        printf "@s\n%s\n+\n0000000000\n" "${1}"
+        printf "@s\n%s\n+\n0000000000\n" "${1}"  # here '0' = Q15
     done
 }
 
