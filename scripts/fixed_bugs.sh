@@ -14441,8 +14441,8 @@ printf ">s\nA\n" | \
 # February 2017, 8 years ago. It was later (in commit d007e76)
 # specified at build time.
 
-# Partially fixed in version 2.29.3 (go back to -O2 optimization for
-# align_simd.cc).
+# Partially fixed in version 2.29.3 by going back to -O2 optimization
+# for align_simd.cc.
 
 # expected CIGAR: 'M'; -O3 code gives'ID'
 DESCRIPTION="issue 589: --allpairs_global outputs expected pairwise alignment results"
