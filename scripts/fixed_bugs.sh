@@ -14444,36 +14444,32 @@ printf ">s\nA\n" | \
 # Partially fixed in version 2.29.3 (go back to -O2 optimization for
 # align_simd.cc).
 
-INPUT=$(printf ">s1\n"
-        printf "TCAGTTGACCTTGCCATTTTTTCTCTACATTTAGCAGGAATTTCATCAATTCTAGGAGCCGTAAATTTTATTACTACAGTTATTAATATACGATCAACAGGAATTACATTCGATCGAATGCCTTTATTTGTCTGATCAGTAGTTATTACTGCAGTATTATTATTACTTTCATTACCTGTACTTGCAGGAGCTATTACAATACTATTAACAGATCGAAACCTAAATACATCATTTTTTGACCCGGCAGGAGGAGGAGACCCTATTTTATATCAACATCTATTT\n"
-        printf ">s3\n"
-        printf "AACCCTATACTTCATTTTCGGTGCTTGAGCGGGTATAGTTGGTACTTCACTTAGTATATTAATTCGGGCAGAATTAGGGCACCCCGGATCATTAATTGGAGACGATCAAATTTATAATGTTATTGTAACTGCCCACGCTTTTGTAATAATTTTTTTTATAGTTATACCGATTATAATTGGAGGATTTGGAAATTGACTAGTCCCATTAATATTGGGAGCACCAGACATAGCATTTCCCCGAATAAATAACATAAGATTCTGACTATTACCCCCATCACTAACGCTGCTATTAACATCCTCAATAGTAGAAG\n")
-CIGAR="5D36M6I10M13D31M4I81M3I33M4I73M30I"
-
+# expected CIGAR: 'M'; -O3 code gives'ID'
 DESCRIPTION="issue 589: --allpairs_global outputs expected pairwise alignment results"
-echo "${INPUT}" | \
+printf ">s1\nT\n>s2\nG\n" | \
     "${VSEARCH}" \
         --allpairs_global - \
         --acceptall \
+        --minseqlength 1 \
         --threads 1 \
         --quiet \
         --uc - | \
-    awk -v CIGAR="${CIGAR}" '/^H/ {exit $8 == CIGAR ? 0 : 1}' && \
+    awk '/^H/ {exit $8 == "M" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# expected CIGAR: '2M'; -O3 code gives'IMD'
 DESCRIPTION="issue 589: --usearch_global outputs expected pairwise alignment results"
-echo "${INPUT}" | \
-    head -n 2 | \
-    "${VSEARCH}" \
-        --usearch_global - \
-        --db <(echo "${INPUT}" | tail -n 2) \
-        --threads 1 \
-        --id 0 \
-        --wordlength 7 \
-        --quiet \
-        --uc - | \
-    awk -v CIGAR="${CIGAR}" '/^H/ {exit $8 == CIGAR ? 0 : 1}' && \
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\nAA\n") \
+    --db <(printf ">s2\nTA\n") \
+    --minseqlength 1 \
+    --threads 1 \
+    --id 0 \
+    --wordlength 7 \
+    --quiet \
+    --uc - | \
+    awk '/^H/ {exit $8 == "2M" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
