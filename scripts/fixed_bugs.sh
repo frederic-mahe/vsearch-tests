@@ -14473,64 +14473,50 @@ DESCRIPTION="issue 589: --usearch_global outputs expected pairwise alignment res
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-INPUT=$(
-    printf ">S1;size=5\n"
-    printf "CCAACAAGCCGAGGATGCGCTTGGAGATGATGTTGTTCTGGATCTCGGCGGAGCCGCCATAGATGGTGGTGGCCTTGCCG\n"
-    printf "CCCAGCCAGTTGCGGACCTGGTTGAGCTCCTCCTCGTCAAAGCCTGGACCTTCCCAGCCCAGCCCCTGCGAACCCATGAT\n"
-    printf "CTCGATGGCCAGCTCGGCCCGGTCCTGACCGACCTTGGAGCCGACGTTCTTCATGATCGAGACGGCGGCTGAGGGACCCT\n"
-    printf "GGTTACCCTTTGACTCCGCCGCCGCGCGCATCAGGGTCAGCATGAAGGCCTTCGCCTCCATCTGGTGGCGGATCACCCGG\n"
-    printf "TTCCTGAGGTCGGTGTCGGCGATGCGACCCTCGTCATCCACGCCGACATAGGTCTTGGCCAATTCCTCGATCGGCACGCC\n"
-    printf "GGCGCCGAACCGTCCGGCCGAACCGCCGCCACCGGACAGGCTGTTGCGCTCGTGCTGCAACAGGCGCTTGCCGATGGTCC\n"
-    printf "AGCCACCGTTGAGCGGCCCGACCAGATTCTCCTTCGGCACCTTCACATCGGT\n"
-    printf ">S2;size=1\n"
-    printf "GGAGCGGAGACCGATGAGCCGGTGCGCGACATGATCGCAGAGCTGCAAAGCAGCGGCATGGTCAAGGTCAGCGGCCGGGC\n"
-    printf "GTTCGAGCCGGACCGGCTGGTGCTGCCGTTGATCAACGAGGCGGCGCTTTGCCTGCAGGAGCACATTGCCAGCCCGGCTG\n"
-    printf "ATATCGACCTGGCGATGGTGGCCGGCACGGGCATGACCTACGGCGCCGAGCGCCTGGGGCCGTTGGCTGTGGCGGACCTG\n"
-    printf "ATGGGATTGGACGACGTTGCCGCGCGGCTCGAGCTGCTGCAAGCGCAGTATGGGGAGCGCTTCCGGCCGGCGCGGCTGCT\n"
-    printf "GCGGACCAAGGTGCGGGCGGGGCATTTGGG\n"
-     )
-CIGAR="10D10M3I7M3I8MD28M3I24M6I28M2D18M12D30M2I23M3I13M7I61M7D28MI40M186I"
-
+# expected CIGAR: '=' (since v2.10.4, 'DM2I' before); -O3 code gives 'I2M'
 DESCRIPTION="issue 589: --cluster_fast outputs expected pairwise alignment results"
-echo "${INPUT}" | \
+printf ">S1;size=5\nTGT\n>S2;size=1\nCT\n" | \
     "${VSEARCH}" \
         --cluster_fast - \
+        --minseqlength 1 \
         --threads 1 \
         --quiet \
         --id 0 \
         --uc - | \
-    awk -v CIGAR="${CIGAR}" '/^H/ {exit $8 == CIGAR ? 0 : 1}' && \
+    awk '/^H/ {exit $8 == "=" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# expected CIGAR: 'DM2I'; -O3 code gives 'I2M'
 DESCRIPTION="issue 589: --cluster_size outputs expected pairwise alignment results"
-echo "${INPUT}" | \
+printf ">S1;size=5\nTGT\n>S2;size=1\nCT\n" | \
     "${VSEARCH}" \
         --cluster_size - \
+        --minseqlength 1 \
         --threads 1 \
         --quiet \
         --id 0 \
         --uc - | \
-    awk -v CIGAR="${CIGAR}" '/^H/ {exit $8 == CIGAR ? 0 : 1}' && \
+    awk '/^H/ {exit $8 == "DM2I" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# expected CIGAR: 'DM2I'; -O3 code gives 'I2M'
 DESCRIPTION="issue 589: --cluster_smallmem outputs expected pairwise alignment results"
-echo "${INPUT}" | \
+printf ">S1;size=5\nTGT\n>S2;size=1\nCT\n" | \
     "${VSEARCH}" \
         --cluster_smallmem - \
         --usersort \
+        --minseqlength 1 \
         --threads 1 \
         --quiet \
         --id 0 \
         --uc - | \
-    awk -v CIGAR="${CIGAR}" '/^H/ {exit $8 == CIGAR ? 0 : 1}' && \
+    awk '/^H/ {exit $8 == "DM2I" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# Note: --cluster_unoise did not seem to be impacted by issue #589
-
-unset INPUT CIGAR
+# Note: --cluster_unoise did not seem to be impacted by issue #589 (so far)
 
 
 #******************************************************************************#
