@@ -14444,7 +14444,7 @@ printf ">s\nA\n" | \
 # Partially fixed in version 2.29.3 by going back to -O2 optimization
 # for align_simd.cc.
 
-# expected CIGAR: 'M'; -O3 code gives'ID'
+# expected CIGAR: 'M'; -O3 code gives 'ID'
 DESCRIPTION="issue 589: --allpairs_global outputs expected pairwise alignment results"
 printf ">s1\nT\n>s2\nG\n" | \
     "${VSEARCH}" \
@@ -14458,7 +14458,7 @@ printf ">s1\nT\n>s2\nG\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# expected CIGAR: '2M'; -O3 code gives'IMD'
+# expected CIGAR: '2M'; -O3 code gives 'IMD'
 DESCRIPTION="issue 589: --usearch_global outputs expected pairwise alignment results"
 "${VSEARCH}" \
     --usearch_global <(printf ">s1\nAA\n") \
