@@ -14518,6 +14518,78 @@ printf ">S1;size=5\nTGT\n>S2;size=1\nCT\n" | \
 
 # Note: --cluster_unoise did not seem to be impacted by issue #589 (so far)
 
+## --------------------------------------------------- chimera detection
+
+FASTA_INPUT=$(
+    # smallest uchime_denovo example? 12 sequences of 32 nucleotides each
+    printf ">S1;size=152\n"
+    printf "CCGTTGAGTCGGAGCTGCCCTGCGGCACTCCA\n"
+    printf ">S2;size=142\n"
+    printf "CCTAGTCCACCCGATAGTGCGCGGCACGTTGC\n"
+    printf ">S3;size=73\n"
+    printf "CATTCCGACTTCCCCGCGTTCTTGGTTGGTCG\n"
+    printf ">S4;size=69\n"
+    printf "TCCCCGAGTCTGCTCCATAGGCCTTTGAACAC\n"
+    printf ">S5;size=50\n"
+    printf "TACTCCTTGCTCCGATATGGCCACCCGGTCCG\n"
+    printf ">S6;size=33\n"
+    printf "GAGAGTCGCCCGCAGCATTCGCACTGCCGGAA\n"
+    printf ">S7;size=25\n"
+    printf "TCTGGTGCAACAGGGCTCCCAAGCACCCCGAG\n"
+    printf ">S8;size=21\n"
+    printf "GGCGGAAGTACCTTGACGAGATACACCCTCCG\n"
+    printf ">S9;size=14\n"
+    printf "CCCGGCCCGGGGCTCCGCGGTGGGGTATTTCT\n"
+    printf ">S10;size=8\n"
+    printf "TGCCACGGCTCATAGCCAGAGGGTTCGGTCGG\n"
+    printf ">S11;size=6\n"
+    printf "GGTTGTCATCCGACCAGCCCACGAACTGCGAC\n"
+    printf ">S12;size=1\n"
+    printf "CGCCGATAACCCCCCCCCTTCCCCTTCGACCC\n")
+
+# When the window size is set to 32 (normal condition), switching to -O3
+# produces wrong alignments and wrong chimera scores.
+DESCRIPTION="issue 589: --uchime_denovo outputs expected chimera scores"
+echo "${FASTA_INPUT}" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --sizein \
+        --threads 1 \
+        --quiet \
+        --uchimeout - | \
+        tail -n 1 | \
+        awk '{exit $1 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 589: --uchime2_denovo outputs expected chimera scores"
+echo "${FASTA_INPUT}" | \
+    "${VSEARCH}" \
+        --uchime2_denovo - \
+        --sizein \
+        --threads 1 \
+        --quiet \
+        --uchimeout - | \
+        tail -n 1 | \
+        awk '{exit $1 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 589: --uchime3_denovo outputs expected chimera scores"
+echo "${FASTA_INPUT}" | \
+    "${VSEARCH}" \
+        --uchime3_denovo - \
+        --sizein \
+        --threads 1 \
+        --quiet \
+        --uchimeout - | \
+        tail -n 1 | \
+        awk '{exit $1 == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset FASTA_INPUT
+
 
 #******************************************************************************#
 #                                                                              #
