@@ -1016,8 +1016,8 @@ DESCRIPTION="--fastq_chars --fastq_tail 2 count 0 tail-occurrence (one I)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_chars - \
-        --fastq_tail 1 2>&1 | \
-    grep -qE "[[:blank:]]'I'[[:blank:]].*[[:blank:]]1$" && \
+        --fastq_tail 2 2>&1 | \
+    grep -qE "[[:blank:]]'I'[[:blank:]].*[[:blank:]]0$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1025,7 +1025,7 @@ DESCRIPTION="--fastq_chars --fastq_tail 2 counts a tail-occurrence (two Is)"
 printf "@s\nAA\n+\nII\n" | \
     "${VSEARCH}" \
         --fastq_chars - \
-        --fastq_tail 1 2>&1 | \
+        --fastq_tail 2 2>&1 | \
     grep -qE "[[:blank:]]'I'[[:blank:]].*[[:blank:]]1$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1034,7 +1034,7 @@ DESCRIPTION="--fastq_chars --fastq_tail 2 counts a tail-occurrence (three Is)"
 printf "@s\nAAA\n+\nIII\n" | \
     "${VSEARCH}" \
         --fastq_chars - \
-        --fastq_tail 1 2>&1 | \
+        --fastq_tail 2 2>&1 | \
     grep -qE "[[:blank:]]'I'[[:blank:]].*[[:blank:]]1$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
