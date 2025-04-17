@@ -1039,6 +1039,18 @@ printf "@s\nAAA\n+\nIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# 'Char' section is empty when input sequence is empty
+DESCRIPTION="--fastq_chars --fastq_tail 1 accepts empty sequence"
+printf "@s\n\n+\n\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - \
+        --fastq_tail 1 2>&1 | \
+    grep -i -A 2 "Tails" | \
+    tail -n 1 | \
+    grep -qE "[-]{4}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
