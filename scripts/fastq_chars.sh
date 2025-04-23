@@ -1039,6 +1039,33 @@ printf "@s\nAAA\n+\nIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# below threshold, tail length > sequence length
+DESCRIPTION="--fastq_chars --fastq_tail is set to 4 by default (three Is)"
+printf "@s\nAAA\n+\nIII\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -qE "[[:blank:]]'I'[[:blank:]].*[[:blank:]]0$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# equal to threshold
+DESCRIPTION="--fastq_chars --fastq_tail is set to 4 by default (four Is)"
+printf "@s\nAAAA\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -qE "[[:blank:]]'I'[[:blank:]].*[[:blank:]]1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# above threshold
+DESCRIPTION="--fastq_chars --fastq_tail is set to 4 by default (five Is)"
+printf "@s\nAAAAA\n+\nIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -qE "[[:blank:]]'I'[[:blank:]].*[[:blank:]]1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # 'Char' section is empty when input sequence is empty
 DESCRIPTION="--fastq_chars --fastq_tail 1 accepts empty sequence"
 printf "@s\n\n+\n\n" | \
