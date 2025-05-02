@@ -14676,6 +14676,17 @@ unset FASTA_INPUT
 # question, nothing to test
 
 
+#******************************************************************************#
+#                                                                              #
+#    Add swarm-like tabular output to vsearch clustering options (issue 597)   #
+#                                                                              #
+#******************************************************************************#
+#
+## https://github.com/torognes/vsearch/issues/597
+
+# question, nothing to test
+
+
 exit 0
 
 
