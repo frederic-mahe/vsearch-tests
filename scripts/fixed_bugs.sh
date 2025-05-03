@@ -14678,6 +14678,44 @@ unset FASTA_INPUT
 
 #******************************************************************************#
 #                                                                              #
+#            --search_exact rejects UDB database (issue 596)                   #
+#                                                                              #
+#******************************************************************************#
+#
+## https://github.com/torognes/vsearch/issues/596
+
+# command --search_exact does not support UDB files (documentation)
+
+SEQ=$(printf ">s\nACTGGCTAACTGGCTAACTGGCTAACTGGCTA\n")
+
+DESCRIPTION="issue 596: --search_exact accepts fasta database"
+"${VSEARCH}" \
+    --search_exact <(echo "${SEQ}") \
+    --db <(echo "${SEQ}") \
+    --quiet \
+    --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 596: --search_exact rejects UDB database"
+UDB=$(mktemp)
+"${VSEARCH}" \
+    --makeudb_usearch <(echo "${SEQ}") \
+    --quiet \
+    --output "${UDB}"
+"${VSEARCH}" \
+    --search_exact <(echo "${SEQ}") \
+    --db "${UDB}" \
+    --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+rm -f "${UDB}"
+unset SEQ TMP
+
+
+#******************************************************************************#
+#                                                                              #
 #    Add swarm-like tabular output to vsearch clustering options (issue 597)   #
 #                                                                              #
 #******************************************************************************#
