@@ -624,6 +624,44 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_join --join_padgap accepts any visible ASCII symbols (not [:alnum:])"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --join_padgap "!\"#$%&'()*+,-./:;<=>?@[\]^_{|}~" \
+        --join_padgapq "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIII" \
+        --quiet \
+        --fastaout - | \
+    grep -qw "A!\"#\$%&[']()\*+,-./:;<=>?@\[[\]\]\^_{|}~A" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_join --join_padgap accepts any visible ASCII symbols (backtick)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --join_padgap "\`" \
+        --join_padgapq "I" \
+        --quiet \
+        --fastaout - | \
+    grep -qw "A\`A" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_join --join_padgap rejects non ASCII symbols (é)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --join_padgap "é" \
+        --join_padgapq "I" \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 ## --------------------------------------------------------------- join_padgapq
 
 DESCRIPTION="--fastq_join --join_padgapq is accepted"
@@ -691,6 +729,43 @@ printf "@s\nA\n+\nI\n" | \
     grep -qw "II" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_join --join_padgapq accepts any visible ASCII symbols (not [:alnum:])"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --join_padgap "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN" \
+        --join_padgapq "!\"#$%&'()*+,-./:;<=>?@[\]^_{|}~" \
+        --quiet \
+        --fastqout - | \
+    grep -qw "I!\"#\$%&[']()\*+,-./:;<=>?@\[[\]\]\^_{|}~I" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_join --join_padgapq accepts any visible ASCII symbols (backtick)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --join_padgap "N" \
+        --join_padgapq "\`" \
+        --quiet \
+        --fastqout - | \
+    grep -qw "I\`I" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_join --join_padgapq rejects non ASCII symbols (é)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --join_padgap "N" \
+        --join_padgapq "é" \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_join sequence and quality padding must have the same length"
 printf "@s\nA\n+\nI\n" | \
