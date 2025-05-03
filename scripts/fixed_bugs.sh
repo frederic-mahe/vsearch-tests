@@ -14687,6 +14687,43 @@ unset FASTA_INPUT
 # question, nothing to test
 
 
+#******************************************************************************#
+#                                                                              #
+#   Lowercases in centroids sequences when using --cluster_fast (issue 598)    #
+#                                                                              #
+#******************************************************************************#
+#
+## https://github.com/torognes/vsearch/issues/598
+
+# Lowercase output is due to masking. Masking is automatically applied
+# during chimera detection, clustering, masking, pairwise alignment
+# and searching. The DUST algorithm masks simple repeats and
+# low-complexity regions.
+
+DESCRIPTION="issue 598: --cluster_fast DUST masking by default"
+printf ">s1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 1.0 \
+        --quiet \
+        --centroids - | \
+    grep -qw "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 598: --cluster_fast --qmask none (no masking)"
+printf ">s1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 1.0 \
+        --quiet \
+        --qmask none \
+        --centroids - | \
+    grep -qw "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+
 exit 0
 
 
