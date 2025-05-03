@@ -14701,7 +14701,7 @@ unset FASTA_INPUT
 # low-complexity regions.
 
 DESCRIPTION="issue 598: --cluster_fast DUST masking by default"
-printf ">s1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_fast - \
         --id 1.0 \
@@ -14712,7 +14712,7 @@ printf ">s1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 598: --cluster_fast --qmask none (no masking)"
-printf ">s1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_fast - \
         --id 1.0 \
