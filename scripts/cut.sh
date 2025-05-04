@@ -399,6 +399,31 @@ printf ">s\nGGGGGG\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--cut does not search reverse strand"
+printf ">s\nGCC\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "GG^_C" \
+        --fastaout - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--cut first use --fastx_revcomp to search reverse strand"
+printf ">s\nGCC\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --quiet \
+        --fastaout - | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "GG^_C" \
+        --fastaout - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## -------------------------------------------------------------- IUPAC matches
 
 ##   IUPAC matches and complements
@@ -1940,3 +1965,6 @@ fi
 exit 0
 
 # status: complete (v2.28.1, 2024-06-25)
+
+# TODO: test for non-palindromic pattern: show that rev-comp
+# occurrences are not detected
