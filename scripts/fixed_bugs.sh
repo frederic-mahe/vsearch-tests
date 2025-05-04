@@ -14678,6 +14678,65 @@ unset FASTA_INPUT
 
 #******************************************************************************#
 #                                                                              #
+#      confusing output from --uchime_ref chimera removal (issue 594)          #
+#                                                                              #
+#******************************************************************************#
+#
+## https://github.com/torognes/vsearch/issues/594
+
+# question, nothing to test
+
+
+#******************************************************************************#
+#                                                                              #
+#   Identical sequences are assigned to different clusters in the result of    #
+#                       --cluster_fast (issue 595)                             #
+#                                                                              #
+#******************************************************************************#
+#
+## https://github.com/torognes/vsearch/issues/595
+
+# In this example provided by GitHub user @tao-bioinfo, sB and sD are
+# identical (100% similar), yet they are assigned to two different
+# clusters (sA and sC). I was not able to reproduce this with shorter
+# sequences. Maybe it depends on k-mer prefiltering?
+
+# Note: using --maxaccepts 0 --maxrejects 0 has no effect on that
+# particular case.
+
+## pairwise similarities:
+# sB	sD	100.0
+# sB	sC	97.6
+# sA	sB	97.0
+# sA	sD	97.0
+# sA	sC	95.8
+# sC	sD	97.6
+
+## expect two hits (H) to two different seeds (S):
+# H	0	168	97.0	+	0	0	168M	sB	sA
+# H	1	168	97.6	+	0	0	168M	sD	sC
+DESCRIPTION="issue 595: --cluster_fast identical sequences can be in different clusters"
+(
+    printf ">sA\nATGCCCCAACTCAACCCCGCACCCTGGCTTGCCATCCTAGTCTTCTCTTGATTAGTTTTCCTAATCGTTATTCCTCCAAAAGTTATAGCCCATTCCTTCCCAAATGAACCGACCCCCCAAAGCACAGAAAAACCTAAAGGGGAACCCTGAAACTGACCATGACACTAA\n"
+    printf ">sB\nATGCCCCAACTCAATCCCGCACCCTGGCTTGCCATCCTAGTCTTCTCTTGATTAGTTTTCCTAATCGTTATTCCTCCAAAAGTTATAGCCCACTCTTTCCCAAATGAACCAACCCCTCAAAGCACAGAAAAACCTAAAGGGGAACCCTGAAACTGACCATGACACTAA\n"
+    printf ">sC\nATGCCCCAACTCAATCCCGCACCCTGGCTTGCCATCCTAGTCTTCTCTTGATTAGTTTTCCTAATCGTCATCCCTCCAAAAGTTATAGCCCACTCCTTCCCAAACGAACCAACCCCTCAAAGCACAGAAAAACCTAAAGGGGAACCCTGAAACTGACCATGACACTAA\n"
+    printf ">sD\nATGCCCCAACTCAATCCCGCACCCTGGCTTGCCATCCTAGTCTTCTCTTGATTAGTTTTCCTAATCGTTATTCCTCCAAAAGTTATAGCCCACTCTTTCCCAAATGAACCAACCCCTCAAAGCACAGAAAAACCTAAAGGGGAACCCTGAAACTGACCATGACACTAA\n"
+) | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --quiet \
+        --uc - | \
+    grep "^H" | \
+    cut -f 10 | \
+    sort -u | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #            --search_exact rejects UDB database (issue 596)                   #
 #                                                                              #
 #******************************************************************************#
@@ -14760,6 +14819,17 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     grep -qw "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#           command --makeudb_usearch cannot write to stdout? (issue 599)      #
+#                                                                              #
+#******************************************************************************#
+#
+## https://github.com/torognes/vsearch/issues/599
+
+# TODO
 
 
 exit 0
