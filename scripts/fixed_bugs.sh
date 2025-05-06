@@ -14684,7 +14684,36 @@ unset FASTA_INPUT
 #
 ## https://github.com/torognes/vsearch/issues/594
 
-# question, nothing to test
+DESCRIPTION="issue 594: --uchime_denovo reports name of the input file"
+TMP_FASTA=$(mktemp)
+printf ">s\nT\n" > "${TMP_FASTA}"
+"${VSEARCH}" \
+    --uchime_denovo "${TMP_FASTA}" \
+    --uchimeout /dev/null 2>&1 | \
+    grep -q "^Reading file ${TMP_FASTA}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -f "${TMP_FASTA}"
+unset TMP_FASTA
+
+# --uchime_ref does not report the name of the input file! It reports
+# the name and stats of the database file, which may be confusing.
+DESCRIPTION="issue 594: --uchime_ref reports name of the database file"
+TMP_FASTA=$(mktemp)
+TMP_DB=$(mktemp)
+printf ">s\nT\n" > "${TMP_FASTA}"
+printf ">s\nT\n" > "${TMP_DB}"
+"${VSEARCH}" \
+    --uchime_ref "${TMP_FASTA}" \
+    --db "${TMP_DB}" \
+    --uchimeout /dev/null 2>&1 | \
+    grep -q "^Reading file ${TMP_DB}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -f "${TMP_FASTA}" "${TMP_DB}"
+unset TMP_FASTA TMP_DB
 
 
 #******************************************************************************#
