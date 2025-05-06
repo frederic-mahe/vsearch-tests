@@ -14698,7 +14698,7 @@ rm -f "${TMP_FASTA}"
 unset TMP_FASTA
 
 # --uchime_ref does not report the name of the input file! It reports
-# the name and stats of the database file, which may be confusing.
+# the name and stats of the database file, which may be confusing
 DESCRIPTION="issue 594: --uchime_ref reports name of the database file"
 TMP_FASTA=$(mktemp)
 TMP_DB=$(mktemp)
