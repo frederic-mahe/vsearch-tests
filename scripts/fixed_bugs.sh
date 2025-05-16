@@ -14861,6 +14861,17 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
 # TODO
 
 
+#******************************************************************************#
+#                                                                              #
+#       vsearch --cluster_fast --strand plus/both behaviour (issue 600)        #
+#                                                                              #
+#******************************************************************************#
+#
+## https://github.com/torognes/vsearch/issues/600
+
+# TODO: show how to increase the cost of terminal gaps?
+
+
 exit 0
 
 
