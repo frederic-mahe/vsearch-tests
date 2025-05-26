@@ -14895,6 +14895,426 @@ unset TMP_OUTPUT
 # TODO: show how to increase the cost of terminal gaps?
 
 
+
+#******************************************************************************#
+#                                                                              #
+#            how to merge fasta sequences that are exact substrings            #
+#                   of longer sequences? (issue 601)                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/601
+
+## Goal: options to use to find and merge all fasta entries that are
+## exact substrings of longer entries
+
+## Relevant options and parameters:
+# --iddef 0 (similarity percentage = (matching columns) / (shortest sequence length))
+# --id 1.0 (only merge when shortest sequence is fully aligned with the target, without mismatches)
+# --maxdiffs 0 (reject query if it contains gaps)
+
+# expect a 'hit' (H)
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (same sequences)"
+printf ">s1\nACGT\n>s2\nACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# expect no 'hit' (H)
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (different sequences, 5' mismatch)"
+printf ">s1\nACGT\n>s2\nTCGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# expect no 'hit' (H)
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (different sequences, middle mismatch)"
+printf ">s1\nACGT\n>s2\nAGGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# expect no 'hit' (H)
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (different sequences, 3' mismatch)"
+printf ">s1\nACGT\n>s2\nACGA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (same sequences, reverse strand)"
+printf ">s1\nAAAA\n>s2\nTTTT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --strand "both" \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# expect no 'hit' (H)
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (different sequences)"
+printf ">s1\nAAAA\n>s2\nTTCT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --strand "both" \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (prefix)"
+printf ">s1\nAAACC\n>s2\nAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (prefix, mismatch in 5')"
+printf ">s1\nAAACC\n>s2\nTAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (prefix, mismatch in middle)"
+printf ">s1\nAAACC\n>s2\nATA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (prefix, mismatch in 3')"
+printf ">s1\nAAACC\n>s2\nAAT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (prefix, reverse strand)"
+printf ">s1\nAAACC\n>s2\nTTT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --strand "both" \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (suffix)"
+printf ">s1\nCCAAA\n>s2\nAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (suffix, mismatch in 5')"
+printf ">s1\nCCAAA\n>s2\nTAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (suffix, mismatch in middle)"
+printf ">s1\nCCAAA\n>s2\nATA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (suffix, mismatch in 3')"
+printf ">s1\nCCAAA\n>s2\nAAT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (suffix, reverse strand)"
+printf ">s1\nCCAAA\n>s2\nTTT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --strand "both" \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (substring)"
+printf ">s1\nCCAAACC\n>s2\nAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (substring, mismatch in 5')"
+printf ">s1\nCCAAACC\n>s2\nTAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (substring, mismatch in middle)"
+printf ">s1\nCCAAACC\n>s2\nATA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (substring, mismatch in 3')"
+printf ">s1\nCCAAACC\n>s2\nAAT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (substring, reverse strand)"
+printf ">s1\nCCAAACC\n>s2\nTTT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --strand "both" \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# expect no hit. Overhang is the same as a mismatch in 5'
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (overhang, no merge)"
+printf ">s1\nCCAA\n>s2\nGCC\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## With iddef 0, gaps in the query are not taken into account when computing similarity
+## sequences are merged, even though the query is not an exact substring
+# Qry  1 + GGTTCGACGGC---CTGCGCCCCGATGAG 26
+#          |||||||||||   |||||||||||||||
+# Tgt  1 + GGTTCGACGGCAAACTGCGCCCCGATGAG 29
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (gaps in substring do not count)"
+printf ">s1\nGGTTCGACGGCAAACTGCGCCCCGATGAGA\n>s2\nGGTTCGACGGCCTGCGCCCCGATGAG\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (prohibit gaps with --gapopen *)"
+printf ">s1\nGGTTCGACGGCAAACTGCGCCCCGATGAGA\n>s2\nGGTTCGACGGCCTGCGCCCCGATGAG\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --gapopen "*" \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# reverse strand
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (gaps in substring do not count, reverse strand)"
+printf ">s1\nGGTTCGACGGCAAACTGCGCCCCGATGAGA\n>s2\nCTCATCGGGGCGCAGGCCGTCGAACC\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --strand "both" \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (prohibit gaps with --gapopen *, reverse strand)"
+printf ">s1\nGGTTCGACGGCAAACTGCGCCCCGATGAGA\n>s2\nCTCATCGGGGCGCAGGCCGTCGAACC\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --gapopen "*" \
+        --strand "both" \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## gap in target, no merging
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (gaps in substring do not count)"
+printf ">s1\nGGTTCGACGGCAAACTGCGCCCCGATGAGAGAGA\n>s2\nGGTTCGACGGAAAACCTGCGCCCCGATGAG\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (prohibit gaps with --maxgaps 0)"
+printf ">s1\nGGTTCGACGGCAAACTGCGCCCCGATGAGA\n>s2\nGGTTCGACGGCCTGCGCCCCGATGAG\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --maxgaps 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (prohibit gaps with --maxdiffs 0)"
+printf ">s1\nGGTTCGACGGCAAACTGCGCCCCGATGAGA\n>s2\nGGTTCGACGGCCTGCGCCCCGATGAG\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --minseqlength 1 \
+        --id 1.0 \
+        --iddef 0 \
+        --maxdiffs 0 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 exit 0
 
 
