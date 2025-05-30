@@ -661,3 +661,6 @@ printf "@;ee=1.23;s\nA\n+\nI\n" | \
 
 
 exit 0
+
+# TODO:
+# --fastx_filter: does not truncate fastq labels by default?!
