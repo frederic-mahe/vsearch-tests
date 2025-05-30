@@ -4550,6 +4550,30 @@ DESCRIPTION="issue 140: do not truncate after a tab with --notrunclabels"
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## vsearch truncates after a space
+DESCRIPTION="issue 140: truncate headers after a space"
+"${VSEARCH}" \
+    --cluster_fast <(printf ">s1 header\nA\n") \
+    --id 0.97 \
+    --quiet \
+    --minseqlength 1 \
+    --uc - | \
+    awk -F "\t" '{exit /^S/ && $9 == "s1" && $10 == "*" ? 0 : 1}' && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
+"${VSEARCH}" \
+    --cluster_fast <(printf ">s1 header\nA\n") \
+    --id 0.97 \
+    --quiet \
+    --notrunclabels \
+    --minseqlength 1 \
+    --uc - | \
+    awk -F "\t" '{exit /^S/ && $9 == "s1 header" ? 0 : 1}' && \
+    success  "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
