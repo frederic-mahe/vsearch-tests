@@ -2450,7 +2450,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques --notrunclabels preserves full headers"
+DESCRIPTION="--fastx_uniques --notrunclabels preserves full fasta headers"
 printf ">s extra\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -2460,6 +2460,92 @@ printf ">s extra\nA\n" | \
     grep -wq ">s extra" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques truncates fastq headers (tab)"
+printf "@s header\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    grep -wq "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques truncates fastq headers (tab)"
+printf "@s\theader\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    grep -wq "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --notrunclabels preserves full fastq headers (space)"
+printf "@s extra\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --notrunclabels \
+        --fastqout - | \
+    grep -wq "@s extra" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --notrunclabels preserves full fastq headers (space)"
+printf "@s\textra\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --notrunclabels \
+        --quiet \
+        --fastqout - | \
+    grep -Ewq "@s[[:blank:]]extra" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# always truncate headers at first "\0" or "\n" or "\r"
+DESCRIPTION="--fastx_uniques truncates fastq headers after CR"
+printf "@s\rheader\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    grep -q "header" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --notrunclabels truncates fastq headers after CR"
+printf "@s\rheader\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --notrunclabels \
+        --quiet \
+        --fastqout - | \
+    grep -q "header" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques truncates fastq headers after NULL char"
+printf "@s\0header\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    grep -q "header" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --notrunclabels truncates fastq headers after NULL char"
+printf "@s\0header\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --notrunclabels \
+        --quiet \
+        --fastqout - | \
+    grep -q "header" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 ## ---------------------------------------------------------------------- quiet
 
