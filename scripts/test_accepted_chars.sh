@@ -319,7 +319,7 @@ unset OCTAL
 
 ## Define ASCII characters accepted in fastq headers
 #  0: NULL
-# 10: "\n"
+#  9: "\t"
 # 13: "\r"
 # 32: SPACE
 for i in 0 9 13 {32..126} ; do
@@ -337,8 +337,8 @@ unset OCTAL
 
 ## Define ASCII characters not accepted in fastq headers
 # 10: "\n"
-# 13: "\r"
-# 32: SPACE
+# 11: "\v"
+# 12: "\f"
 for i in {1..8} 10 11 12 {14..31} 127 ; do
     DESCRIPTION="ascii character ${i} is not allowed in fastq header (outside identifier)"
     OCTAL=$(printf "\%04o" ${i})
