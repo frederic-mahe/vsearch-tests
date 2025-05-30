@@ -252,6 +252,36 @@ printf "@\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# always truncate headers at first "\0" or "\n" or "\r"
+DESCRIPTION="vsearch rejects multi-line fastq headers (LF)"
+printf "@s\nheader\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="vsearch truncates fastq headers after CR"
+printf "@s\rheader\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastqout - | \
+    grep -q "header" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="vsearch truncates fastq headers after NULL char"
+printf "@s\0header\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastqout - | \
+    grep -q "header" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## Define ASCII characters not accepted in fastq identifiers
 # Oct   Dec   Hex   Char
 # ────────────────────────────────────────
