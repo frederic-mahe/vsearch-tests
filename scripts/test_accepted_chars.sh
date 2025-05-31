@@ -392,6 +392,25 @@ echo -e "@ø\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="keep non-ASCII characters in fastq identifiers"
+printf "@søs\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    grep -wq "@søs" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="warn about non-ASCII characters in fastq identifiers"
+printf "@søs\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## Define ASCII characters accepted in fastq sequences
 # ACGTUacgtu
