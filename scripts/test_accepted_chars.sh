@@ -382,6 +382,46 @@ for i in {1..8} 10 11 12 {14..31} 127 ; do
 done 
 unset OCTAL
 
+DESCRIPTION="report illegal ascii characters in fastq identifiers (fatal error)"
+printf "@s\b\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "fatal" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="report illegal ascii characters in fastq identifiers (character number)"
+printf "@s\b\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "character no 8" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="report illegal ascii characters in fastq identifiers (line number # 1)"
+printf "@s\b\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "line 1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="report illegal ascii characters in fastq identifiers (line number # 7)"
+printf "@s1\nA\nA\nA\n+\nIII\n@s2\b\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "line 7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## non-ASCII characters accepted in fastq identifiers
 DESCRIPTION="non-ASCII characters accepted in fastq identifiers"
 echo -e "@ø\nA\n+\nI\n" | \
