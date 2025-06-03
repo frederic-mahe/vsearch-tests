@@ -15339,6 +15339,59 @@ printf ">s1\nGGTTCGACGGCAAACTGCGCCCCGATGAGA\n>s2\nGGTTCGACGGCCTGCGCCCCGATGAG\n" 
         success "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#   --gapopen *: increase default value from 1,000 to INT_MAX? (issue 602)     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/602
+
+## expect no merging
+
+# Qry   1 + TTTTTCCTTATGCGTTCCTTTGTTGTTCTCGCAATGTGCGTAATCTAGGTTTCTTAGTAACGCC 64
+#           ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+# Tgt   1 + TTTTTCCTTATGCGTTCCTTTGTTGTTCTCGCAATGTGCGTAATCTAGGTTTCTTAGTAACGCC 64
+#
+# Qry  65 + GCCCACGGTCCTTACCTTATTAACCCTACACCCTTGCCCTTTT-CCCCCCCCCCCTTCTTCCCG 127
+#           ||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||
+# Tgt  65 + GCCCACGGTCCTTACCTTATTAACCCTACACCCTTGCCCTTTTCCCCCCCCCCCCTTCTTCCCG 128
+#
+# Qry 128 + ACCTCTGTGCCTAGGGTGTCTCCAGTGTCCCTCCGCGCCCTGTCCCTCGTTTGTTCCCCCCCCG 191
+#           ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+# Tgt 129 + ACCTCTGTGCCTAGGGTGTCTCCAGTGTCCCTCCGCGCCCTGTCCCTCGTTTGTTCCCCCCCCG 192
+#
+# Qry 192 + CGTTTCTGCTATCCCGTTCCATTCTTTCCGATTCACATCGGCC 234
+#           |||||||||||||||||||||||||||||||||||||||||||
+# Tgt 193 + CGTTTCTGCTATCCCGTTCCATTCTTTCCGATTCACATCGGCC 235
+
+# 235 cols, 234 ids (100.0%), 1 gaps (0.4%)
+
+## With the old default "infinite" penalty value of 1,000, these
+## sequences were merged. Commit 96e9cf9e sets the "infinite" penalty
+## value to INT_MAX
+DESCRIPTION="issue 602: --cluster_fast --gapopen infinite (raise from 1,000 to INT_MAX)"
+(
+    printf ">s1\n"
+    printf "TTTTTCCTTATGCGTTCCTTTGTTGTTCTCGCAATGTGCGTAATCTAGGTTTCTTAGTAACGCCGCCCACGGTCCTTACCTTATTAACCCTACACCCTTGCCCTTTTCCCCCCCCCCCCTTCTTCCCGACCTCTGTGCCTAGGGTGTCTCCAGTGTCCCTCCGCGCCCTGTCCCTCGTTTGTTCCCCCCCCGCGTTTCTGCTATCCCGTTCCATTCTTTCCGATTCACATCGGCC"
+    printf "\n"
+    printf ">s2\n"
+    printf "TTTTTCCTTATGCGTTCCTTTGTTGTTCTCGCAATGTGCGTAATCTAGGTTTCTTAGTAACGCCGCCCACGGTCCTTACCTTATTAACCCTACACCCTTGCCCTTTTCCCCCCCCCCCTTCTTCCCGACCTCTGTGCCTAGGGTGTCTCCAGTGTCCCTCCGCGCCCTGTCCCTCGTTTGTTCCCCCCCCGCGTTTCTGCTATCCCGTTCCATTCTTTCCGATTCACATCGGCC"
+    printf "\n"
+) | \
+    vsearch \
+        --cluster_fast - \
+        --qmask "none" \
+        --iddef 0 \
+        --id 1.00 \
+        --gapopen "*" \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 exit 0
 
 
