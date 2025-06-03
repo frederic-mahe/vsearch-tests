@@ -452,6 +452,36 @@ printf "@søs\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="warn about non-ASCII characters in fastq identifiers (character number)"
+printf "@søs\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "Character no 195" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="warn about non-ASCII characters in fastq identifiers (line number 1)"
+printf "@søs\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "line 1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="warn about non-ASCII characters in fastq identifiers (line number 7)"
+printf "@s1\nA\nA\nA\n+\nIII\n@søs\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "line 7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## Define ASCII characters accepted in fastq sequences
 # ACGTUacgtu
 for i in {65..68} 71 72 75 77 78 82 83 84 85 86 87 89 97 98 99 100 103 104 107 109 110 114 115 116 117 118 119 121 ; do
