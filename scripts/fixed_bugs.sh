@@ -8214,8 +8214,7 @@ unset S1 S2 S3
 # (segmentation fault).
 
 DESCRIPTION="issue 508: cluster_size works with --clusters (no segfault)"
-PREFIX=$(mktemp -u | cut -d "." -f 2)
-
+PREFIX=$(mktemp --dry-run | cut -d "." -f 2)
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --cluster_size - \
@@ -8226,11 +8225,9 @@ printf ">s1\nA\n" | \
         --clusters "tmp${PREFIX}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
-rm "tmp${PREFIX}0"
+rm "tmp${PREFIX}0" 2> /dev/null
 
 DESCRIPTION="issue 508: cluster_size works without --clusters (no segfault)"
-
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --cluster_size - \
@@ -8240,6 +8237,7 @@ printf ">s1\nA\n" | \
         --uc /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
