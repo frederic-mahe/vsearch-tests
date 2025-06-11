@@ -8225,7 +8225,7 @@ printf ">s1\nA\n" | \
         --clusters "tmp${PREFIX}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm "tmp${PREFIX}0" 2> /dev/null
+rm "tmp${PREFIX}0"
 
 DESCRIPTION="issue 508: cluster_size works without --clusters (no segfault)"
 printf ">s1\nA\n" | \
