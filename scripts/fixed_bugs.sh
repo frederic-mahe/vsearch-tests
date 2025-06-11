@@ -15392,6 +15392,17 @@ DESCRIPTION="issue 602: --cluster_fast --gapopen infinite (raise from 1,000 to I
         success "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#             Default parameters for pairwise alignment (issue 604)            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/604
+
+# question, nothing to test
+
+
 exit 0
 
 
