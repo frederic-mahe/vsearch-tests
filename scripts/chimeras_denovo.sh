@@ -576,30 +576,39 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
-# 200000000000000000000 / 100000000000000000001 -> 2E-20
-DESCRIPTION="chimeras_denovo: can distinguish very close abundance ratio and abskew values (below LDBL_EPSILON = 1.0842e-19)"
-#        1...5...10...15.
-A_START="AAAAAAAAAAAAAAA"
-A_END="${A_START}"
-B_START="CCCCCCCCCCCCCCC"
-B_END="${B_START}"
+## 200000000000000000000 / 100000000000000000001 -> 2E-20
+# DESCRIPTION="chimeras_denovo: can distinguish very close abundance ratio and abskew values (below LDBL_EPSILON = 1.0842e-19)"
+# #        1...5...10...15.
+# A_START="AAAAAAAAAAAAAAA"
+# A_END="${A_START}"
+# B_START="CCCCCCCCCCCCCCC"
+# B_END="${B_START}"
 
-(
-    printf ">sA;size=200000000000000000000\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=200000000000000000000\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=100000000000000000001\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --qmask none \
-        --quiet \
-        --abskew 2 \
-        --chimeras - | \
-    grep --quiet "^>sQ;" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+# (
+#     printf ">sA;size=200000000000000000000\n%s\n" "${A_START}${A_END}"
+#     printf ">sB;size=200000000000000000000\n%s\n" "${B_START}${B_END}"
+#     printf ">sQ;size=100000000000000000001\n%s\n" "${A_START}${B_END}"
+# ) | \
+#     ${VSEARCH} \
+#         --chimeras_denovo - \
+#         --qmask none \
+#         --quiet \
+#         --abskew 2 \
+#         --chimeras - | \
+#     grep --quiet "^>sQ;" && \
+#     failure "${DESCRIPTION}" || \
+#         success "${DESCRIPTION}"
 
-unset A_START A_END B_START B_END
+# unset A_START A_END B_START B_END
+
+# Fatal error: Invalid (range error) abundance annotation in FASTA
+#
+# File header abundance annotations are parsed with std::strtoll(),
+# which can return at most LLONG_MAX:
+#
+# LONG_MAX  9223372036854775807
+# LLONG_MAX 9223372036854775807
+#         200000000000000000000  <- our input value is more than 20 times too large
 
 
 ## ---------------------------------------------------------- chimeras_diff_pct
@@ -1807,3 +1816,4 @@ exit 0
 # - --chimeras_diff_pct is largely untested (no expected behavior)
 # - no capacity to read bzip2 or gzip?
 # - accept replicated sequences (same names)?
+# --tabbedout "Fatal error: No output files specified", tabbedout should be enough?
