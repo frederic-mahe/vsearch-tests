@@ -1104,8 +1104,8 @@ printf ">s;size=1\nA\n" | \
 ## ------------------------------------------------------------------ tabbedout
 
 # --tabbedout "Fatal error: No output files specified", tabbedout
-# should be enough?
-DESCRIPTION="chimeras_denovo: output only to tabbedout"
+# tabbedout should be enough?
+DESCRIPTION="chimeras_denovo: option tabbedout is accepted"
 printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
