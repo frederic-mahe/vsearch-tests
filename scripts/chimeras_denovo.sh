@@ -53,7 +53,6 @@ DESCRIPTION="check if vsearch is executable"
 #   --xsize                     strip abundance information in output
 
 
-
 #*****************************************************************************#
 #                                                                             #
 #                           mandatory options                                 #
@@ -990,7 +989,7 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 2 rejects chimeras wit
 
 # unset MODULE_A MODULE_B MODULE_C
 
-exit
+
 
 
 # - test default threshold (3 parents, should reject case with 4 parents, accept case with 3 parents)
