@@ -1114,6 +1114,40 @@ printf ">s;size=1\nA\n" | \
         failure "${DESCRIPTION}"
 
 
+DESCRIPTION="chimeras_denovo: option tabbedout is accepted (with other output)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras /dev/null \
+        --tabbedout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout outputs 18 tab-separated columns"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras /dev/null \
+        --quiet \
+        --tabbedout - |
+    awk 'BEGIN {FS = "\t"} END {exit (NF == 18) ? 0 : 1}' && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
 
 ## -------------------------------------------------------------------- threads
 ## ------------------------------------------------------------------------ xee
