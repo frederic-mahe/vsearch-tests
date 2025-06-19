@@ -613,8 +613,6 @@ unset A_START A_END B_START B_END
 
 ## ---------------------------------------------------------- chimeras_diff_pct
 
-# undocumented!
-
 DESCRIPTION="chimeras_denovo: option chimeras_diff_pct is accepted"
 printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
@@ -635,7 +633,7 @@ printf ">s;size=1\nA\n" | \
         failure "${DESCRIPTION}"
 
 
-DESCRIPTION="chimeras_denovo: option chimeras_diff_pct accepts null value (0.0)"
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct accepts values in range (0.0)"
 printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
@@ -645,11 +643,42 @@ printf ">s;size=1\nA\n" | \
         failure "${DESCRIPTION}"
 
 
-DESCRIPTION="chimeras_denovo: option chimeras_diff_pct accepts fifty percents (50.0)"
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct accepts values in range (1.0)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct 1.0 \
+        --chimeras - 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct accepts values in range (50.0)"
 printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --chimeras_diff_pct 50.0 \
+        --chimeras - 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ints are silently interpreted as floats
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct accepts integers (0)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct 0 \
+        --chimeras - 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct accepts integers (50)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct 50 \
         --chimeras - 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -665,11 +694,21 @@ printf ">s;size=1\nA\n" | \
         success "${DESCRIPTION}"
 
 
-DESCRIPTION="chimeras_denovo: option chimeras_diff_pct rejects values greater than 50.0"
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct rejects values greater than 50.0 (epsilon)"
 printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
-        --chimeras_diff_pct 50.1 \
+        --chimeras_diff_pct 50.00001 \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct rejects values greater than 50.0 (51)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct 51 \
         --chimeras - 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -684,6 +723,18 @@ printf ">s;size=1\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+
+DESCRIPTION="chimeras_denovo: option chimeras_diff_pct rejects empty values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_diff_pct   \
+        --chimeras - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+exit
 
 ## -------------------------------------------------------- chimeras_length_min
 
