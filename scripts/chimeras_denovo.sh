@@ -734,8 +734,6 @@ printf ">s;size=1\nA\n" | \
         success "${DESCRIPTION}"
 
 
-exit
-
 ## -------------------------------------------------------- chimeras_length_min
 
 DESCRIPTION="chimeras_denovo: chimeras_length_min is accepted"
