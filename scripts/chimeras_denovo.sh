@@ -295,8 +295,8 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
+## Q is not a chimera, Q is the same as A
 DESCRIPTION="chimeras_denovo: simplest negative example"
-
 #        1...5...10
 A_START="GTAGGCCGTG"
 A_END="${A_START}"
@@ -326,25 +326,14 @@ unset A_START A_END B_START B_END
 
 #  Parameters
 #   --abskew REAL               minimum abundance ratio (1.0)
+#   --chimeras_diff_pct         mismatch % allowed in each chimeric region (0.0)
 #   --chimeras_length_min       minimum length of each chimeric region (10)
 #   --chimeras_parents_max      maximum number of parent sequences (3)
 #   --chimeras_parts            number of parts to divide sequences (length/100)
 #   --sizein                    propagate abundance annotation from input
 
-## also:
-# --chimeras_diff_pct           ??????
 
 ## --------------------------------------------------------------------- abskew
-
-# --abskew real
-
-# When using --uchime_denovo, the abundance skew is used to
-# distinguish in a three-way alignment which sequence is the chimera
-# and which are the parents. The assumption is that chimeras appear
-# later in the PCR amplification process and are therefore less
-# abundant than their parents. The default value is 2.0, which means
-# that the parents should be at least 2 times more abundant than their
-# chimera. Any positive value equal or greater than 1.0 can be used.
 
 DESCRIPTION="chimeras_denovo: option abskew is accepted"
 printf ">s;size=1\nA\n" | \
