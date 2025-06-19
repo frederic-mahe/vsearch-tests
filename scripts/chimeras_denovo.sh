@@ -609,7 +609,7 @@ unset A_START A_END B_START B_END
 # LONG_MAX  9223372036854775807
 # LLONG_MAX 9223372036854775807
 #         200000000000000000000  <- our input value is more than 20 times too large
-
+# large abundance values already tested in fastq_mergepairs.sh
 
 ## ---------------------------------------------------------- chimeras_diff_pct
 
