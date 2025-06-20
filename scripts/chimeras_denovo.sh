@@ -600,6 +600,7 @@ unset A_START A_END B_START B_END
 #         200000000000000000000  <- our input value is more than 20 times too large
 # large abundance values already tested in fastq_mergepairs.sh
 
+
 ## ---------------------------------------------------------- chimeras_diff_pct
 
 DESCRIPTION="chimeras_denovo: option chimeras_diff_pct is accepted"
