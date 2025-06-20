@@ -986,6 +986,92 @@ printf ">s;size=1\nA\n" | \
         success "${DESCRIPTION}"
 
 
+# with natural sequences
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max accepts three parents (default)"
+# Query   (   58 nt) Q;size=1
+# ParentA (   58 nt) pA;size=9
+# ParentB (   58 nt) pB;size=9
+# ParentC (   58 nt) pC;size=9
+#
+# Q     1 GAAAGCTTTTGATTTTAAAAGTTTTACACCAGTCTTTTACAGATCGGTGCTTGAAATG 58
+# A     1 GAAAGCTTTTGATTTTgAAAGcTTTACACCtaTCTTTTtCAGATCGGTGCTTGAAATG 58
+# B     1 cAAAGCTTTTGAaTTTAAAAGTTTTACACCAGTCTTTTcCAGATCGGTGCTTGAAATG 58
+# C     1 cAAAGCTTTTGAcTTTAAAAGgTTTACACCgGTCTTTTACAGATCGGTGCTTGAAATG 58
+# Diffs   A           A        B        B       C
+# Model   AAAAAAAAAAAAABBBBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#
+# Ids.  QA 91.38%, QB 94.83%, QC 93.10%, QT 94.83%, QModel 100.00%, Div. +5.45%
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "GAAAGCTTTTGATTTTGAAAGCTTTACACCTATCTTTTTCAGATCGGTGCTTGAAATG"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "CAAAGCTTTTGAATTTAAAAGTTTTACACCAGTCTTTTCCAGATCGGTGCTTGAAATG"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "CAAAGCTTTTGACTTTAAAAGGTTTACACCGGTCTTTTACAGATCGGTGCTTGAAATG"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "GAAAGCTTTTGATTTTAAAAGTTTTACACCAGTCTTTTACAGATCGGTGCTTGAAATG"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --alnout - | \
+    grep -iq "^ParentC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max accepts three parents (option on)"
+# Query   (   58 nt) Q;size=1
+# ParentA (   58 nt) pA;size=9
+# ParentB (   58 nt) pB;size=9
+# ParentC (   58 nt) pC;size=9
+#
+# Q     1 GAAAGCTTTTGATTTTAAAAGTTTTACACCAGTCTTTTACAGATCGGTGCTTGAAATG 58
+# A     1 GAAAGCTTTTGATTTTgAAAGcTTTACACCtaTCTTTTtCAGATCGGTGCTTGAAATG 58
+# B     1 cAAAGCTTTTGAaTTTAAAAGTTTTACACCAGTCTTTTcCAGATCGGTGCTTGAAATG 58
+# C     1 cAAAGCTTTTGAcTTTAAAAGgTTTACACCgGTCTTTTACAGATCGGTGCTTGAAATG 58
+# Diffs   A           A        B        B       C
+# Model   AAAAAAAAAAAAABBBBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#
+# Ids.  QA 91.38%, QB 94.83%, QC 93.10%, QT 94.83%, QModel 100.00%, Div. +5.45%
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "GAAAGCTTTTGATTTTGAAAGCTTTACACCTATCTTTTTCAGATCGGTGCTTGAAATG"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "CAAAGCTTTTGAATTTAAAAGTTTTACACCAGTCTTTTCCAGATCGGTGCTTGAAATG"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "CAAAGCTTTTGACTTTAAAAGGTTTACACCGGTCTTTTACAGATCGGTGCTTGAAATG"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "GAAAGCTTTTGATTTTAAAAGTTTTACACCAGTCTTTTACAGATCGGTGCTTGAAATG"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras_parents_max 3 \
+        --chimeras /dev/null \
+        --alnout - | \
+    grep -iq "^ParentC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 DESCRIPTION="chimeras_denovo: option chimeras_parents_max 2 accepts chimeras with 2 parents"
 #        1...5...10
 A_START="GTAGGCCGTG"
@@ -1009,40 +1095,162 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
+# with artificial sequences
 DESCRIPTION="chimeras_denovo: option chimeras_parents_max 2 rejects chimeras with 3 parents"
-# #        1...5...10
-# MODULE_A="AAAAAAAAAAA"
-# MODULE_B="CCCCCCCCCCC"
-# MODULE_C="GGGGGGGGGGG"
+# Query   (   58 nt) Q;size=1
+# ParentA (   58 nt) pA;size=9
+# ParentB (   58 nt) pB;size=9
+# ParentC (   58 nt) pC;size=9
+#
+# Q     1 ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA 58
+# A     1 ACAAAAAAAAAAACAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAA 58
+# B     1 AaAAAAAAAAAAAaAAAAGAAAAAAAAAAAGAAAAAAAAAAAaAAAAAAAAAAaAAAA 58
+# C     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAATAAAAAAAAAATAAAA 58
+# Diffs    A           A    B           B           C          C
+# Model   AAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCC
+#
+# Ids.  QA 93.10%, QB 93.10%, QC 93.10%, QT 93.10%, QModel 100.00%, Div. +7.41%
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --chimeras_parents_max 2 \
+        --alnout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
-# (
-#     printf ">sA;size=9\n%s\n" "${MODULE_A}${MODULE_A}${MODULE_A}"
-#     printf ">sB;size=9\n%s\n" "${MODULE_B}${MODULE_B}${MODULE_B}"
-#     printf ">sC;size=9\n%s\n" "${MODULE_C}${MODULE_C}${MODULE_C}"
-#     printf ">sQ;size=1\n%s\n" "${MODULE_A}${MODULE_B}${MODULE_C}"
-# ) | \
-#     ${VSEARCH} \
-#         --chimeras_denovo - \
-#         --chimeras_parents_max 3 \
-#         --qmask none \
-#         --chimeras - \
-#         --alnout -
+
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max 4 allows four parents"
+# Query   (   74 nt) Q;size=1
+# ParentA (   74 nt) pA;size=9
+# ParentB (   74 nt) pB;size=9
+# ParentC (   74 nt) pC;size=9
+# ParentD (   74 nt) pD;size=9
+#
+# Q     1 ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACA 60
+# A     1 ACAAAAAAAAAAACAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
+# B     1 AaAAAAAAAAAAAaAAAAGAAAAAAAAAAAGAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
+# C     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAATAAAAAAAAAATAAAAaA 60
+# D     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAACA 60
+# Diffs    A           A    B           B           C          C    D
+# Model   AAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCDDDDDD
+#
+# Q    61 AAAAAAAAACAAAA 74
+# A    61 AAAAAAAAAaAAAA 74
+# B    61 AAAAAAAAAaAAAA 74
+# C    61 AAAAAAAAAaAAAA 74
+# D    61 AAAAAAAAACAAAA 74
+# Diffs            D
+# Model   DDDDDDDDDDDDDD
+#
+# Ids.  QA 91.89%, QB 91.89%, QC 91.89%, QT 91.89%, QModel 100.00%, Div. +8.82%
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pD;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAACAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACAAAAAAAAAACAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras_parents_max 4 \
+        --chimeras /dev/null \
+        --alnout - | \
+    grep -iq "^ParentD" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
-# 2> /dev/null | \
-#     grep -q "." && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
-
-# unset MODULE_A MODULE_B MODULE_C
-
-
-
-
-# - test default threshold (3 parents, should reject case with 4 parents, accept case with 3 parents)
-# - test with two parents (should reject case with 3 parents, accept case with 2 parents)
-# - test with four parents (should reject case with 5 parents, accept case with 4 parents)
-
+DESCRIPTION="chimeras_denovo: option chimeras_parents_max 3 rejects chimera with 4 parents"
+# Query   (   74 nt) Q;size=1
+# ParentA (   74 nt) pA;size=9
+# ParentB (   74 nt) pB;size=9
+# ParentC (   74 nt) pC;size=9
+# ParentD (   74 nt) pD;size=9
+#
+# Q     1 ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACA 60
+# A     1 ACAAAAAAAAAAACAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
+# B     1 AaAAAAAAAAAAAaAAAAGAAAAAAAAAAAGAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
+# C     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAATAAAAAAAAAATAAAAaA 60
+# D     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAACA 60
+# Diffs    A           A    B           B           C          C    D
+# Model   AAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCDDDDDD
+#
+# Q    61 AAAAAAAAACAAAA 74
+# A    61 AAAAAAAAAaAAAA 74
+# B    61 AAAAAAAAAaAAAA 74
+# C    61 AAAAAAAAAaAAAA 74
+# D    61 AAAAAAAAACAAAA 74
+# Diffs            D
+# Model   DDDDDDDDDDDDDD
+#
+# Ids.  QA 91.89%, QB 91.89%, QC 91.89%, QT 91.89%, QModel 100.00%, Div. +8.82%
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pD;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAACAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACAAAAAAAAAACAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras_parents_max 3 \
+        --chimeras /dev/null \
+        --alnout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 ## ------------------------------------------------------------- chimeras_parts
@@ -1193,6 +1401,62 @@ B_END="${B_START}"
 
 unset A_START A_END B_START B_END
 
+
+DESCRIPTION="chimeras_denovo: tabbedout only outputs the first three parents (4 parents)"
+# Query   (   74 nt) Q;size=1
+# ParentA (   74 nt) pA;size=9
+# ParentB (   74 nt) pB;size=9
+# ParentC (   74 nt) pC;size=9
+# ParentD (   74 nt) pD;size=9
+#
+# Q     1 ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACA 60
+# A     1 ACAAAAAAAAAAACAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
+# B     1 AaAAAAAAAAAAAaAAAAGAAAAAAAAAAAGAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
+# C     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAATAAAAAAAAAATAAAAaA 60
+# D     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAACA 60
+# Diffs    A           A    B           B           C          C    D
+# Model   AAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCDDDDDD
+#
+# Q    61 AAAAAAAAACAAAA 74
+# A    61 AAAAAAAAAaAAAA 74
+# B    61 AAAAAAAAAaAAAA 74
+# C    61 AAAAAAAAAaAAAA 74
+# D    61 AAAAAAAAACAAAA 74
+# Diffs            D
+# Model   DDDDDDDDDDDDDD
+#
+# Ids.  QA 91.89%, QB 91.89%, QC 91.89%, QT 91.89%, QModel 100.00%, Div. +8.82%
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pD;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAACAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACAAAAAAAAAACAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras_parents_max 4 \
+        --chimeras /dev/null \
+        --tabbedout - | \
+    awk '{exit (! /^$/) && (! /pD/) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 ## -------------------------------------------------------------------- threads
@@ -1740,34 +2004,38 @@ unset A_START A_END B_START B_END
 #                                                                             #
 #*****************************************************************************#
 
-# TODO: write a test that activates all output files, with a chimeric
-# and a non-chimeric case.
-
 ## valgrind: search for errors and memory leaks
-# if which valgrind > /dev/null 2>&1 ; then
-#     TMP=$(mktemp)
-#     valgrind \
-#         --log-file="${TMP}" \
-#         --leak-check=full \
-#         "${VSEARCH}" \
-#         --cut <(printf ">s1\nGAATTC\n>s2\nA\n") \
-#         --cut_pattern G^AATT_C \
-#         --fastaout_discarded /dev/null \
-#         --fastaout_rev /dev/null \
-#         --fastaout_discarded /dev/null \
-#         --fastaout_discarded_rev /dev/null \
-#         --log /dev/null 2> /dev/null
-#     DESCRIPTION="--cut valgrind (no leak memory)"
-#     grep -q "in use at exit: 0 bytes" "${TMP}" && \
-#         success "${DESCRIPTION}" || \
-#             failure "${DESCRIPTION}"
-#     DESCRIPTION="--cut valgrind (no errors)"
-#     grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
-#         success "${DESCRIPTION}" || \
-#             failure "${DESCRIPTION}"
-#     rm -f "${TMP}"
-#     unset TMP
-# fi
+if which valgrind > /dev/null 2>&1 ; then
+    #        1...5...10
+    A_START="GTAGGCCGTG"
+    A_END="${A_START}"
+    B_START="CTGAGCCGTA"
+    B_END="${B_START}"
+    TMP=$(mktemp)
+    FASTA=$(printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+            printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+            printf ">sQ;size=1\n%s\n" "${A_START}${B_END}")
+    valgrind \
+        --log-file="${TMP}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --chimeras_denovo <(echo "${FASTA}") \
+        --chimeras /dev/null \
+        --nonchimeras /dev/null \
+        --alnout /dev/null \
+        --tabbedout /dev/null \
+        --log /dev/null 2> /dev/null
+    DESCRIPTION="--chimeras_denovo valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--chimeras_denovo valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${TMP}"
+    unset TMP A_START A_END B_START B_END FASTA
+fi
 
 
 #*****************************************************************************#
@@ -1841,16 +2109,18 @@ exit 0
 
 ## Notes
 
-# - test chimeras with more than two parents,
+# --threads is not ignored! (fix manpage)
+# - test chimeras with more than two parents, *DONE*
 # - test chimeras with more than two parents for a given chunk,
 # - test tab output,
+# - tabbedout does not report more than 3 parents! *DONE*
 # - test remaining command-specific parameters
 # - test if relabel applies to both chimeras and non-chimeras
 
 
 ## potential mistakes?
 
-# - fix: --chimeras_diff_pct is undocumented
+# - fix: --chimeras_diff_pct is undocumented *DONE*
 # - --chimeras_diff_pct is largely untested (no expected behavior)
 # - no capacity to read bzip2 or gzip?
 # - accept replicated sequences (same names)?
