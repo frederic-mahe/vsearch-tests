@@ -60,9 +60,11 @@ DESCRIPTION="check if vsearch is executable"
 #*****************************************************************************#
 
 # --chimeras_denovo
-# and either, or both:
+# and either, or some or all:
 #    --chimeras
 #    --nonchimeras
+#    --alnout
+#    --tabbedout
 
 DESCRIPTION="chimeras_denovo: command is accepted"
 printf ">s;size=1\nA\n" | \
@@ -154,6 +156,111 @@ printf ">s;size=1\n\n" | \
         --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+## ------------------------------------------------------------------ tabbedout
+
+DESCRIPTION="chimeras_denovo: option tabbedout is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --tabbedout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option tabbedout is accepted (with other output)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras /dev/null \
+        --tabbedout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout outputs 18 tab-separated columns"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - |
+    awk 'BEGIN {FS = "\t"} END {exit (NF == 18) ? 0 : 1}' && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: tabbedout only outputs the first three parents (4 parents)"
+# Query   (   74 nt) Q;size=1
+# ParentA (   74 nt) pA;size=9
+# ParentB (   74 nt) pB;size=9
+# ParentC (   74 nt) pC;size=9
+# ParentD (   74 nt) pD;size=9
+#
+# Q     1 ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACA 60
+# A     1 ACAAAAAAAAAAACAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
+# B     1 AaAAAAAAAAAAAaAAAAGAAAAAAAAAAAGAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
+# C     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAATAAAAAAAAAATAAAAaA 60
+# D     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAACA 60
+# Diffs    A           A    B           B           C          C    D
+# Model   AAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCDDDDDD
+#
+# Q    61 AAAAAAAAACAAAA 74
+# A    61 AAAAAAAAAaAAAA 74
+# B    61 AAAAAAAAAaAAAA 74
+# C    61 AAAAAAAAAaAAAA 74
+# D    61 AAAAAAAAACAAAA 74
+# Diffs            D
+# Model   DDDDDDDDDDDDDD
+#
+# Ids.  QA 91.89%, QB 91.89%, QC 91.89%, QT 91.89%, QModel 100.00%, Div. +8.82%
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pD;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAACAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACAAAAAAAAAACAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras_parents_max 4 \
+        --tabbedout - | \
+    awk '{exit (! /^$/) && (! /pD/) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## --------------------------------------------------------------------- alnout
+
+# output chimera alignments to file
 
 
 #*****************************************************************************#
@@ -1290,11 +1397,6 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 3 rejects chimera with
 # width of alignments in alignment output file (60)
 
 
-## --------------------------------------------------------------------- alnout
-
-# output chimera alignments to file
-
-
 ## ---------------------------------------------------------------- fasta_width
 ## --------------------------------------------------------------------- gapext
 ## -------------------------------------------------------------------- gapopen
@@ -1351,108 +1453,6 @@ printf ">s;size=1\nA\n" | \
 ## --------------------------------------------------------------- relabel_sha1
 ## --------------------------------------------------------------------- sample
 ## -------------------------------------------------------------------- sizeout
-## ------------------------------------------------------------------ tabbedout
-
-# --tabbedout "Fatal error: No output files specified", tabbedout
-# tabbedout should be enough?
-DESCRIPTION="chimeras_denovo: option tabbedout is accepted"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --tabbedout /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option tabbedout is accepted (with other output)"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --chimeras /dev/null \
-        --tabbedout /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: tabbedout outputs 18 tab-separated columns"
-#        1...5...10
-A_START="GTAGGCCGTG"
-A_END="${A_START}"
-B_START="CTGAGCCGTA"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --tabbedout - |
-    awk 'BEGIN {FS = "\t"} END {exit (NF == 18) ? 0 : 1}' && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
-
-
-DESCRIPTION="chimeras_denovo: tabbedout only outputs the first three parents (4 parents)"
-# Query   (   74 nt) Q;size=1
-# ParentA (   74 nt) pA;size=9
-# ParentB (   74 nt) pB;size=9
-# ParentC (   74 nt) pC;size=9
-# ParentD (   74 nt) pD;size=9
-#
-# Q     1 ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACA 60
-# A     1 ACAAAAAAAAAAACAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
-# B     1 AaAAAAAAAAAAAaAAAAGAAAAAAAAAAAGAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
-# C     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAATAAAAAAAAAATAAAAaA 60
-# D     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAACA 60
-# Diffs    A           A    B           B           C          C    D
-# Model   AAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCDDDDDD
-#
-# Q    61 AAAAAAAAACAAAA 74
-# A    61 AAAAAAAAAaAAAA 74
-# B    61 AAAAAAAAAaAAAA 74
-# C    61 AAAAAAAAAaAAAA 74
-# D    61 AAAAAAAAACAAAA 74
-# Diffs            D
-# Model   DDDDDDDDDDDDDD
-#
-# Ids.  QA 91.89%, QB 91.89%, QC 91.89%, QT 91.89%, QModel 100.00%, Div. +8.82%
-(
-    printf ">pA;size=9"
-    printf "\n"
-    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-    printf "\n"
-    printf ">pB;size=9"
-    printf "\n"
-    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-    printf "\n"
-    printf ">pC;size=9"
-    printf "\n"
-    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAAAAAAAAAAAAAAAAAA"
-    printf "\n"
-    printf ">pD;size=9"
-    printf "\n"
-    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAACAAAA"
-    printf "\n"
-    printf ">Q;size=1"
-    printf "\n"
-    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACAAAAAAAAAACAAAA"
-    printf "\n"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --chimeras_parents_max 4 \
-        --tabbedout - | \
-    awk '{exit (! /^$/) && (! /pD/) ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
 ## -------------------------------------------------------------------- threads
 
 DESCRIPTION="chimeras_denovo: --threads is accepted"
