@@ -1023,7 +1023,6 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max accepts three parents 
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --chimeras /dev/null \
         --alnout - | \
     grep -iq "^ParentC" && \
     success "${DESCRIPTION}" || \
@@ -1066,7 +1065,6 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max accepts three parents 
         --chimeras_denovo - \
         --quiet \
         --chimeras_parents_max 3 \
-        --chimeras /dev/null \
         --alnout - | \
     grep -iq "^ParentC" && \
     success "${DESCRIPTION}" || \
@@ -1132,7 +1130,6 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 2 rejects chimeras wit
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --chimeras /dev/null \
         --chimeras_parents_max 2 \
         --alnout - | \
     grep -q "." && \
@@ -1190,7 +1187,6 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 4 allows four parents"
         --chimeras_denovo - \
         --quiet \
         --chimeras_parents_max 4 \
-        --chimeras /dev/null \
         --alnout - | \
     grep -iq "^ParentD" && \
     success "${DESCRIPTION}" || \
@@ -1247,7 +1243,6 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 3 rejects chimera with
         --chimeras_denovo - \
         --quiet \
         --chimeras_parents_max 3 \
-        --chimeras /dev/null \
         --alnout - | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
@@ -1393,7 +1388,6 @@ B_END="${B_START}"
 ) | \
     ${VSEARCH} \
         --chimeras_denovo - \
-        --chimeras /dev/null \
         --quiet \
         --tabbedout - |
     awk 'BEGIN {FS = "\t"} END {exit (NF == 18) ? 0 : 1}' && \
@@ -1453,7 +1447,6 @@ DESCRIPTION="chimeras_denovo: tabbedout only outputs the first three parents (4 
         --chimeras_denovo - \
         --quiet \
         --chimeras_parents_max 4 \
-        --chimeras /dev/null \
         --tabbedout - | \
     awk '{exit (! /^$/) && (! /pD/) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -1620,7 +1613,6 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --qmask none \
         --quiet \
-        --chimeras /dev/null \
         --alnout - | \
     grep --quiet "." && \
     success "${DESCRIPTION}" || \
@@ -1645,7 +1637,6 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --qmask none \
         --quiet \
-        --chimeras /dev/null \
         --alnout - | \
     grep --quiet " AAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBB$" && \
     success "${DESCRIPTION}" || \
@@ -1716,7 +1707,6 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --qmask none \
         --quiet \
-        --chimeras /dev/null \
         --alignwidth 0 \
         --alnout - | \
     awk '{if ($1 ~ /^Model/) matches += 1}
@@ -1754,7 +1744,6 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --qmask none \
         --quiet \
-        --chimeras /dev/null \
         --alignwidth 1 \
         --alnout - | \
     awk '{if ($1 ~ /^Model/) matches += 1}
@@ -1838,7 +1827,6 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --qmask none \
         --quiet \
-        --chimeras /dev/null \
         --alnout - | \
     awk '{if ($1 ~ /^Model/) matches += 1}
          END {exit matches == 1 ? 0 : 1}' && \
@@ -1864,7 +1852,6 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --qmask none \
         --quiet \
-        --chimeras /dev/null \
         --alnout - | \
     awk '{if ($1 ~ /^Model/) matches += 1}
          END {exit matches == 2 ? 0 : 1}' && \
@@ -1890,7 +1877,6 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --qmask none \
         --quiet \
-        --chimeras /dev/null \
         --alignwidth 61 \
         --alnout - | \
     awk '{if ($1 ~ /^Model/) matches += 1}
@@ -1924,7 +1910,6 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --qmask none \
         --quiet \
-        --chimeras /dev/null \
         --alnout - | \
     grep --quiet "^Model" && \
     success "${DESCRIPTION}" || \
@@ -1950,7 +1935,6 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --qmask none \
         --quiet \
-        --chimeras /dev/null \
         --alnout - | \
     grep --quiet "^Model" && \
     failure "${DESCRIPTION}" || \
@@ -1976,7 +1960,6 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --qmask none \
         --quiet \
-        --chimeras /dev/null \
         --alnout - | \
     grep --quiet "^Model" && \
     failure "${DESCRIPTION}" || \
@@ -2060,6 +2043,93 @@ if which valgrind > /dev/null 2>&1 ; then
     rm -f "${TMP}"
     unset TMP A_START A_END B_START B_END FASTA
 fi
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              memory issues                                  #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="chimeras_denovo: no segfault"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "TGATACATAGTATCGTCACATGAAAGGATTGGGTCGGATGTCTCAAACGAATTCGAATTCTTTTCATGGTATTTATTCAACGCAATGGCAGTTTGTGTTAATACGTCGATGGCTACGTATAATCAATTTGGGGGAATTTTACCATCGTCAGACATGCCCCAGGACAATAATATTCAGACTGGTAATAGTGGCTTAGCATTG"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "TGGGAATTGACATGACTTACCCCGTTGGACTTTACATTCCATAATGTTACCTAATTATCTCATATCTAAGGGTTTAAGCTGTTGCGCTGGATGTCGTGTCTACGACGGTGTACCATTATTCGTTATCCTAAAAACATCTCACGTTGATAATGGTAGAAGGACCTGGAGATACACAAGGAAAAACAATTCGAGCAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "ACTTTTCTGGTCGTAATGTATGATTAGTTACTTTTAGCAGAGTATCGTTCTCGCGTAATAGAAGTCAATCCATACCAAGTATGTCCAAGCAGTTAACCACTATTAGACGTGTTAATCATTTGACGTTATGACGATGACATGAATCGCTAGGGCTGACGAGATTCTTTACCGCGCGTTCTAACACGTCGTTTAGACCATGG"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "TCAAGATGTTTAACCTTCCGTGCACCTTTTGGTCCATTACCGACAGGGTACATACTGTTATGCCGTCCACATTAAAGGACGCAAATGTTCTCTTATTCTGACGAAGTTACAAGGAGGGCCAATCGGAGTTTCTTTTACTACACCGGACCCAGGAATGTGAACAGATTATGTTTTTATTCAGGACTGGGCTTAACATGAGGA"
+    printf "\n"
+) | \
+    "${VSEARCH}" \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: no double free or corruption"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "AGCGACCTTTCAGGCCGAATGCAACAGAGTAGAAGCCCCAATTACCTATGAAAAGAATTTCGCTTTTATAGCTTTAAGTGGTAGGACTATCGATATTATGTATCAACCTCAGACAGACGATCCAAGATAATATTACATTTTGTGGATGTTGCTTGCCTGTCTCTGTTTTGGAATCGGAGTCACCCTGGGTGCTCAGTTGTT"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "GTTAGAGGATCTCCGTAGAGTTTTTCACATATATGGGTTTGAATAGCGAGCACACTTGCAACTCTCAAGTGCAGCCATGTTGGAAGGTTGTATTTACCAAAATGTGTGGTGTTCTCACCGTGTTTACATCAGGCATTTGGAAACTATTCTAATAGAATACTACTAAATCGAATACAGCTGTGAAGACTCTAGGTCTTATT"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "ATACGCGGATTTCCCCGTCGTCAACGTGTCCACTTCTGCTTAGGTATTAACCCAAATAATCCGCGAGGTGTTATCTCGCGGGCTGACTTAGGTACAAGTTCAGCTTTCCTGGTAGACATATGGGGAGCGCCAAATTTCGGTTTATATGTTTCTAGACATCGTATTAAATCTCTGGAGGGGCATTTAATCATAGTTAGAAG"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "AGCTAAGCGAATGTCTCGTACTGGGCACATATTTCCTAAATACTTCCAGAATCCTTAATGCCATTAAGATCGTAACCTCAACGATGTCGTTCGCGCATAAGTTTTCAGAATTAGTATTTTGTTCGGTTGATACCATGTGACCTAGTAGGTATACTCCATAAGTCAAGCTGTCATAATTATTCTAATTCTGCGTAGGGGAGC"
+    printf "\n"
+) | \
+    "${VSEARCH}" \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: no invalid pointer (munmap_chunk)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "GGGTTTAAGTATCGTAGAAATTTAGTACATTTTCTGTACCCGTATCCTTATTCGTCAATAACCGTCTGCAACTATATTCGACATACGGCATCTAAAGATATTATGTACGATTTTTTCCCATCCTGTCTAGCATATGCTTACCATCTATAAACTTTTGATACTATGATATCCTTAGCACCGTAAGGATTCAAGAGGAGCAGG"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AGACCTAAAACTTTTAACGATTTACCTTCGCCCATTCTGAAATTGTGAAATACCTCGTCTTTTAAGTTAGAAATGTAGGCGTTTACCTAGTAGCTAGGCGTGAATATACGAGAGTGTCTCTCCCCCCGTATCCGCGCTGATTGGTTTCTTCTCAATTGCTATTTGCACCGGTCGTTTAACCTGAAAACTGATTTATGTAG"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "TGACCGGGATTTCCGAGCGAACTTCCCGAGAGCATCTAGCGAATACCCAGCTTGAGGATCTAATTCGAGCATGGTCGCAGCAGGACTGCGTTATTTACTGCCGGCACCACAAGAGACGATGCTATCTAATTATCGCTTATTGAGTCGCGATTGCTAAAGTTGATTTTTTCCATTTTAGTCTATAAATTTAGGAAGGATCG"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ATTAACTGTATGCGTGCTGGTGGGGTCATCCTAGAATGTTTTGGATGTTTCTAAGGTCTAATAATTACATAAAAACGGCGTCGCTGTCGTCGCCAACGAGATCGCTTTTCCTACCGATTTCAGGGTCTCTGAGCCCTGACTAAAAATAGAGACTGTTAATTGACGACCTACATTCCTCCTGATAACGACTACTAATTGTAA"
+    printf "\n"
+) | \
+    "${VSEARCH}" \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
