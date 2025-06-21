@@ -1461,6 +1461,29 @@ DESCRIPTION="chimeras_denovo: tabbedout only outputs the first three parents (4 
 
 
 ## -------------------------------------------------------------------- threads
+
+DESCRIPTION="chimeras_denovo: --threads is accepted"
+printf ">s;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --chimeras_denovo /dev/stdin \
+        --chimeras /dev/null \
+        --threads 1 \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="chimeras_denovo: --threads > 1 triggers a warning (not multithreaded)"
+printf ">s;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --chimeras_denovo /dev/stdin \
+        --chimeras /dev/null \
+        --threads 2 \
+        --quiet 2>&1 | \
+    grep -iq "warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## ------------------------------------------------------------------------ xee
 ## ------------------------------------------------------------------------- xn
 ## ---------------------------------------------------------------------- xsize
@@ -2110,7 +2133,7 @@ exit 0
 
 ## Notes
 
-# --threads is not ignored! (fix manpage)
+# --threads is ignored *DONE*
 # - test chimeras with more than two parents, *DONE*
 # - test chimeras with more than two parents for a given chunk,
 # - test tab output,
