@@ -158,6 +158,11 @@ printf ">s;size=1\n\n" | \
         failure "${DESCRIPTION}"
 
 
+## --------------------------------------------------------------------- alnout
+
+# output chimera alignments to file
+
+
 ## ------------------------------------------------------------------ tabbedout
 
 DESCRIPTION="chimeras_denovo: option tabbedout is accepted"
@@ -881,11 +886,6 @@ DESCRIPTION="chimeras_denovo: tabbedout only outputs the first three parents (4 
     awk '{exit (! /^$/) && (! /pD/) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
-
-## --------------------------------------------------------------------- alnout
-
-# output chimera alignments to file
 
 
 #*****************************************************************************#
