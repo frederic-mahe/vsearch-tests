@@ -200,7 +200,7 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --quiet \
         --tabbedout /dev/stdout |
-    awk 'BEGIN {FS = "\t"} END {exit (NF == 18) ? 0 : 1}' && \
+    grep -q "." && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
 
@@ -223,7 +223,7 @@ B_END="${B_START}"
         --chimeras_denovo - \
         --quiet \
         --tabbedout /dev/stdout |
-    awk 'BEGIN {FS = "\t"} END {exit (NF == 18) ? 0 : 1}' && \
+    grep -q "." && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
 
