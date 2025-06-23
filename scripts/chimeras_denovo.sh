@@ -542,6 +542,35 @@ DESCRIPTION="chimeras_denovo: tabbedout column 10 is the highest similarity perc
         failure "${DESCRIPTION}"
 
 
+DESCRIPTION="chimeras_denovo: tabbedout column 10 is the highest similarity percentage with a parent (more dissimilar parents)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	91.38	89.66	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAACAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($10 == "93.10") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 DESCRIPTION="chimeras_denovo: tabbedout column 11 is the left yes count (always 0)"
 # 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
 (
@@ -2756,9 +2785,10 @@ exit 0
 # --threads is ignored *DONE*
 # - test chimeras with more than two parents, *DONE*
 # - test chimeras with more than two parents for a given chunk,
-# - check coverage,
-# - test tabbedout output,
+# - check coverage, *90%*
+# - test tabbedout output, *DONE*
 # - tabbedout does not report more than 3 parents! *DONE*
+# - test tabbedout highest similarity is reported,
 # - test remaining command-specific parameters
 # - test if relabel applies to both chimeras and non-chimeras
 
