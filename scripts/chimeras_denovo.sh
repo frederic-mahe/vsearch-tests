@@ -203,29 +203,7 @@ unset A_START A_END B_START B_END
 
 
 DESCRIPTION="chimeras_denovo: tabbedout only outputs the first three parents (4 parents)"
-# Query   (   74 nt) Q;size=1
-# ParentA (   74 nt) pA;size=9
-# ParentB (   74 nt) pB;size=9
-# ParentC (   74 nt) pC;size=9
-# ParentD (   74 nt) pD;size=9
-#
-# Q     1 ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAACA 60
-# A     1 ACAAAAAAAAAAACAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
-# B     1 AaAAAAAAAAAAAaAAAAGAAAAAAAAAAAGAAAAAAAAAAAaAAAAAAAAAAaAAAAaA 60
-# C     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAATAAAAAAAAAATAAAAaA 60
-# D     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAACA 60
-# Diffs    A           A    B           B           C          C    D
-# Model   AAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCDDDDDD
-#
-# Q    61 AAAAAAAAACAAAA 74
-# A    61 AAAAAAAAAaAAAA 74
-# B    61 AAAAAAAAAaAAAA 74
-# C    61 AAAAAAAAAaAAAA 74
-# D    61 AAAAAAAAACAAAA 74
-# Diffs            D
-# Model   DDDDDDDDDDDDDD
-#
-# Ids.  QA 91.89%, QB 91.89%, QC 91.89%, QT 91.89%, QModel 100.00%, Div. +8.82%
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	91.89	91.89	91.89	91.89	0	0	0	0	0	0	0.00	Y
 (
     printf ">pA;size=9"
     printf "\n"
@@ -2206,7 +2184,8 @@ exit 0
 # --threads is ignored *DONE*
 # - test chimeras with more than two parents, *DONE*
 # - test chimeras with more than two parents for a given chunk,
-# - test tab output,
+# - check coverage,
+# - test tabbedout output,
 # - tabbedout does not report more than 3 parents! *DONE*
 # - test remaining command-specific parameters
 # - test if relabel applies to both chimeras and non-chimeras
@@ -2218,4 +2197,4 @@ exit 0
 # - --chimeras_diff_pct is largely untested (no expected behavior)
 # - no capacity to read bzip2 or gzip?
 # - accept replicated sequences (same names)?
-# --tabbedout "Fatal error: No output files specified", tabbedout should be enough?
+# --tabbedout "Fatal error: No output files specified" *DONE*
