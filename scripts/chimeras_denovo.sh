@@ -185,7 +185,7 @@ A_START="GTAGGCCGTG"
 A_END="${A_START}"
 B_START="CTGAGCCGTA"
 B_END="${B_START}"
-
+# 99.9999	sQ;size=1	sA;size=9	sB;size=9	*	100.00	80.00	80.00	0.00	80.00	0	0	0	0	0	0	0.00	Y
 (
     printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
     printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
@@ -200,6 +200,578 @@ B_END="${B_START}"
             failure "${DESCRIPTION}"
 
 unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 1 is the score value (always 99.9999)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($1 == "99.9999") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 2 is the query header"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($2 == "Q;size=1") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 3 is the parent A header"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($3 == "pA;size=9") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 4 is the parent B header"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($4 == "pB;size=9") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 5 is the parent C header"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($5 == "pC;size=9") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 5 is the parent C header (* if no parent C)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	*	100.00	94.59	94.59	0.00	94.59	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($5 == "*") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 6 is the max similarity percentage of the QModel (always 100.00)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($6 == "100.00") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 7 is the similarity percentage with parent A (QA)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($7 == "93.10") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 8 is the similarity percentage with parent B (QB)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($8 == "93.10") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 9 is the similarity percentage with parent C (QC)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($9 == "93.10") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 9 is the similarity percentage with parent C (QC) (0.00 if no parent C)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	*	100.00	94.59	94.59	0.00	94.59	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($9 == "0.00") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 10 is the highest similarity percentage with a parent"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($10 == "93.10") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 11 is the left yes count (always 0)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($11 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 12 is the left no count (always 0)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($12 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 13 is the left abstain count (always 0)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($13 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 14 is the right yes count (always 0)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($14 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 15 is the right no count (always 0)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($15 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 16 is the right abstain count (always 0)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($16 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 17 is a dummy value (always 0.00)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($17 == "0.00") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: tabbedout column 18 is the chimeric status (always Y)"
+# 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($18 == "Y") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 DESCRIPTION="chimeras_denovo: tabbedout only outputs the first three parents (4 parents)"
