@@ -190,7 +190,6 @@ A_START="GTAGGCCGTG"
 A_END="${A_START}"
 B_START="CTGAGCCGTA"
 B_END="${B_START}"
-# 99.9999	sQ;size=1	sA;size=9	sB;size=9	*	100.00	80.00	80.00	0.00	80.00	0	0	0	0	0	0	0.00	Y
 (
     printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
     printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
@@ -213,7 +212,6 @@ A_START="GTAGGCCGTG"
 A_END="${A_START}"
 B_START="CTGAGCCGTA"
 B_END="${B_START}"
-# 99.9999	sQ;size=1	sA;size=9	sB;size=9	*	100.00	80.00	80.00	0.00	80.00	0	0	0	0	0	0	0.00	Y
 (
     printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
     printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
