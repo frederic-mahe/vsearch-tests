@@ -401,7 +401,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 6 is the max similarity percentag
         failure "${DESCRIPTION}"
 
 
-DESCRIPTION="chimeras_denovo: tabbedout column 7 is the similarity percentage with parent A (QA)"
+DESCRIPTION="chimeras_denovo: tabbedout column 7 is the global similarity percentage with parent A (QA)"
 # 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
 (
     printf ">pA;size=9"
@@ -430,7 +430,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 7 is the similarity percentage wi
         failure "${DESCRIPTION}"
 
 
-DESCRIPTION="chimeras_denovo: tabbedout column 8 is the similarity percentage with parent B (QB)"
+DESCRIPTION="chimeras_denovo: tabbedout column 8 is the global similarity percentage with parent B (QB)"
 # 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
 (
     printf ">pA;size=9"
@@ -459,7 +459,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 8 is the similarity percentage wi
         failure "${DESCRIPTION}"
 
 
-DESCRIPTION="chimeras_denovo: tabbedout column 9 is the similarity percentage with parent C (QC)"
+DESCRIPTION="chimeras_denovo: tabbedout column 9 is the global similarity percentage with parent C (QC)"
 # 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
 (
     printf ">pA;size=9"
@@ -488,7 +488,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 9 is the similarity percentage wi
         failure "${DESCRIPTION}"
 
 
-DESCRIPTION="chimeras_denovo: tabbedout column 9 is the similarity percentage with parent C (QC) (0.00 if no parent C)"
+DESCRIPTION="chimeras_denovo: tabbedout column 9 is the global similarity percentage with parent C (QC) (0.00 if no parent C)"
 # 99.9999	Q;size=1	pA;size=9	pB;size=9	*	100.00	94.59	94.59	0.00	94.59	0	0	0	0	0	0	0.00	Y
 (
     printf ">pA;size=9"
@@ -513,7 +513,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 9 is the similarity percentage wi
         failure "${DESCRIPTION}"
 
 
-DESCRIPTION="chimeras_denovo: tabbedout column 10 is the highest similarity percentage with a parent"
+DESCRIPTION="chimeras_denovo: tabbedout column 10 is the highest global similarity percentage with a parent"
 # 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	93.10	93.10	93.10	0	0	0	0	0	0	0.00	Y
 (
     printf ">pA;size=9"
@@ -542,7 +542,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 10 is the highest similarity perc
         failure "${DESCRIPTION}"
 
 
-DESCRIPTION="chimeras_denovo: tabbedout column 10 is the highest similarity percentage with a parent (more dissimilar parents)"
+DESCRIPTION="chimeras_denovo: tabbedout column 10 is the highest global similarity percentage with a parent (more dissimilar parents)"
 # 99.9999	Q;size=1	pA;size=9	pB;size=9	pC;size=9	100.00	93.10	91.38	89.66	93.10	0	0	0	0	0	0	0.00	Y
 (
     printf ">pA;size=9"
