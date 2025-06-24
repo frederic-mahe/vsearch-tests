@@ -228,6 +228,17 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
+DESCRIPTION="chimeras_denovo: tabbedout is empty when there are no chimeras"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --tabbedout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 DESCRIPTION="chimeras_denovo: tabbedout outputs 18 tab-separated columns"
 #        1...5...10
 A_START="GTAGGCCGTG"
