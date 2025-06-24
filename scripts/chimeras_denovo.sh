@@ -1988,6 +1988,8 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 3 rejects chimera with
 
 # propagate abundance annotation from input
 
+## test: sizein is active by default? (not visible in code)
+
 
 #*****************************************************************************#
 #                                                                             #
