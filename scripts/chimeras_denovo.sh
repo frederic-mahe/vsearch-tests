@@ -959,7 +959,6 @@ TMP_DASH=$(
 unset TMP_STDOUT TMP_DASH
 
 
-
 DESCRIPTION="chimeras_denovo: default is to message on stderr"
 printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
