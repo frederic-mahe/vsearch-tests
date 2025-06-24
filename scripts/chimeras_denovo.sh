@@ -2031,8 +2031,7 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 3 rejects chimera with
 
 # propagate abundance annotation from input
 
-## abundance annotations (pattern '[>;]size=integer[;]') present in sequence headers are taken into account by default (--sizein is always implied).
-## test: sizein is active by default? (not visible in code)
+## test: sizein is active by default
 
 
 #*****************************************************************************#
@@ -2719,6 +2718,20 @@ fi
 #                              memory issues                                  #
 #                                                                             #
 #*****************************************************************************#
+
+# Notes:
+#  - refactoring to use std::vector rather than raw memory makes the
+#    bug more obvious (when compiled in debug mode). There is a
+#    precise error message that shows that we are trying to fit a
+#    100-char string into a 68-char vector,
+#  - issue is that the query should be cut into three parts, but the
+#    variable 'parts' went to 3 (when working of parent C), then to 2
+#    (when we reached the actual Query sequence). So now we are trying
+#    to cut the query into two parts, which overflows
+#  - parts sould be std::max(formula, parts), but it changes the
+#    results on larger datasets
+#    (run_20190318_16S_341F_785R_113_samples.OTU.filtered.cleaved.mumu.uchime.fas)
+#  - I need to write more tests before I actually try to fix that bug
 
 DESCRIPTION="chimeras_denovo: no segfault"
 (
