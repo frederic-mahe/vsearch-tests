@@ -1998,6 +1998,7 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 3 rejects chimera with
 
 # propagate abundance annotation from input
 
+## abundance annotations (pattern '[>;]size=integer[;]') present in sequence headers are taken into account by default (--sizein is always implied).
 ## test: sizein is active by default? (not visible in code)
 
 
