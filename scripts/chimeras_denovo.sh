@@ -1058,6 +1058,39 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
+DESCRIPTION="chimeras_denovo: accepts fastq input"
+printf "@s\nA\n+\nI\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: simplest positive example (fastq)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+QUAL="IIIIIIIIIIIIIIIIIIII"
+(
+    printf "@sA\n%s\n+\n%s\n" "${A_START}${A_END}" "${QUAL}"
+    printf "@sB\n%s\n+\n%s\n" "${B_START}${B_END}" "${QUAL}"
+    printf "@sQ\n%s\n+\n%s\n" "${A_START}${B_END}" "${QUAL}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras - | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END QUAL
+
+
 #*****************************************************************************#
 #                                                                             #
 #                              core options                                   #
