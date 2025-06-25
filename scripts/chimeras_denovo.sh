@@ -2256,6 +2256,128 @@ printf ">s;size=1\nA\n" | \
 
 
 ## ------------------------------------------------------------------------ xee
+## -------------------------------------------------------------------- xlength
+
+DESCRIPTION="chimeras_denovo: xlength is accepted"
+printf ">s;length=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --xlength \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: xlength removes sequence lengths from fasta input (non-chimeras)"
+printf ">s;length=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --xlength \
+        --nonchimeras - | \
+    grep -q "length=1" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="chimeras_denovo: xlength removes sequence lengths from fastq input (non-chimeras)"
+printf "@s;length=1\nA\n+\nI\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --xlength \
+        --nonchimeras - | \
+    grep -q "length=1" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: xlength removes sequence lengths from fasta input (chimeras)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9;length=20\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9;length=20\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1;length=20\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --xlength \
+        --chimeras - | \
+    grep -q "length=20" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: xlength removes sequence lengths from fasta input (alnout)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9;length=20\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9;length=20\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1;length=20\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --xlength \
+        --alnout - | \
+    grep -q "length=20" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: xlength removes sequence lengths from fasta input (tabbedout)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9;length=20\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9;length=20\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1;length=20\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --xlength \
+        --tabbedout - | \
+    grep -q "length=20" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# lengthout adds to output
+DESCRIPTION="chimeras_denovo: xlength removes sequence lengths from fasta input (lengthout)"
+printf ">s;length=2\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --xlength \
+        --lengthout \
+        --nonchimeras - | \
+    grep -q "length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## ------------------------------------------------------------------------- xn
 ## ---------------------------------------------------------------------- xsize
 
