@@ -162,6 +162,332 @@ printf ">s;size=1\n\n" | \
 
 # output chimera alignments to file
 
+DESCRIPTION="chimeras_denovo: alnout is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --alnout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout is accepted (with other output)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras /dev/null \
+        --alnout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout can output to stdout (/dev/stout)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout /dev/stdout |
+    grep -q "." && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: alnout can output to stdout (-)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout /dev/stdout |
+    grep -q "." && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: alnout is empty when there are no chimeras"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout "
+# Query   (   58 nt) Q;size=1
+# ParentA (   58 nt) pA;size=9
+# ParentB (   58 nt) pB;size=9
+# ParentC (   58 nt) pC;size=9
+#
+# Q     1 ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA 58
+# A     1 ACAAAAAAAAAAACAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAA 58
+# B     1 AaAAAAAAAAAAAaAAAAGAAAAAAAAAAAGAAAAAAAAAAAaAAAAAAAAAAaAAAA 58
+# C     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAATAAAAAAAAAATAAAA 58
+# Diffs    A           A    B           B           C          C
+# Model   AAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCC
+#
+# Ids.  QA 93.10%, QB 93.10%, QC 93.10%, QT 93.10%, QModel 100.00%, Div. +7.41%
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout -
+
+    # | \
+    # grep -q "." && \
+    # failure "${DESCRIPTION}" || \
+    #     success "${DESCRIPTION}"
+
+# TODO test:
+# - sequence length up to 99999 nt?
+# - line with C (more three-way alignment),
+# - line Model
+# - line Diffs
+# - test lowercase nucleotides to mark mismatches
+# - line Ids. what is Div.? QT = Query Top similarity?
+# - document the meaning of each section and returned value
+
+# For each query determined to be a chimera, --alnout reports:
+# - "Query", length of the query sequence, its header,
+# - same thing for each parent,
+# - Ids: parent C is always reported, even if there are only two parents,
+# - parents are noted parentA to parentT (20 parents max, up to 3 by default)
+# - multi-way alignment starts with Q (Query) and one parent per line,
+# - parents are noted A to T (20 parents max, up to 3 by default)
+# - lowercase letters indicate mismatches
+# - Diffs: positions that favor a particular parent are marked with the parent letter (A to T) 
+# - Model: shows the origin of each section of the chimera (parents A, B or C)
+# - Ids: gives some global similarity percentages (to be developed)
+
+# (see EXAMPLE section below)
+
+# alnout: empty if no chimera
+
+# input sequences are uppercased by default?
+
+
+## tests to be sorted
+
+# bug with --alnout "Fatal error: No output files specified"
+# alnout should be enough
+DESCRIPTION="chimeras_denovo: option alnout is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --alnout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alnout is accepted (with other output)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alnout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alnout is empty when there is no chimera"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alnout - | \
+    grep --quiet "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alnout is not empty when there is a chimera"
+#        1...5...10
+A_START="AAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep --quiet "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: option alnout produces an alignment model"
+#        1...5...10
+A_START="AAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep --quiet " AAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBB$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+
+DESCRIPTION="chimeras_denovo: default minimal abundance ratio is 1.0"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=2\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep --quiet "^Model" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# A's abundance is too low to be a parent for Q, no chimera
+DESCRIPTION="chimeras_denovo: abundance ratio below 1.0, no chimera (A)"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=1\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=2\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep --quiet "^Model" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# B's abundance is too low to be a parent for Q, no chimera
+DESCRIPTION="chimeras_denovo: abundance ratio below 1.0, no chimera (B)"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=1\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=2\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep --quiet "^Model" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# division by zero
+DESCRIPTION="chimeras_denovo: null Q abundance, abundance ratio is undefined"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=0\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --chimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
 
 ## ------------------------------------------------------------------ tabbedout
 
@@ -2064,6 +2390,245 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 3 rejects chimera with
 
 # width of alignments in alignment output file (60)
 
+DESCRIPTION="chimeras_denovo: option alignwidth is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alignwidth 60 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth rejects a negative value"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alignwidth -1 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth rejects a non-numeric value"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alignwidth A 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth accepts a null value"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alignwidth 0 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth a null value means no folding"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAAA"
+A_END="${A_START:0:15}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alignwidth 0 \
+        --alnout - | \
+    awk '{if ($1 ~ /^Model/) matches += 1}
+         END {exit matches == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth accepts a value of 1"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alignwidth 1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth folds each position (alignwidth = 1)"
+#        1...5...10...15
+A_START="AAAAAAAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alignwidth 1 \
+        --alnout - | \
+    awk '{if ($1 ~ /^Model/) matches += 1}
+         END {exit matches == 60 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth accepts large values (2^8 - 1)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alignwidth 255 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth accepts large values (2^16 - 1)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alignwidth 65535 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth accepts large values (2^31 - 1)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alignwidth 2147483647 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth accepts large values (2^32 - 1)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alignwidth 4294967295 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option alignwidth accepts large values (2^64 - 1)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null \
+        --alignwidth 1267650600228229401496703205375 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+# assume that the 'Model' line is repeated each time the alignment is
+# folded
+DESCRIPTION="chimeras_denovo: alignment width is 60 by default (60 nt)"
+#        1...5...10...15
+A_START="AAAAAAAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    awk '{if ($1 ~ /^Model/) matches += 1}
+         END {exit matches == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: alignment width is 60 by default (61 nt)"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAAA"
+A_END="${A_START:0:15}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    awk '{if ($1 ~ /^Model/) matches += 1}
+         END {exit matches == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: alignwidth folds alignments longer than n"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAAA"
+A_END="${A_START:0:15}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alignwidth 61 \
+        --alnout - | \
+    awk '{if ($1 ~ /^Model/) matches += 1}
+         END {exit matches == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
 
 ## ---------------------------------------------------------------- fasta_width
 ## --------------------------------------------------------------------- gapext
@@ -2451,266 +3016,6 @@ printf ">s;length=2\nA\n" | \
 
 ## ------------------------------------------------------------------------- xn
 ## ---------------------------------------------------------------------- xsize
-
-
-
-
-
-
-
-
-
-
-
-## ----------------------------------------------------------------- alignwidth
-
-DESCRIPTION="chimeras_denovo: option alignwidth is accepted"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alignwidth 60 && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth rejects a negative value"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alignwidth -1 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth rejects a non-numeric value"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alignwidth A 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth accepts a null value"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alignwidth 0 && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth a null value means no folding"
-#        1...5...10...15.
-A_START="AAAAAAAAAAAAAAAA"
-A_END="${A_START:0:15}"
-B_START="CCCCCCCCCCCCCCC"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --qmask none \
-        --quiet \
-        --alignwidth 0 \
-        --alnout - | \
-    awk '{if ($1 ~ /^Model/) matches += 1}
-         END {exit matches == 1 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth accepts a value of 1"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alignwidth 1 && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth folds each position"
-#        1...5...10...15
-A_START="AAAAAAAAAAAAAAA"
-A_END="${A_START}"
-B_START="CCCCCCCCCCCCCCC"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --qmask none \
-        --quiet \
-        --alignwidth 1 \
-        --alnout - | \
-    awk '{if ($1 ~ /^Model/) matches += 1}
-         END {exit matches == 60 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth accepts large values (2^8 - 1)"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alignwidth 255 && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth accepts large values (2^16 - 1)"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alignwidth 65535 && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth accepts large values (2^31 - 1)"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alignwidth 2147483647 && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth accepts large values (2^32 - 1)"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alignwidth 4294967295 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alignwidth accepts large values (2^64 - 1)"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alignwidth 1267650600228229401496703205375 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-
-# assume that the 'Model' line is repeated each time the alignment is
-# folded
-DESCRIPTION="chimeras_denovo: alignment width is 60 by default (60 nt)"
-#        1...5...10...15
-A_START="AAAAAAAAAAAAAAA"
-A_END="${A_START}"
-B_START="CCCCCCCCCCCCCCC"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --qmask none \
-        --quiet \
-        --alnout - | \
-    awk '{if ($1 ~ /^Model/) matches += 1}
-         END {exit matches == 1 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
-
-
-DESCRIPTION="chimeras_denovo: alignment width is 60 by default (61 nt)"
-#        1...5...10...15.
-A_START="AAAAAAAAAAAAAAAA"
-A_END="${A_START:0:15}"
-B_START="CCCCCCCCCCCCCCC"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --qmask none \
-        --quiet \
-        --alnout - | \
-    awk '{if ($1 ~ /^Model/) matches += 1}
-         END {exit matches == 2 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
-
-
-DESCRIPTION="chimeras_denovo: alignwidth folds alignments longer than n"
-#        1...5...10...15.
-A_START="AAAAAAAAAAAAAAAA"
-A_END="${A_START:0:15}"
-B_START="CCCCCCCCCCCCCCC"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --qmask none \
-        --quiet \
-        --alignwidth 61 \
-        --alnout - | \
-    awk '{if ($1 ~ /^Model/) matches += 1}
-         END {exit matches == 1 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
-
-
-
-
-
-
-
-
-
 
 
 #*****************************************************************************#
