@@ -2188,6 +2188,77 @@ printf "@s;size=1\nA\n+\nI\n" | \
 ## ---------------------------------------------------------------- no_progress
 ## -------------------------------------------------------------- notrunclabels
 ## ---------------------------------------------------------------------- qmask
+
+DESCRIPTION="chimeras_denovo: homopolymers are masked"
+#        1...5...10
+A_START="AAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras - 2> /dev/null | \
+    grep --quiet "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: qmask 'none' allows homopolymers"
+#        1...5...10
+A_START="AAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --chimeras - 2> /dev/null | \
+    grep --quiet "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: option qmask write the expected fasta output"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras - 2> /dev/null | \
+    tr "\n" "@" | \
+    grep \
+        --word-regexp \
+        --quiet ">sQ;size=1@${A_START}${B_END}@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
 ## ---------------------------------------------------------------------- quiet
 
 DESCRIPTION="chimeras_denovo: option quiet is accepted"
@@ -2385,78 +2456,6 @@ printf ">s;length=2\nA\n" | \
 
 
 
-
-
-## ---------------------------------------------------------------------- qmask
-
-DESCRIPTION="chimeras_denovo: homopolymers are masked"
-#        1...5...10
-A_START="AAAAAAAAAA"
-A_END="${A_START}"
-B_START="CCCCCCCCCC"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --chimeras - 2> /dev/null | \
-    grep --quiet "." && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
-
-
-DESCRIPTION="chimeras_denovo: qmask 'none' allows homopolymers"
-#        1...5...10
-A_START="AAAAAAAAAA"
-A_END="${A_START}"
-B_START="CCCCCCCCCC"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --qmask none \
-        --chimeras - 2> /dev/null | \
-    grep --quiet "." && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
-
-
-DESCRIPTION="chimeras_denovo: option qmask write the expected fasta output"
-#        1...5...10
-A_START="GTAGGCCGTG"
-A_END="${A_START}"
-B_START="CTGAGCCGTA"
-B_END="${B_START}"
-
-(
-    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --chimeras - 2> /dev/null | \
-    tr "\n" "@" | \
-    grep \
-        --word-regexp \
-        --quiet ">sQ;size=1@${A_START}${B_END}@" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-unset A_START A_END B_START B_END
 
 
 
