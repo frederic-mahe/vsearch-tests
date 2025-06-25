@@ -2119,6 +2119,55 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
+# alnout already outputs sequence lengths
+DESCRIPTION="chimeras_denovo: lengthout does not add sequence lengths to original headers (alnout)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --lengthout \
+        --alnout - | \
+    grep -q "length=20" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: lengthout does not add sequence lengths to original headers (tabbedout)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --lengthout \
+        --tabbedout - | \
+    grep -q "length=20" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
 DESCRIPTION="chimeras_denovo: lengthout adds sequence lengths to fasta output (fastq input)"
 printf "@s;size=1\nA\n+\nI\n" | \
     ${VSEARCH} \
@@ -2955,6 +3004,9 @@ exit 0
 # - test tabbedout highest similarity is reported,
 # - test remaining command-specific parameters
 # - test if relabel applies to both chimeras and non-chimeras
+# - lengthout: add length to chimeras *DONE*
+# - lengthout: works with fastq input? *DONE*
+# - lengthout: not added to alnout and tabbedout? *DONE*
 
 
 ## potential mistakes?
