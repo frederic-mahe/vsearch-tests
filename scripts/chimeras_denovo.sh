@@ -2070,6 +2070,67 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 3 rejects chimera with
 ## -------------------------------------------------------------------- gapopen
 ## ------------------------------------------------------------------- hardmask
 ## --------------------------------------------------------------- label_suffix
+## ------------------------------------------------------------------ lengthout
+
+DESCRIPTION="chimeras_denovo: lengthout is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --lengthout \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: lengthout adds sequence lengths to fasta output (non-chimeras)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --lengthout \
+        --nonchimeras - | \
+    grep -q "length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: lengthout adds sequence lengths to fasta output (chimeras)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --lengthout \
+        --chimeras - | \
+    grep -q "length=20" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: lengthout adds sequence lengths to fasta output (fastq input)"
+printf "@s;size=1\nA\n+\nI\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --lengthout \
+        --nonchimeras - | \
+    grep -q "length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## ------------------------------------------------------------------------ log
 ## ---------------------------------------------------------------------- match
 ## --------------------------------------------------------------- maxseqlength
