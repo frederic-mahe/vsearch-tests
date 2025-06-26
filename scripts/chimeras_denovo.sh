@@ -225,7 +225,7 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
-DESCRIPTION="chimeras_denovo: alnout is empty when there are no chimeras"
+DESCRIPTION="chimeras_denovo: alnout is empty when there is no chimera"
 printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
@@ -236,113 +236,7 @@ printf ">s;size=1\nA\n" | \
         success "${DESCRIPTION}"
 
 
-DESCRIPTION="chimeras_denovo: alnout "
-# Query   (   58 nt) Q;size=1
-# ParentA (   58 nt) pA;size=9
-# ParentB (   58 nt) pB;size=9
-# ParentC (   58 nt) pC;size=9
-#
-# Q     1 ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA 58
-# A     1 ACAAAAAAAAAAACAAAAaAAAAAAAAAAAaAAAAAAAAAAAaAAAAAAAAAAaAAAA 58
-# B     1 AaAAAAAAAAAAAaAAAAGAAAAAAAAAAAGAAAAAAAAAAAaAAAAAAAAAAaAAAA 58
-# C     1 AaAAAAAAAAAAAaAAAAaAAAAAAAAAAAaAAAAAAAAAAATAAAAAAAAAATAAAA 58
-# Diffs    A           A    B           B           C          C
-# Model   AAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCC
-#
-# Ids.  QA 93.10%, QB 93.10%, QC 93.10%, QT 93.10%, QModel 100.00%, Div. +7.41%
-(
-    printf ">pA;size=9"
-    printf "\n"
-    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-    printf "\n"
-    printf ">pB;size=9"
-    printf "\n"
-    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-    printf "\n"
-    printf ">pC;size=9"
-    printf "\n"
-    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
-    printf "\n"
-    printf ">Q;size=1"
-    printf "\n"
-    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
-    printf "\n"
-) | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --alnout -
-
-    # | \
-    # grep -q "." && \
-    # failure "${DESCRIPTION}" || \
-    #     success "${DESCRIPTION}"
-
-# TODO test:
-# - sequence length up to 99999 nt?
-# - line with C (more three-way alignment),
-# - line Model
-# - line Diffs
-# - test lowercase nucleotides to mark mismatches
-# - line Ids. what is Div.? QT = Query Top similarity?
-# - document the meaning of each section and returned value
-
-# For each query determined to be a chimera, --alnout reports:
-# - "Query", length of the query sequence, its header,
-# - same thing for each parent,
-# - Ids: parent C is always reported, even if there are only two parents,
-# - parents are noted parentA to parentT (20 parents max, up to 3 by default)
-# - multi-way alignment starts with Q (Query) and one parent per line,
-# - parents are noted A to T (20 parents max, up to 3 by default)
-# - lowercase letters indicate mismatches
-# - Diffs: positions that favor a particular parent are marked with the parent letter (A to T) 
-# - Model: shows the origin of each section of the chimera (parents A, B or C)
-# - Ids: gives some global similarity percentages (to be developed)
-
-# (see EXAMPLE section below)
-
-# alnout: empty if no chimera
-
-# input sequences are uppercased by default?
-
-
-## tests to be sorted
-
-# bug with --alnout "Fatal error: No output files specified"
-# alnout should be enough
-DESCRIPTION="chimeras_denovo: option alnout is accepted"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --alnout /dev/null 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alnout is accepted (with other output)"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alnout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alnout is empty when there is no chimera"
-printf ">s;size=1\nA\n" | \
-    ${VSEARCH} \
-        --chimeras_denovo - \
-        --quiet \
-        --nonchimeras /dev/null \
-        --alnout - | \
-    grep --quiet "." && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-
-DESCRIPTION="chimeras_denovo: option alnout is not empty when there is a chimera"
+DESCRIPTION="chimeras_denovo: alnout is not empty when there is a chimera"
 #        1...5...10
 A_START="AAAAAAAAAA"
 A_END="${A_START}"
@@ -366,7 +260,7 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
-DESCRIPTION="chimeras_denovo: option alnout produces an alignment model"
+DESCRIPTION="chimeras_denovo: alnout produces an alignment model"
 #        1...5...10
 A_START="AAAAAAAAAA"
 A_END="${A_START}"
@@ -390,103 +284,643 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
-
-DESCRIPTION="chimeras_denovo: default minimal abundance ratio is 1.0"
-#        1...5...10...15.
-A_START="AAAAAAAAAAAAAAA"
-A_END="${A_START}"
-B_START="CCCCCCCCCCCCCCC"
-B_END="${B_START}"
-
+DESCRIPTION="chimeras_denovo: alnout separates results with an empty line and a ruler (empty line)"
 (
-    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=2\n%s\n" "${A_START}${B_END}"
+    #                          1...5...10...15...20
+    printf ">sA;size=9\n%s\n" "AAAAAAAAAAAAAAAAAAAA"
+    printf ">sB;size=9\n%s\n" "CCCCCCCCCCCCCCCCCCCC"
+    printf ">sQ;size=1\n%s\n" "AAAAAAAAAACCCCCCCCCC"
 ) | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --qmask none \
         --quiet \
         --alnout - | \
-    grep --quiet "^Model" && \
+    head -n 1 | \
+    grep -q "^$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-unset A_START A_END B_START B_END
 
-
-# A's abundance is too low to be a parent for Q, no chimera
-DESCRIPTION="chimeras_denovo: abundance ratio below 1.0, no chimera (A)"
-#        1...5...10...15.
-A_START="AAAAAAAAAAAAAAA"
-A_END="${A_START}"
-B_START="CCCCCCCCCCCCCCC"
-B_END="${B_START}"
-
+DESCRIPTION="chimeras_denovo: alnout separates results with an empty line and a ruler (ruler)"
 (
-    printf ">sA;size=1\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=2\n%s\n" "${A_START}${B_END}"
+    #                          1...5...10...15...20
+    printf ">sA;size=9\n%s\n" "AAAAAAAAAAAAAAAAAAAA"
+    printf ">sB;size=9\n%s\n" "CCCCCCCCCCCCCCCCCCCC"
+    printf ">sQ;size=1\n%s\n" "AAAAAAAAAACCCCCCCCCC"
 ) | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --qmask none \
         --quiet \
         --alnout - | \
-    grep --quiet "^Model" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    head -n 2 | \
+    grep -Eqw "[-]+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-unset A_START A_END B_START B_END
 
-
-# B's abundance is too low to be a parent for Q, no chimera
-DESCRIPTION="chimeras_denovo: abundance ratio below 1.0, no chimera (B)"
-#        1...5...10...15.
-A_START="AAAAAAAAAAAAAAA"
-A_END="${A_START}"
-B_START="CCCCCCCCCCCCCCC"
-B_END="${B_START}"
-
+DESCRIPTION="chimeras_denovo: alnout reports Query first"
 (
-    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=1\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=2\n%s\n" "${A_START}${B_END}"
+    #                          1...5...10...15...20
+    printf ">sA;size=9\n%s\n" "AAAAAAAAAAAAAAAAAAAA"
+    printf ">sB;size=9\n%s\n" "CCCCCCCCCCCCCCCCCCCC"
+    printf ">sQ;size=1\n%s\n" "AAAAAAAAAACCCCCCCCCC"
 ) | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --qmask none \
         --quiet \
         --alnout - | \
-    grep --quiet "^Model" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    head -n 3 | \
+    grep -qw "Query.*sQ;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-unset A_START A_END B_START B_END
 
-
-# division by zero
-DESCRIPTION="chimeras_denovo: null Q abundance, abundance ratio is undefined"
-#        1...5...10...15.
-A_START="AAAAAAAAAAAAAAA"
-A_END="${A_START}"
-B_START="CCCCCCCCCCCCCCC"
-B_END="${B_START}"
-
+DESCRIPTION="chimeras_denovo: alnout reports Query length"
 (
-    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
-    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
-    printf ">sQ;size=0\n%s\n" "${A_START}${B_END}"
+    #                          1...5...10...15...20
+    printf ">sA;size=9\n%s\n" "AAAAAAAAAAAAAAAAAAAA"
+    printf ">sB;size=9\n%s\n" "CCCCCCCCCCCCCCCCCCCC"
+    printf ">sQ;size=1\n%s\n" "AAAAAAAAAACCCCCCCCCC"
 ) | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --qmask none \
-        --chimeras /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+        --quiet \
+        --alnout - | \
+    grep "^Query" | \
+    grep -q "20 nt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-unset A_START A_END B_START B_END
 
+DESCRIPTION="chimeras_denovo: alnout reports Query header"
+(
+    #                          1...5...10...15...20
+    printf ">sA;size=9\n%s\n" "AAAAAAAAAAAAAAAAAAAA"
+    printf ">sB;size=9\n%s\n" "CCCCCCCCCCCCCCCCCCCC"
+    printf ">sQ;size=1\n%s\n" "AAAAAAAAAACCCCCCCCCC"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep "^Query" | \
+    grep -q "sQ;size=1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports Parent C (three parents)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -q "^ParentC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports Parent C length"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep "^ParentC" | \
+    grep -q "58 nt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports Parent C header"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep "^ParentC" | \
+    grep -q "pC;size=9$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports multi-way alignment starting with parent name (query Q)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -Eq "^Q +1 [ACGTacgt-]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports uppercased sequences (query Q)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -Eq " [ACGT]+ " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports multi-way alignment starting with parent name (parent C)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -Eq "^C +1 [ACGTacgt-]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports lowercase letters when parent mismatches with query (parent C)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -Eq "^C +1 AaA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports dashes to represent alignment indels"
+(
+    #                          1...5...10...15...20
+    printf ">sA;size=9\n%s\n" "AAAAAAAAAAAAAAAAAAAA"
+    printf ">sB;size=9\n%s\n" "CCCCCCCCCCCCCCCCCCCC"
+    printf ">sQ;size=1\n%s\n" "AAAAAAAAAACCCCCCCCCC"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep -Eq "^Q +1 -+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports positions that favor a particular parent (Diffs)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -q "^Diffs" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# hypothesis: parents are named A-U in spatial order (different parts of Query)
+DESCRIPTION="chimeras_denovo: alnout reports positions that favor a particular parent (parent names)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -Eq "^Diffs +A +A +B +B +C +C" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports a model of the chimera (Model)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -q "^Model" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports a model of the chimera (parent names)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -Eq "^Model +A+B+C+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports global similarity percentages (Ids)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep -q "^Ids." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports global similarity with parent A"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep "^Ids." | \
+    grep -q "QA 93.10%" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports global similarity with parent B"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep "^Ids." | \
+    grep -q "QB 93.10%" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports global similarity with parent C (three parents)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep "^Ids." | \
+    grep -q "QC 93.10%" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports global similarity with parent C (only two parents)"
+(
+    #                          1...5...10...15...20
+    printf ">sA;size=9\n%s\n" "AAAAAAAAAAAAAAAAAAAA"
+    printf ">sB;size=9\n%s\n" "CCCCCCCCCCCCCCCCCCCC"
+    printf ">sQ;size=1\n%s\n" "AAAAAAAAAACCCCCCCCCC"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep "^Ids." | \
+    grep -q "QC 0.00%" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports global similarity of the parent closest to the query (QT)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep "^Ids." | \
+    grep -q "QA 93.10%" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: alnout reports global similarity with the model (always 100.00)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep "^Ids." | \
+    grep -q "QModel 100.00%" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# Div: divfrac = 100.00 * (QM - QT) / QT;
+DESCRIPTION="chimeras_denovo: alnout reports the divergence of the model with the closest parent (Div)"
+(
+    printf ">pA;size=9"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pB;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAGAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    printf "\n"
+    printf ">pC;size=9"
+    printf "\n"
+    printf "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+    printf ">Q;size=1"
+    printf "\n"
+    printf "ACAAAAAAAAAAACAAAAGAAAAAAAAAAAGAAAAAAAAAAATAAAAAAAAAATAAAA"
+    printf "\n"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --alnout - | \
+    grep "^Ids." | \
+    grep -q "Div. +7.41%" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 ## ------------------------------------------------------------------ tabbedout
@@ -1384,12 +1818,34 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
+DESCRIPTION="chimeras_denovo: converts lowercase sequences into uppercase"
+printf ">s\na\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras - | \
+    grep -qw "A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 DESCRIPTION="chimeras_denovo: accepts fastq input"
 printf "@s\nA\n+\nI\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
         --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: converts fastq input to fasta output"
+printf "@s\nA\n+\nI\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras - | \
+    grep -qw ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1415,6 +1871,103 @@ QUAL="IIIIIIIIIIIIIIIIIIII"
         failure "${DESCRIPTION}"
 
 unset A_START A_END B_START B_END QUAL
+
+
+DESCRIPTION="chimeras_denovo: default minimal abundance ratio is 1.0"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=2\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep --quiet "^Model" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# A's abundance is too low to be a parent for Q, no chimera
+DESCRIPTION="chimeras_denovo: abundance ratio below 1.0, no chimera (A)"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=1\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=2\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep --quiet "^Model" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# B's abundance is too low to be a parent for Q, no chimera
+DESCRIPTION="chimeras_denovo: abundance ratio below 1.0, no chimera (B)"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=1\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=2\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout - | \
+    grep --quiet "^Model" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# division by zero
+DESCRIPTION="chimeras_denovo: null Q abundance, abundance ratio is undefined"
+#        1...5...10...15.
+A_START="AAAAAAAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCCCCCCC"
+B_END="${B_START}"
+
+(
+    printf ">sA;size=2\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=2\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=0\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --chimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
 
 
 #*****************************************************************************#
