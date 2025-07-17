@@ -1,7 +1,7 @@
 #!/usr/bin/env bash -
 
 ## Print a header
-SCRIPT_NAME="fastq_eestats all tests"
+SCRIPT_NAME="allpairs_global"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
