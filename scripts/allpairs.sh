@@ -30,6 +30,63 @@ DESCRIPTION="check if vsearch is executable"
         failure "${DESCRIPTION}"
 
 
+# Pairwise alignment
+#   --allpairs_global FILENAME  perform global alignment of all sequence pairs
+#  Output (most searching options also apply)
+#   --alnout FILENAME           filename for human-readable alignment output
+#   --acceptall                 output all pairwise alignments
+
+# vsearch --allpairs_global fastafile (--alnout | --blast6out |
+# --matched | --notmatched | --samout | --uc | --userout) outputfile
+# (--acceptall | --id real) [options]
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+
+    ## - memory leak in userfields: fixed in b109d62b
+    ## - use of uninitialised value in samout: fixed in 8bab2444
+    LOG=$(mktemp)
+    FASTA=$(mktemp)
+    printf ">s1\nA\n>s2\nA\n" > "${FASTA}"
+    valgrind \
+        --log-file="${LOG}" \
+        --leak-check=full \
+        --show-leak-kinds=all \
+        --track-origins=yes \
+        "${VSEARCH}" \
+        --allpairs_global "${FASTA}" \
+        --acceptall \
+        --alnout /dev/null \
+        --blast6out /dev/null \
+        --fastapairs /dev/null \
+        --log /dev/null \
+        --matched /dev/null \
+        --notmatched /dev/null \
+        --samout /dev/null \
+        --uc /dev/null \
+        --userout /dev/null \
+        --userfields query+target+id 2> /dev/null
+    DESCRIPTION="--allpairs_global valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--allpairs_global valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${LOG}" "${FASTA}"
+fi
+
+exit 0
+
+## tests below this point need to be revised and validated
+
 #*****************************************************************************#
 #                                                                             #
 #                                  basic tests                                #    
