@@ -95,6 +95,7 @@ if which valgrind > /dev/null 2>&1 ; then
         --lcaout /dev/null \
         --log /dev/null \
         --matched /dev/null \
+        --mothur_shared_out /dev/null \
         --notmatched /dev/null \
         --otutabout /dev/null \
         --samout /dev/null \
