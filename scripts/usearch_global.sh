@@ -32,6 +32,65 @@ DESCRIPTION="check if vsearch is executable"
 
 #*****************************************************************************#
 #                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+
+    ## memory leak in userfields: fixed in d83bfee9
+    LOG=$(mktemp)
+    FASTA=$(mktemp)
+    DB=$(mktemp)
+    printf ">s\nA\n" > "${FASTA}"
+    printf ">s\nA\n" > "${DB}"
+    valgrind \
+        --log-file="${LOG}" \
+        --leak-check=full \
+        --show-leak-kinds=all \
+        --track-origins=yes \
+        "${VSEARCH}" \
+        --usearch_global "${FASTA}" \
+        --db "${DB}" \
+        --minseqlength 1 \
+        --id 0.5 \
+        --alnout /dev/null \
+        --biomout /dev/null \
+        --blast6out /dev/null \
+        --dbmatched /dev/null \
+        --dbnotmatched /dev/null \
+        --fastapairs /dev/null \
+        --lcaout /dev/null \
+        --log /dev/null \
+        --matched /dev/null \
+        --mothur_shared_out /dev/null \
+        --notmatched /dev/null \
+        --otutabout /dev/null \
+        --samout /dev/null \
+        --strand both \
+        --uc /dev/null \
+        --userout /dev/null \
+        --userfields query+target+id # 2> /dev/null
+    cat $LOG
+    DESCRIPTION="--usearch_global valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--usearch_global valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${LOG}" "${FASTA}" "${DB}"
+fi
+
+# vsearch --usearch_global fastafile --db fastafile (--alnout | --biomout | --blast6out | --mothur_shared_out | --otutabout | --samout | --uc | --userout | --lcaout) outputfile --id real [options]
+
+
+exit 0
+
+#*****************************************************************************#
+#                                                                             #
 #                        accepted output options                              #
 #                                                                             #
 #*****************************************************************************#
