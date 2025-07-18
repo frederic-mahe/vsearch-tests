@@ -12,7 +12,7 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    # exit 1
+    exit 1
 }
 
 success () {
@@ -28,6 +28,93 @@ DESCRIPTION="check if vsearch is executable"
 [[ -x "${VSEARCH}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                               fixed bugs                                    #
+#                                                                             #
+#*****************************************************************************#
+
+# CIGAR string is wrong for sequences of length 2 to 9
+# then it is empty for sequences of length 10 and more
+DESCRIPTION="search_exact: --samout reports CIGAR string (1M)"
+SEQ="A"
+"${VSEARCH}" \
+    --search_exact <(printf ">s\n%s\n" "${SEQ}") \
+    --db <(printf ">s\n%s\n" "${SEQ}") \
+    --quiet \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {exit $6 == "1M" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="search_exact: --samout reports CIGAR string (10M)"
+#    1...5...10
+SEQ="AAAAAAAAAA"
+"${VSEARCH}" \
+    --search_exact <(printf ">s\n%s\n" "${SEQ}") \
+    --db <(printf ">s\n%s\n" "${SEQ}") \
+    --quiet \
+    --samout - | \
+    awk 'BEGIN {FS = "\t"} {exit $6 == "10M" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+
+    ## memory leak in userfields: fixed in 45cd56d6
+    LOG=$(mktemp)
+    FASTA=$(mktemp)
+    DB=$(mktemp)
+    printf ">s\nA\n" > "${FASTA}"
+    printf ">s\nA\n" > "${DB}"
+    valgrind \
+        --log-file="${LOG}" \
+        --leak-check=full \
+        --show-leak-kinds=all \
+        --track-origins=yes \
+        "${VSEARCH}" \
+        --search_exact "${FASTA}" \
+        --db "${DB}" \
+        --alnout /dev/null \
+        --biomout /dev/null \
+        --blast6out /dev/null \
+        --dbmatched /dev/null \
+        --dbnotmatched /dev/null \
+        --fastapairs /dev/null \
+        --lcaout /dev/null \
+        --log /dev/null \
+        --matched /dev/null \
+        --notmatched /dev/null \
+        --otutabout /dev/null \
+        --samout /dev/null \
+        --strand both \
+        --uc /dev/null \
+        --userout /dev/null \
+        --userfields query+target+id 2> /dev/null
+    DESCRIPTION="--search_exact valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--search_exact valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${LOG}" "${FASTA}" "${DB}"
+fi
+
+
+exit 0
 
 
 #*****************************************************************************#
