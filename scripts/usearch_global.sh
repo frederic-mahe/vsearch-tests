@@ -71,8 +71,7 @@ if which valgrind > /dev/null 2>&1 ; then
         --strand both \
         --uc /dev/null \
         --userout /dev/null \
-        --userfields query+target+id # 2> /dev/null
-    cat $LOG
+        --userfields query+target+id 2> /dev/null
     DESCRIPTION="--usearch_global valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${LOG}" && \
         success "${DESCRIPTION}" || \
@@ -83,8 +82,6 @@ if which valgrind > /dev/null 2>&1 ; then
             failure "${DESCRIPTION}"
     rm -f "${LOG}" "${FASTA}" "${DB}"
 fi
-
-# vsearch --usearch_global fastafile --db fastafile (--alnout | --biomout | --blast6out | --mothur_shared_out | --otutabout | --samout | --uc | --userout | --lcaout) outputfile --id real [options]
 
 
 exit 0
