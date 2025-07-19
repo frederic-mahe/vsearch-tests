@@ -1,7 +1,7 @@
 #!/bin/bash -
 
 ## Print a header
-SCRIPT_NAME="fastx_revcomp all tests"
+SCRIPT_NAME="fastx_revcomp"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
@@ -12,7 +12,7 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    # exit 1
+    exit 1
 }
 
 success () {
@@ -28,6 +28,86 @@ DESCRIPTION="check if vsearch is executable"
 [[ -x "${VSEARCH}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                           mandatory options                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## vsearch --fastx_revcomp inputfile (--fastaout | --fastqout) outputfile [options]
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            default behaviour                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            secondary options                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              invalid options                                #
+#                                                                             #
+#*****************************************************************************#
+
+# none
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+
+    LOG=$(mktemp)
+    FASTQ=$(mktemp)
+    printf "@s\nAAAAAA\n+\nIIIIII\n" > "${FASTQ}"
+    valgrind \
+        --log-file="${LOG}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --fastx_revcomp "${FASTQ}" \
+        --fastaout /dev/null \
+        --fastqout /dev/null \
+        --log /dev/null 2> /dev/null
+    DESCRIPTION="--fastx_revcomp valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--fastx_revcomp valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${LOG}" "${FASTQ}"
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    notes                                    #
+#                                                                             #
+#*****************************************************************************#
+
+
+exit 0
 
 
 #*****************************************************************************#
