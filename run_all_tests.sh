@@ -51,8 +51,12 @@ for test_script in allpairs_global.sh \
                        fastx_getsubseq.sh \
                        fastx_mask.sh \
                        fastx_revcomp.sh \
+                       makeudb_usearch.sh \
                        maskfasta.sh \
                        search_exact.sh \
+                       udb2fasta.sh \
+                       udbinfo.sh \
+                       udbstats.sh \
                        usearch_global.sh ; do
     bash "./scripts/${test_script}" "${1}" || exit 1
     echo
