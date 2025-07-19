@@ -40,6 +40,98 @@ DESCRIPTION="check if vsearch is executable"
 
 #*****************************************************************************#
 #                                                                             #
+#                           mandatory options                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## vsearch --fastq_mergepairs fastqfile --reverse fastqfile
+## (--fastaout | --fastqout | --fastaout_notmerged_fwd |
+## --fastaout_notmerged_rev | --fastqout_notmerged_fwd |
+## --fastqout_notmerged_rev | --eetabbedout) outputfile [options]
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            default behaviour                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            secondary options                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              invalid options                                #
+#                                                                             #
+#*****************************************************************************#
+
+# none
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+
+    LOG=$(mktemp)
+    FORWARD=$(mktemp)
+    REVERSE=$(mktemp)
+    printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n" > "${FORWARD}"
+    printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n" > "${REVERSE}"
+    valgrind \
+        --log-file="${LOG}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --fastq_mergepairs "${FORWARD}" \
+        --reverse "${REVERSE}" \
+        --fastq_allowmergestagger \
+        --fastaout /dev/null \
+        --fastqout /dev/null \
+        --fastaout_notmerged_fwd /dev/null \
+        --fastaout_notmerged_rev /dev/null \
+        --fastqout_notmerged_fwd /dev/null \
+        --fastqout_notmerged_rev /dev/null \
+        --eetabbedout /dev/null \
+        --log /dev/null 2> /dev/null
+    DESCRIPTION="--fastq_mergepairs valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--fastq_mergepairs valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${LOG}" "${FORWARD}" "${REVERSE}"
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    notes                                    #
+#                                                                             #
+#*****************************************************************************#
+
+
+# exit 0
+
+
+#*****************************************************************************#
+#                                                                             #
 #                                Test options                                 #
 #                                                                             #
 #*****************************************************************************#
