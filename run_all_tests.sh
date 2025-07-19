@@ -42,6 +42,7 @@ for test_script in allpairs_global.sh \
                        cluster_unoise.sh \
                        fastx_getseq.sh \
                        fastx_getseqs.sh \
+                       fastx_getsubseq.sh \
                        search_exact.sh \
                        usearch_global.sh ; do
     bash "./scripts/${test_script}" "${1}" || exit 1
