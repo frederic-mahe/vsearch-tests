@@ -35,12 +35,15 @@ for test_script in fastq_parsing.sh \
 done
 
 ## (preliminary) command-specific tests (valgrind)
-for test_script in cluster_fast.sh \
+for test_script in allpairs_global.sh \
+                       cluster_fast.sh \
                        cluster_size.sh \
                        cluster_smallmem.sh \
                        cluster_unoise.sh \
                        fastx_getseq.sh \
-                       fastx_getseqs.sh ; do
+                       fastx_getseqs.sh \
+                       search_exact.sh \
+                       usearch_global.sh ; do
     bash "./scripts/${test_script}" "${1}" || exit 1
     echo
 done
