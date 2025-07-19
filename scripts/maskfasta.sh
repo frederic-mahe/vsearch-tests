@@ -1,7 +1,7 @@
 #!/usr/bin/env bash -
 
 ## Print a header
-SCRIPT_NAME="masking options"
+SCRIPT_NAME="maskfasta"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
@@ -12,7 +12,7 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    # exit 1
+    exit 1
 }
 
 success () {
@@ -28,6 +28,85 @@ DESCRIPTION="check if vsearch is executable"
 [[ -x "${VSEARCH}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                           mandatory options                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## vsearch --maskfasta fastafile --output outputfile [options]
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            default behaviour                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            secondary options                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              invalid options                                #
+#                                                                             #
+#*****************************************************************************#
+
+# none
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+
+    LOG=$(mktemp)
+    FASTA=$(mktemp)
+    printf ">s\nAAAAAA\n" > "${FASTA}"
+    valgrind \
+        --log-file="${LOG}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --maskfasta "${FASTA}" \
+        --output /dev/null \
+        --log /dev/null 2> /dev/null
+    DESCRIPTION="--maskfasta valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--maskfasta valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${LOG}" "${FASTA}"
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    notes                                    #
+#                                                                             #
+#*****************************************************************************#
+
+
+exit 0
 
 
 ## see issue 30 for more tests
