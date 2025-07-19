@@ -35,6 +35,7 @@ for test_script in fastq_parsing.sh \
 done
 
 ## (preliminary) command-specific tests (valgrind)
+# orient.sh: very slow, lots of memory allocation, no error or leak [2025-07-19 sam.]
 for test_script in allpairs_global.sh \
                        cluster_fast.sh \
                        cluster_size.sh \
