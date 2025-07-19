@@ -36,7 +36,7 @@ DESCRIPTION="check if vsearch is executable"
 #                                                                             #
 #*****************************************************************************#
 
-## vsearch --fastx_filter inputfile [--reverse inputfile] (--fastaout
+## vsearch --fastq_filter fastqfile [--reverse fastqfile] (--fastaout
 ## | --fastaout_discarded | --fastqout | --fastqout_discarded
 ## --fastaout_rev | --fastaout_discarded_rev | --fastqout_rev |
 ## --fastqout_discarded_rev) outputfile [options]
@@ -89,7 +89,7 @@ if which valgrind > /dev/null 2>&1 ; then
         --log-file="${LOG}" \
         --leak-check=full \
         "${VSEARCH}" \
-        --fastx_filter "${FORWARD}" \
+        --fastq_filter "${FORWARD}" \
         --reverse "${REVERSE}" \
         --fastaout /dev/null \
         --fastaout_discarded /dev/null \
@@ -100,11 +100,11 @@ if which valgrind > /dev/null 2>&1 ; then
         --fastqout_rev /dev/null \
         --fastqout_discarded_rev /dev/null \
         --log /dev/null 2> /dev/null
-    DESCRIPTION="--fastx_filter valgrind (no leak memory)"
+    DESCRIPTION="--fastq_filter valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${LOG}" && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
-    DESCRIPTION="--fastx_filter valgrind (no errors)"
+    DESCRIPTION="--fastq_filter valgrind (no errors)"
     grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
