@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash -
 
 ## Print a header
