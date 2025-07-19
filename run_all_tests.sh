@@ -54,6 +54,7 @@ for test_script in allpairs_global.sh \
                        makeudb_usearch.sh \
                        maskfasta.sh \
                        search_exact.sh \
+                       sintax.sh \
                        udb2fasta.sh \
                        udbinfo.sh \
                        udbstats.sh \
