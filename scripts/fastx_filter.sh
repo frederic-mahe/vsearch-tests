@@ -2,7 +2,7 @@
 #!/usr/bin/env bash -
 
 ## Print a header
-SCRIPT_NAME="masking options"
+SCRIPT_NAME="fastx_filter"
 LINE=$(printf "%076s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
@@ -13,7 +13,7 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    # exit 1
+    exit 1
 }
 
 success () {
@@ -29,6 +29,98 @@ DESCRIPTION="check if vsearch is executable"
 [[ -x "${VSEARCH}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                           mandatory options                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## vsearch --fastx_filter inputfile [--reverse inputfile] (--fastaout
+## | --fastaout_discarded | --fastqout | --fastqout_discarded
+## --fastaout_rev | --fastaout_discarded_rev | --fastqout_rev |
+## --fastqout_discarded_rev) outputfile [options]
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            default behaviour                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            secondary options                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              invalid options                                #
+#                                                                             #
+#*****************************************************************************#
+
+# none
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+
+    LOG=$(mktemp)
+    FORWARD=$(mktemp)
+    REVERSE=$(mktemp)
+    printf "@s\nA\n+\nI\n" > "${FORWARD}"
+    printf "@s\nT\n+\nI\n" > "${REVERSE}"
+    valgrind \
+        --log-file="${LOG}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --fastx_filter "${FORWARD}" \
+        --reverse "${REVERSE}" \
+        --fastaout /dev/null \
+        --fastaout_discarded /dev/null \
+        --fastqout /dev/null \
+        --fastqout_discarded /dev/null \
+        --fastaout_rev /dev/null \
+        --fastaout_discarded_rev /dev/null \
+        --fastqout_rev /dev/null \
+        --fastqout_discarded_rev /dev/null \
+        --log /dev/null 2> /dev/null
+    DESCRIPTION="--fastx_filter valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--fastx_filter valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${LOG}" "${FORWARD}" "${REVERSE}"
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    notes                                    #
+#                                                                             #
+#*****************************************************************************#
+
+
+exit 0
 
 
 #*****************************************************************************#
