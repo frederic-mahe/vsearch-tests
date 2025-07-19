@@ -41,6 +41,7 @@ for test_script in allpairs_global.sh \
                        cluster_size.sh \
                        cluster_smallmem.sh \
                        cluster_unoise.sh \
+                       fastq_convert.sh \
                        fastx_getseq.sh \
                        fastx_getseqs.sh \
                        fastx_getsubseq.sh \
