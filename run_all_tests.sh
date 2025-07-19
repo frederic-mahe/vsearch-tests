@@ -44,6 +44,7 @@ for test_script in allpairs_global.sh \
                        fastq_convert.sh \
                        fastq_eestats.sh \
                        fastq_eestats2.sh \
+                       fastq_filter.sh \
                        fastx_getseq.sh \
                        fastx_getseqs.sh \
                        fastx_getsubseq.sh \
