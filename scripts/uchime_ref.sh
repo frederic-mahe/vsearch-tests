@@ -2,7 +2,7 @@
 
 ## Print a header
 SCRIPT_NAME="uchime_ref"
-LINE=$(printf -- "-%.0s" {1..76})f
+LINE=$(printf -- "-%.0s" {1..76})
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
 ## Declare a color code for test results
@@ -12,7 +12,7 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    # exit 1
+    exit 1
 }
 
 success () {
@@ -28,6 +28,101 @@ DESCRIPTION="check if vsearch is executable"
 [[ -x "${VSEARCH}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                           mandatory options                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## vsearch --uchime_ref fastafile (--chimeras | --nonchimeras |
+## --uchimealns | --uchimeout) outputfile --db fastafile [options]
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            default behaviour                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            secondary options                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              invalid options                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+
+    LOG=$(mktemp)
+    QUERY=$(mktemp)
+    DB=$(mktemp)
+    #        1...5...10...15...20...25...30...35
+    A_START="TCCAGCTCCAATAGCGTATACTAAAGTTGTTGC"
+    B_START="AGTTCATGGGCAGGGGCTCCCCGTCATTTACTG"
+    A_END=$(rev <<< ${A_START})
+    B_END=$(rev <<< ${B_START})
+    (
+        printf ">parentA;size=50\n%s\n" "${A_START}${A_END}"
+        printf ">parentB;size=49\n%s\n" "${B_START}${B_END}"
+    ) > "${DB}"
+    printf ">chimeraAB;size=1\n%s\n" "${A_START}${B_END}" > "${QUERY}"
+    valgrind \
+        --log-file="${LOG}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --uchime_ref "${QUERY}" \
+        --db "${DB}" \
+        --chimeras /dev/null \
+        --nonchimeras /dev/null \
+        --borderline /dev/null \
+        --uchimealns /dev/null \
+        --uchimeout /dev/null \
+        --log /dev/null 2> /dev/null
+    DESCRIPTION="--uchime_ref valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--uchime_ref valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${LOG}" "${QUERY}" "${DB}"
+    unset A_START B_START A_END B_END LOG QUERY DB DESCRIPTION
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    notes                                    #
+#                                                                             #
+#*****************************************************************************#
+
+
+exit 0
 
 
 #*****************************************************************************#

@@ -58,6 +58,7 @@ for test_script in allpairs_global.sh \
                        uchime_denovo.sh \
                        uchime2_denovo.sh \
                        uchime3_denovo.sh \
+                       uchime_ref.sh \
                        udb2fasta.sh \
                        udbinfo.sh \
                        udbstats.sh \
