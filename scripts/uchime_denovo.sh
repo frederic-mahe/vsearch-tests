@@ -12,7 +12,7 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "${RED}FAIL${NO_COLOR}: ${1}\n"
-    # exit 1
+    exit 1
 }
 
 success () {
@@ -32,11 +32,97 @@ DESCRIPTION="check if vsearch is executable"
 
 #*****************************************************************************#
 #                                                                             #
+#                           mandatory options                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## vsearch (--uchime_denovo | --uchime2_denovo | --uchime3_denovo)
+## fastafile (--chimeras | --nonchimeras | --uchimealns | --uchimeout)
+## outputfile [options]
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            default behaviour                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            secondary options                                #
+#                                                                             #
+#*****************************************************************************#
+
+
+#*****************************************************************************#
+#                                                                             #
 #                              invalid options                                #
 #                                                                             #
 #*****************************************************************************#
 
-## does not accept --minseqlength!
+
+#*****************************************************************************#
+#                                                                             #
+#                               memory leaks                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## valgrind: search for errors and memory leaks
+if which valgrind > /dev/null 2>&1 ; then
+
+    LOG=$(mktemp)
+    QUERY=$(mktemp)
+    #        1...5...10...15...20...25...30...35
+    A_START="TCCAGCTCCAATAGCGTATACTAAAGTTGTTGC"
+    B_START="AGTTCATGGGCAGGGGCTCCCCGTCATTTACTG"
+    A_END=$(rev <<< ${A_START})
+    B_END=$(rev <<< ${B_START})
+    (
+        printf ">parentA;size=50\n%s\n" "${A_START}${A_END}"
+        printf ">parentB;size=49\n%s\n" "${B_START}${B_END}"
+        printf ">chimeraAB;size=1\n%s\n" "${A_START}${B_END}"
+    ) > "${QUERY}"
+    valgrind \
+        --log-file="${LOG}" \
+        --leak-check=full \
+        "${VSEARCH}" \
+        --uchime_denovo "${QUERY}" \
+        --minseqlength 1 \
+        --chimeras /dev/null \
+        --nonchimeras /dev/null \
+        --borderline /dev/null \
+        --uchimeout /dev/null \
+        --uchimealns /dev/null \
+        --log /dev/null 2> /dev/null
+    DESCRIPTION="--uchime_denovo valgrind (no leak memory)"
+    grep -q "in use at exit: 0 bytes" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    DESCRIPTION="--uchime_denovo valgrind (no errors)"
+    grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${LOG}" "${QUERY}"
+    unset A_START B_START A_END B_END LOG QUERY DESCRIPTION
+fi
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                    notes                                    #
+#                                                                             #
+#*****************************************************************************#
+
+
+exit 0
 
 
 #*****************************************************************************#

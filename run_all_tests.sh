@@ -55,6 +55,9 @@ for test_script in allpairs_global.sh \
                        maskfasta.sh \
                        search_exact.sh \
                        sintax.sh \
+                       uchime_denovo.sh \
+                       uchime2_denovo.sh \
+                       uchime3_denovo.sh \
                        udb2fasta.sh \
                        udbinfo.sh \
                        udbstats.sh \
