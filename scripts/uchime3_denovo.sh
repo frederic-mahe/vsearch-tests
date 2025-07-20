@@ -40,13 +40,12 @@ DESCRIPTION="check if vsearch is executable"
 ## fastafile (--chimeras | --nonchimeras | --uchimealns | --uchimeout)
 ## outputfile [options]
 
-# --uchime2_denovo filename
+# --uchime3_denovo filename
 
 # Detect chimeras present in the fasta-formatted filename, using the
-# UCHIME2 algorithm. This algorithm is designed for denoised amplicons
-# (see --cluster_unoise). Automatically sort the sequences in filename
-# by decreasing abundance beforehand (see the sorting section for
-# details).  Multithreading is not supported.
+# UCHIME2 algorithm. The only difference from --uchime2_denovo is that
+# the default minimum abundance skew (--abskew) is set to 16.0 rather
+# than 2.0.
 
 
 #*****************************************************************************#
@@ -103,12 +102,11 @@ if which valgrind > /dev/null 2>&1 ; then
         --leak-check=full \
         "${VSEARCH}" \
         --uchime3_denovo "${QUERY}" \
-        --minseqlength 1 \
         --chimeras /dev/null \
         --nonchimeras /dev/null \
         --borderline /dev/null \
-        --uchimeout /dev/null \
         --uchimealns /dev/null \
+        --uchimeout /dev/null \
         --log /dev/null 2> /dev/null
     DESCRIPTION="--uchime3_denovo valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${LOG}" && \

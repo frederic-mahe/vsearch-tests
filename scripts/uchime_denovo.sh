@@ -95,12 +95,11 @@ if which valgrind > /dev/null 2>&1 ; then
         --leak-check=full \
         "${VSEARCH}" \
         --uchime_denovo "${QUERY}" \
-        --minseqlength 1 \
         --chimeras /dev/null \
         --nonchimeras /dev/null \
         --borderline /dev/null \
-        --uchimeout /dev/null \
         --uchimealns /dev/null \
+        --uchimeout /dev/null \
         --log /dev/null 2> /dev/null
     DESCRIPTION="--uchime_denovo valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${LOG}" && \
