@@ -81,6 +81,64 @@ DESCRIPTION="check if vsearch is executable"
 
 #*****************************************************************************#
 #                                                                             #
+#                                   bugs                                      #
+#                                                                             #
+#*****************************************************************************#
+
+# [2025-07-24 jeu.] all malloc/free replaced with std::vectors
+#
+# with --threads 1, the reads will be read and stored in two chunks,
+# each containing 500 reads. The bug appears when more than 1000 reads
+# are read. The data of the 1001th read overwrites the data of the
+# first read. If the first read has a longer header, the extra chars
+# end-up in the output file. The solution is to always add a null char
+# '\0' at the end of header strings when storing them.
+DESCRIPTION="fastq_mergepairs: bug with long then short headers"
+R1=$(mktemp)
+R2=$(mktemp)
+
+function generate_fastq() {
+    local -r LONG_HEADER="hh"
+    local -r SHORT_HEADER="s"
+    local -r FORWARD="AAATAAAAAA"
+    local -r REVERSE="TTTTTTATTT"
+    local -r QUAL="IIIIIIIIII"
+    local -ri MAX=1000
+    if [[ "${1}" == "forward"  ]] ; then
+        local SEQUENCE="${FORWARD}"
+    elif [[ "${1}" == "reverse"  ]] ; then
+        local SEQUENCE="${REVERSE}"
+    fi
+    (
+        for ((i=0 ; i < MAX ; i++)) ; do
+            printf "@%s\n" "${LONG_HEADER}"
+            printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+        done
+        printf "@%s\n" "${SHORT_HEADER}"
+        printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+    )
+}
+
+generate_fastq "forward" > "${R1}"
+generate_fastq "reverse" > "${R2}"
+
+"${VSEARCH}" \
+    --fastq_mergepairs "${R1}" \
+    --reverse "${R2}" \
+    --threads 1 \
+    --quiet \
+    --log /dev/null \
+    --fastaout - 2>&1 | \
+    grep -q "^>s$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -rf "${R1}" "${R2}"
+unset R1 R2 generate_fastq DESCRIPTION
+
+
+#*****************************************************************************#
+#                                                                             #
 #                               memory leaks                                  #
 #                                                                             #
 #*****************************************************************************#
