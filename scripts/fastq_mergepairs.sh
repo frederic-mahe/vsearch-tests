@@ -81,7 +81,7 @@ DESCRIPTION="check if vsearch is executable"
 
 #*****************************************************************************#
 #                                                                             #
-#                                   bugs                                      #
+#                                 dev issues                                  #
 #                                                                             #
 #*****************************************************************************#
 
@@ -93,7 +93,7 @@ DESCRIPTION="check if vsearch is executable"
 # first read. If the first read has a longer header, the extra chars
 # end-up in the output file. The solution is to always add a null char
 # '\0' at the end of header strings when storing them.
-DESCRIPTION="fastq_mergepairs: bug with long then short headers"
+DESCRIPTION="fastq_mergepairs: bug with long then short headers (fastaout)"
 R1=$(mktemp)
 R2=$(mktemp)
 
@@ -130,6 +130,271 @@ generate_fastq "reverse" > "${R2}"
     --log /dev/null \
     --fastaout - 2>&1 | \
     grep -q "^>s$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -rf "${R1}" "${R2}"
+unset R1 R2 generate_fastq DESCRIPTION
+
+
+DESCRIPTION="fastq_mergepairs: bug with long then short headers (fastqout)"
+R1=$(mktemp)
+R2=$(mktemp)
+
+function generate_fastq() {
+    local -r LONG_HEADER="hh"
+    local -r SHORT_HEADER="s"
+    local -r FORWARD="AAATAAAAAA"
+    local -r REVERSE="TTTTTTATTT"
+    local -r QUAL="IIIIIIIIII"
+    local -ri MAX=1000
+    if [[ "${1}" == "forward"  ]] ; then
+        local SEQUENCE="${FORWARD}"
+    elif [[ "${1}" == "reverse"  ]] ; then
+        local SEQUENCE="${REVERSE}"
+    fi
+    (
+        for ((i=0 ; i < MAX ; i++)) ; do
+            printf "@%s\n" "${LONG_HEADER}"
+            printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+        done
+        printf "@%s\n" "${SHORT_HEADER}"
+        printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+    )
+}
+
+generate_fastq "forward" > "${R1}"
+generate_fastq "reverse" > "${R2}"
+
+"${VSEARCH}" \
+    --fastq_mergepairs "${R1}" \
+    --reverse "${R2}" \
+    --threads 1 \
+    --quiet \
+    --log /dev/null \
+    --fastqout - 2>&1 | \
+    grep -q "^@s$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -rf "${R1}" "${R2}"
+unset R1 R2 generate_fastq DESCRIPTION
+
+
+DESCRIPTION="fastq_mergepairs: bug with long then short headers (fastaout_notmerged_fwd)"
+R1=$(mktemp)
+R2=$(mktemp)
+
+function generate_fastq() {
+    local -r LONG_HEADER="hh"
+    local -r SHORT_HEADER="s"
+    local -r SEQUENCE="A"
+    local -r QUAL="I"
+    local -ri MAX=1000
+    (
+        for ((i=0 ; i < MAX ; i++)) ; do
+            printf "@%s\n" "${LONG_HEADER}"
+            printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+        done
+        printf "@%s\n" "${SHORT_HEADER}"
+        printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+    )
+}
+
+generate_fastq | tee "${R1}" > "${R2}"  # same sequences, no merge possible
+
+"${VSEARCH}" \
+    --fastq_mergepairs "${R1}" \
+    --reverse "${R2}" \
+    --threads 1 \
+    --quiet \
+    --log /dev/null \
+    --fastaout_notmerged_fwd - 2>&1 | \
+    grep -q "^>s$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -rf "${R1}" "${R2}"
+unset R1 R2 generate_fastq DESCRIPTION
+
+
+DESCRIPTION="fastq_mergepairs: bug with long then short headers (fastaout_notmerged_rev)"
+R1=$(mktemp)
+R2=$(mktemp)
+
+function generate_fastq() {
+    local -r LONG_HEADER="hh"
+    local -r SHORT_HEADER="s"
+    local -r SEQUENCE="A"
+    local -r QUAL="I"
+    local -ri MAX=1000
+    (
+        for ((i=0 ; i < MAX ; i++)) ; do
+            printf "@%s\n" "${LONG_HEADER}"
+            printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+        done
+        printf "@%s\n" "${SHORT_HEADER}"
+        printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+    )
+}
+
+generate_fastq | tee "${R1}" > "${R2}"  # same sequences, no merge possible
+
+"${VSEARCH}" \
+    --fastq_mergepairs "${R1}" \
+    --reverse "${R2}" \
+    --threads 1 \
+    --quiet \
+    --log /dev/null \
+    --fastaout_notmerged_rev - 2>&1 | \
+    grep -q "^>s$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -rf "${R1}" "${R2}"
+unset R1 R2 generate_fastq DESCRIPTION
+
+
+DESCRIPTION="fastq_mergepairs: bug with long then short headers (fastqout_notmerged_fwd)"
+R1=$(mktemp)
+R2=$(mktemp)
+
+function generate_fastq() {
+    local -r LONG_HEADER="hh"
+    local -r SHORT_HEADER="s"
+    local -r SEQUENCE="A"
+    local -r QUAL="I"
+    local -ri MAX=1000
+    (
+        for ((i=0 ; i < MAX ; i++)) ; do
+            printf "@%s\n" "${LONG_HEADER}"
+            printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+        done
+        printf "@%s\n" "${SHORT_HEADER}"
+        printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+    )
+}
+
+generate_fastq | tee "${R1}" > "${R2}"  # same sequences, no merge possible
+
+"${VSEARCH}" \
+    --fastq_mergepairs "${R1}" \
+    --reverse "${R2}" \
+    --threads 1 \
+    --quiet \
+    --log /dev/null \
+    --fastqout_notmerged_fwd - 2>&1 | \
+    grep -q "^@s$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -rf "${R1}" "${R2}"
+unset R1 R2 generate_fastq DESCRIPTION
+
+
+DESCRIPTION="fastq_mergepairs: bug with long then short headers (fastqout_notmerged_rev)"
+R1=$(mktemp)
+R2=$(mktemp)
+
+function generate_fastq() {
+    local -r LONG_HEADER="hh"
+    local -r SHORT_HEADER="s"
+    local -r SEQUENCE="A"
+    local -r QUAL="I"
+    local -ri MAX=1000
+    (
+        for ((i=0 ; i < MAX ; i++)) ; do
+            printf "@%s\n" "${LONG_HEADER}"
+            printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+        done
+        printf "@%s\n" "${SHORT_HEADER}"
+        printf "%s\n+\n%s\n" "${SEQUENCE}" "${QUAL}"
+    )
+}
+
+generate_fastq | tee "${R1}" > "${R2}"  # same sequences, no merge possible
+
+"${VSEARCH}" \
+    --fastq_mergepairs "${R1}" \
+    --reverse "${R2}" \
+    --threads 1 \
+    --quiet \
+    --log /dev/null \
+    --fastqout_notmerged_rev - 2>&1 | \
+    grep -q "^@s$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -rf "${R1}" "${R2}"
+unset R1 R2 generate_fastq DESCRIPTION
+
+
+# same issue with discarded sequences? no
+DESCRIPTION="fastq_mergepairs: bug with long then short sequences (fastaout_notmerged_fwd)"
+R1=$(mktemp)
+R2=$(mktemp)
+
+function generate_fastq() {
+    local -r HEADER="s"
+    local -r LONG_SEQUENCE="AA"
+    local -r LONG_QUAL="II"
+    local -ri MAX=1000
+    (
+        for ((i=0 ; i < MAX ; i++)) ; do
+            printf "@%s\n" "${HEADER}"
+            printf "%s\n+\n%s\n" "${LONG_SEQUENCE}" "${LONG_QUAL}"
+        done
+        printf "@%s\n" "${HEADER}"
+        printf "%s\n+\n%s\n" "T" "I"
+    )
+}
+
+generate_fastq | tee "${R1}" > "${R2}"  # same sequences, no merge possible
+
+"${VSEARCH}" \
+    --fastq_mergepairs "${R1}" \
+    --reverse "${R2}" \
+    --threads 1 \
+    --quiet \
+    --log /dev/null \
+    --fastaout_notmerged_fwd - 2>&1 | \
+    grep -q "^T$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -rf "${R1}" "${R2}"
+unset R1 R2 generate_fastq DESCRIPTION
+
+
+DESCRIPTION="fastq_mergepairs: bug with long then short sequences (fastaout_notmerged_rev)"
+R1=$(mktemp)
+R2=$(mktemp)
+
+function generate_fastq() {
+    local -r HEADER="s"
+    local -r LONG_SEQUENCE="AA"
+    local -r LONG_QUAL="II"
+    local -ri MAX=1000
+    (
+        for ((i=0 ; i < MAX ; i++)) ; do
+            printf "@%s\n" "${HEADER}"
+            printf "%s\n+\n%s\n" "${LONG_SEQUENCE}" "${LONG_QUAL}"
+        done
+        printf "@%s\n" "${HEADER}"
+        printf "%s\n+\n%s\n" "T" "I"
+    )
+}
+
+generate_fastq | tee "${R1}" > "${R2}"  # same sequences, no merge possible
+
+"${VSEARCH}" \
+    --fastq_mergepairs "${R1}" \
+    --reverse "${R2}" \
+    --threads 1 \
+    --quiet \
+    --log /dev/null \
+    --fastaout_notmerged_rev - 2>&1 | \
+    grep -q "^T$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
