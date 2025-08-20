@@ -71,7 +71,7 @@ if which valgrind > /dev/null 2>&1 ; then
         --strand both \
         --uc /dev/null \
         --userout /dev/null \
-        --userfields query+target+id 2> /dev/null
+        --userfields query+target+evalue+id+pctpv+pctgaps+pairs+gaps+qlo+qhi+tlo+thi+pv+ql+tl+qs+ts+alnlen+opens+exts+raw+bits+aln+caln+qstrand+tstrand+qrow+trow+qframe+tframe+mism+ids+qcov+tcov+id0+id1+id2+id3+id4+qilo+qihi+tilo+tihi 2> /dev/null
     DESCRIPTION="--usearch_global valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${LOG}" && \
         success "${DESCRIPTION}" || \
