@@ -40,6 +40,27 @@ DESCRIPTION="check if vsearch is executable"
 # --matched | --notmatched | --samout | --uc | --userout) outputfile
 # (--acceptall | --id real) [options]
 
+
+#*****************************************************************************#
+#                                                                             #
+#                               fixed bugs                                    #
+#                                                                             #
+#*****************************************************************************#
+
+## 2025-08-21: showalign.cc (alnout) refactoring
+DESCRIPTION="--allpairs_global --alnout no extra empty final alignment block"
+printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --rowlen 1 \
+        --alnout - | \
+    awk '{if (/^Qry/) {++block}} END {exit block == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 #*****************************************************************************#
 #                                                                             #
 #                               memory leaks                                  #
