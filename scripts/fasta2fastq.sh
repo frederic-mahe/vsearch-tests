@@ -237,6 +237,16 @@ printf ">s\nA\nA\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## report progress
+DESCRIPTION="--fasta2fastq reports progress when reading input fasta file"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fasta2fastq - \
+        --fastqout /dev/null 2>&1 | \
+    grep -iq "^Converting" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
