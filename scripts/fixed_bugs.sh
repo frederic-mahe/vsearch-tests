@@ -64,7 +64,7 @@ DESCRIPTION="regression c4b218ffe (segfault)"
 DESCRIPTION="regression f3cf0ff31 (segfault)"
 "${VSEARCH}" \
     --usearch_global <(printf ">q\nGCTCCTAC\n") \
-    --db <(for i in {1..8} ; do printf ">s\nGTCGCTCCTA\n" ; done) \
+    --db <(for i in $(seq 1 8) ; do printf ">s\nGTCGCTCCTA\n" ; done) \
     --minseqlength 8 \
     --id 0.5 \
     --quiet \
@@ -169,7 +169,7 @@ q1="AAACAAGAATACCACGACTAGCAGGAGTATCATGATTCCCGCCTCGGCGTCTGCTTGGGTGTTTAA"
 
 ${VSEARCH} \
     --usearch_global <(printf ">q1\n%s\n" "${q1}") \
-    --db <(for i in {1..32} ; do
+    --db <(for i in $(seq 1 32) ; do
                printf ">t%d\n%s\n" ${i} "${q1}"
            done) \
     --maxaccepts 32 \
@@ -1669,7 +1669,7 @@ DESCRIPTION="issue 24: --maxaccepts 0 removes the limit on the number of matches
 DESCRIPTION="issue 24: --maxrejects breaks after 32 bad matches (by default)"
 "${VSEARCH}" \
     --usearch_global <(printf ">q1\nAAA\n") \
-    --db <(for i in {1..32} ; do printf ">t%d\nAAT\n" $i ; done ; printf ">t33\nAAA\n") \
+    --db <(for i in $(seq 1 32) ; do printf ">t%d\nAAT\n" $i ; done ; printf ">t33\nAAA\n") \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
@@ -1681,7 +1681,7 @@ DESCRIPTION="issue 24: --maxrejects breaks after 32 bad matches (by default)"
 DESCRIPTION="issue 24: --maxrejects accepts hits after 31 bad matches (by default)"
 "${VSEARCH}" \
     --usearch_global <(printf ">q1\nAAA\n") \
-    --db <(for i in {1..31} ; do printf ">t%d\nAAT\n" $i ; done ; printf ">t33\nAAA\n") \
+    --db <(for i in $(seq 1 31) ; do printf ">t%d\nAAT\n" $i ; done ; printf ">t33\nAAA\n") \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
