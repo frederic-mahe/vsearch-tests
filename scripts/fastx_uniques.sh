@@ -3122,7 +3122,7 @@ printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
         --fastx_uniques - \
         --quiet \
         --tabbedout - | \
-    cut --fields=1 | \
+    cut -f 1 | \
     tr "\n" "@" | \
     grep -qw "s1@s2@" && \
     success "${DESCRIPTION}" || \
