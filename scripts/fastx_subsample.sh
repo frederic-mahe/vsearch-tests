@@ -635,8 +635,9 @@ printf ">s1\nA\n>s2\nC\n>s3\nG\n>s4\nT\n>s5\nA\n" | \
 ## be identical (same reads, same order):
 DESCRIPTION="--fastx_subsample selects the same reads in paired-end fastq files (--sample_size)"
 SEED=1
+
 cmp --quiet \
-    <(for i in {01..10} ; do
+    <(for i in $(seq 1 10) ; do
           printf "@s%s\nA\n+\nI\n" ${i}
       done | \
           "${VSEARCH}" \
@@ -644,7 +645,7 @@ cmp --quiet \
               --randseed ${SEED} \
               --sample_size 3 \
               --fastqout - 2> /dev/null) \
-     <(for i in {01..10} ; do
+     <(for i in $(seq 1 10) ; do
            printf "@s%s\nA\n+\nI\n" ${i}
        done | \
            "${VSEARCH}" \
@@ -659,7 +660,7 @@ unset SEED
 DESCRIPTION="--fastx_subsample selects the same reads in paired-end fastq files (--sample_pct)"
 SEED=1
 cmp --quiet \
-    <(for i in {01..10} ; do
+    <(for i in $(seq 1 10) ; do
           printf "@s%s\nA\n+\nI\n" ${i}
       done | \
           "${VSEARCH}" \
@@ -667,7 +668,7 @@ cmp --quiet \
               --randseed ${SEED} \
               --sample_pct 30.0 \
               --fastqout - 2> /dev/null) \
-     <(for i in {01..10} ; do
+     <(for i in $(seq 1 10) ; do
            printf "@s%s\nA\n+\nI\n" ${i}
        done | \
            "${VSEARCH}" \
@@ -687,7 +688,7 @@ unset SEED
 DESCRIPTION="--fastx_subsample depends on the number of reads in the fastq file (--sample_size)"
 SEED=1
 cmp --quiet \
-    <(for i in {01..10} ; do
+    <(for i in $(seq 1 10) ; do
           printf "@s%s\nA\n+\nI\n" ${i}
       done | \
           "${VSEARCH}" \
@@ -695,7 +696,7 @@ cmp --quiet \
               --randseed ${SEED} \
               --sample_size 3 \
               --fastqout - 2> /dev/null) \
-     <(for i in {01..9} ; do
+     <(for i in $(seq 1 9) ; do
            printf "@s%s\nA\n+\nI\n" ${i}
        done | \
            "${VSEARCH}" \
@@ -710,7 +711,7 @@ unset SEED
 DESCRIPTION="--fastx_subsample depends on the number of reads in the fastq file (--sample_pct)"
 SEED=1
 cmp --quiet \
-    <(for i in {01..10} ; do
+    <(for i in $(seq 1 10) ; do
           printf "@s%s\nA\n+\nI\n" ${i}
       done | \
           "${VSEARCH}" \
@@ -718,7 +719,7 @@ cmp --quiet \
               --randseed ${SEED} \
               --sample_pct 30.0 \
               --fastqout - 2> /dev/null) \
-     <(for i in {01..9} ; do
+     <(for i in $(seq 1 9) ; do
            printf "@s%s\nA\n+\nI\n" ${i}
        done | \
            "${VSEARCH}" \
