@@ -2,7 +2,7 @@
 
 ## Print a header
 SCRIPT_NAME="cut"
-LINE=$(printf "%076s\n" | tr " " "-")
+LINE=$(printf "%76s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
 ## Declare a color code for test results
@@ -377,8 +377,8 @@ printf ">s\nCCWGG\n" | \
 ## test capacity to store (allocate) increasingly long rev-comp sequences
 DESCRIPTION="--cut can process increasingly long sequences"
 (
-    printf ">s1\n%0160s\n" | tr " " "A"
-    printf ">s2\n%0320s\n" | tr " " "A"
+    printf ">s1\n%160s\n" | tr " " "A"
+    printf ">s2\n%320s\n" | tr " " "A"
 ) | \
     "${VSEARCH}" \
         --cut - \

@@ -2,7 +2,7 @@
 
 ## Print a header
 SCRIPT_NAME="Fixed bugs"
-LINE=$(printf "%076s\n" | tr " " "-")
+LINE=$(printf "%76s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
 ## Declare a color code for test results
@@ -8983,7 +8983,7 @@ unset TMP_UDB
 ## filter if length < 32
 DESCRIPTION="issue 523: makeudb_usearch discards sequences shorter than 32 nucleotides by default (#1)"
 TMP_UDB=$(mktemp)
-printf ">s1\n%031s\n" | \
+printf ">s1\n%31s\n" | \
     tr " " "A" | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \
@@ -8998,7 +8998,7 @@ unset TMP_UDB
 ## no filter if length >= 32
 DESCRIPTION="issue 523: makeudb_usearch discards sequences shorter than 32 nucleotides by default (#2)"
 TMP_UDB=$(mktemp)
-printf ">s1\n%032s\n" | \
+printf ">s1\n%32s\n" | \
     tr " " "A" | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \
@@ -9013,7 +9013,7 @@ unset TMP_UDB
 ## accepts the minseqlength option
 DESCRIPTION="issue 523: makeudb_usearch accepts the --minseqlength option (#1)"
 TMP_UDB=$(mktemp)
-printf ">s1\n%010s\n" | \
+printf ">s1\n%10s\n" | \
     tr " " "A" | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \
@@ -9028,7 +9028,7 @@ unset TMP_UDB
 ## accepts the minseqlength option and uses it
 DESCRIPTION="issue 523: makeudb_usearch accepts the --minseqlength option (#2)"
 TMP_UDB=$(mktemp)
-printf ">s1\n%09s\n" | \
+printf ">s1\n%9s\n" | \
     tr " " "A" | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \
@@ -9044,7 +9044,7 @@ unset TMP_UDB
 ## accepts sequences up to 50,000 nucleotides
 DESCRIPTION="issue 523: makeudb_usearch accepts sequences with up to 50,000 nucleotides"
 TMP_UDB=$(mktemp)
-printf ">s1\n%050000s\n" | \
+printf ">s1\n%50000s\n" | \
     tr " " "A" | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \
@@ -9057,7 +9057,7 @@ unset TMP_UDB
 
 DESCRIPTION="issue 523: makeudb_usearch discards sequences longer than 50,000 nucleotides"
 TMP_UDB=$(mktemp)
-printf ">s1\n%050001s\n" | \
+printf ">s1\n%50001s\n" | \
     tr " " "A" | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \
@@ -9072,7 +9072,7 @@ unset TMP_UDB
 ## accepts the maxseqlength option
 DESCRIPTION="issue 523: makeudb_usearch accepts the --maxseqlength option (#1)"
 TMP_UDB=$(mktemp)
-printf ">s1\n%032s\n" | \
+printf ">s1\n%32s\n" | \
     tr " " "A" | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \
@@ -9087,7 +9087,7 @@ unset TMP_UDB
 ## accepts the maxseqlength option and uses it
 DESCRIPTION="issue 523: makeudb_usearch accepts the --maxseqlength option (#2)"
 TMP_UDB=$(mktemp)
-printf ">s1\n%040s\n" | \
+printf ">s1\n%40s\n" | \
     tr " " "A" | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \

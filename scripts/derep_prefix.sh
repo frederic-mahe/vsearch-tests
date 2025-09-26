@@ -2,7 +2,7 @@
 
 ## Print a header
 SCRIPT_NAME="derep_prefix"
-LINE=$(printf "%076s\n" | tr " " "-")
+LINE=$(printf "%76s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
 ## Declare a color code for test results
@@ -1166,7 +1166,7 @@ printf ">s\nA\n" | \
 
 # 80 nucleotides, expect 2 lines (header + one sequence line)
 DESCRIPTION="--derep_prefix fasta output is not wrapped (80 nucleotides or less)"
-printf ">s\n%080s\n" | tr " " "A" | \
+printf ">s\n%80s\n" | tr " " "A" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --quiet \
@@ -1177,7 +1177,7 @@ printf ">s\n%080s\n" | tr " " "A" | \
 
 # 81 nucleotides, expect 3 lines
 DESCRIPTION="--derep_prefix fasta output is wrapped (81 nucleotides or more)"
-printf ">s\n%081s\n" | tr " " "A" | \
+printf ">s\n%81s\n" | tr " " "A" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --quiet \
@@ -1221,7 +1221,7 @@ printf ">s\nTT\n" | \
 
 # expect 81 nucleotides on the second line
 DESCRIPTION="--derep_prefix --fasta_width 0 (no wrapping)"
-printf ">s\n%081s\n" | tr " " "A" | \
+printf ">s\n%81s\n" | tr " " "A" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --fasta_width 0 \
@@ -1417,7 +1417,7 @@ printf "" | \
 ## --------------------------------------------------------------- maxseqlength
 
 DESCRIPTION="--derep_prefix --maxseqlength is accepted"
-printf ">s\n%081s\n" | tr " " "A" | \
+printf ">s\n%81s\n" | tr " " "A" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --maxseqlength 81 \
@@ -1427,7 +1427,7 @@ printf ">s\n%081s\n" | tr " " "A" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_prefix --maxseqlength accepts shorter lengths (<)"
-printf ">s\n%080s\n" | tr " " "A" | \
+printf ">s\n%80s\n" | tr " " "A" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --maxseqlength 81 \
@@ -1438,7 +1438,7 @@ printf ">s\n%080s\n" | tr " " "A" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_prefix --maxseqlength accepts equal lengths (=)"
-printf ">s\n%081s\n" | tr " " "A" | \
+printf ">s\n%81s\n" | tr " " "A" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --maxseqlength 81 \
@@ -1450,7 +1450,7 @@ printf ">s\n%081s\n" | tr " " "A" | \
 
 # note: the 'sequence discarded' message is not silenced by --quiet
 DESCRIPTION="--derep_prefix --maxseqlength rejects longer sequences (>)"
-printf ">s\n%082s\n" | tr " " "A" | \
+printf ">s\n%82s\n" | tr " " "A" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --maxseqlength 81 \
@@ -1461,7 +1461,7 @@ printf ">s\n%082s\n" | tr " " "A" | \
 	success "${DESCRIPTION}"
 
 DESCRIPTION="--derep_prefix --maxseqlength accepts shorter lengths (--log)"
-printf ">s\n%080s\n" | tr " " "A" | \
+printf ">s\n%80s\n" | tr " " "A" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --maxseqlength 81 \
@@ -1472,7 +1472,7 @@ printf ">s\n%080s\n" | tr " " "A" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_prefix --maxseqlength discards longer lengths (--log)"
-printf ">s\n%080s\n" | tr " " "A" | \
+printf ">s\n%80s\n" | tr " " "A" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --maxseqlength 79 \
@@ -1483,7 +1483,7 @@ printf ">s\n%080s\n" | tr " " "A" | \
 	success "${DESCRIPTION}"
 
 DESCRIPTION="--derep_prefix --maxseqlength must be an integer"
-printf ">s\n%081s\n" | tr " " "A" | \
+printf ">s\n%81s\n" | tr " " "A" | \
     "${VSEARCH}" \
         --derep_prefix - \
         --maxseqlength A \
@@ -1494,7 +1494,7 @@ printf ">s\n%081s\n" | tr " " "A" | \
 
 # ## missing check in vsearch code!
 # DESCRIPTION="--derep_prefix --maxseqlength must be a positive integer"
-# printf ">s\n%081s\n" | tr " " "A" | \
+# printf ">s\n%81s\n" | tr " " "A" | \
 #     "${VSEARCH}" \
 #         --derep_prefix - \
 #         --maxseqlength -1 \
@@ -1505,7 +1505,7 @@ printf ">s\n%081s\n" | tr " " "A" | \
 
 # ## missing check in vsearch code! 
 # DESCRIPTION="--derep_prefix --maxseqlength must be greater than zero"
-# printf ">s\n%081s\n" | tr " " "A" | \
+# printf ">s\n%81s\n" | tr " " "A" | \
 #     "${VSEARCH}" \
 #         --derep_prefix - \
 #         --maxseqlength 0 \

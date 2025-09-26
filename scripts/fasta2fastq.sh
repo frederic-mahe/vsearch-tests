@@ -2,7 +2,7 @@
 
 ## Print a header
 SCRIPT_NAME="fasta2fastq"
-LINE=$(printf "%076s\n" | tr " " "-")
+LINE=$(printf "%76s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
 ## Declare a color code for test results
@@ -195,7 +195,7 @@ printf ">s\nAA\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fasta2fastq length of quality line is correct (length = 80)"
-printf ">s\n%080s\n" | \
+printf ">s\n%80s\n" | \
     tr " " "A" | \
     "${VSEARCH}" \
         --fasta2fastq - \
@@ -205,9 +205,9 @@ printf ">s\n%080s\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fasta2fastq length of consecutive quality lines is correct (1025, then 80)"
-(printf ">s1\n%01025s\n" | \
+(printf ">s1\n%1025s\n" | \
      tr " " "A"
- printf ">s2\n%080s\n" | \
+ printf ">s2\n%80s\n" | \
      tr " " "A") | \
     "${VSEARCH}" \
         --fasta2fastq - \
@@ -218,7 +218,7 @@ DESCRIPTION="--fasta2fastq length of consecutive quality lines is correct (1025,
 
 ## no folding of long sequences, expect 4 lines
 DESCRIPTION="--fasta2fastq output is not folded at 80 chars per line"
-printf ">s\n%081s\n" | \
+printf ">s\n%81s\n" | \
     tr " " "A" | \
     "${VSEARCH}" \
         --fasta2fastq - \

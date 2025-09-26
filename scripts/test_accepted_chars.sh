@@ -2,7 +2,7 @@
 
 ## Print a header
 SCRIPT_NAME="test fasta input"
-LINE=$(printf "%076s\n" | tr " " "-")
+LINE=$(printf "%76s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
  
 ## Declare a color code for test results
@@ -229,7 +229,7 @@ printf ">s\nA\n>s\nT\n" | \
 
 ## Print a header
 SCRIPT_NAME="test fastq input"
-LINE=$(printf "%076s\n" | tr " " "-")
+LINE=$(printf "%76s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
 ## Test empty sequence

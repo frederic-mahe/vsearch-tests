@@ -2,7 +2,7 @@
 
 ## Print a header
 SCRIPT_NAME="derep_smallmem"
-LINE=$(printf "%076s\n" | tr " " "-")
+LINE=$(printf "%76s\n" | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
 ## Declare a color code for test results
@@ -1515,7 +1515,7 @@ unset TMP
 # 80 nucleotides, expect 2 lines (header + one sequence line)
 DESCRIPTION="--derep_smallmem fasta output is not wrapped (80 nucleotides or less)"
 TMP=$(mktemp)
-printf ">s\n%080s\n" | tr " " "A" > ${TMP}
+printf ">s\n%80s\n" | tr " " "A" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --quiet \
@@ -1529,7 +1529,7 @@ unset TMP
 # 81 nucleotides, expect 3 lines
 DESCRIPTION="--derep_smallmem fasta output is wrapped (81 nucleotides or more)"
 TMP=$(mktemp)
-printf ">s\n%081s\n" | tr " " "A" > ${TMP}
+printf ">s\n%81s\n" | tr " " "A" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --quiet \
@@ -1585,7 +1585,7 @@ unset TMP
 # expect 81 nucleotides on the second line
 DESCRIPTION="--derep_smallmem --fasta_width 0 (no wrapping)"
 TMP=$(mktemp)
-printf ">s\n%081s\n" | tr " " "A" > ${TMP}
+printf ">s\n%81s\n" | tr " " "A" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --fasta_width 0 \
@@ -2176,7 +2176,7 @@ unset TMP
 
 DESCRIPTION="--derep_smallmem --maxseqlength is accepted"
 TMP=$(mktemp)
-printf ">s\n%081s\n" | tr " " "A" > ${TMP}
+printf ">s\n%81s\n" | tr " " "A" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --maxseqlength 81 \
@@ -2189,7 +2189,7 @@ unset TMP
 
 DESCRIPTION="--derep_smallmem --maxseqlength accepts shorter lengths (<)"
 TMP=$(mktemp)
-printf ">s\n%080s\n" | tr " " "A" > ${TMP}
+printf ">s\n%80s\n" | tr " " "A" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --maxseqlength 81 \
@@ -2203,7 +2203,7 @@ unset TMP
 
 DESCRIPTION="--derep_smallmem --maxseqlength accepts equal lengths (=)"
 TMP=$(mktemp)
-printf ">s\n%081s\n" | tr " " "A" > ${TMP}
+printf ">s\n%81s\n" | tr " " "A" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --maxseqlength 81 \
@@ -2218,7 +2218,7 @@ unset TMP
 # note: the 'sequence discarded' message is not silenced by --quiet
 DESCRIPTION="--derep_smallmem --maxseqlength rejects longer sequences (>)"
 TMP=$(mktemp)
-printf ">s\n%082s\n" | tr " " "A" > ${TMP}
+printf ">s\n%82s\n" | tr " " "A" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --maxseqlength 81 \
@@ -2232,7 +2232,7 @@ unset TMP
 
 DESCRIPTION="--derep_smallmem --maxseqlength accepts shorter lengths (--log)"
 TMP=$(mktemp)
-printf ">s\n%080s\n" | tr " " "A" > ${TMP}
+printf ">s\n%80s\n" | tr " " "A" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --maxseqlength 81 \
@@ -2246,7 +2246,7 @@ unset TMP
 
 DESCRIPTION="--derep_smallmem --maxseqlength discards longer lengths (--log)"
 TMP=$(mktemp)
-printf ">s\n%080s\n" | tr " " "A" > ${TMP}
+printf ">s\n%80s\n" | tr " " "A" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --maxseqlength 79 \
@@ -2260,7 +2260,7 @@ unset TMP
 
 DESCRIPTION="--derep_smallmem --maxseqlength must be an integer"
 TMP=$(mktemp)
-printf ">s\n%081s\n" | tr " " "A" > ${TMP}
+printf ">s\n%81s\n" | tr " " "A" > ${TMP}
 "${VSEARCH}" \
     --derep_smallmem ${TMP} \
     --maxseqlength A \
@@ -2274,7 +2274,7 @@ unset TMP
 # ## missing check in vsearch code!
 # DESCRIPTION="--derep_smallmem --maxseqlength must be a positive integer"
 # TMP=$(mktemp)
-# printf ">s\n%081s\n" | tr " " "A" > ${TMP}
+# printf ">s\n%81s\n" | tr " " "A" > ${TMP}
 # "${VSEARCH}" \
 #     --derep_smallmem ${TMP} \
 #     --maxseqlength -1 \
@@ -2288,7 +2288,7 @@ unset TMP
 # ## missing check in vsearch code! 
 # DESCRIPTION="--derep_smallmem --maxseqlength must be greater than zero"
 # TMP=$(mktemp)
-# printf ">s\n%081s\n" | tr " " "A" > ${TMP}
+# printf ">s\n%81s\n" | tr " " "A" > ${TMP}
 # "${VSEARCH}" \
 #     --derep_smallmem ${TMP} \
 #     --maxseqlength 0 \
