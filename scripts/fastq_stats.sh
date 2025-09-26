@@ -1084,7 +1084,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qwE "^[[:blank:]]+L[[:blank:]]+1.0000[[:blank:]]+0.5000[[:blank:]]+0.2500[[:blank:]]+0.1000[[:blank:]]++1.0000[[:blank:]]+0.5000[[:blank:]]+0.2500[[:blank:]]+0.1000$" && \
+    grep -qwE "^[[:blank:]]+L[[:blank:]]+1.0000[[:blank:]]+0.5000[[:blank:]]+0.2500[[:blank:]]+0.1000[[:blank:]]+1.0000[[:blank:]]+0.5000[[:blank:]]+0.2500[[:blank:]]+0.1000$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
