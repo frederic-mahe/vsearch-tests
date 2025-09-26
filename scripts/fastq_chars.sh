@@ -118,7 +118,8 @@ for S in a c g t u b d h k m n r s v w y ; do
     printf "@s\n%s\n+\nI\n" "${S}" | \
         "${VSEARCH}" \
             --fastq_chars - 2>&1 | \
-        grep -qE "[[:blank:]]${S^}[[:blank:]]+1[[:blank:]]" && \
+        SUP=$(echo ${S} | tr "[:lower:]" "[:upper:]") \
+        grep -qE "[[:blank:]]${SUP}[[:blank:]]+1[[:blank:]]" && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
 done

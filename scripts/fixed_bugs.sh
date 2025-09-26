@@ -277,7 +277,8 @@ DESCRIPTION="issue 6: sequence masking (shortest unmasked, mixed case)"
     --maskfasta <(printf ">q1\n%s\n" ${q1}) \
     --quiet \
     --output - | \
-    grep -wq "${q1^^}" && \
+    SUP=$(echo $q1 | tr "[:lower:]" "[:upper:]") \
+    grep -wq "$SUP" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
