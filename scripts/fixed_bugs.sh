@@ -261,35 +261,37 @@ DESCRIPTION="issue 6: sequence masking (shortest unmasked)"
 
 ## DUST masking sets to lowercase
 q1="AAAAAAAA"  # minimal length is 8?
+q1_lowercase=$(echo $q1 | tr "[:upper:]" "[:lower:]")
 DESCRIPTION="issue 6: sequence masking (shortest masked)"
 "${VSEARCH}" \
     --maskfasta <(printf ">q1\n%s\n" ${q1}) \
     --quiet \
     --output - | \
-    grep -wq "${q1,,}" && \
+    grep -wq "$q1_lowercase" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## mix case is converted to uppercase
 q1="AaAaAaA"
+q1_uppercase=$(echo $q1 | tr "[:lower:]" "[:upper:]")
 DESCRIPTION="issue 6: sequence masking (shortest unmasked, mixed case)"
 "${VSEARCH}" \
     --maskfasta <(printf ">q1\n%s\n" ${q1}) \
     --quiet \
     --output - | \
-    SUP=$(echo $q1 | tr "[:lower:]" "[:upper:]") \
-    grep -wq "$SUP" && \
+    grep -wq "$q1_uppercase" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## masked mix case is converted to lowercase
 q1="AaAaAaAa"
+q1_lowercase=$(echo $q1 | tr "[:upper:]" "[:lower:]")
 DESCRIPTION="issue 6: sequence masking (shortest masked, mixed case)"
 "${VSEARCH}" \
     --maskfasta <(printf ">q1\n%s\n" ${q1}) \
     --quiet \
     --output - | \
-    grep -wq "${q1,,}" && \
+    grep -wq "$q1_lowercase" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -8960,6 +8962,7 @@ printf "@s\nA\n+\n~\n" | \
 ## UDB needs to write to a seekable file descriptor (pipes, sockets,
 ## tty devices are not seekable, regular files and most block devices
 ## generally are)
+
 DESCRIPTION="issue 523: makeudb_usearch fails to write to a non-seekable output"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
