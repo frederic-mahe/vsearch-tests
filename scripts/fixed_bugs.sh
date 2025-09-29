@@ -8963,14 +8963,15 @@ printf "@s\nA\n+\n~\n" | \
 ## tty devices are not seekable, regular files and most block devices
 ## generally are)
 
-DESCRIPTION="issue 523: makeudb_usearch fails to write to a non-seekable output"
-printf ">s1\nA\n" | \
-    "${VSEARCH}" \
-        --makeudb_usearch /dev/stdin \
-        --quiet \
-        --output /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+## It seems like you can seek and write to /dev/null on macOS at least
+#DESCRIPTION="issue 523: makeudb_usearch fails to write to a non-seekable output"
+#printf ">s1\nA\n" | \
+#    "${VSEARCH}" \
+#        --makeudb_usearch /dev/stdin \
+#        --quiet \
+#        --output /dev/null 2> /dev/null && \
+#    failure "${DESCRIPTION}" || \
+#        success "${DESCRIPTION}"
 
 DESCRIPTION="issue 523: makeudb_usearch can write to a regular file"
 TMP_UDB=$(mktemp)
