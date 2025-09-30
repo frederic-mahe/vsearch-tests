@@ -114,7 +114,7 @@ for S in A C G T U B D H K M N R S V W Y ; do
 done
 
 for S in a c g t u b d h k m n r s v w y ; do
-    s_uppercase=$(echo ${S} | tr "[:lower:]" "[:upper:]")
+    s_uppercase="$(tr "[:lower:]" "[:upper:]" <<< "${S}")"
     DESCRIPTION="--fastq_chars converts lowercase IUPAC to uppercase (${S})"
     printf "@s\n%s\n+\nI\n" "${S}" | \
         "${VSEARCH}" \
@@ -122,6 +122,7 @@ for S in a c g t u b d h k m n r s v w y ; do
         grep -qE "[[:blank:]]${s_uppercase}[[:blank:]]+1[[:blank:]]" && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
+    unset s_uppercase
 done
 
 DESCRIPTION="--fastq_chars accepts non-IUPAC sequence symbols"
