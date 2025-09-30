@@ -270,6 +270,7 @@ DESCRIPTION="issue 6: sequence masking (shortest masked)"
     grep -wq "${q1_lowercase}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset q1 q1_lowercase
 
 ## mix case is converted to uppercase
 q1="AaAaAaA"
@@ -282,6 +283,7 @@ DESCRIPTION="issue 6: sequence masking (shortest unmasked, mixed case)"
     grep -wq "${q1_uppercase}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset q1 q1_uppercase
 
 ## masked mix case is converted to lowercase
 q1="AaAaAaAa"
@@ -294,7 +296,7 @@ DESCRIPTION="issue 6: sequence masking (shortest masked, mixed case)"
     grep -wq "${q1_lowercase}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-
+unset q1 q1_lowercase
 
 ## "A Fast and Symmetric DUST Implementation to Mask Low-Complexity DNA
 ## Sequences" by Morgulis et al. (2006) Journal of Computational
