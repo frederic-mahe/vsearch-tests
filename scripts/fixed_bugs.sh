@@ -261,37 +261,37 @@ DESCRIPTION="issue 6: sequence masking (shortest unmasked)"
 
 ## DUST masking sets to lowercase
 q1="AAAAAAAA"  # minimal length is 8?
-q1_lowercase=$(echo $q1 | tr "[:upper:]" "[:lower:]")
+q1_lowercase="$(tr "[:upper:]" "[:lower:]" <<< "${q1}")"
 DESCRIPTION="issue 6: sequence masking (shortest masked)"
 "${VSEARCH}" \
-    --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+    --maskfasta <(printf ">q1\n%s\n" "${q1}") \
     --quiet \
     --output - | \
-    grep -wq "$q1_lowercase" && \
+    grep -wq "${q1_lowercase}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## mix case is converted to uppercase
 q1="AaAaAaA"
-q1_uppercase=$(echo $q1 | tr "[:lower:]" "[:upper:]")
+q1_uppercase="$(tr "[:lower:]" "[:upper:]" <<< "${q1}")"
 DESCRIPTION="issue 6: sequence masking (shortest unmasked, mixed case)"
 "${VSEARCH}" \
-    --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+    --maskfasta <(printf ">q1\n%s\n" "${q1}") \
     --quiet \
     --output - | \
-    grep -wq "$q1_uppercase" && \
+    grep -wq "${q1_uppercase}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## masked mix case is converted to lowercase
 q1="AaAaAaAa"
-q1_lowercase=$(echo $q1 | tr "[:upper:]" "[:lower:]")
+q1_lowercase="$(tr "[:upper:]" "[:lower:]" <<< "${q1}")"
 DESCRIPTION="issue 6: sequence masking (shortest masked, mixed case)"
 "${VSEARCH}" \
-    --maskfasta <(printf ">q1\n%s\n" ${q1}) \
+    --maskfasta <(printf ">q1\n%s\n" "${q1}") \
     --quiet \
     --output - | \
-    grep -wq "$q1_lowercase" && \
+    grep -wq "${q1_lowercase}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
