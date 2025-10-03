@@ -61,6 +61,29 @@ DESCRIPTION="check if vsearch is executable"
 #                                                                             #
 #*****************************************************************************#
 
+## -------------------------------------------------------------------- threads
+
+DESCRIPTION="--uchime_denovo --threads is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --threads 1 \
+        --quiet \
+        --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--uchime_denovo --threads > 1 triggers a warning (not multithreaded)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --threads 2 \
+        --quiet \
+        --chimeras /dev/null 2>&1 | \
+    grep -iq "warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
