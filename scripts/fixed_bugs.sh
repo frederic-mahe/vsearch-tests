@@ -15408,6 +15408,17 @@ DESCRIPTION="issue 602: --cluster_fast --gapopen infinite (raise from 1,000 to I
 # question, nothing to test
 
 
+#******************************************************************************#
+#                                                                              #
+#       Can vsearch --uchine_denovo take multithreads option ? (issue 608)     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/608
+
+# question, already tested in uchime_denovo.sh
+
+
 exit 0
 
 
