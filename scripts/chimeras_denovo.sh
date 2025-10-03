@@ -3799,6 +3799,7 @@ exit 0
 # - test tabbedout output, *DONE*
 # - tabbedout does not report more than 3 parents! *DONE*
 # - test tabbedout highest similarity is reported,
+# - fasta and fastq IUPAC are accepted,
 # - test remaining command-specific parameters
 # - test if relabel applies to both chimeras and non-chimeras
 # - lengthout: add length to chimeras *DONE*
