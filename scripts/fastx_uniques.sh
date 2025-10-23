@@ -3062,7 +3062,16 @@ printf ">s;size=2\nA\n" | \
 
 ## ------------------------------------------------------------------ tabbedout
 
-#   Column 1 contains the original label/header of the sequence.  Column 2  contains  the label of the output sequence which is equal to the label/header of the first sequence in each cluster, but potentially relabelled. Column 3 contains the cluster number, starting from 0. Column 4 contains the sequence number within each cluster, starting at 0. Column 5 contains the number of sequences in the cluster. Column 6 contains the original label/header of the first sequence in the cluster before any potential relabelling. This option is only valid for the --fastx_uniques command.
+#   Column 1 contains the original label/header of the sequence.
+#   Column 2 contains the label of the output sequence which is equal
+#   to the label/header of the first sequence in each cluster, but
+#   potentially relabelled. Column 3 contains the cluster number,
+#   starting from 0. Column 4 contains the sequence number within each
+#   cluster, starting at 0. Column 5 contains the number of sequences
+#   in the cluster. Column 6 contains the original label/header of the
+#   first sequence in the cluster before any potential
+#   relabelling. This option is only valid for the --fastx_uniques
+#   command.
 
 ## --tabbedout is accepted
 DESCRIPTION="--tabbedout is accepted"
