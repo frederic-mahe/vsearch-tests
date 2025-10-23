@@ -8376,6 +8376,46 @@ DESCRIPTION="issue 512: fastq_mergepairs more reverse reads (error message)"
 
 #******************************************************************************#
 #                                                                              #
+#         combining datasets changes clustering results (issue 514)            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/514
+
+# A given centroid1 can be abundant in a sample A, but close to a more
+# abundant centroid2 present in a sample B. If you clusterize A+B,
+# then centroid2 captures some or all the reads initially captured by
+# centroid1.
+
+# This is illustrated here:
+#  - s1 and s2 come from the same sample A,
+#  - s3 comes from sample B
+#  - when clustering sample A alone, s1 captures s2
+#  - when clustering samples A and B, s3 captures s2
+#  - s1 ends up smaller than it was when sample B was not included
+
+DESCRIPTION="issue 514: combining datasets changes clustering results"
+(
+    printf ">s1;size=2 sample=A\nTGATACATAGTATCGTCACATGAAAGGATTGGGTCGGATGTCTCAAACGAATTCG\n"
+    # mismatch:                                                   *
+    printf ">s2;size=1 sample=A\nTGATACATAGTATCGTCACATGAAAGGATTGGGCCGGATGTCTCAAACGAATTCG\n"
+    # mismatch:                                                    *
+    printf ">s3;size=3 sample=B\nTGATACATAGTATCGTCACATGAAAGGATTGGGCTGGATGTCTCAAACGAATTCG\n"
+) | \
+    ${VSEARCH} \
+        --cluster_size - \
+        --id 0.97 \
+        --sizein \
+        --xsize \
+        --quiet \
+        --uc - | \
+    awk 'BEGIN {FS = "\t"} {if (/^H/) {exit ($9 == "s2" && $10 == "s3") ? 0 : 1}}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #            vsearch tool detailed option in command line ? (issue 516)        #
 #                                                                              #
 #******************************************************************************#
