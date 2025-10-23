@@ -4002,5 +4002,6 @@ fi
 ## TODO:
 # - missing checks in vsearch code (min/max mismatches)
 # - fastq_asciiout (33 -> 64) or (64 -> 33) does not re-encode quality values?
+# - valgrind issues with certain output formats (see above)
 
 exit 0
