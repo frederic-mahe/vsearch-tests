@@ -3982,9 +3982,19 @@ if which valgrind > /dev/null 2>&1 ; then
         --log-file="${TMP}" \
         --leak-check=full \
         "${VSEARCH}" \
-        --fastx_uniques <(printf ">s1\nA\n>s2\nA\n") \
-        --uc /dev/null \
-        --fastaout /dev/null 2> /dev/null
+        --fastx_uniques <(printf "@s1\nA\n+\nI\n@s2\nT\n+\nI\n") \
+        --lengthout \
+        --relabel_sha1 \
+        --relabel_keep \
+        --sample "sample1" \
+        --sizeout \
+        --strand "both" \
+        --threads 2 \
+        --fastaout /dev/null \
+        --fastqout /dev/null \
+        --log /dev/null \
+        --tabbedout /dev/null \
+        --uc /dev/null 2> /dev/null
     DESCRIPTION="--fastx_uniques valgrind (no leak memory)"
     grep -q "in use at exit: 0 bytes" "${TMP}" && \
         success "${DESCRIPTION}" || \
@@ -3997,10 +4007,6 @@ if which valgrind > /dev/null 2>&1 ; then
     unset TMP
 fi
 
-## issue with:
-# --fastqout /dev/null \
-# --tabbedout /dev/null \
-
 
 #*****************************************************************************#
 #                                                                             #
@@ -4011,6 +4017,5 @@ fi
 ## TODO:
 # - missing checks in vsearch code (min/max mismatches)
 # - fastq_asciiout (33 -> 64) or (64 -> 33) does not re-encode quality values?
-# - valgrind issues with certain output formats (see above)
 
 exit 0
