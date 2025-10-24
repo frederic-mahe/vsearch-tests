@@ -14943,14 +14943,14 @@ unset TMP_OUTPUT
 # command can read from a pipe and write to a pipe
 # currently:
 # Fatal error: Unable to seek in UDB file or invalid UDB file
-# DESCRIPTION="issue 599: --makeudb_usearch can write to a stream"
-# printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
-#     "${VSEARCH}" \
-#         --makeudb_usearch - \
-#         --quiet \
-#         --output /dev/stdout 2> /dev/null && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+DESCRIPTION="issue 599: --makeudb_usearch can write to a stream"
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --quiet \
+        --output /dev/stdout > /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
