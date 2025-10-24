@@ -86,6 +86,7 @@ if which valgrind > /dev/null 2>&1 ; then
         --leak-check=full \
         "${VSEARCH}" \
         --makeudb_usearch "${FASTQ}" \
+        --threads 2 \
         --minseqlength 1 \
         --output "${UDB}" \
         --log /dev/null 2> /dev/null
