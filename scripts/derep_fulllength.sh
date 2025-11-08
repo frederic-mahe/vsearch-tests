@@ -427,6 +427,160 @@ DESCRIPTION="--derep_fulllength accepts more than 1,024 unique sequences"
 	failure "${DESCRIPTION}"
 
 
+## --------------------------------------------------------------------- median
+
+DESCRIPTION="--derep_fulllength outputs a median cluster size"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --output /dev/null 2>&1 | \
+    grep -q "median" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (empty entry, no median)"
+printf "" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --output /dev/null 2>&1 | \
+    grep -q "median" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (single entry, median = 1)"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --output /dev/null 2>&1 | \
+    grep -q "median 1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (single entry with size annotation, median = 2)"
+printf ">s1;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --output /dev/null 2>&1 | \
+    grep -q "median 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (two entries, median = 1)"
+printf ">s1\nA\n>s2\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --output /dev/null 2>&1 | \
+    grep -q "median 1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (two entries with equal size annotations, median = 2)"
+printf ">s1;size=2\nA\n>s2;size=2\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --output /dev/null 2>&1 | \
+    grep -q "median 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## Banker's rounding (round half to even)
+DESCRIPTION="--derep_fulllength median (1 + 2 -> median = 2)"
+printf ">s1;size=1\nA\n>s2;size=2\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --output /dev/null 2>&1 | \
+    grep -q "median 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (1 + 3 -> median = 2)"
+printf ">s1;size=1\nA\n>s2;size=3\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --output /dev/null 2>&1 | \
+    grep -q "median 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (1 + 4 -> median = 2)"
+printf ">s1;size=1\nA\n>s2;size=4\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --output /dev/null 2>&1 | \
+    grep -q "median 2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (1 + 5 -> median = 3)"
+printf ">s1;size=1\nA\n>s2;size=5\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --output /dev/null 2>&1 | \
+    grep -q "median 3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (1 + 6 -> median = 4)"
+printf ">s1;size=1\nA\n>s2;size=6\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --output /dev/null 2>&1 | \
+    grep -q "median 4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (1 + 7 -> median = 4)"
+printf ">s1;size=1\nA\n>s2;size=7\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --output /dev/null 2>&1 | \
+    grep -q "median 4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (1 + 8 -> median = 4)"
+printf ">s1;size=1\nA\n>s2;size=8\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --output /dev/null 2>&1 | \
+    grep -q "median 4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength median (1 + 9 -> median = 5)"
+printf ">s1;size=1\nA\n>s2;size=9\nC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --output /dev/null 2>&1 | \
+    grep -q "median 5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 #*****************************************************************************#
 #                                                                             #
 #                              core options                                   #
