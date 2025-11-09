@@ -15459,6 +15459,19 @@ DESCRIPTION="issue 602: --cluster_fast --gapopen infinite (raise from 1,000 to I
 # question, already tested in uchime_denovo.sh
 
 
+#******************************************************************************#
+#                                                                              #
+#              Median cluster size always 0? #611 (issue 611)                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/611
+
+# - bug introduced in v2.30.1,
+# - commands --derep_smallmem and --derep_prefix were not affected,
+# - test added to derep_fulllength.sh, derep_id.sh, and fastx_unique.sh
+
+
 exit 0
 
 
