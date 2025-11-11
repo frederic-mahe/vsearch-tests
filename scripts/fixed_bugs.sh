@@ -15472,6 +15472,53 @@ DESCRIPTION="issue 602: --cluster_fast --gapopen infinite (raise from 1,000 to I
 # - test added to derep_fulllength.sh, derep_id.sh, and fastx_unique.sh
 
 
+#******************************************************************************#
+#                                                                              #
+#   cluster_fast command: inaccurate counting of sequences from dereplication  #
+#                    to clustering at 100% similarity (issue 612)              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/612
+
+# question, terminal differences are ignored by default
+
+DESCRIPTION="issue 612: --cluster_fast --id 1.00 (expect no clustering)"
+(
+    ## entries diverge by a single T in 5' position
+    echo ">FT100067221L1C001R00101536038"
+    echo "CGCCGGTGCTGAGCCACTGGCGCCGGACCACCGACTTCTGCGGCACGGCGACACGGTGACGCAGCTGCACATCGCCGGCGTCCGCGGCGCGCCGCCGCTCCCG"
+    echo ">FT100067221L1C002R00500601972"
+    echo "TCGCCGGTGCTGAGCCACTGGCGCCGGACCACCGACTTCTGCGGCACGGCGACACGGTGACGCAGCTGCACATCGCCGGCGTCCGCGGCGCGCCGCCGCTCCCG"
+) | \
+    ${VSEARCH} \
+        --cluster_fast - \
+        --id 1.00 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 612: --cluster_fast --id 1.00 --iddef 1 (expect clustering)"
+(
+    ## entries diverge by a single T in 5' position
+    echo ">FT100067221L1C001R00101536038"
+    echo "CGCCGGTGCTGAGCCACTGGCGCCGGACCACCGACTTCTGCGGCACGGCGACACGGTGACGCAGCTGCACATCGCCGGCGTCCGCGGCGCGCCGCCGCTCCCG"
+    echo ">FT100067221L1C002R00500601972"
+    echo "TCGCCGGTGCTGAGCCACTGGCGCCGGACCACCGACTTCTGCGGCACGGCGACACGGTGACGCAGCTGCACATCGCCGGCGTCCGCGGCGCGCCGCCGCTCCCG"
+) | \
+    ${VSEARCH} \
+        --cluster_fast - \
+        --id 1.00 \
+        --iddef 1 \
+        --quiet \
+        --uc - | \
+    grep -q "^H" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 exit 0
 
 
