@@ -40,13 +40,13 @@ DESCRIPTION="check if vsearch is executable"
 ## --derep_smallmem is accepted
 DESCRIPTION="--derep_smallmem is accepted"
 TMP=$(mktemp)
-printf ">s\nA\n" > ${TMP}
+printf ">s\nA\n" > "${TMP}"
 "${VSEARCH}" \
-    --derep_smallmem ${TMP} \
+    --derep_smallmem "${TMP}" \
     --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
-rm -f ${TMP}
+rm -f "${TMP}"
 unset TMP
 
 # cannot read from a pipe, as data must be read twice
