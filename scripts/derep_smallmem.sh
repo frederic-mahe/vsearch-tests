@@ -11,12 +11,12 @@ GREEN="\033[1;32m"
 NO_COLOR="\033[0m"
 
 failure () {
-    printf "${RED}FAIL${NO_COLOR}: ${1}\n"
+    printf "%sFAIL%s: %s\n" "${RED}" "${NO_COLOR}" "${1}"
     exit 1
 }
 
 success () {
-    printf "${GREEN}PASS${NO_COLOR}: ${1}\n"
+    printf "%sPASS%s: %s\n" "${GREEN}" "${NO_COLOR}" "${1}"
 }
 
 ## use the first binary in $PATH by default, unless user wants
