@@ -1,5 +1,6 @@
 #!/bin/bash -
 # shellcheck disable=SC2015
+# shellcheck disable=SC2015
 
 ## Print a header
 SCRIPT_NAME="derep_smallmem"

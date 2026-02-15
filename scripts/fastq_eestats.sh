@@ -1,4 +1,5 @@
 #!/usr/bin/env bash -
+# shellcheck disable=SC2015
 
 ## Print a header
 SCRIPT_NAME="fastq_eestats"
