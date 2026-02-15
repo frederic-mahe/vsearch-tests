@@ -3,7 +3,7 @@
 
 ## Print a header
 SCRIPT_NAME="fasta2fastq"
-LINE=$(printf "%76s\n" | tr " " "-")
+LINE=$(printf "%76s\n" " " | tr " " "-")
 printf "# %s %s\n" "${LINE:${#SCRIPT_NAME}}" "${SCRIPT_NAME}"
 
 ## Declare a color code for test results
