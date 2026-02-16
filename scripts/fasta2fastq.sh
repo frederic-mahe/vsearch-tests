@@ -48,14 +48,14 @@ printf ">s\nA\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fasta2fastq fails if unable to open output file for writing"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fasta2fastq - \
-        --fastqout ${TMP} 2> /dev/null && \
+        --fastqout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 # Cannot subsample more reads than in the original sample
@@ -96,14 +96,14 @@ printf "@s\nA\n+\nI\n" | \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fasta2fastq fails if unable to open input file for reading"
-TMP=$(mktemp) && chmod u-r ${TMP}  # remove read permission
-printf ">s\nA\n" > ${TMP}
+TMP=$(mktemp) && chmod u-r "${TMP}"  # remove read permission
+printf ">s\nA\n" > "${TMP}"
 "${VSEARCH}" \
-    --fasta2fastq ${TMP} \
+    --fasta2fastq "${TMP}" \
     --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+r ${TMP} && rm -f ${TMP}
+chmod u+r "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 
