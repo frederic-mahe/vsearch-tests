@@ -56,14 +56,14 @@ printf ">s1;size=9\nA\n" | \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--sortbylength fails if unable to open output file for writing"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s1;size=9\nA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
-        --output ${TMP} 2> /dev/null && \
+        --output "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--sortbylength outputs in fasta format"
