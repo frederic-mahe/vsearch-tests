@@ -96,7 +96,7 @@ DESCRIPTION="when clustering (--uc output), the 2nd column of H is the centroid'
 INPUT=">seq1\nAAAA\n>seq2\nAAAT\n>seq3\nGGGG\n>seq4\nGGGC\n"
 
 UC_OUT=$("${VSEARCH}" \
-    --cluster_fast <(printf ${INPUT}) \
+    --cluster_fast <(printf "%s" "${INPUT}") \
     --id 0.75 \
     --quiet \
     --minseqlength 1 \
@@ -129,7 +129,7 @@ s=$(printf ">seq1;size=3;\nACGT\n>seq2;size=1;\nACGT\n" | \
                --minseqlength 1 \
                --uc - | grep "^C" | cut -f 3)
 
-(( ${s} == 4 )) && \
+(( s == 4 )) && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -213,7 +213,7 @@ C=$(printf ">seq1\nAACC\n>seq2\nGGTT\n" | \
                --uc - | grep -c "^C")
 
 # There should be only cluster
-(( ${C} == 1 )) && \
+(( C == 1 )) && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
