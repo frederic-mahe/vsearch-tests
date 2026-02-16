@@ -513,7 +513,7 @@ printf ">s\nGCC\n" | \
         printf "Y\t%s\n" ${c}
     done
 ) | \
-    while read A B; do
+    while read -r A B; do
         DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (${A} -> ${B})"
         printf ">s\nACATG%s\n" "${B}" | \
             "${VSEARCH}" \
@@ -592,7 +592,7 @@ printf ">s\nGCC\n" | \
         printf "Y\t%s\n" ${c}
     done
 ) | \
-    while read A B; do
+    while read -r A B; do
         DESCRIPTION="--cut --cut_pattern does not match unequivalent nucleotides (${A} -> ${B})"
         printf ">s\nACATG%s\n" "${B}" | \
             "${VSEARCH}" \
