@@ -470,9 +470,9 @@ printf "@s\nU\n+\n~\n" | \
 DESCRIPTION="--fastq_join does not fold fastq sequences longer than 80 nucleotides"
 (
     printf "@s\n"
-    printf "%80s\n" | tr " " "A"
+    printf "%80s\n" " " | tr " " "A"
     printf "+\n"
-    printf "%80s\n" | tr " " "I"
+    printf "%80s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -485,9 +485,9 @@ DESCRIPTION="--fastq_join does not fold fastq sequences longer than 80 nucleotid
 DESCRIPTION="--fastq_join folds fasta sequences longer than 80 nucleotides"
 (
     printf "@s\n"
-    printf "%80s\n" | tr " " "A"
+    printf "%80s\n" " " | tr " " "A"
     printf "+\n"
-    printf "%80s\n" | tr " " "I"
+    printf "%80s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -524,8 +524,8 @@ DESCRIPTION="--fastq_join long reverse entry (> 1,024 nucleotides)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\n%1025s\n" | tr " " "A"
-                    printf "+\n%1025s\n" | tr " " "I") \
+        --reverse <(printf "@s\n%1025s\n" " " | tr " " "A"
+                    printf "+\n%1025s\n" " " | tr " " "I") \
         --fastqout - 2> /dev/null | \
     awk 'NR == 2 {exit length($1) > 1025 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -535,8 +535,8 @@ DESCRIPTION="--fastq_join long reverse entry (> 1,024 quality symbols)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\n%1025s\n" | tr " " "A"
-                    printf "+\n%1025s\n" | tr " " "I") \
+        --reverse <(printf "@s\n%1025s\n" " " | tr " " "A"
+                    printf "+\n%1025s\n" " " | tr " " "I") \
         --fastqout - 2> /dev/null | \
     awk 'NR == 4 {exit length($1) > 1025 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -545,8 +545,8 @@ printf "@s\nA\n+\nI\n" | \
 ## default pre-allocated length is 1,024 + 8 + 1,024 = 2,056
 DESCRIPTION="--fastq_join long reverse entry (> 2,056 nucleotides)"
 (
-    printf "@s\n%2056s\n" | tr " " "A"
-    printf "+\n%2056s\n" | tr " " "I"
+    printf "@s\n%2056s\n" " " | tr " " "A"
+    printf "+\n%2056s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -781,8 +781,8 @@ printf "@s\nA\n+\nI\n" | \
 
 # test very long padding
 DESCRIPTION="--fastq_join sequence and quality padding can be long (256 chars)"
-SEQ=$(printf "%256s" | tr " " "N")
-QUAL=$(printf "%256s" | tr " " "I")
+SEQ=$(printf "%256s" " " | tr " " "N")
+QUAL=$(printf "%256s" " " | tr " " "I")
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -796,8 +796,8 @@ printf "@s\nA\n+\nI\n" | \
 unset SEQ QUAL
 
 DESCRIPTION="--fastq_join sequence and quality padding can be long (1,024 chars)"
-SEQ=$(printf "%1024s" | tr " " "N")
-QUAL=$(printf "%1024s" | tr " " "I")
+SEQ=$(printf "%1024s" " " | tr " " "N")
+QUAL=$(printf "%1024s" " " | tr " " "I")
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -912,8 +912,8 @@ printf "@s\nA\n+\nI\n" | \
 # 80+ nucleotides, expect wrapping
 DESCRIPTION="--fastq_join fastq output is not wrapped"
 (
-    printf "@s\n%80s\n" | tr " " "A"
-    printf "+\n%80s\n" | tr " " "I"
+    printf "@s\n%80s\n" " " | tr " " "A"
+    printf "+\n%80s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -925,8 +925,8 @@ DESCRIPTION="--fastq_join fastq output is not wrapped"
 
 DESCRIPTION="--fastq_join fasta output is wrapped by default (80 chars)"
 (
-    printf "@s\n%80s\n" | tr " " "A"
-    printf "+\n%80s\n" | tr " " "I"
+    printf "@s\n%80s\n" " " | tr " " "A"
+    printf "+\n%80s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -972,8 +972,8 @@ printf "@s\nA\n+\nI\n" | \
 # expect 89 nucleotides on the second line
 DESCRIPTION="--fastq_join --fasta_width 0 (no wrapping)"
 (
-    printf "@s\n%80s\n" | tr " " "A"
-    printf "+\n%80s\n" | tr " " "I"
+    printf "@s\n%80s\n" " " | tr " " "A"
+    printf "+\n%80s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -2258,7 +2258,7 @@ printf "@s\nA\n+\nI\n" | \
 	success "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_join --maxseqlength is rejected"
-printf ">s\n%81s\n" | tr " " "A" | \
+printf ">s\n%81s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --fastq_join - \
         --reverse <(printf "@s\nA\n+\nI\n") \
