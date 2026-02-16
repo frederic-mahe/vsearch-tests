@@ -153,21 +153,21 @@ DESCRIPTION="--sff_convert --fastqout writes to output file (file is not empty)"
 TMP=$(mktemp)
 "${VSEARCH}" \
     --sff_convert "${SFF}" \
-    --fastqout ${TMP} 2> /dev/null
-[[ -s ${TMP} ]] && \
+    --fastqout "${TMP}" 2> /dev/null
+[[ -s "${TMP}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f ${TMP}
+rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--sff_convert --fastqout fails if unable to open output file for writing"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 "${VSEARCH}" \
     --sff_convert "${SFF}" \
-    --fastqout ${TMP} 2> /dev/null && \
+    --fastqout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--sff_convert --fastqout can write to /dev/stdout (stream is not empty)"
@@ -217,13 +217,13 @@ DESCRIPTION="--sff_convert requires an input file"
         success "${DESCRIPTION}"
 
 DESCRIPTION="--sff_convert fails if unable to open input file for reading"
-chmod u-r ${SFF}  # remove read permission
+chmod u-r "${SFF}"  # remove read permission
 "${VSEARCH}" \
     --sff_convert "${SFF}" \
     --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+r ${SFF}
+chmod u+r "${SFF}"
 
 DESCRIPTION="--sff_convert can read from /dev/stdin (pipe)"
 cat "${SFF}" | \
@@ -2304,22 +2304,22 @@ TMP=$(mktemp)
 "${VSEARCH}" \
     --sff_convert "${SFF}" \
     --fastqout /dev/null \
-    --log ${TMP} 2> /dev/null
-grep -q "." ${TMP} && \
+    --log "${TMP}" 2> /dev/null
+grep -q "." "${TMP}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f ${TMP}
+rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--sff_convert --log fails if unable to open output file for writing"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 "${VSEARCH}" \
     --sff_convert "${SFF}" \
     --fastqout /dev/null \
-    --log ${TMP} 2> /dev/null && \
+    --log "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 ## only quiet prevents messages to stderr
