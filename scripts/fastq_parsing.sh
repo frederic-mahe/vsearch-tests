@@ -40,7 +40,7 @@ DESCRIPTION="check if vsearch is executable"
 ## valid fastq files
 find ./data/ -name "*.fastq" ! -name "error*" -print | \
     sort | \
-    while read f ; do
+    while read -r f ; do
         DESCRIPTION="fastq parsing: $(basename ${f}) is a valid file"
         "${VSEARCH}" \
             --fastq_chars "${f}" \
@@ -52,7 +52,7 @@ find ./data/ -name "*.fastq" ! -name "error*" -print | \
 ## invalid fastq files
 find ./data/ -name "error*.fastq" -print | \
     sort | \
-    while read f ; do
+    while read -r f ; do
         DESCRIPTION="fastq parsing: $(basename ${f}) is an invalid file"
         "${VSEARCH}" \
             --fastq_chars "${f}" \
