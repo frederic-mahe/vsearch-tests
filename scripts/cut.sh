@@ -524,7 +524,7 @@ printf ">s\nGCC\n" | \
             success "${DESCRIPTION}" || \
                 failure "${DESCRIPTION}"
 
-        if [[ ${A} != ${B} ]] ; then
+        if [[ ${A} != "${B}" ]] ; then
             DESCRIPTION="--cut --cut_pattern can match equivalent nucleotides (${B} -> ${A})"
             printf ">s\nACATG%s\n" "${A}" | \
                 "${VSEARCH}" \
@@ -603,7 +603,7 @@ printf ">s\nGCC\n" | \
             failure "${DESCRIPTION}" || \
                 success "${DESCRIPTION}"
 
-        if [[ ${A} != ${B} ]] ; then
+        if [[ ${A} != "${B}" ]] ; then
             DESCRIPTION="--cut --cut_pattern does not match unequivalent nucleotides (${B} -> ${A})"
             printf ">s\nACATG%s\n" "${A}" | \
                 "${VSEARCH}" \
