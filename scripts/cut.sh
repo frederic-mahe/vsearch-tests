@@ -378,8 +378,8 @@ printf ">s\nCCWGG\n" | \
 ## test capacity to store (allocate) increasingly long rev-comp sequences
 DESCRIPTION="--cut can process increasingly long sequences"
 (
-    printf ">s1\n%160s\n" | tr " " "A"
-    printf ">s2\n%320s\n" | tr " " "A"
+    printf ">s1\n%160s\n" " " | tr " " "A"
+    printf ">s2\n%320s\n" " " | tr " " "A"
 ) | \
     "${VSEARCH}" \
         --cut - \
