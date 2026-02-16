@@ -11855,7 +11855,7 @@ unset Q t1 t2
 for OFFSET in 33 64 ; do
     for i in 2 14 21 27 32 36 ; do
         DESCRIPTION="issue 549: RTA3 quality score ${i} is accepted (offset +${OFFSET})"
-        OCTAL=$(printf "\%04o" $(( ${i} + ${OFFSET} )) )
+        OCTAL=$(printf "\%04o" $(( i + OFFSET )) )
         echo -e "@s\nA\n+\n${OCTAL}\n" | \
             "${VSEARCH}" \
                 --fastq_eestats - \
