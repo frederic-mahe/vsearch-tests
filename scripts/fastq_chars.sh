@@ -252,8 +252,8 @@ printf "@s\nACCCCCCCCCC\n+\nIIIIIIIIIII\n" | \
 ## report is limited to 1/1000
 DESCRIPTION="--fastq_chars gives the frequency of each sequence symbol (0.1 percent A)"
 (
-    printf "@s\nA%999s\n" | tr " " "C"
-    printf "+\nI%999s\n" | tr " " "I"
+    printf "@s\nA%999s\n" " " | tr " " "C"
+    printf "+\nI%999s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_chars - 2>&1 | \
@@ -264,8 +264,8 @@ DESCRIPTION="--fastq_chars gives the frequency of each sequence symbol (0.1 perc
 ## values ranging between 1/1000 and 0.5/1000 are reported as 0.1% 
 DESCRIPTION="--fastq_chars gives the frequency of each sequence symbol (below 0.1 percent A)"
 (
-    printf "@s\nA%1999s\n" | tr " " "C"
-    printf "+\nI%1999s\n" | tr " " "I"
+    printf "@s\nA%1999s\n" " " | tr " " "C"
+    printf "+\nI%1999s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_chars - 2>&1 | \
@@ -276,8 +276,8 @@ DESCRIPTION="--fastq_chars gives the frequency of each sequence symbol (below 0.
 ## below 5/10000, values are reported as 0.0%
 DESCRIPTION="--fastq_chars gives the frequency of each sequence symbol (0.0 percent A)"
 (
-    printf "@s\nA%2000s\n" | tr " " "C"
-    printf "+\nI%2000s\n" | tr " " "I"
+    printf "@s\nA%2000s\n" " " | tr " " "C"
+    printf "+\nI%2000s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_chars - 2>&1 | \
@@ -503,8 +503,8 @@ printf "@s\nACCCCCCCCCC\n+\nJIIIIIIIIII\n" | \
 ## report is limited to 1/1000
 DESCRIPTION="--fastq_chars gives the frequency of each quality symbol (0.1 percent J)"
 (
-    printf "@s\nA%999s\n" | tr " " "C"
-    printf "+\nJ%999s\n" | tr " " "I"
+    printf "@s\nA%999s\n" " " | tr " " "C"
+    printf "+\nJ%999s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_chars - 2>&1 | \
@@ -515,8 +515,8 @@ DESCRIPTION="--fastq_chars gives the frequency of each quality symbol (0.1 perce
 ## values ranging between 1/1000 and 0.5/1000 are reported as 0.1% 
 DESCRIPTION="--fastq_chars gives the frequency of each quality symbol (below 0.1 percent J)"
 (
-    printf "@s\nA%1999s\n" | tr " " "C"
-    printf "+\nJ%1999s\n" | tr " " "I"
+    printf "@s\nA%1999s\n" " " | tr " " "C"
+    printf "+\nJ%1999s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_chars - 2>&1 | \
@@ -527,8 +527,8 @@ DESCRIPTION="--fastq_chars gives the frequency of each quality symbol (below 0.1
 ## below 5/10000, values are reported as 0.0%
 DESCRIPTION="--fastq_chars gives the frequency of each quality symbol (0.0 percent J)"
 (
-    printf "@s\nA%2000s\n" | tr " " "A"
-    printf "+\nJ%2000s\n" | tr " " "I"
+    printf "@s\nA%2000s\n" " " | tr " " "A"
+    printf "+\nJ%2000s\n" " " | tr " " "I"
 ) | \
     "${VSEARCH}" \
         --fastq_chars - 2>&1 | \
