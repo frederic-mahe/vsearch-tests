@@ -86,15 +86,15 @@ printf "@s\nA\n+\nI\n" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_join fails if unable to open output file for writing (fastq in, fastaout)"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
         --reverse <(printf "@s\nA\n+\nI\n") \
-        --fastaout ${TMP} 2> /dev/null && \
+        --fastaout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--fastq_join requires an output file (fastq in, fastqout)"
@@ -127,15 +127,15 @@ printf "@s\nA\n+\nI\n" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_join fails if unable to open output file for writing (fastq in, fastqout)"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
         --reverse <(printf "@s\nA\n+\nI\n") \
-        --fastqout ${TMP} 2> /dev/null && \
+        --fastqout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--fastq_join fastqout requires fastq input (both inputs)"
