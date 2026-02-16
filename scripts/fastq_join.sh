@@ -385,7 +385,7 @@ printf "@s\na\n+\nI\n" | \
     printf "W\tW\n"
     printf "Y\tR\n"
 ) | \
-    while read A B; do
+    while read -r A B; do
         DESCRIPTION="--fastq_join reverse-complements ${A} into ${B}"
         printf "@s\nA\n+\nI\n" | \
             "${VSEARCH}" \
