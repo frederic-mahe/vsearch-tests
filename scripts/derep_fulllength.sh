@@ -1232,7 +1232,7 @@ printf ">s\nA\n" | \
 
 # 80 nucleotides, expect 2 lines (header + one sequence line)
 DESCRIPTION="--derep_fulllength fasta output is not wrapped (80 nucleotides or less)"
-printf ">s\n%80s\n" | tr " " "A" | \
+printf ">s\n%80s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --quiet \
@@ -1243,7 +1243,7 @@ printf ">s\n%80s\n" | tr " " "A" | \
 
 # 81 nucleotides, expect 3 lines
 DESCRIPTION="--derep_fulllength fasta output is wrapped (81 nucleotides or more)"
-printf ">s\n%81s\n" | tr " " "A" | \
+printf ">s\n%81s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --quiet \
@@ -1287,7 +1287,7 @@ printf ">s\nTT\n" | \
 
 # expect 81 nucleotides on the second line
 DESCRIPTION="--derep_fulllength --fasta_width 0 (no wrapping)"
-printf ">s\n%81s\n" | tr " " "A" | \
+printf ">s\n%81s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --fasta_width 0 \
@@ -1446,7 +1446,7 @@ printf "" | \
 ## --------------------------------------------------------------- maxseqlength
 
 DESCRIPTION="--derep_fulllength --maxseqlength is accepted"
-printf ">s\n%81s\n" | tr " " "A" | \
+printf ">s\n%81s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --maxseqlength 81 \
@@ -1456,7 +1456,7 @@ printf ">s\n%81s\n" | tr " " "A" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_fulllength --maxseqlength accepts shorter lengths (<)"
-printf ">s\n%80s\n" | tr " " "A" | \
+printf ">s\n%80s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --maxseqlength 81 \
@@ -1467,7 +1467,7 @@ printf ">s\n%80s\n" | tr " " "A" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_fulllength --maxseqlength accepts equal lengths (=)"
-printf ">s\n%81s\n" | tr " " "A" | \
+printf ">s\n%81s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --maxseqlength 81 \
@@ -1479,7 +1479,7 @@ printf ">s\n%81s\n" | tr " " "A" | \
 
 # note: the 'sequence discarded' message is not silenced by --quiet
 DESCRIPTION="--derep_fulllength --maxseqlength rejects longer sequences (>)"
-printf ">s\n%82s\n" | tr " " "A" | \
+printf ">s\n%82s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --maxseqlength 81 \
@@ -1490,7 +1490,7 @@ printf ">s\n%82s\n" | tr " " "A" | \
 	success "${DESCRIPTION}"
 
 DESCRIPTION="--derep_fulllength --maxseqlength accepts shorter lengths (--log)"
-printf ">s\n%80s\n" | tr " " "A" | \
+printf ">s\n%80s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --maxseqlength 81 \
@@ -1501,7 +1501,7 @@ printf ">s\n%80s\n" | tr " " "A" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_fulllength --maxseqlength discards longer lengths (--log)"
-printf ">s\n%80s\n" | tr " " "A" | \
+printf ">s\n%80s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --maxseqlength 79 \
@@ -1512,7 +1512,7 @@ printf ">s\n%80s\n" | tr " " "A" | \
 	success "${DESCRIPTION}"
 
 DESCRIPTION="--derep_fulllength --maxseqlength must be an integer"
-printf ">s\n%81s\n" | tr " " "A" | \
+printf ">s\n%81s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --maxseqlength A \
