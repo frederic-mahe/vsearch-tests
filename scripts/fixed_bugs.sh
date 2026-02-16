@@ -14016,15 +14016,15 @@ printf ">s1\nA\n" | \
         --fastx_filter - \
         --sample "sample1" \
         --quiet \
-        --fastaout ${SAMPLE1}
+        --fastaout "${SAMPLE1}"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
         --sample "sample2" \
         --quiet \
-        --fastaout ${SAMPLE2}
+        --fastaout "${SAMPLE2}"
 
-cat ${SAMPLE1} ${SAMPLE2} | \
+cat "${SAMPLE1}" "${SAMPLE2}" | \
     "${VSEARCH}" \
         --cluster_fast - \
         --minseqlength 1 \
@@ -14038,7 +14038,7 @@ cat ${SAMPLE1} ${SAMPLE2} | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-rm ${SAMPLE1} ${SAMPLE2}
+rm "${SAMPLE1}" "${SAMPLE2}"
 unset SAMPLE1 SAMPLE2
 
 # expect:
