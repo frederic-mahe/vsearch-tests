@@ -64,15 +64,15 @@ printf ">s\nA\n" | \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample fails if unable to open output file for writing (fasta)"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
         --sample_size 1 \
-        --fastaout ${TMP} 2> /dev/null && \
+        --fastaout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 # Cannot subsample more reads than in the original sample
@@ -128,15 +128,15 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample fails if unable to open output file for writing (fastq)"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
         --sample_size 1 \
-        --fastqout ${TMP} 2> /dev/null && \
+        --fastqout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 # Cannot subsample more reads than in the original sample
@@ -546,7 +546,7 @@ printf ">s1\nA\n" | \
 # final number of reads = 100 * 10.9 / 100.0 = 10.9 -> 10 (not 11)
 DESCRIPTION="--fastx_subsample --sample_pct final number of reads is floored, not rounded"
 for i in {1..100} ; do
-    printf ">s%s\nA\n" ${i}
+    printf ">s%s\nA\n" "${i}"
 done | \
     "${VSEARCH}" \
         --fastx_subsample - \
@@ -772,16 +772,16 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample fails if unable to open output file for writing (--fastaout_discarded)"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
         --sample_size 1 \
         --fastaout /dev/null \
-        --fastaout_discarded ${TMP} 2> /dev/null && \
+        --fastaout_discarded "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--fastx_subsample --fastaout_discarded outputs in fasta format (fasta input)"
@@ -906,16 +906,16 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample fails if unable to open output file for writing (--fastqout_discarded)"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
         --sample_size 1 \
         --fastqout /dev/null \
-        --fastqout_discarded ${TMP} 2> /dev/null && \
+        --fastqout_discarded "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--fastx_subsample --fastqout_discarded outputs in fastq format (fastq input)"
