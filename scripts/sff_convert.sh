@@ -226,6 +226,7 @@ chmod u-r "${SFF}"  # remove read permission
 chmod u+r "${SFF}"
 
 DESCRIPTION="--sff_convert can read from /dev/stdin (pipe)"
+# shellcheck disable=SC2002
 cat "${SFF}" | \
     "${VSEARCH}" \
         --sff_convert /dev/stdin \
@@ -234,6 +235,7 @@ cat "${SFF}" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--sff_convert dash is a placeholder for /dev/stdin"
+# shellcheck disable=SC2002
 cat "${SFF}" | \
     "${VSEARCH}" \
         --sff_convert - \
