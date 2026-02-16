@@ -390,7 +390,7 @@ printf "@s\na\n+\nI\n" | \
         printf "@s\nA\n+\nI\n" | \
             "${VSEARCH}" \
                 --fastq_join - \
-                --reverse <(printf "@s\n%s\n+\nI\n" ${A}) \
+                --reverse <(printf "@s\n%s\n+\nI\n" "${A}") \
                 --fastqout - 2> /dev/null | \
             grep -qw "ANNNNNNNN${B}" && \
             success "${DESCRIPTION}" || \
