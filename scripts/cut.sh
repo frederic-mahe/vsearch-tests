@@ -209,51 +209,51 @@ printf ">s\nA\n" | \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--cut fails if unable to open fastaout for writing"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --cut - \
         --cut_pattern G^AATT_C \
-        --fastaout ${TMP} 2> /dev/null && \
+        --fastaout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--cut fails if unable to open fastaout_rev for writing"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --cut - \
         --cut_pattern G^AATT_C \
-        --fastaout_rev ${TMP} 2> /dev/null && \
+        --fastaout_rev "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--cut fails if unable to open fastaout_discarded for writing"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --cut - \
         --cut_pattern G^AATT_C \
-        --fastaout_discarded ${TMP} 2> /dev/null && \
+        --fastaout_discarded "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--cut fails if unable to open fastaout_discarded_rev for writing"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --cut - \
         --cut_pattern G^AATT_C \
-        --fastaout_discarded_rev ${TMP} 2> /dev/null && \
+        --fastaout_discarded_rev "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 ## ----------------------------------------------------------------- input file
@@ -267,15 +267,15 @@ DESCRIPTION="--cut requires an input file"
         success "${DESCRIPTION}"
 
 DESCRIPTION="--cut fails if unable to open input file for reading"
-TMP=$(mktemp) && chmod u-r ${TMP}  # remove write permission
-printf ">s\nA\n" > ${TMP}
+TMP=$(mktemp) && chmod u-r "${TMP}"  # remove write permission
+printf ">s\nA\n" > "${TMP}"
 "${VSEARCH}" \
-    --cut ${TMP} \
+    --cut "${TMP}" \
     --cut_pattern G^AATT_C \
     --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+r ${TMP} && rm -f ${TMP}
+chmod u+r "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 
