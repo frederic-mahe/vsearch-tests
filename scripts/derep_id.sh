@@ -462,8 +462,8 @@ printf ">s1\nU\n" | \
 ## (trigger reallocation)
 DESCRIPTION="--derep_id accepts more than 1,024 unique sequences"
 (for i in {1..1025} ; do
-    printf ">s%d\n" ${i}
-    yes A | head -n ${i}
+    printf ">s%d\n" "${i}"
+    yes A | head -n "${i}"
  done) | \
     "${VSEARCH}" \
         --derep_id - \
