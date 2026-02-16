@@ -7268,7 +7268,7 @@ for OFFSET in 33 64 ; do
     # NovaSeq and RTA3 (2021)
     for i in 2 12 23 37 ; do
         DESCRIPTION="issue 474: NovaSeq RTA3 quality score ${i} is accepted (offset +${OFFSET})"
-        OCTAL=$(printf "\%04o" $(( ${i} + ${OFFSET} )) )
+        OCTAL=$(printf "\%04o" $(( i + OFFSET )) )
         echo -e "@s\nA\n+\n${OCTAL}\n" | \
             "${VSEARCH}" \
                 --fastq_eestats - \
@@ -7282,7 +7282,7 @@ for OFFSET in 33 64 ; do
     # NextSeq and RTA3 (2023) observed in August 2023
     for i in 2 14 21 27 32 36 ; do
         DESCRIPTION="issue 474: NextSeq RTA3 quality score ${i} is accepted (offset +${OFFSET})"
-        OCTAL=$(printf "\%04o" $(( ${i} + ${OFFSET} )) )
+        OCTAL=$(printf "\%04o" $(( i + OFFSET )) )
         echo -e "@s\nA\n+\n${OCTAL}\n" | \
             "${VSEARCH}" \
                 --fastq_eestats - \
