@@ -92,15 +92,15 @@ printf ">s1\nA\n" | \
         --fastx_filter - \
         --sample "sample1-ITS1-good" \
         --quiet \
-        --fastaout ${SAMPLE1}
+        --fastaout "${SAMPLE1}"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
         --sample "sample2-ITS1-good" \
         --quiet \
-        --fastaout ${SAMPLE2}
+        --fastaout "${SAMPLE2}"
 
-cat ${SAMPLE1} ${SAMPLE2} | \
+cat "${SAMPLE1}" "${SAMPLE2}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db <(printf ">s\nA\n") \
@@ -111,7 +111,7 @@ cat ${SAMPLE1} ${SAMPLE2} | \
     grep -q "sample[12]-ITS1-good" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm ${SAMPLE1} ${SAMPLE2}
+rm "${SAMPLE1}" "${SAMPLE2}"
 unset SAMPLE1 SAMPLE2
 
 # expect:
@@ -4744,15 +4744,15 @@ printf ">s\nAAAA\n" | \
 DESCRIPTION="issue 156: vsearch prints to stderr if stderr is a redirection to a file"
 (
     TMP=$(mktemp)
-    exec 2> ${TMP}
+    exec 2> "${TMP}"
     printf ">s\nAAAA\n" | \
         "${VSEARCH}" \
             --fastx_mask - \
             --fastaout /dev/null
-    grep -q "Writing output" ${TMP} && \
+    grep -q "Writing output" "${TMP}" && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
-    rm ${TMP}
+    rm "${TMP}"
 )
 
 DESCRIPTION="issue 156: vsearch does not print to stderr if stderr is a tty and --quiet is used"
@@ -4807,12 +4807,12 @@ PROGRESS=$(mktemp)
 printf ">s\nAAAA\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
-        --log ${PROGRESS} \
-        --fastaout - > /dev/null 2>> ${PROGRESS}
-grep -q "Writing output" ${PROGRESS} && \
+        --log "${PROGRESS}" \
+        --fastaout - > /dev/null 2>> "${PROGRESS}"
+grep -q "Writing output" "${PROGRESS}" && \
     failure "${DESCRIPTION}" || \
         success  "${DESCRIPTION}"
-rm ${PROGRESS}
+rm "${PROGRESS}"
 
 
 #******************************************************************************#
