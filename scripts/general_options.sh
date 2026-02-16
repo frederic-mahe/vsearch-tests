@@ -171,11 +171,12 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--maxseqlength actually discard sequences"
 "${VSEARCH}" --shuffle  <(printf ">a\nAAAA\n>b\nAA\n>c\nA\n") --maxseqlength 2 \
 	     --output "${OUTPUT}" &> /dev/null
-NB_OF_SEQ_READx2=$(echo $(wc -l < "${OUTPUT}"))
-   [[ "${NB_OF_SEQ_READx2}" == 4 ]] && \
-   success "${DESCRIPTION}" || \
-       failure "${DESCRIPTION}"
+NB_OF_SEQ_READx2=$(wc -l < "${OUTPUT}")
+(( NB_OF_SEQ_READx2 == 4 )) && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm "${OUTPUT}"
+unset NB_OF_SEQ_READx2
 
 
 #*****************************************************************************#
@@ -196,11 +197,12 @@ OUTPUT=$(mktemp)
 DESCRIPTION="--minseqlength actually discard sequences"
 "${VSEARCH}" --shuffle  <(printf ">a\nAAAA\n>b\nAA\n>c\nA\n") --minseqlength 2 \
 	     --output "${OUTPUT}" &> /dev/null
-NB_OF_SEQ_READx2=$(echo $(wc -l < "${OUTPUT}"))
-   [[ "${NB_OF_SEQ_READx2}" == 4 ]] && \
-   success "${DESCRIPTION}" || \
-       failure "${DESCRIPTION}"
+NB_OF_SEQ_READx2=$(wc -l < "${OUTPUT}")
+(( NB_OF_SEQ_READx2 == 4 )) && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm "${OUTPUT}"
+unset NB_OF_SEQ_READx2
 
 
 #*****************************************************************************#
