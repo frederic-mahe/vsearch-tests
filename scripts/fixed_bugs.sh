@@ -4804,6 +4804,7 @@ printf ">seq1\nACGT\n" | \
 
 DESCRIPTION="issue 156: do not output progress when log is a file and stderr is a redirection"
 PROGRESS=$(mktemp)
+# shellcheck disable=SC2094
 printf ">s\nAAAA\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
