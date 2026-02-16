@@ -101,7 +101,7 @@ printf ">\nA\n" | \
 # 177   127   7F    DEL
 for i in {1..8} 11 12 {14..31} 127 ; do
     DESCRIPTION="ascii character ${i} is not allowed in fasta identifiers"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e ">s${OCTAL}s\nA\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -121,7 +121,7 @@ unset OCTAL
 # 33-126: all visible characters
 for i in 0 9 10 13 32 {33..126} ; do
     DESCRIPTION="ascii character ${i} allowed in fasta identifiers"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e ">s${OCTAL}s\nA\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -139,7 +139,7 @@ unset OCTAL
 # 32: SPACE
 for i in 0 9 10 13 {32..126} ; do
     DESCRIPTION="ascii character ${i} is allowed in fasta header (outside identifier)"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e ">s ${OCTAL}s\nA\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -156,7 +156,7 @@ unset OCTAL
 # 32: SPACE
 for i in {1..8} 11 12 {14..31} 127 ; do
     DESCRIPTION="ascii character ${i} is not allowed in fasta header (outside identifier)"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e ">s ${OCTAL}s\nA\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -183,7 +183,7 @@ echo -e ">ø\nA\n" | \
 # and ACGTUacgtu
 for i in 0 {9..13} {32..44} {47..127} ; do
     DESCRIPTION="ascii character ${i} is allowed in fasta sequences"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e ">s\nA${OCTAL}A\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -200,7 +200,7 @@ unset OCTAL
 # 46: '.'
 for i in {1..8} {14..31} 45 46 ; do
     DESCRIPTION="ascii character ${i} is not allowed in fasta sequences"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e ">s\nA${OCTAL}A\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -318,7 +318,7 @@ printf "@s\0header\nA\n+\nI\n" | \
 # 177   127   7F    DEL
 for i in {1..8} 10 11 12 {14..31} 127 ; do
     DESCRIPTION="ascii character ${i} is not allowed in fastq identifiers"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e "@s${OCTAL}s\nA\n+\nI\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -337,7 +337,7 @@ unset OCTAL
 # 33-126: all visible characters
 for i in 0 9 13 32 {33..126} ; do
     DESCRIPTION="ascii character ${i} allowed in fastq identifiers"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e "@s${OCTAL}s\nA\n+\nI\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -355,7 +355,7 @@ unset OCTAL
 # 32: SPACE
 for i in 0 9 13 {32..126} ; do
     DESCRIPTION="ascii character ${i} is allowed in fastq header (outside identifier)"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e "@s ${OCTAL}s\nA\n+\nI\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -372,7 +372,7 @@ unset OCTAL
 # 12: "\f"
 for i in {1..8} 10 11 12 {14..31} 127 ; do
     DESCRIPTION="ascii character ${i} is not allowed in fastq header (outside identifier)"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e "@s ${OCTAL}s\nA\n+\nI\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -487,7 +487,7 @@ printf "@s1\nA\nA\nA\n+\nIII\n@søs\nA\n+\nI\n" | \
 # ACGTUacgtu
 for i in {65..68} 71 72 75 77 78 82 83 84 85 86 87 89 97 98 99 100 103 104 107 109 110 114 115 116 117 118 119 121 ; do
     DESCRIPTION="ascii character ${i} is allowed in fastq sequences"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e "@s\nA${OCTAL}A\n+\nIII\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
@@ -504,7 +504,7 @@ unset OCTAL
 # 46: '.'
 for i in {0..64} 127 ; do
     DESCRIPTION="ascii character ${i} is not allowed in fastq sequences"
-    OCTAL=$(printf "\%04o" ${i})
+    OCTAL=$(printf "\%04o" "${i}")
     echo -e "@s\nA${OCTAL}A\n+\nIII\n" | \
         "${VSEARCH}" \
             --fastx_filter - \
