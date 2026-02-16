@@ -937,11 +937,11 @@ TMP=$(mktemp -u)
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "") \
     --reverse <(printf "") \
-    --fastqout ${TMP} > /dev/null 2>&1
-[[ -e ${TMP} ]] && \
+    --fastqout "${TMP}" > /dev/null 2>&1
+[[ -e "${TMP}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f ${TMP}
+rm -f "${TMP}"
 
 DESCRIPTION="fastq_mergepairs no warning if empty input"
 "${VSEARCH}" \
@@ -3787,7 +3787,7 @@ for QUAL in {0..93} ; do
     "${VSEARCH}" \
         --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
         --reverse <(printf "@s\nT\n+\nI\n") \
-        --fastq_truncqual ${QUAL} \
+        --fastq_truncqual "${QUAL}" \
         --fastqout /dev/null > /dev/null 2>&1 && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
