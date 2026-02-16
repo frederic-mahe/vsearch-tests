@@ -65,14 +65,14 @@ printf ">s\nA\n" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques fails if unable to open output file for writing (fasta in, fastaout)"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --fastaout ${TMP} 2> /dev/null && \
+        --fastaout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--fastx_uniques requires an output file (fastq in, fastqout)"
@@ -84,14 +84,14 @@ printf "@s\nA\n+\nI\n" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques fails if unable to open output file for writing (fastq in, fastqout)"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --fastqout ${TMP} 2> /dev/null && \
+        --fastqout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--fastx_uniques requires an output file (fastq in, fastaout)"
@@ -103,14 +103,14 @@ printf "@s\nA\n+\nI\n" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques fails if unable to open output file for writing (fastq in, fastaout)"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --fastaout ${TMP} 2> /dev/null && \
+        --fastaout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--fastx_uniques fastqout requires fastq input"
@@ -138,14 +138,14 @@ printf "@s\nA\n+\nI\n" | \
 	failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques fails if unable to open output file for writing (fastq in, tabbedout)"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --tabbedout ${TMP} 2> /dev/null && \
+        --tabbedout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--fastx_uniques accepts empty input"
@@ -469,8 +469,8 @@ printf ">s1\nU\n" | \
 ## (trigger reallocation)
 DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences"
 (for i in {1..1025} ; do
-    printf ">s%d\n" ${i}
-    yes A | head -n ${i}
+    printf ">s%d\n" "${i}"
+    yes A | head -n "${i}"
  done) | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -3224,14 +3224,14 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques fails if unable to open tabbedout file for writing"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --tabbedout ${TMP} 2> /dev/null && \
+        --tabbedout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 ## --tabbedout fails if no output redirection is given (filename, device or -)
@@ -3608,14 +3608,14 @@ printf ">s\nA\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques fails if unable to open uc file for writing"
-TMP=$(mktemp) && chmod u-w ${TMP}  # remove write permission
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --uc ${TMP} 2> /dev/null && \
+        --uc "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-chmod u+w ${TMP} && rm -f ${TMP}
+chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 ## --uc fails if no output redirection is given (filename, device or -)
@@ -3826,8 +3826,8 @@ printf ">s1;size=1;\nA\n>s2;size=1;\nT\n" | \
 ## trigger reallocation of extra space for uc or tabbedout
 DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences (--uc)"
 (for i in {1..1025} ; do
-    printf ">s%d\n" ${i}
-    yes A | head -n ${i}
+    printf ">s%d\n" "${i}"
+    yes A | head -n "${i}"
  done) | \
     "${VSEARCH}" \
         --fastx_uniques - \
