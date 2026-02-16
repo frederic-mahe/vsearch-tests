@@ -9464,7 +9464,7 @@ REVCOMP="TTACCGAGCAAATATCTTGA"
 DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (one match)"
 "${VSEARCH}" \
     --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">t1\n%s%s%s%s\n" "${REVCOMP}") \
+    --db <(printf ">t1\n%s\n" "${REVCOMP}") \
     --minseqlength 1 \
     --id 1.0 \
     --strand both \
@@ -9478,7 +9478,7 @@ DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (o
 DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (two matches)"
 "${VSEARCH}" \
     --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">t1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}") \
+    --db <(printf ">t1\n%s%s\n" "${REVCOMP}" "${REVCOMP}") \
     --minseqlength 1 \
     --id 1.0 \
     --strand both \
@@ -9492,7 +9492,7 @@ DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (t
 DESCRIPTION="issue 530: report the rightmost match in revcomp target sequence (three matches)"
 "${VSEARCH}" \
     --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">t1\n%s%s%s%s\n" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}") \
+    --db <(printf ">t1\n%s%s%s\n" "${REVCOMP}" "${REVCOMP}" "${REVCOMP}") \
     --minseqlength 1 \
     --id 1.0 \
     --strand both \
@@ -9542,7 +9542,7 @@ PADDING="CCC"
 DESCRIPTION="issue 530: extending existing gaps is less costly (3' gap, one match)"
 "${VSEARCH}" \
     --usearch_global <(printf ">q1\n%s\n" "${SEQUENCE}") \
-    --db <(printf ">t1\n%s%s%s\n" "${SEQUENCE}" "${PADDING}") \
+    --db <(printf ">t1\n%s%s\n" "${SEQUENCE}" "${PADDING}") \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
