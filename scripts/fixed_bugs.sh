@@ -15521,6 +15521,167 @@ DESCRIPTION="issue 612: --cluster_fast --id 1.00 --iddef 1 (expect clustering)"
         success "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#         userfield trow not working in version 2.30.4 (issue 618)             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/618
+
+# out-of-bound look-ups when printing alignment rows
+
+# The issue had no effect on the alignment results, only on their
+# visualization (print).
+
+# The issue was introduced with commit 2196870 and has been present
+# since release v2.30.1.
+
+# Root cause: the same index was used for scanning both source sequence
+# and destination sequence (aka, the alignment row). This is wrong
+# because gaps can be introduced in the destination sequence. Once a gap
+# has been introduced, the index is updated, which skips part of the
+# source sequence that should not be skipped. It can also lead to
+# out-of-bounds reads.
+
+## note: issue first reported for --usearch_global, but tests are done
+## with --allpairs_global (easier)
+
+## show that cigar strings are built from the view-point of the target
+
+# insertion in target -> cigar: IM
+DESCRIPTION="issue 618: cigar strings are relative to the target sequence (insertion)"
+printf ">query\nT\n>target\nTT\n" | \
+    ${VSEARCH} \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields caln \
+        --userout - | \
+    grep -qw "IM" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# deletion in target -> cigar: DM
+DESCRIPTION="issue 618: cigar strings are relative to the target sequence (deletion)"
+printf ">query\nTT\n>target\nT\n" | \
+    ${VSEARCH} \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields caln \
+        --userout - | \
+    grep -qw "DM" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## note: terminal gaps are not represented in pairwise alignments
+# insertion in target -> cigar: IM -> deletion in qrow
+DESCRIPTION="issue 618: deletion in query, userout qrow is correct"
+printf ">query\nT\n>target\nTT\n" | \
+    ${VSEARCH} \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields qrow \
+        --userout - | \
+    grep -qw "T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# insertion in target -> cigar: IM -> insertion in trow
+DESCRIPTION="issue 618: insertion in target, userout trow is correct"
+printf ">query\nT\n>target\nTT\n" | \
+    ${VSEARCH} \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields trow \
+        --userout - | \
+    grep -qw "T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# deletion in target -> cigar: DM -> insertion in qrow
+DESCRIPTION="issue 618: deletion in target, userout qrow is correct"
+printf ">query\nTT\n>target\nT\n" | \
+    ${VSEARCH} \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields qrow \
+        --userout - | \
+    grep -qw "T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# deletion in target -> cigar: DM -> deletion in trow
+DESCRIPTION="issue 618: insertion in target, userout trow is correct"
+printf ">query\nTT\n>target\nT\n" | \
+    ${VSEARCH} \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields trow \
+        --userout - | \
+    grep -qw "T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## note: internal gaps are represented in pairwise alignments
+# insertion in target -> cigar: 4M4I4M -> deletion in qrow
+DESCRIPTION="issue 618: deletion in query, userout qrow is correct (middle gap)"
+printf ">query\nAAAATTTT\n>target\nAAAAGGGGTTTT\n" | \
+    ${VSEARCH} \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields qrow \
+        --userout - | \
+    grep -qw "AAAA----TTTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# insertion in target -> cigar: 4M4I4M -> insertion in trow
+DESCRIPTION="issue 618: insertion in target, userout trow is correct (middle gap)"
+printf ">query\nAAAATTTT\n>target\nAAAAGGGGTTTT\n" | \
+    ${VSEARCH} \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields trow \
+        --userout - | \
+    grep -qw "AAAAGGGGTTTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# deletion in target -> cigar: 4M4D4M -> insertion in qrow
+DESCRIPTION="issue 618: deletion in target, userout qrow is correct (middle gap)"
+printf ">query\nAAAAGGGGTTTT\n>target\nAAAATTTT\n" | \
+    ${VSEARCH} \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields qrow \
+        --userout - | \
+    grep -qw "AAAAGGGGTTTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# deletion in target -> cigar: 4M4D4M -> deletion in trow
+DESCRIPTION="issue 618: insertion in target, userout trow is correct (middle gap)"
+printf ">query\nAAAAGGGGTTTT\n>target\nAAAATTTT\n" | \
+    ${VSEARCH} \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields trow \
+        --userout - | \
+    grep -qw "AAAA----TTTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
 
 
