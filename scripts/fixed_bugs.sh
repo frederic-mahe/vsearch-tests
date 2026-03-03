@@ -15682,6 +15682,18 @@ printf ">query\nAAAAGGGGTTTT\n>target\nAAAATTTT\n" | \
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#  Query alignment output (--userfields qrow) not correct in --usearch_global  #
+#                  (version 2.30.1+)  (issue 618)                              #
+#                                                                              #
+#******************************************************************************#
+#
+## https://github.com/torognes/vsearch/issues/619
+
+# same as issue 618
+
+
 exit 0
 
 
