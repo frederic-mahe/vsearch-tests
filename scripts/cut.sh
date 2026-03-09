@@ -310,7 +310,7 @@ printf ">s\nA\n" | \
         --cut_pattern G^AATT_C \
         --fastaout_discarded - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sA" && \
+    grep -qx ">sA" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -720,7 +720,7 @@ printf ">s\nGAATTC\n" | \
         --cut_pattern "G^AATT_C" \
         --fastaout - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sG>sAATTC" && \
+    grep -qx ">sG>sAATTC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -731,7 +731,7 @@ printf ">s\nGAATTC\n" | \
         --cut_pattern "G^AATT_C" \
         --fastaout_rev - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sAATTC>sG" && \
+    grep -qx ">sAATTC>sG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -782,7 +782,7 @@ printf ">s\nA\n" | \
         --cut_pattern "G^AATT_C" \
         --fastaout_discarded - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sA" && \
+    grep -qx ">sA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -793,7 +793,7 @@ printf ">s\nA\n" | \
         --cut_pattern "G^AATT_C" \
         --fastaout_discarded_rev - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sT" && \
+    grep -qx ">sT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -841,7 +841,7 @@ printf ">s\nCCWGG\n" | \
         --cut_pattern "^CCWGG_" \
         --fastaout - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sCCWGG" && \
+    grep -qx ">sCCWGG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -852,7 +852,7 @@ printf ">s\nCCWGG\n" | \
         --cut_pattern "^CCWGG_" \
         --fastaout_rev - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sCCWGG" && \
+    grep -qx ">sCCWGG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -878,7 +878,7 @@ printf ">s\nGATATC\n" | \
         --cut_pattern "GAT^_ATC" \
         --fastaout - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sGAT>sATC" && \
+    grep -qx ">sGAT>sATC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -889,7 +889,7 @@ printf ">s\nGATATC\n" | \
         --cut_pattern "GAT^_ATC" \
         --fastaout_rev - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sATC>sGAT" && \
+    grep -qx ">sATC>sGAT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -918,7 +918,7 @@ printf ">s\nNNNNNNNNNNNNNGGATGNNNNNNNNN\n" | \
         --cut_pattern "N_NNNNNNNNNNNNGGATGNNNNNNNN^N" \
         --fastaout - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sNNNNNNNNNNNNNGGATGNNNNNNNN>sN" && \
+    grep -qx ">sNNNNNNNNNNNNNGGATGNNNNNNNN>sN" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -929,7 +929,7 @@ printf ">s\nNNNNNNNNNNNNNGGATGNNNNNNNNN\n" | \
         --cut_pattern "N_NNNNNNNNNNNNGGATGNNNNNNNN^N" \
         --fastaout_rev - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sN>sNNNNNNNNNCATCCNNNNNNNNNNNN" && \
+    grep -qx ">sN>sNNNNNNNNNCATCCNNNNNNNNNNNN" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -955,7 +955,7 @@ printf ">s\nAAGCTT\n" | \
         --cut_pattern "A^AGCT_T" \
         --fastaout - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sA>sAGCTT" && \
+    grep -qx ">sA>sAGCTT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -966,7 +966,7 @@ printf ">s\nAAGCTT\n" | \
         --cut_pattern "A^AGCT_T" \
         --fastaout_rev - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sAGCTT>sA" && \
+    grep -qx ">sAGCTT>sA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -993,7 +993,7 @@ printf ">s\nRCATGY\n" | \
         --cut_pattern "RCATG^_Y" \
         --fastaout - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sRCATG>sY" && \
+    grep -qx ">sRCATG>sY" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1004,7 +1004,7 @@ printf ">s\nRCATGY\n" | \
         --cut_pattern "RCATG^_Y" \
         --fastaout_rev - 2> /dev/null | \
     tr -d "\n" | \
-    grep -qw ">sCATGY>sR" && \
+    grep -qx ">sCATGY>sR" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1129,7 +1129,7 @@ printf ">s\nA\n" | \
         --quiet \
         --label_suffix "_suffix" \
         --fastaout_discarded - | \
-    grep -wq ">s_suffix" && \
+    grep -qx ">s_suffix" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1142,7 +1142,7 @@ printf ">s\nA\n" | \
         --label_suffix "_suffix" \
         --lengthout \
         --fastaout_discarded - | \
-    grep -wq ">s_suffix;length=1" && \
+    grep -qx ">s_suffix;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1167,7 +1167,7 @@ printf ">s\nA\n" | \
         --quiet \
         --lengthout \
         --fastaout_discarded - | \
-    grep -wq ">s;length=1" && \
+    grep -qx ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1253,7 +1253,7 @@ printf ">s extra\nA\n" | \
         --quiet \
         --notrunclabels \
         --fastaout_discarded - | \
-    grep -wq ">s extra" && \
+    grep -qx ">s extra" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1313,7 +1313,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel "label" \
         --fastaout_discarded - | \
-    grep -wq ">label1" && \
+    grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1325,7 +1325,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel "" \
         --fastaout_discarded - | \
-    grep -wq ">1" && \
+    grep -qx ">1" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1376,7 +1376,7 @@ printf ">s\nA\n" | \
         --relabel "label" \
         --relabel_keep \
         --fastaout_discarded - | \
-    grep -wq ">label1 s" && \
+    grep -qx ">label1 s" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1401,7 +1401,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_md5 \
         --fastaout_discarded - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1426,7 +1426,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_self \
         --fastaout_discarded - | \
-    grep -qw ">A" && \
+    grep -qx ">A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1451,7 +1451,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_sha1 \
         --fastaout_discarded - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1476,7 +1476,7 @@ printf ">s\nA\n" | \
         --quiet \
         --sample "ABC" \
         --fastaout_discarded - | \
-    grep -qw ">s;sample=ABC" && \
+    grep -qx ">s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1511,7 +1511,7 @@ printf ">s\nA\n" | \
         --cut_pattern G^AATT_C \
         --quiet \
         --fastaout_discarded - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1523,7 +1523,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --sizein \
         --fastaout_discarded - | \
-    grep -qw ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1534,7 +1534,7 @@ printf ">s;size=2\nA\n" | \
         --cut_pattern G^AATT_C \
         --quiet \
         --fastaout_discarded - | \
-    grep -qw ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1573,7 +1573,7 @@ printf ">s\nA\n" | \
         --cut_pattern G^AATT_C \
         --quiet \
         --fastaout_discarded - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1585,7 +1585,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --sizeout \
         --fastaout_discarded - | \
-    grep -qw ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1596,7 +1596,7 @@ printf ">s;size=2\nA\n" | \
         --cut_pattern G^AATT_C \
         --quiet \
         --fastaout_discarded - | \
-    grep -qw ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1609,7 +1609,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel "label" \
         --fastaout_discarded - | \
-    grep -qw ">label1" && \
+    grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1622,7 +1622,7 @@ printf ">s\nA\n" | \
         --relabel "label" \
         --sizeout \
         --fastaout_discarded - | \
-    grep -qw ">label1;size=1" && \
+    grep -qx ">label1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1634,7 +1634,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_self \
         --fastaout_discarded - | \
-    grep -qw ">A" && \
+    grep -qx ">A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1647,7 +1647,7 @@ printf ">s\nA\n" | \
         --relabel_self \
         --sizeout \
         --fastaout_discarded - | \
-    grep -qw ">A;size=1" && \
+    grep -qx ">A;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1659,7 +1659,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_md5 \
         --fastaout_discarded - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1672,7 +1672,7 @@ printf ">s\nA\n" | \
         --relabel_md5 \
         --sizeout \
         --fastaout_discarded - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1684,7 +1684,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_sha1 \
         --fastaout_discarded - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1697,7 +1697,7 @@ printf ">s\nA\n" | \
         --relabel_sha1 \
         --sizeout \
         --fastaout_discarded - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1710,7 +1710,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --relabel "label" \
         --fastaout_discarded - | \
-    grep -qw ">label1" && \
+    grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1723,7 +1723,7 @@ printf ">s;size=2\nA\n" | \
         --relabel "label" \
         --sizeout \
         --fastaout_discarded - | \
-    grep -qw ">label1;size=2" && \
+    grep -qx ">label1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1735,7 +1735,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --relabel_self \
         --fastaout_discarded - | \
-    grep -qw ">A" && \
+    grep -qx ">A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1748,7 +1748,7 @@ printf ">s;size=2\nA\n" | \
         --relabel_self \
         --sizeout \
         --fastaout_discarded - | \
-    grep -qw ">A;size=2" && \
+    grep -qx ">A;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1760,7 +1760,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --relabel_md5 \
         --fastaout_discarded - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1773,7 +1773,7 @@ printf ">s;size=2\nA\n" | \
         --relabel_md5 \
         --sizeout \
         --fastaout_discarded - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=2" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1785,7 +1785,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --relabel_sha1 \
         --fastaout_discarded - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1798,7 +1798,7 @@ printf ">s;size=2\nA\n" | \
         --relabel_sha1 \
         --sizeout \
         --fastaout_discarded - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=2" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1823,7 +1823,7 @@ printf ">s;ee=1.00\nA\n" | \
         --xee \
         --quiet \
         --fastaout_discarded - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1848,7 +1848,7 @@ printf ">s;length=1\nA\n" | \
         --xlength \
         --quiet \
         --fastaout_discarded - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1861,7 +1861,7 @@ printf ">s;length=2\nA\n" | \
         --lengthout \
         --quiet \
         --fastaout_discarded - | \
-    grep -wq ">s;length=1" && \
+    grep -qx ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1886,7 +1886,7 @@ printf ">s;size=1\nA\n" | \
         --xsize \
         --quiet \
         --fastaout_discarded - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1900,7 +1900,7 @@ printf ">s;size=1\nA\n" | \
 #         --quiet \
 #         --sizeout \
 #         --fastaout_discarded - | \
-#     grep -wq ">s;size=1" && \
+#     grep -qx ">s;size=1" && \
 #     success "${DESCRIPTION}" || \
 #         failure "${DESCRIPTION}"
 
