@@ -217,7 +217,7 @@ printf "" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 0" && \
+    grep -iqx "median length: 0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -226,7 +226,7 @@ printf ">s1\nAA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 2" && \
+    grep -iqx "median length: 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -235,7 +235,7 @@ printf ">s1\n\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 0" && \
+    grep -iqx "median length: 0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -245,7 +245,7 @@ printf ">s1\nAAAAAAAAA\n>s2\nA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 5" && \
+    grep -iqx "median length: 5" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -257,7 +257,7 @@ printf ">s1\nAA\n>s2\nA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 2" && \
+    grep -iqx "median length: 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -269,7 +269,7 @@ printf ">s1\nAAAA\n>s2\nA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 2" && \
+    grep -iqx "median length: 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -281,7 +281,7 @@ printf ">s1\nAAAAAA\n>s2\nA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 4" && \
+    grep -iqx "median length: 4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -291,7 +291,7 @@ printf ">s1\nAAA\n>s2\nAA\n>s3\nA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 2" && \
+    grep -iqx "median length: 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -304,7 +304,7 @@ printf ">s1\nAAAA\n>s2\nAAA\n>s3\nAA\n>s4\nA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 2" && \
+    grep -iqx "median length: 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -314,7 +314,7 @@ printf ">s1\nA\n>s2\nA\n>s3\nA\n>s4\nA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 1" && \
+    grep -iqx "median length: 1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -324,7 +324,7 @@ printf ">s1\nA\n>s2\nAA\n>s3\nAAA\n>s4\nAAAA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 2" && \
+    grep -iqx "median length: 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -334,7 +334,7 @@ printf ">s1\nA\n>s2\nAA\n>s3\nAAA\n>s4\nAAAA\n>s5\nAAAAA\n" | \
     "${VSEARCH}" \
         --sortbylength - \
         --output /dev/null 2>&1 > /dev/null | \
-    grep -iqw "median length: 3" && \
+    grep -iqx "median length: 3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -345,7 +345,7 @@ printf ">s1\nAAAAAA\n>s2\nA\n" | \
         --sortbylength - \
         --quiet \
         --output /dev/null 2>&1 | \
-    grep -iqw "^Median" && \
+    grep -iqx "^Median" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -356,7 +356,7 @@ printf ">s1\nAAAAAA\n>s2\nA\n" | \
         --sortbylength - \
         --output /dev/null \
         --log - 2>/dev/null | \
-    grep -iqw "^Median" && \
+    grep -iqx "^Median" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

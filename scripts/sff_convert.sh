@@ -867,7 +867,7 @@ DESCRIPTION="--sff_convert reports correct stats (no read)"
     "${VSEARCH}" \
         --sff_convert - \
         --fastqout /dev/null 2>&1 | \
-    grep -iqw "number of reads: 0" && \
+    grep -iqx "number of reads: 0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -943,7 +943,7 @@ DESCRIPTION="--sff_convert reports correct stats (null sequence)"
     "${VSEARCH}" \
         --sff_convert - \
         --fastqout /dev/null 2>&1 | \
-    grep -iqw "sequence length: minimum 0, average 0.0, maximum 0" && \
+    grep -iqx "sequence length: minimum 0, average 0.0, maximum 0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
