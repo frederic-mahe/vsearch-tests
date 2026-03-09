@@ -84,7 +84,7 @@ DESCRIPTION="--fastq_chars summarizes input fastq file (number of sequences #1)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_chars - 2>&1 | \
-    grep -qiEw "Read 1 sequences?\.?" && \
+    grep -Eiqx "Read 1 sequences?\.?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -92,7 +92,7 @@ DESCRIPTION="--fastq_chars summarizes input fastq file (number of sequences #2)"
 printf "@s\nA\n+\nI\n@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_chars - 2>&1 | \
-    grep -qiEw "Read 2 sequences?\.?" && \
+    grep -Eiqx "Read 2 sequences?\.?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -100,7 +100,7 @@ DESCRIPTION="--fastq_chars summarizes input fastq file (number of sequences #3)"
 printf "@s\nA\n+\nI\n@s\nA\n+\nI\n@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_chars - 2>&1 | \
-    grep -qiEw "Read 3 sequences?\.?" && \
+    grep -Eiqx "Read 3 sequences?\.?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
