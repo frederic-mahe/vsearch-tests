@@ -2769,6 +2769,7 @@ printf ">s;size=2;\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# strip the old size annotation, replace with a new one (size=1)
 DESCRIPTION="sizein + --xsize + --sizeout (no size)"
 printf ">s;size=2;\nA\n" | \
     "${VSEARCH}" \
