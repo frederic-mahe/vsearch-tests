@@ -134,7 +134,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --nonchimeras /dev/stdout 2> /dev/null |
     tr "\n" "@" | \
-        grep --quiet --word-regexp ">s;size=1@A@" && \
+        grep --quiet --line-regexp ">s;size=1@A@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1788,7 +1788,7 @@ B_END="${B_START}"
         --chimeras - 2> /dev/null | \
     tr "\n" "@" | \
     grep \
-        --word-regexp \
+        --line-regexp \
         --quiet ">sQ;size=1@${A_START}${B_END}@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3370,7 +3370,7 @@ B_END="${B_START}"
         --chimeras - 2> /dev/null | \
     tr "\n" "@" | \
     grep \
-        --word-regexp \
+        --line-regexp \
         --quiet ">sQ;size=1@${A_START}${B_END}@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
