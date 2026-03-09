@@ -2488,7 +2488,7 @@ printf ">s1;size=1;\nA\n>s2;size=2;\nC\n>s3;size=2;\nA\n" | \
         --topn 1 \
         --output - | \
     tr "\n" "@" | \
-    grep -qwE ">s3;size=3;?@A@" && \
+    grep -Eqx ">s3;size=3;?@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 

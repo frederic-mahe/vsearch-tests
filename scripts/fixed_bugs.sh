@@ -325,7 +325,7 @@ DESCRIPTION="issue 6: sequence masking (Morgulis tests: asymmetry #1)"
     --maskfasta <(printf ">q1\n%s\n" ${q1}) \
     --quiet \
     --output - | \
-    grep -Ewq "[ACGT]+${masked_region}[ACGT]+" && \
+    grep -Eqx "[ACGT]+${masked_region}[ACGT]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -344,7 +344,7 @@ DESCRIPTION="issue 6: sequence masking (Morgulis tests: asymmetry #2)"
     --maskfasta <(printf ">q2\n%s\n" ${q2}) \
     --quiet \
     --output - | \
-    grep -Ewq "[ACGT]+${masked_region_rev_comp}[ACGT]+" && \
+    grep -Eqx "[ACGT]+${masked_region_rev_comp}[ACGT]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -378,7 +378,7 @@ DESCRIPTION="issue 6: sequence masking (Morgulis tests: context-sensitive #1)"
     --maskfasta <(printf ">q1\n%s\n" ${q1}) \
     --quiet \
     --output - | \
-    grep -Ewq "${masked_region}" && \
+    grep -Eqx "${masked_region}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -395,7 +395,7 @@ DESCRIPTION="issue 6: sequence masking (Morgulis tests: context-sensitive #2)"
     --maskfasta <(printf ">q2\n%s\n" ${q2}) \
     --quiet \
     --output - | \
-    grep -Ewq "[ACGT]+" && \
+    grep -Eqx "[ACGT]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6130,7 +6130,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -Ewq ">s1;size=2;?" && \
+    grep -Eqx ">s1;size=2;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6144,7 +6144,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         --sizein \
         --sizeout \
         --output - | \
-    grep -Ewq ">s1;size=3;?" && \
+    grep -Eqx ">s1;size=3;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6156,7 +6156,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --minseqlength 1 \
         --quiet \
         --output - | \
-    grep -Ewq ">s1" && \
+    grep -Eqx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6169,7 +6169,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -Ewq ">s1;size=2;?" && \
+    grep -Eqx ">s1;size=2;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6182,7 +6182,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         --quiet \
         --sizein \
         --output - | \
-    grep -Ewq ">s1;size=2;?" && \
+    grep -Eqx ">s1;size=2;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6390,7 +6390,7 @@ DESCRIPTION="issue 354: ambiguous matches are noted with a symbol + in alignment
     --quiet \
     --id 1.0 \
     --alnout - | \
-    grep -Eqw "[[:space:]]+[+]" && \
+    grep -Eqx "[[:space:]]+[+]" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6402,7 +6402,7 @@ DESCRIPTION="issue 354: ambiguous matches are noted with a symbol + in alignment
     --quiet \
     --id 1.0 \
     --alnout - | \
-    grep -Eqw "[[:space:]]+[+]" && \
+    grep -Eqx "[[:space:]]+[+]" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6414,7 +6414,7 @@ DESCRIPTION="issue 354: regular matches are noted with a symbol | in alignments"
     --quiet \
     --id 1.0 \
     --alnout - | \
-    grep -Eqw "[[:space:]]+[|]" && \
+    grep -Eqx "[[:space:]]+[|]" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -11899,7 +11899,7 @@ printf "@s\nAAAA\n+\nIIII\n" | \
         --quiet \
         --eeout \
         --fastaout - | \
-    grep -Eqw ">s;ee=0.00040+" && \
+    grep -Eqx ">s;ee=0.00040+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -11909,7 +11909,7 @@ printf "@s\nAAAA\n+\nIIII\n" | \
         --fastx_filter - \
         --quiet \
         --fastaout - | \
-    grep -Eqw ">s" && \
+    grep -Eqx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -11920,7 +11920,7 @@ printf "@s\nAAAA\n+\nIIII\n" | \
         --fastx_filter - \
         --quiet \
         --fastaout - | \
-    grep -Eqw ">s" && \
+    grep -Eqx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -11931,7 +11931,7 @@ printf "@s\nAAAA\n+\nIIII\n" | \
         --quiet \
         --fastq_maxee 0.0005 \
         --fastaout - | \
-    grep -Eqw ">s" && \
+    grep -Eqx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -11942,7 +11942,7 @@ printf "@s\nAAAA\n+\nIIII\n" | \
         --quiet \
         --fastq_maxee 0.0004 \
         --fastaout - | \
-    grep -Eqw ">s" && \
+    grep -Eqx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -11953,7 +11953,7 @@ printf "@s\nAAAA\n+\nIIII\n" | \
         --quiet \
         --fastq_maxee 0.0003 \
         --fastaout - | \
-    grep -Eqw ">s" && \
+    grep -Eqx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 

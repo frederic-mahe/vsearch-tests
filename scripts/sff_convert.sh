@@ -2590,7 +2590,7 @@ DESCRIPTION="--sff_convert --sizeout adds abundance annotation"
     --quiet \
     --sizeout \
     --fastqout - | \
-    grep -qwE "@s;size=1;?" && \
+    grep -Eqx "@s;size=1;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2601,7 +2601,7 @@ DESCRIPTION="--sff_convert --sizeout adds abundance annotation (size before leng
     --sizeout \
     --lengthout \
     --fastqout - | \
-    grep -qwE "@s;size=1;length=1;?" && \
+    grep -Eqx "@s;size=1;length=1;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2612,7 +2612,7 @@ DESCRIPTION="--sff_convert --sizeout adds abundance annotation (relabel)"
     --sizeout \
     --relabel "label" \
     --fastqout - | \
-    grep -qwE "@label1;size=1;?" && \
+    grep -Eqx "@label1;size=1;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2623,7 +2623,7 @@ DESCRIPTION="--sff_convert --sizeout adds abundance annotation (relabel_md5)"
     --sizeout \
     --relabel_md5 \
     --fastqout - | \
-    grep -qwE "@b9ece18c950afbfa6b0fdbfa4ff731d3;size=1;?" && \
+    grep -Eqx "@b9ece18c950afbfa6b0fdbfa4ff731d3;size=1;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2634,7 +2634,7 @@ DESCRIPTION="--sff_convert --sizeout adds abundance annotation (relabel_self)"
     --sizeout \
     --relabel_self \
     --fastqout - | \
-    grep -qwE "@T;size=1;?" && \
+    grep -Eqx "@T;size=1;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2645,7 +2645,7 @@ DESCRIPTION="--sff_convert --sizeout adds abundance annotation (relabel_sha1)"
     --sizeout \
     --relabel_sha1 \
     --fastqout - | \
-    grep -qwE "@c2c53d66948214258a26ca9ca845d7ac0c17f8e7;size=1;?" && \
+    grep -Eqx "@c2c53d66948214258a26ca9ca845d7ac0c17f8e7;size=1;?" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

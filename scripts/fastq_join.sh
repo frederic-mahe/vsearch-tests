@@ -343,7 +343,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastq_join - \
         --reverse <(printf "@s\nT\n+\nI\n") \
         --fastqout /dev/null 2>&1 | \
-    grep -qEw "1 pairs? joined" && \
+    grep -Eqx "1 pairs? joined" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -353,7 +353,7 @@ printf "" | \
         --fastq_join - \
         --reverse <(printf "") \
         --fastqout /dev/null 2>&1 | \
-    grep -qEw "0 pairs? joined" && \
+    grep -Eqx "0 pairs? joined" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -478,7 +478,7 @@ DESCRIPTION="--fastq_join does not fold fastq sequences longer than 80 nucleotid
         --fastq_join - \
         --reverse <(printf "@s\nT\n+\nI\n") \
         --fastqout - 2> /dev/null | \
-    grep -Ewq "I{81,}" && \
+    grep -Eqx "I{81,}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -587,7 +587,7 @@ for S in A C G T U B D H K M N R S V W Y a c g t u b d h k m n r s v w y ; do
             --reverse <(printf "@s\nT\n+\nI\n") \
             --join_padgap "${S}${S}${S}${S}${S}${S}${S}${S}" \
             --fastqout - 2> /dev/null | \
-        grep -Eqw "A${S}{8,}A" && \
+        grep -Eqx "A${S}{8,}A" && \
         success "${DESCRIPTION}" || \
 	    failure "${DESCRIPTION}"
 done
