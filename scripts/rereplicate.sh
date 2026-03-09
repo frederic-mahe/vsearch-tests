@@ -38,6 +38,7 @@ DESCRIPTION="check if vsearch is executable"
 #*****************************************************************************#
 
 ## --------------------------------------------------------------------- output
+
 DESCRIPTION="--rereplicate requires --output"
 printf ">s1;size=1\nA\n" | \
     "${VSEARCH}" \
@@ -656,7 +657,7 @@ printf ">s;size=1\nA\n" | \
         --relabel "label" \
         --relabel_keep \
         --output - | \
-    grep -qx ">label1 s" && \
+    grep -qx ">label1 s;size=1" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 

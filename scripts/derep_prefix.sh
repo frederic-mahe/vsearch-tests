@@ -540,7 +540,7 @@ printf ">s1\nT\n>s2\nU\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qx "s1@T@" && \
+    grep -qx ">s1@T@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -2901,7 +2901,7 @@ printf ">s;size=2;\nA\n" | \
         --xsize \
         --quiet \
         --output - | \
-    grep -qx ">s" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

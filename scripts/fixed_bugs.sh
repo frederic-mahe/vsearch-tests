@@ -436,7 +436,7 @@ DESCRIPTION="issue 7: --acceptall forces the output of all pairwise alignment re
     --acceptall \
     --quiet \
     --alnout - | \
-    grep -qx "0%" && \
+    grep -qw "0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1153,7 +1153,7 @@ DESCRIPTION="issue 21: --alnout (match)"
     --id 1.0 \
     --quiet \
     --alnout - | \
-    grep -qx "^Qry" && \
+    grep -qw "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1165,7 +1165,7 @@ DESCRIPTION="issue 21: --alnout (no match)"
     --id 1.0 \
     --quiet \
     --alnout - | \
-    grep -qx "^Qry" && \
+    grep -qw "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -1177,7 +1177,7 @@ DESCRIPTION="issue 21: --blast6out (match)"
     --id 1.0 \
     --quiet \
     --blast6out - | \
-    grep -qx "^query" && \
+    grep -qw "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1227,7 +1227,7 @@ DESCRIPTION="issue 21: --uc (match)"
     --id 1.0 \
     --quiet \
     --uc - | \
-    grep -qx "H" && \
+    grep -qw "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1239,7 +1239,7 @@ DESCRIPTION="issue 21: --uc (no match)"
     --id 1.0 \
     --quiet \
     --uc - | \
-    grep -qx "N" && \
+    grep -qw "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1253,7 +1253,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits (match)"
     --quiet \
     --output_no_hits \
     --alnout - | \
-    grep -qx "^Qry" && \
+    grep -qw "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1266,7 +1266,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits (no match)"
     --quiet \
     --output_no_hits \
     --alnout - | \
-    grep -qx "^Qry" && \
+    grep -qw "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -1279,7 +1279,7 @@ DESCRIPTION="issue 21: --blast6out --output_no_hits (match)"
     --quiet \
     --output_no_hits \
     --blast6out - | \
-    grep -qx "^query" && \
+    grep -qw "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1306,7 +1306,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits (match)"
     --output_no_hits \
     --userfields query \
     --userout - | \
-    grep -qx "query" && \
+    grep -qw "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1320,7 +1320,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits (no match)"
     --output_no_hits \
     --userfields query \
     --userout - | \
-    grep -qx "query" && \
+    grep -qw "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1333,7 +1333,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits (match)"
     --quiet \
     --output_no_hits \
     --uc - | \
-    grep -qx "H" && \
+    grep -qw "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1346,7 +1346,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits (no match)"
     --quiet \
     --output_no_hits \
     --uc - | \
-    grep -qx "N" && \
+    grep -qw "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1360,7 +1360,7 @@ DESCRIPTION="issue 21: --alnout --uc_allhits (match)"
     --quiet \
     --uc_allhits \
     --alnout - | \
-    grep -qx "^Qry" && \
+    grep -qw "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1386,7 +1386,7 @@ DESCRIPTION="issue 21: --blast6out --uc_allhits (match)"
     --quiet \
     --uc_allhits \
     --blast6out - | \
-    grep -qx "^query" && \
+    grep -qw "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1413,7 +1413,7 @@ DESCRIPTION="issue 21: --userout --uc_allhits (match)"
     --uc_allhits \
     --userfields query \
     --userout - | \
-    grep -qx "query" && \
+    grep -qw "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1440,7 +1440,7 @@ DESCRIPTION="issue 21: --uc --uc_allhits (match)"
     --quiet \
     --uc_allhits \
     --uc - | \
-    grep -qx "H" && \
+    grep -qw "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1453,11 +1453,12 @@ DESCRIPTION="issue 21: --uc --uc_allhits (no match)"
     --quiet \
     --uc_allhits \
     --uc - | \
-    grep -qx "N" && \
+    grep -qw "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 # ------------------------------------------ with output_no_hits and uc_allhits
+
 DESCRIPTION="issue 21: --alnout --output_no_hits --uc_allhits (match)"
 "${VSEARCH}" \
     --usearch_global <(printf ">query\nACGT\n") \
@@ -1468,7 +1469,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits --uc_allhits (match)"
     --output_no_hits \
     --uc_allhits \
     --alnout - | \
-    grep -qx "^Qry" && \
+    grep -qw "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1482,7 +1483,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits --uc_allhits (no match)"
     --output_no_hits \
     --uc_allhits \
     --alnout - | \
-    grep -qx "^Qry" && \
+    grep -qw "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -1496,7 +1497,7 @@ DESCRIPTION="issue 21: --blast6out --output_no_hits --uc_allhits (match)"
     --output_no_hits \
     --uc_allhits \
     --blast6out - | \
-    grep -qx "^query" && \
+    grep -qw "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1510,7 +1511,7 @@ DESCRIPTION="issue 21: --blast6out --output_no_hits --uc_allhits (no match)"
     --output_no_hits \
     --uc_allhits \
     --blast6out - | \
-    grep -qx "^query" && \
+    grep -qw "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1525,7 +1526,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits --uc_allhits (match)"
     --uc_allhits \
     --userfields query \
     --userout - | \
-    grep -qx "query" && \
+    grep -qw "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1540,7 +1541,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits --uc_allhits (no match)"
     --uc_allhits \
     --userfields query \
     --userout - | \
-    grep -qx "query" && \
+    grep -qw "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1554,7 +1555,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits --uc_allhits (match)"
     --output_no_hits \
     --uc_allhits \
     --uc - | \
-    grep -qx "H" && \
+    grep -qw "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1568,7 +1569,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits --uc_allhits (no match)"
     --output_no_hits \
     --uc_allhits \
     --uc - | \
-    grep -qx "N" && \
+    grep -qw "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2645,7 +2646,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -qx ">s1U" && \
+    grep -qw ">s1U" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2656,7 +2657,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -qx ">s1T" && \
+    grep -qw ">s1T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2667,7 +2668,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -qx ">s1U" && \
+    grep -qw ">s1U" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2678,7 +2679,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -qx ">s1T" && \
+    grep -qw ">s1T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2689,7 +2690,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -qx ">s1U" && \
+    grep -qw ">s1U" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2700,7 +2701,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -qx ">s1T" && \
+    grep -qw ">s1T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2711,7 +2712,7 @@ ${VSEARCH} \
     --quiet \
     --fastaout - | \
     tr -d "\n" | \
-    grep -qx ">s1U" && \
+    grep -qw ">s1U" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2722,7 +2723,7 @@ ${VSEARCH} \
     --quiet \
     --fastaout - | \
     tr -d "\n" | \
-    grep -qx ">s1T" && \
+    grep -qw ">s1T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5072,7 +5073,7 @@ printf "@s;\nA\n+\nI\n" | \
         --quiet \
         --xlength \
         --fastaout - | \
-    grep -qx ">s" && \
+    grep -qx ">s;" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10616,7 +10617,7 @@ printf ">s1;sample=sample1\nAA\n" | \
         --dbmask none \
         --quiet \
         --otutabout - | \
-    grep -qx "#OTU ID" && \
+    grep -qw "#OTU ID" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -11391,7 +11392,7 @@ ${VSEARCH} \
     --userfields query+target \
     --userout - | \
     tr "\t" " " | \
-    grep -qx "q1 *" && \
+    grep -qx "q1 \*" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

@@ -1731,7 +1731,7 @@ printf "@s\nA\n+\nI\n" | \
 	failure "${DESCRIPTION}"
 
 ## bug? size annotations are not implied?
-DESCRIPTION="--fastq_join --sizein --sizeout does not assume size=1 (no size annotation)"
+DESCRIPTION="--fastq_join --sizein --sizeout assumes size=1 (no initial size annotation)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -1739,7 +1739,7 @@ printf "@s\nA\n+\nI\n" | \
         --sizein \
         --sizeout \
         --fastaout - 2> /dev/null | \
-    grep -qx ">s" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1791,18 +1791,18 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 # without sizein, annotations are discarded
-DESCRIPTION="--fastq_join size annotations are discarded (without sizein, with sizeout)"
+DESCRIPTION="--fastq_join size annotations are preserved (without sizein, with sizeout)"
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
         --reverse <(printf "@s\nA\n+\nI\n") \
         --sizeout \
         --fastaout - 2> /dev/null | \
-    grep -qx ">s" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join size annotations are discarded (with sizein and sizeout)"
+DESCRIPTION="--fastq_join size annotations are preserved (with sizein and sizeout)"
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -1810,7 +1810,7 @@ printf "@s;size=2\nA\n+\nI\n" | \
         --sizein \
         --sizeout \
         --fastaout - 2> /dev/null | \
-    grep -qx ">s" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1836,7 +1836,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join --relabel --sizeout does no add size annotations"
+DESCRIPTION="--fastq_join --relabel --sizeout adds size annotations"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -1844,7 +1844,7 @@ printf "@s\nA\n+\nI\n" | \
         --relabel "label" \
         --sizeout \
         --fastaout - 2> /dev/null | \
-    grep -qx ">label1" && \
+    grep -qx ">label1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2203,7 +2203,7 @@ printf "@s;size=2;\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join --xsize + sizein (no size)"
+DESCRIPTION="--fastq_join --xsize + sizein (keep original size)"
 printf "@s;size=2;\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -2211,7 +2211,7 @@ printf "@s;size=2;\nA\n+\nI\n" | \
         --sizeout \
         --xsize \
         --fastaout - 2> /dev/null | \
-    grep -qx ">s" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

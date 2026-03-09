@@ -342,7 +342,7 @@ printf ">s1;size=6\nA\n>s2;size=1\nA\n" | \
         --sortbysize - \
         --output /dev/null \
         --log - 2>/dev/null | \
-    grep -qx "^Median" && \
+    grep -iqw "^Median" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

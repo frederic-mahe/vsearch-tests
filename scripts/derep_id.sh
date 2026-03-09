@@ -2823,7 +2823,7 @@ printf ">s;size=2;\nA\n" | \
         --xsize \
         --quiet \
         --output - | \
-    grep -qx ">s" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

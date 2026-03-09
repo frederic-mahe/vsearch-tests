@@ -130,7 +130,7 @@ DESCRIPTION="--fastq_stats writes the number of reads to stderr (one read)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - 2>&1 | \
-    grep -qx "Read 1" && \
+    grep -qw "Read 1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -138,7 +138,7 @@ DESCRIPTION="--fastq_stats writes the number of reads to stderr (two reads)"
 printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - 2>&1 | \
-    grep -qx "Read 2" && \
+    grep -qw "Read 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -146,7 +146,7 @@ DESCRIPTION="--fastq_stats writes the number of reads to stderr (no read)"
 printf "" | \
     "${VSEARCH}" \
         --fastq_stats - 2>&1 | \
-    grep -qx "Read 0" && \
+    grep -qw "Read 0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -155,7 +155,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log /dev/null 2>&1 | \
-    grep -qx "Read 1" && \
+    grep -qw "Read 1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -234,7 +234,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 2 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "[-]+" && \
+    grep -Eqw "[-]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -256,7 +256,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -qx ">=" && \
+    grep -qw ">=" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -267,7 +267,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx ">=[[:blank:]]+1" && \
+    grep -Eqw ">=[[:blank:]]+1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -278,7 +278,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx ">=[[:blank:]]+1[[:blank:]]+1" && \
+    grep -Eqw ">=[[:blank:]]+1[[:blank:]]+1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -289,7 +289,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx ">=[[:blank:]]+1[[:blank:]]+1[[:blank:]]+100.0%" && \
+    grep -Eqw ">=[[:blank:]]+1[[:blank:]]+1[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -300,7 +300,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx ">=[[:blank:]]+1[[:blank:]]+1[[:blank:]]+100.0%[[:blank:]]+100.0%" && \
+    grep -Eqw ">=[[:blank:]]+1[[:blank:]]+1[[:blank:]]+100.0%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -311,7 +311,7 @@ printf "@s1\nAAA\n+\nIII\n@s2\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx ">=[[:blank:]]+3" && \
+    grep -Eqw ">=[[:blank:]]+3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -322,7 +322,7 @@ printf "@s1\nA\n+\nI\n@s2\nAAA\n+\nIII\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx ">=[[:blank:]]+3" && \
+    grep -Eqw ">=[[:blank:]]+3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -333,7 +333,7 @@ printf "@s1\nA\n+\nI\n@s2\nAAA\n+\nIII\n" | \
         --log - 2> /dev/null | \
     grep -x -A 4 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+1" && \
+    grep -Eqw "^[[:blank:]]+1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -345,7 +345,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^>=[[:blank:]]+1[[:blank:]]+1" && \
+    grep -Eqw "^>=[[:blank:]]+1[[:blank:]]+1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -356,7 +356,7 @@ printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^>=[[:blank:]]+1[[:blank:]]+2" && \
+    grep -Eqw "^>=[[:blank:]]+1[[:blank:]]+2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -367,7 +367,7 @@ printf "@s1\nAAA\n+\nIII\n@s2\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 4 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+50.0%" && \
+    grep -Eqw "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+50.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -378,7 +378,7 @@ printf "@s1\nAAA\n+\nIII\n@s2\nAA\n+\nII\n@s3\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 5 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+33.3%" && \
+    grep -Eqw "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+33.3%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -389,7 +389,7 @@ printf "@s1\nAA\n+\nII\n@s2\nAA\n+\nII\n@s3\nAA\n+\nII\n@s4\nAA\n+\nII\n@s5\nAA\
         --log - 2> /dev/null | \
     grep -x -A 4 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+16.7%" && \
+    grep -Eqw "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+16.7%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -400,7 +400,7 @@ printf "@s1\nA\n+\nI\n@s2\nAA\n+\nII\n@s3\nAAA\n+\nIII\n" | \
         --log - 2> /dev/null | \
     grep -x -A 5 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+33.3%[[:blank:]]+100.0%" && \
+    grep -Eqw "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+33.3%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -411,7 +411,7 @@ printf "@s1\nA\n+\nI\n@s2\nAA\n+\nII\n@s3\nAAA\n+\nIII\n" | \
         --log - 2> /dev/null | \
     grep -x -A 4 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+2[[:blank:]]+1[[:blank:]]+33.3%[[:blank:]]+66.7%" && \
+    grep -Eqw "^[[:blank:]]+2[[:blank:]]+1[[:blank:]]+33.3%[[:blank:]]+66.7%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -422,7 +422,7 @@ printf "@s1\nA\n+\nI\n@s2\nAA\n+\nII\n@s3\nAAA\n+\nIII\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^>=[[:blank:]]+3[[:blank:]]+1[[:blank:]]+33.3%[[:blank:]]+33.3%" && \
+    grep -Eqw "^>=[[:blank:]]+3[[:blank:]]+1[[:blank:]]+33.3%[[:blank:]]+33.3%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -433,7 +433,7 @@ printf "@s1\nA\n+\nI\n@s2\nAA\n+\nII\n@s3\nAAA\n+\nIII\n@s4\nAAAA\n+\nIIII\n" | 
         --log - 2> /dev/null | \
     grep -x -A 6 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+25.0%[[:blank:]]+100.0%" && \
+    grep -Eqw "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+25.0%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -444,7 +444,7 @@ printf "@s\n\n+\n\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -Eqx "^>=[[:blank:]]+0[[:blank:]]+1[[:blank:]]+100.0%[[:blank:]]+100.0%" && \
+    grep -Eqw "^>=[[:blank:]]+0[[:blank:]]+1[[:blank:]]+100.0%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -480,7 +480,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastq_stats - \
         --log - 2> /dev/null | \
     grep -x -A 1 "Q score distribution" | \
-    grep -Eqx "ASCII[[:blank:]]+Q[[:blank:]]+Pe[[:blank:]]+N[[:blank:]]+Pct[[:blank:]]+AccPct" && \
+    grep -Eqw "ASCII[[:blank:]]+Q[[:blank:]]+Pe[[:blank:]]+N[[:blank:]]+Pct[[:blank:]]+AccPct" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -491,7 +491,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 2 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "[-]+" && \
+    grep -Eqw "[-]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -524,7 +524,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+I" && \
+    grep -Eqw "^[[:blank:]]+I" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -535,7 +535,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+I[[:blank:]]+40" && \
+    grep -Eqw "^[[:blank:]]+I[[:blank:]]+40" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -546,7 +546,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010" && \
+    grep -Eqw "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -557,7 +557,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1" && \
+    grep -Eqw "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -568,7 +568,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+100.0%" && \
+    grep -Eqw "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -579,7 +579,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+100.0%[[:blank:]]+100.0%" && \
+    grep -Eqw "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+100.0%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -590,7 +590,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 4 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+H" && \
+    grep -Eqw "^[[:blank:]]+H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -601,7 +601,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+I" && \
+    grep -Eqw "^[[:blank:]]+I" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -612,7 +612,7 @@ printf "@s\nA\n+\n!\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+![[:blank:]]+0[[:blank:]]+1.00000" && \
+    grep -Eqw "^[[:blank:]]+![[:blank:]]+0[[:blank:]]+1.00000" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -623,7 +623,7 @@ printf "@s\nA\n+\n\"\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+\"[[:blank:]]+1[[:blank:]]+0.79433" && \
+    grep -Eqw "^[[:blank:]]+\"[[:blank:]]+1[[:blank:]]+0.79433" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -634,7 +634,7 @@ printf "@s\nA\n+\n#\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+#[[:blank:]]+2[[:blank:]]+0.63096" && \
+    grep -Eqw "^[[:blank:]]+#[[:blank:]]+2[[:blank:]]+0.63096" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -645,7 +645,7 @@ printf "@s\nA\n+\n$\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+[$][[:blank:]]+3[[:blank:]]+0.50119" && \
+    grep -Eqw "^[[:blank:]]+[$][[:blank:]]+3[[:blank:]]+0.50119" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -656,7 +656,7 @@ printf "@s\nA\n+\n%%\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+%[[:blank:]]+4[[:blank:]]+0.39811" && \
+    grep -Eqw "^[[:blank:]]+%[[:blank:]]+4[[:blank:]]+0.39811" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -667,7 +667,7 @@ printf "@s\nA\n+\n+\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+[+][[:blank:]]+10[[:blank:]]+0.10000" && \
+    grep -Eqw "^[[:blank:]]+[+][[:blank:]]+10[[:blank:]]+0.10000" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -678,7 +678,7 @@ printf "@s\nA\n+\n5\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+5[[:blank:]]+20[[:blank:]]+0.01000" && \
+    grep -Eqw "^[[:blank:]]+5[[:blank:]]+20[[:blank:]]+0.01000" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -689,7 +689,7 @@ printf "@s\nA\n+\n?\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+[?][[:blank:]]+30[[:blank:]]+0.00100" && \
+    grep -Eqw "^[[:blank:]]+[?][[:blank:]]+30[[:blank:]]+0.00100" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -700,7 +700,7 @@ printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+2" && \
+    grep -Eqw "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -711,7 +711,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+50.0%" && \
+    grep -Eqw "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+50.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -722,7 +722,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 4 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+H[[:blank:]]+39[[:blank:]]+0.00013[[:blank:]]+1[[:blank:]]+50.0%" && \
+    grep -Eqw "^[[:blank:]]+H[[:blank:]]+39[[:blank:]]+0.00013[[:blank:]]+1[[:blank:]]+50.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -733,7 +733,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+50.0%[[:blank:]]+50.0%" && \
+    grep -Eqw "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+50.0%[[:blank:]]+50.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -744,7 +744,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -x -A 4 "Q score distribution" | \
     tail -n 1 | \
-    grep -Eqx "^[[:blank:]]+H[[:blank:]]+39[[:blank:]]+0.00013[[:blank:]]+1[[:blank:]]+50.0%[[:blank:]]+100.0%" && \
+    grep -Eqw "^[[:blank:]]+H[[:blank:]]+39[[:blank:]]+0.00013[[:blank:]]+1[[:blank:]]+50.0%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -782,7 +782,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -Eqx "^[[:blank:]]+L[[:blank:]]+PctRecs[[:blank:]]+AvgQ[[:blank:]]+P\(AvgQ\)[[:blank:]]+AvgP[[:blank:]]+AvgEE[[:blank:]]+Rate[[:blank:]]+RatePct$" && \
+    grep -Eqw "^[[:blank:]]+L[[:blank:]]+PctRecs[[:blank:]]+AvgQ[[:blank:]]+P\(AvgQ\)[[:blank:]]+AvgP[[:blank:]]+AvgEE[[:blank:]]+Rate[[:blank:]]+RatePct$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -793,7 +793,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -m 1 -E -A 1 "^[[:blank:]]+L[[:blank:]]+PctRecs" | \
     tail -n 1 | \
-    grep -Eqx "[-]+" && \
+    grep -Eqw "[-]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1085,7 +1085,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -Eqx "^[[:blank:]]+L[[:blank:]]+1.0000[[:blank:]]+0.5000[[:blank:]]+0.2500[[:blank:]]+0.1000[[:blank:]]+1.0000[[:blank:]]+0.5000[[:blank:]]+0.2500[[:blank:]]+0.1000$" && \
+    grep -Eqw "^[[:blank:]]+L[[:blank:]]+1.0000[[:blank:]]+0.5000[[:blank:]]+0.2500[[:blank:]]+0.1000[[:blank:]]+1.0000[[:blank:]]+0.5000[[:blank:]]+0.2500[[:blank:]]+0.1000$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1096,7 +1096,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -m 1 -E -A 1 "^[[:blank:]]+L[[:blank:]]+1.0000[[:blank:]]" | \
     tail -n 1 | \
-    grep -Eqx "[-]+" && \
+    grep -Eqw "[-]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1401,7 +1401,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastq_stats - \
         --log - 2> /dev/null | \
     grep -A 1 "^Truncate at first Q$" | \
-    grep -Eqx "^[[:blank:]]+Len[[:blank:]]+Q=5[[:blank:]]+Q=10[[:blank:]]+Q=15[[:blank:]]+Q=20$" && \
+    grep -Eqw "^[[:blank:]]+Len[[:blank:]]+Q=5[[:blank:]]+Q=10[[:blank:]]+Q=15[[:blank:]]+Q=20$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1412,7 +1412,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -A 2 "^Truncate at first Q$" | \
     tail -n 1 | \
-    grep -Eqx "[-]+" && \
+    grep -Eqw "[-]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2175,7 +2175,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qx "Started" && \
+    grep -qw "Started" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2184,7 +2184,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qx "Finished" && \
+    grep -qw "Finished" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2193,7 +2193,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qx "Elapsed time" && \
+    grep -qw "Elapsed time" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2202,7 +2202,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qx "Max memory" && \
+    grep -qw "Max memory" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

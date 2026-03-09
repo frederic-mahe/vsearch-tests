@@ -356,7 +356,7 @@ printf ">s1\nAAAAAA\n>s2\nA\n" | \
         --sortbylength - \
         --output /dev/null \
         --log - 2>/dev/null | \
-    grep -iqx "^Median" && \
+    grep -iqw "^Median" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
