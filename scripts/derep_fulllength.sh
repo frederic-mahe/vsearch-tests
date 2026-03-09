@@ -2663,7 +2663,7 @@ printf ">s;ee=1.00\nA\n" | \
         --xee \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -xq ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2688,7 +2688,7 @@ printf ">s;length=1\nA\n" | \
         --xlength \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -xq ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2700,7 +2700,7 @@ printf ">s\nA\n" | \
         --xlength \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -xq ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2713,7 +2713,7 @@ printf ">s;length=2\nA\n" | \
         --lengthout \
         --quiet \
         --output - | \
-    grep -wq ">s;length=1" && \
+    grep -xq ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2765,11 +2765,11 @@ printf ">s;size=2;\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -wq ">s;size=1" && \
+    grep -xq ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--xsize + sizein (no size)"
+DESCRIPTION="sizein + --xsize + --sizeout (no size)"
 printf ">s;size=2;\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
@@ -2791,7 +2791,7 @@ printf ">s;size=2;\nA\n" | \
         --xsize \
         --quiet \
         --output - | \
-    grep -wq ">s;size=1" && \
+    grep -xq ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2806,7 +2806,7 @@ printf ">s;size=2;\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -wq ">s;size=2" && \
+    grep -xq ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2820,7 +2820,7 @@ printf ">s;size=2; extra\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -wq ">s; extra;size=1" && \
+    grep -xq ">s; extra;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2834,7 +2834,7 @@ printf ">s;size=2; extra\nA\n" | \
         --sizein \
         --sizeout \
         --output - | \
-    grep -wq ">s; extra;size=2" && \
+    grep -xq ">s; extra;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2849,7 +2849,7 @@ printf ">s;size=2; extra\nA\n" | \
         --sizein \
         --sizeout \
         --output - | \
-    grep -wq ">s; extra;size=2" && \
+    grep -xq ">s; extra;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2862,7 +2862,7 @@ printf ">s;size=2\nA\n" | \
         --notrunclabels \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -xq ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2875,7 +2875,7 @@ printf ">s;size=2;\nA\n" | \
         --notrunclabels \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -xq ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2888,7 +2888,7 @@ printf ">s;size=2; \nA\n" | \
         --notrunclabels \
         --quiet \
         --output - | \
-    grep -wq ">s; " && \
+    grep -xq ">s; " && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2901,7 +2901,7 @@ printf ">s;size=2 \nA\n" | \
         --notrunclabels \
         --quiet \
         --output - | \
-    grep -wq ">s;size=2 " && \
+    grep -xq ">s;size=2 " && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2915,7 +2915,7 @@ printf ">s;\nA\n" | \
         --notrunclabels \
         --quiet \
         --output - | \
-    grep -wq ">s;" && \
+    grep -xq ">s;" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
