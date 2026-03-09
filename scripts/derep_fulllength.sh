@@ -2761,8 +2761,8 @@ printf ">s;size=2;\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
-        --xsize \
         --quiet \
+        --xsize \
         --sizeout \
         --output - | \
     grep -xq ">s;size=1" && \
