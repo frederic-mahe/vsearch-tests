@@ -105,7 +105,7 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --derep_id - \
         --output - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -115,7 +115,7 @@ printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_id - \
         --output - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -124,7 +124,7 @@ printf ">s\n" | \
     "${VSEARCH}" \
         --derep_id - \
         --output - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -174,7 +174,7 @@ printf ">s\nA\n" | \
         --minseqlength 1 \
         --quiet \
         --output - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -186,7 +186,7 @@ printf ">s\n" | \
         --minseqlength 0 \
         --quiet \
         --output - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -220,7 +220,7 @@ printf ">s1\nA\n>s1\nA\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1@A@" && \
+    grep -qx ">s1@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -293,7 +293,7 @@ printf ">s1\nA\n>s1\nA\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1@A@" && \
+    grep -qx ">s1@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -307,7 +307,7 @@ printf ">s2\nA\n>s1\nG\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1@G@>s2@A@" && \
+    grep -qx ">s1@G@>s2@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -321,7 +321,7 @@ printf ">s2\nA\n>s1\nG\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1@G@>s2@A@" && \
+    grep -qx ">s1@G@>s2@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -335,7 +335,7 @@ printf ">s1;size=3\nA\n>s2;size=1\nC\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=3@A@>s2;size=1@C@" && \
+    grep -qx ">s1;size=3@A@>s2;size=1@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -348,7 +348,7 @@ printf ">s1;size=1\nA\n>s2;size=3\nC\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s2;size=3@C@>s1;size=1@A@" && \
+    grep -qx ">s2;size=3@C@>s1;size=1@A@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -362,7 +362,7 @@ printf ">s1;size=2\nA\n>s2;size=2\nC\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@A@>s2;size=2@C@" && \
+    grep -qx ">s1;size=2@A@>s2;size=2@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -375,7 +375,7 @@ printf ">s2;size=2\nA\n>s1;size=2\nC\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@C@>s2;size=2@A@" && \
+    grep -qx ">s1;size=2@C@>s2;size=2@A@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -389,7 +389,7 @@ printf ">s1;size=2\nC\n>s1;size=2\nA\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@C@>s1;size=2@A@" && \
+    grep -qx ">s1;size=2@C@>s1;size=2@A@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -402,7 +402,7 @@ printf ">s1;size=2\nA\n>s1;size=2\nC\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@A@>s1;size=2@C@" && \
+    grep -qx ">s1;size=2@A@>s1;size=2@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -415,7 +415,7 @@ printf ">s1\nA\n>s1\na\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1@A@" && \
+    grep -qx ">s1@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -428,7 +428,7 @@ printf ">s1\na\n>s1\nA\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1@a@" && \
+    grep -qx ">s1@a@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -441,7 +441,7 @@ printf ">s1\nT\n>s1\nU\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1@T@" && \
+    grep -qx ">s1@T@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -454,7 +454,7 @@ printf ">s1\nU\n" | \
         --quiet \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s1@U@" && \
+    grep -qx ">s1@U@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1112,7 +1112,7 @@ printf ">s1;size=1;\nA\n>s1;size=1;\nT\n" | \
         --strand both \
         --quiet \
         --output - | \
-    grep -wqE ">s1;size=2;?" && \
+    grep -Eqx ">s1;size=2;?" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1127,7 +1127,7 @@ printf ">s1;size=1;\nA\n>s1;size=1;\nA\n" | \
         --quiet \
         --strand plus \
         --output - | \
-    grep -wqE ">s1;size=2;?" && \
+    grep -Eqx ">s1;size=2;?" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1175,7 +1175,7 @@ printf ">s\nA\n" | \
         --sizein \
         --quiet \
         --output - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1188,7 +1188,7 @@ printf ">s\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -qw ">s;size=1" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1200,7 +1200,7 @@ printf ">s;size=2\nA\n" | \
         --sizein \
         --quiet \
         --output - | \
-    grep -qw ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1425,7 +1425,7 @@ printf ">s\nA\n" | \
         --quiet \
         --lengthout \
         --output - | \
-    grep -wq ">s;length=1" && \
+    grep -qx ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1439,7 +1439,7 @@ printf ">s\nA\n" | \
         --lengthout \
         --sizeout \
         --output - | \
-    grep -wq ">s;size=1;length=1" && \
+    grep -qx ">s;size=1;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1771,7 +1771,7 @@ printf ">s extra\nA\n" | \
         --quiet \
         --notrunclabels \
         --output - | \
-    grep -wq ">s extra" && \
+    grep -qx ">s extra" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1831,7 +1831,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel "label" \
         --output - | \
-    grep -wq ">label1" && \
+    grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1843,7 +1843,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel "" \
         --output - | \
-    grep -wq ">1" && \
+    grep -qx ">1" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1894,7 +1894,7 @@ printf ">s\nA\n" | \
         --relabel "label" \
         --relabel_keep \
         --output - | \
-    grep -wq ">label1 s" && \
+    grep -qx ">label1 s" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1919,7 +1919,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_md5 \
         --output - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1944,7 +1944,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_self \
         --output - | \
-    grep -qw ">A" && \
+    grep -qx ">A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1969,7 +1969,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_sha1 \
         --output - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1994,7 +1994,7 @@ printf ">s\nA\n" | \
         --quiet \
         --sample "ABC" \
         --output - | \
-    grep -qw ">s;sample=ABC" && \
+    grep -qx ">s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2033,7 +2033,7 @@ printf ">s\nA\n" | \
         --minseqlength 1 \
         --quiet \
         --output - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2046,7 +2046,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -qw ">s;size=1" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2059,7 +2059,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -qw ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2070,7 +2070,7 @@ printf ">s;size=2\nA\n" | \
         --minseqlength 1 \
         --quiet \
         --output - | \
-    grep -qw ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2083,7 +2083,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel "label" \
         --output - | \
-    grep -qw ">label1" && \
+    grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2096,7 +2096,7 @@ printf ">s\nA\n" | \
         --relabel "label" \
         --sizeout \
         --output - | \
-    grep -qw ">label1;size=1" && \
+    grep -qx ">label1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2108,7 +2108,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_self \
         --output - | \
-    grep -qw ">A" && \
+    grep -qx ">A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2121,7 +2121,7 @@ printf ">s\nA\n" | \
         --relabel_self \
         --sizeout \
         --output - | \
-    grep -qw ">A;size=1" && \
+    grep -qx ">A;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2133,7 +2133,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_md5 \
         --output - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2146,7 +2146,7 @@ printf ">s\nA\n" | \
         --relabel_md5 \
         --sizeout \
         --output - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2158,7 +2158,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_sha1 \
         --output - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2171,7 +2171,7 @@ printf ">s\nA\n" | \
         --relabel_sha1 \
         --sizeout \
         --output - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2184,7 +2184,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --relabel "label" \
         --output - | \
-    grep -qw ">label1" && \
+    grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2197,7 +2197,7 @@ printf ">s;size=2\nA\n" | \
         --relabel "label" \
         --sizeout \
         --output - | \
-    grep -qw ">label1;size=1" && \
+    grep -qx ">label1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2211,7 +2211,7 @@ printf ">s;size=2\nA\n" | \
         --relabel "label" \
         --sizeout \
         --output - | \
-    grep -qw ">label1;size=2" && \
+    grep -qx ">label1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2223,7 +2223,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --relabel_self \
         --output - | \
-    grep -qw ">A" && \
+    grep -qx ">A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2236,7 +2236,7 @@ printf ">s;size=2\nA\n" | \
         --relabel_self \
         --sizeout \
         --output - | \
-    grep -qw ">A;size=1" && \
+    grep -qx ">A;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2250,7 +2250,7 @@ printf ">s;size=2\nA\n" | \
         --relabel_self \
         --sizeout \
         --output - | \
-    grep -qw ">A;size=2" && \
+    grep -qx ">A;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2262,7 +2262,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --relabel_md5 \
         --output - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2275,7 +2275,7 @@ printf ">s;size=2\nA\n" | \
         --relabel_md5 \
         --sizeout \
         --output - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2289,7 +2289,7 @@ printf ">s;size=2\nA\n" | \
         --relabel_md5 \
         --sizeout \
         --output - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=2" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2301,7 +2301,7 @@ printf ">s;size=2\nA\n" | \
         --quiet \
         --relabel_sha1 \
         --output - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2314,7 +2314,7 @@ printf ">s;size=2\nA\n" | \
         --relabel_sha1 \
         --sizeout \
         --output - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2328,7 +2328,7 @@ printf ">s;size=2\nA\n" | \
         --relabel_sha1 \
         --sizeout \
         --output - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=2" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2393,7 +2393,7 @@ printf ">s1;size=1;\nA\n>s2;size=2;\nC\n" | \
         --topn 1 \
         --output - | \
     tr "\n" "@" | \
-    grep -qw ">s2;size=2;@C@" &&\
+    grep -qx ">s2;size=2;@C@" &&\
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -2410,7 +2410,7 @@ printf ">s1;size=1;\nA\n>s2;size=2;\nC\n" | \
 #         --topn 1 \
 #         --output - | \
 #     tr "\n" "@" | \
-#     grep -qwE ">s1;size=3;?@A@" && \
+#     grep -Eqx ">s1;size=3;?@A@" && \
 #     success "${DESCRIPTION}" || \
 # 	failure "${DESCRIPTION}"
 
@@ -2708,7 +2708,7 @@ printf ">s;ee=1.00\nA\n" | \
         --xee \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2733,7 +2733,7 @@ printf ">s;length=1\nA\n" | \
         --xlength \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2745,7 +2745,7 @@ printf ">s\nA\n" | \
         --xlength \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2758,7 +2758,7 @@ printf ">s;length=2\nA\n" | \
         --lengthout \
         --quiet \
         --output - | \
-    grep -wq ">s;length=1" && \
+    grep -qx ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2810,7 +2810,7 @@ printf ">s;size=2;\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -wq ">s;size=1" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2823,7 +2823,7 @@ printf ">s;size=2;\nA\n" | \
         --xsize \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2836,7 +2836,7 @@ printf ">s;size=2;\nA\n" | \
         --xsize \
         --quiet \
         --output - | \
-    grep -wq ">s;size=1" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2851,7 +2851,7 @@ printf ">s;size=2;\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -wq ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2865,7 +2865,7 @@ printf ">s;size=2; extra\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -wq ">s; extra;size=1" && \
+    grep -qx ">s; extra;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2879,7 +2879,7 @@ printf ">s;size=2; extra\nA\n" | \
         --sizein \
         --sizeout \
         --output - | \
-    grep -wq ">s; extra;size=2" && \
+    grep -qx ">s; extra;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2894,7 +2894,7 @@ printf ">s;size=2; extra\nA\n" | \
         --sizein \
         --sizeout \
         --output - | \
-    grep -wq ">s; extra;size=2" && \
+    grep -qx ">s; extra;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2907,7 +2907,7 @@ printf ">s;size=2\nA\n" | \
         --notrunclabels \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2920,7 +2920,7 @@ printf ">s;size=2;\nA\n" | \
         --notrunclabels \
         --quiet \
         --output - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2933,7 +2933,7 @@ printf ">s;size=2; \nA\n" | \
         --notrunclabels \
         --quiet \
         --output - | \
-    grep -wq ">s; " && \
+    grep -qx ">s; " && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2946,7 +2946,7 @@ printf ">s;size=2 \nA\n" | \
         --notrunclabels \
         --quiet \
         --output - | \
-    grep -wq ">s;size=2 " && \
+    grep -qx ">s;size=2 " && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2960,7 +2960,7 @@ printf ">s;\nA\n" | \
         --notrunclabels \
         --quiet \
         --output - | \
-    grep -wq ">s;" && \
+    grep -qx ">s;" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
