@@ -316,7 +316,7 @@ DESCRIPTION="chimeras_denovo: alnout separates results with an empty line and a 
         --quiet \
         --alnout - | \
     head -n 2 | \
-    grep -Eqw "[-]+" && \
+    grep -Eqx "[-]+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -334,7 +334,7 @@ DESCRIPTION="chimeras_denovo: alnout reports Query first"
         --quiet \
         --alnout - | \
     head -n 3 | \
-    grep -qw "Query.*sQ;size=1" && \
+    grep -qx "Query.*sQ;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1825,7 +1825,7 @@ printf ">s\na\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras - | \
-    grep -qw "A" && \
+    grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1846,7 +1846,7 @@ printf "@s\nA\n+\nI\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
