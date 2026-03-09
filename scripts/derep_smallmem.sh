@@ -1326,7 +1326,7 @@ printf ">s1;size=1;\nA\n>s2;size=1;\nT\n" > "${TMP}"
     --strand both \
     --quiet \
     --fastaout - | \
-    grep -wqE ">s1;size=2;?" && \
+    grep -Eqx ">s1;size=2;?" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -1343,7 +1343,7 @@ printf ">s1;size=1;\nA\n>s2;size=1;\nA\n" > "${TMP}"
     --quiet \
     --strand plus \
     --fastaout - | \
-    grep -wqE ">s1;size=2;?" && \
+    grep -Eqx ">s1;size=2;?" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
