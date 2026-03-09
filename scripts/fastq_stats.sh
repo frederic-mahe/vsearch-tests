@@ -222,7 +222,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 1 "Read length distribution" | \
+    grep -x -A 1 "Read length distribution" | \
     grep -Eqx "[[:blank:]]+L[[:blank:]]+N[[:blank:]]+Pct[[:blank:]]+AccPct" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -232,7 +232,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 2 "Read length distribution" | \
+    grep -x -A 2 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "[-]+" && \
     success "${DESCRIPTION}" || \
@@ -243,7 +243,7 @@ printf "" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -q "^$" && \
     success "${DESCRIPTION}" || \
@@ -254,7 +254,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -qx ">=" && \
     success "${DESCRIPTION}" || \
@@ -265,7 +265,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx ">=[[:blank:]]+1" && \
     success "${DESCRIPTION}" || \
@@ -276,7 +276,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx ">=[[:blank:]]+1[[:blank:]]+1" && \
     success "${DESCRIPTION}" || \
@@ -287,7 +287,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx ">=[[:blank:]]+1[[:blank:]]+1[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
@@ -298,7 +298,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx ">=[[:blank:]]+1[[:blank:]]+1[[:blank:]]+100.0%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
@@ -309,7 +309,7 @@ printf "@s1\nAAA\n+\nIII\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx ">=[[:blank:]]+3" && \
     success "${DESCRIPTION}" || \
@@ -320,7 +320,7 @@ printf "@s1\nA\n+\nI\n@s2\nAAA\n+\nIII\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx ">=[[:blank:]]+3" && \
     success "${DESCRIPTION}" || \
@@ -331,7 +331,7 @@ printf "@s1\nA\n+\nI\n@s2\nAAA\n+\nIII\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 4 "Read length distribution" | \
+    grep -x -A 4 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+1" && \
     success "${DESCRIPTION}" || \
@@ -343,7 +343,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^>=[[:blank:]]+1[[:blank:]]+1" && \
     success "${DESCRIPTION}" || \
@@ -354,7 +354,7 @@ printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^>=[[:blank:]]+1[[:blank:]]+2" && \
     success "${DESCRIPTION}" || \
@@ -365,7 +365,7 @@ printf "@s1\nAAA\n+\nIII\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 4 "Read length distribution" | \
+    grep -x -A 4 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+50.0%" && \
     success "${DESCRIPTION}" || \
@@ -376,7 +376,7 @@ printf "@s1\nAAA\n+\nIII\n@s2\nAA\n+\nII\n@s3\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 5 "Read length distribution" | \
+    grep -x -A 5 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+33.3%" && \
     success "${DESCRIPTION}" || \
@@ -387,7 +387,7 @@ printf "@s1\nAA\n+\nII\n@s2\nAA\n+\nII\n@s3\nAA\n+\nII\n@s4\nAA\n+\nII\n@s5\nAA\
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 4 "Read length distribution" | \
+    grep -x -A 4 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+16.7%" && \
     success "${DESCRIPTION}" || \
@@ -398,7 +398,7 @@ printf "@s1\nA\n+\nI\n@s2\nAA\n+\nII\n@s3\nAAA\n+\nIII\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 5 "Read length distribution" | \
+    grep -x -A 5 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+33.3%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
@@ -409,7 +409,7 @@ printf "@s1\nA\n+\nI\n@s2\nAA\n+\nII\n@s3\nAAA\n+\nIII\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 4 "Read length distribution" | \
+    grep -x -A 4 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+2[[:blank:]]+1[[:blank:]]+33.3%[[:blank:]]+66.7%" && \
     success "${DESCRIPTION}" || \
@@ -420,7 +420,7 @@ printf "@s1\nA\n+\nI\n@s2\nAA\n+\nII\n@s3\nAAA\n+\nIII\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^>=[[:blank:]]+3[[:blank:]]+1[[:blank:]]+33.3%[[:blank:]]+33.3%" && \
     success "${DESCRIPTION}" || \
@@ -431,7 +431,7 @@ printf "@s1\nA\n+\nI\n@s2\nAA\n+\nII\n@s3\nAAA\n+\nIII\n@s4\nAAAA\n+\nIIII\n" | 
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 6 "Read length distribution" | \
+    grep -x -A 6 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+1[[:blank:]]+1[[:blank:]]+25.0%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
@@ -442,7 +442,7 @@ printf "@s\n\n+\n\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Read length distribution" | \
+    grep -x -A 3 "Read length distribution" | \
     tail -n 1 | \
     grep -Eqx "^>=[[:blank:]]+0[[:blank:]]+1[[:blank:]]+100.0%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
@@ -479,7 +479,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 1 "Q score distribution" | \
+    grep -x -A 1 "Q score distribution" | \
     grep -Eqx "ASCII[[:blank:]]+Q[[:blank:]]+Pe[[:blank:]]+N[[:blank:]]+Pct[[:blank:]]+AccPct" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -489,7 +489,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 2 "Q score distribution" | \
+    grep -x -A 2 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "[-]+" && \
     success "${DESCRIPTION}" || \
@@ -500,7 +500,7 @@ printf "" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -q "^$" && \
     success "${DESCRIPTION}" || \
@@ -511,7 +511,7 @@ printf "@s\n\n+\n\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -q "^$" && \
     success "${DESCRIPTION}" || \
@@ -522,7 +522,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+I" && \
     success "${DESCRIPTION}" || \
@@ -533,7 +533,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+I[[:blank:]]+40" && \
     success "${DESCRIPTION}" || \
@@ -544,7 +544,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010" && \
     success "${DESCRIPTION}" || \
@@ -555,7 +555,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1" && \
     success "${DESCRIPTION}" || \
@@ -566,7 +566,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
@@ -577,7 +577,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+100.0%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
@@ -588,7 +588,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 4 "Q score distribution" | \
+    grep -x -A 4 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+H" && \
     success "${DESCRIPTION}" || \
@@ -599,7 +599,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+I" && \
     success "${DESCRIPTION}" || \
@@ -610,7 +610,7 @@ printf "@s\nA\n+\n!\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+![[:blank:]]+0[[:blank:]]+1.00000" && \
     success "${DESCRIPTION}" || \
@@ -621,7 +621,7 @@ printf "@s\nA\n+\n\"\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+\"[[:blank:]]+1[[:blank:]]+0.79433" && \
     success "${DESCRIPTION}" || \
@@ -632,7 +632,7 @@ printf "@s\nA\n+\n#\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+#[[:blank:]]+2[[:blank:]]+0.63096" && \
     success "${DESCRIPTION}" || \
@@ -643,7 +643,7 @@ printf "@s\nA\n+\n$\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+[$][[:blank:]]+3[[:blank:]]+0.50119" && \
     success "${DESCRIPTION}" || \
@@ -654,7 +654,7 @@ printf "@s\nA\n+\n%%\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+%[[:blank:]]+4[[:blank:]]+0.39811" && \
     success "${DESCRIPTION}" || \
@@ -665,7 +665,7 @@ printf "@s\nA\n+\n+\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+[+][[:blank:]]+10[[:blank:]]+0.10000" && \
     success "${DESCRIPTION}" || \
@@ -676,7 +676,7 @@ printf "@s\nA\n+\n5\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+5[[:blank:]]+20[[:blank:]]+0.01000" && \
     success "${DESCRIPTION}" || \
@@ -687,7 +687,7 @@ printf "@s\nA\n+\n?\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+[?][[:blank:]]+30[[:blank:]]+0.00100" && \
     success "${DESCRIPTION}" || \
@@ -698,7 +698,7 @@ printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+2" && \
     success "${DESCRIPTION}" || \
@@ -709,7 +709,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+50.0%" && \
     success "${DESCRIPTION}" || \
@@ -720,7 +720,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 4 "Q score distribution" | \
+    grep -x -A 4 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+H[[:blank:]]+39[[:blank:]]+0.00013[[:blank:]]+1[[:blank:]]+50.0%" && \
     success "${DESCRIPTION}" || \
@@ -731,7 +731,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 3 "Q score distribution" | \
+    grep -x -A 3 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+I[[:blank:]]+40[[:blank:]]+0.00010[[:blank:]]+1[[:blank:]]+50.0%[[:blank:]]+50.0%" && \
     success "${DESCRIPTION}" || \
@@ -742,7 +742,7 @@ printf "@s1\nA\n+\nH\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -w -A 4 "Q score distribution" | \
+    grep -x -A 4 "Q score distribution" | \
     tail -n 1 | \
     grep -Eqx "^[[:blank:]]+H[[:blank:]]+39[[:blank:]]+0.00013[[:blank:]]+1[[:blank:]]+50.0%[[:blank:]]+100.0%" && \
     success "${DESCRIPTION}" || \
