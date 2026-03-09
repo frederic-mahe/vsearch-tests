@@ -680,7 +680,7 @@ DESCRIPTION="--usearch_global alnlen can be shorter than both seqs."
     --quiet \
     --userfields alnlen \
     --userout - | \
-    grep -qw "1" && \
+    grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

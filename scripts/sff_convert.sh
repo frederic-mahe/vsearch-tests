@@ -199,7 +199,7 @@ DESCRIPTION="--sff_convert --fastqout outputs in fastq format"
     --sff_convert "${SFF}" \
     --fastqout - 2> /dev/null | \
     tr -d "\n" | \
-    grep -wq "@sT+I" && \
+    grep -qx "@sT+I" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1008,7 +1008,7 @@ DESCRIPTION="--sff_convert can output empty reads (empty read name, empty sequen
         --quiet \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -qw "@__+__" && \
+    grep -qx "@__+__" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1416,7 +1416,7 @@ DESCRIPTION="--sff_convert accepts SFF files different clipping values (left)"
         --sff_convert - \
         --quiet \
         --fastqout - | \
-    grep -qw "T" && \
+    grep -qx "T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1456,7 +1456,7 @@ DESCRIPTION="--sff_convert accepts SFF files different clipping values (right)"
         --sff_convert - \
         --quiet \
         --fastqout - | \
-    grep -qw "T" && \
+    grep -qx "T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1495,7 +1495,7 @@ DESCRIPTION="--sff_convert clipped values are lowercased (left)"
         --sff_convert - \
         --quiet \
         --fastqout - | \
-    grep -qw "tT" && \
+    grep -qx "tT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1534,7 +1534,7 @@ DESCRIPTION="--sff_convert clipped values are lowercased (right)"
         --sff_convert - \
         --quiet \
         --fastqout - | \
-    grep -qw "Tt" && \
+    grep -qx "Tt" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1800,7 +1800,7 @@ DESCRIPTION="--sff_convert accepts SFF files different clipping values (right)"
         --sff_convert - \
         --quiet \
         --fastqout - | \
-    grep -qw "T" && \
+    grep -qx "T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1842,7 +1842,7 @@ DESCRIPTION="--sff_convert removes clipped values (left)"
         --sff_clip \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -qw "@s_T_+_I_" && \
+    grep -qx "@s_T_+_I_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1884,7 +1884,7 @@ DESCRIPTION="--sff_convert removes clipped values (right)"
         --sff_clip \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -qw "@s_T_+_I_" && \
+    grep -qx "@s_T_+_I_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2045,7 +2045,7 @@ DESCRIPTION="--sff_convert --fastq_qmaxout keeps lower Q values"
     --quiet \
     --fastq_qmaxout 41 \
     --fastqout - | \
-    grep -qw "I" && \
+    grep -qx "I" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2055,7 +2055,7 @@ DESCRIPTION="--sff_convert --fastq_qmaxout keeps equal Q values"
     --quiet \
     --fastq_qmaxout 40 \
     --fastqout - | \
-    grep -qw "I" && \
+    grep -qx "I" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2065,7 +2065,7 @@ DESCRIPTION="--sff_convert --fastq_qmaxout caps higher Q values"
     --quiet \
     --fastq_qmaxout 39 \
     --fastqout - | \
-    grep -qw "H" && \
+    grep -qx "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2176,7 +2176,7 @@ DESCRIPTION="--sff_convert --fastq_qminout caps lower Q values"
     --quiet \
     --fastq_qminout 41 \
     --fastqout - | \
-    grep -qw "J" && \
+    grep -qx "J" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2186,7 +2186,7 @@ DESCRIPTION="--sff_convert --fastq_qminout keeps equal Q values"
     --quiet \
     --fastq_qminout 40 \
     --fastqout - | \
-    grep -qw "I" && \
+    grep -qx "I" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2196,7 +2196,7 @@ DESCRIPTION="--sff_convert --fastq_qminout keeps higher Q values"
     --quiet \
     --fastq_qminout 39 \
     --fastqout - | \
-    grep -qw "I" && \
+    grep -qx "I" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2226,7 +2226,7 @@ DESCRIPTION="--sff_convert --label_suffix adds a suffix"
     --quiet \
     --label_suffix "suffix" \
     --fastqout - | \
-    grep -qw "@ssuffix" && \
+    grep -qx "@ssuffix" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2236,7 +2236,7 @@ DESCRIPTION="--sff_convert --label_suffix can be empty"
     --quiet \
     --label_suffix "" \
     --fastqout - | \
-    grep -qw "@s" && \
+    grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2257,7 +2257,7 @@ DESCRIPTION="--sff_convert --lengthout adds length annotations to headers"
     --quiet \
     --lengthout \
     --fastqout - | \
-    grep -wq "@s;length=1" && \
+    grep -qx "@s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2268,7 +2268,7 @@ DESCRIPTION="--sff_convert --lengthout --sizeout add annotations to output (size
     --lengthout \
     --sizeout \
     --fastqout - | \
-    grep -wq "@s;size=1;length=1" && \
+    grep -qx "@s;size=1;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2409,7 +2409,7 @@ DESCRIPTION="--sff_convert --relabel renames sequence (label + ticker)"
     --quiet \
     --relabel "label" \
     --fastqout - 2> /dev/null | \
-    grep -qw "@label1" && \
+    grep -qx "@label1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2419,7 +2419,7 @@ DESCRIPTION="--sff_convert --relabel accepts empty label (only ticker)"
     --quiet \
     --relabel "" \
     --fastqout - 2> /dev/null | \
-    grep -qw "@1" && \
+    grep -qx "@1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2462,7 +2462,7 @@ DESCRIPTION="--sff_convert --relabel_keep keeps original sequence name"
     --relabel "label" \
     --relabel_keep \
     --fastqout - | \
-    grep -qw "@label1 s" && \
+    grep -qx "@label1 s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2483,7 +2483,7 @@ DESCRIPTION="--sff_convert --relabel_md5 relabels using MD5 hash of sequence"
     --quiet \
     --relabel_md5 \
     --fastqout - | \
-    grep -qw "@b9ece18c950afbfa6b0fdbfa4ff731d3" && \
+    grep -qx "@b9ece18c950afbfa6b0fdbfa4ff731d3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2504,7 +2504,7 @@ DESCRIPTION="--sff_convert --relabel_self relabels using sequence as label"
     --quiet \
     --relabel_self \
     --fastqout - | \
-    grep -qw "@T" && \
+    grep -qx "@T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2525,7 +2525,7 @@ DESCRIPTION="--sff_convert --relabel_sha1 relabels using MD5 hash of sequence"
     --quiet \
     --relabel_sha1 \
     --fastqout - | \
-    grep -qw "@c2c53d66948214258a26ca9ca845d7ac0c17f8e7" && \
+    grep -qx "@c2c53d66948214258a26ca9ca845d7ac0c17f8e7" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2555,7 +2555,7 @@ DESCRIPTION="--sff_convert --sample adds sample name to sequence headers"
     --quiet \
     --sample "ABC" \
     --fastqout - 2> /dev/null | \
-    grep -qw "@s;sample=ABC" && \
+    grep -qx "@s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2565,7 +2565,7 @@ DESCRIPTION="--sff_convert --sample accepts empty string"
     --quiet \
     --sample "" \
     --fastqout - 2> /dev/null | \
-    grep -qw "@s;sample=" && \
+    grep -qx "@s;sample=" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

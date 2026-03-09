@@ -246,7 +246,7 @@ DESCRIPTION="issue 6: sequence masking (no low-complexity region)"
     --maskfasta <(printf ">q1\n%s\n" ${q1}) \
     --quiet \
     --output - | \
-    grep -wq "${q1}" && \
+    grep -qx "${q1}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -256,7 +256,7 @@ DESCRIPTION="issue 6: sequence masking (shortest unmasked)"
     --maskfasta <(printf ">q1\n%s\n" ${q1}) \
     --quiet \
     --output - | \
-    grep -wq "${q1}" && \
+    grep -qx "${q1}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -268,7 +268,7 @@ DESCRIPTION="issue 6: sequence masking (shortest masked)"
     --maskfasta <(printf ">q1\n%s\n" "${q1}") \
     --quiet \
     --output - | \
-    grep -wq "${q1_lowercase}" && \
+    grep -qx "${q1_lowercase}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset q1 q1_lowercase
@@ -281,7 +281,7 @@ DESCRIPTION="issue 6: sequence masking (shortest unmasked, mixed case)"
     --maskfasta <(printf ">q1\n%s\n" "${q1}") \
     --quiet \
     --output - | \
-    grep -wq "${q1_uppercase}" && \
+    grep -qx "${q1_uppercase}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset q1 q1_uppercase
@@ -294,7 +294,7 @@ DESCRIPTION="issue 6: sequence masking (shortest masked, mixed case)"
     --maskfasta <(printf ">q1\n%s\n" "${q1}") \
     --quiet \
     --output - | \
-    grep -wq "${q1_lowercase}" && \
+    grep -qx "${q1_lowercase}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset q1 q1_lowercase
@@ -436,7 +436,7 @@ DESCRIPTION="issue 7: --acceptall forces the output of all pairwise alignment re
     --acceptall \
     --quiet \
     --alnout - | \
-    grep -qw "0%" && \
+    grep -qx "0%" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -543,7 +543,7 @@ printf ">s1\nA\n>s2\nA\n" > "${TMP}"
     --quiet \
     --sizeout \
     --output - | \
-    grep -qw ">s1;size=2" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP}"
@@ -557,7 +557,7 @@ printf ">s1\nA\n>s2\nA\n" | gzip -c > "${TMP}"
     --quiet \
     --sizeout \
     --output - | \
-    grep -qw ">s1;size=2" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP}"
@@ -571,7 +571,7 @@ printf ">s1\nA\n>s2\nA\n" | bzip2 -c > "${TMP}"
     --quiet \
     --sizeout \
     --output - | \
-    grep -qw ">s1;size=2" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP}"
@@ -585,7 +585,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -qw ">s1;size=2" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -598,7 +598,7 @@ printf ">s1\nA\n>s2\nA\n" | gzip -c | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -qw ">s1;size=2" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -611,7 +611,7 @@ printf ">s1\nA\n>s2\nA\n" | bzip2 -c | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -qw ">s1;size=2" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -643,7 +643,7 @@ DESCRIPTION="issue 11: --cluster_fast is implemented"
     --quiet \
     --sizeout \
     --centroids - | \
-    grep -qw ">t1;size=2" && \
+    grep -qx ">t1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -655,7 +655,7 @@ DESCRIPTION="issue 11: --cluster_smallmem is implemented"
     --quiet \
     --sizeout \
     --centroids - | \
-    grep -qw ">t1;size=2" && \
+    grep -qx ">t1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -667,7 +667,7 @@ DESCRIPTION="issue 11: --cluster_size is implemented"
     --quiet \
     --sizeout \
     --centroids - | \
-    grep -qw ">t1;size=2" && \
+    grep -qx ">t1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -709,7 +709,7 @@ B_END=$(rev <<< ${B_START})
         --qmask none \
         --quiet \
         --chimeras - | \
-    grep -qw ">chimeraAB;size=1" && \
+    grep -qx ">chimeraAB;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -729,7 +729,7 @@ B_END=$(rev <<< ${B_START})
                --qmask none \
                --quiet \
                --chimeras - | \
-    grep -qw ">chimeraAB" && \
+    grep -qx ">chimeraAB" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -887,7 +887,7 @@ DESCRIPTION="issue 18: userfield values are correct (raw)"
     --quiet \
     --userfield "raw" \
     --userout - | \
-    grep -qw "8" && \
+    grep -qx "8" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -900,7 +900,7 @@ DESCRIPTION="issue 18: userfield values are correct (qlo)"
     --quiet \
     --userfield "qlo" \
     --userout - | \
-    grep -qw "1" && \
+    grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -913,7 +913,7 @@ DESCRIPTION="issue 18: userfield values are correct (qilo)"
     --quiet \
     --userfield "qilo" \
     --userout - | \
-    grep -qw "1" && \
+    grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -926,7 +926,7 @@ DESCRIPTION="issue 18: userfield values are correct (qhi)"
     --quiet \
     --userfield "qhi" \
     --userout - | \
-    grep -qw "4" && \
+    grep -qx "4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -939,7 +939,7 @@ DESCRIPTION="issue 18: userfield values are correct (qihi)"
     --quiet \
     --userfield "qihi" \
     --userout - | \
-    grep -qw "2" && \
+    grep -qx "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -952,7 +952,7 @@ DESCRIPTION="issue 18: userfield values are correct (tlo)"
     --quiet \
     --userfield "tlo" \
     --userout - | \
-    grep -qw "1" && \
+    grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -965,7 +965,7 @@ DESCRIPTION="issue 18: userfield values are correct (tilo)"
     --quiet \
     --userfield "tilo" \
     --userout - | \
-    grep -qw "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -978,7 +978,7 @@ DESCRIPTION="issue 18: userfield values are correct (thi)"
     --quiet \
     --userfield "thi" \
     --userout - | \
-    grep -qw "4" && \
+    grep -qx "4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -991,7 +991,7 @@ DESCRIPTION="issue 18: userfield values are correct (tihi)"
     --quiet \
     --userfield "tihi" \
     --userout - | \
-    grep -qw "4" && \
+    grep -qx "4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1019,7 +1019,7 @@ DESCRIPTION="issue 19: --iddef is implemented (0)"
     --quiet \
     --userfield "id0" \
     --userout - | \
-    grep -qw "50.0" && \
+    grep -qx "50.0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1037,7 +1037,7 @@ DESCRIPTION="issue 19: --iddef is implemented (1)"
     --quiet \
     --userfield "id1" \
     --userout - | \
-    grep -qw "28.6" && \
+    grep -qx "28.6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1055,7 +1055,7 @@ DESCRIPTION="issue 19: --iddef is implemented (2)"
     --quiet \
     --userfield "id2" \
     --userout - | \
-    grep -qw "100.0" && \
+    grep -qx "100.0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1076,7 +1076,7 @@ DESCRIPTION="issue 19: --iddef is implemented (3)"
     --quiet \
     --userfield "id3" \
     --userout - | \
-    grep -qw "60.0" && \
+    grep -qx "60.0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1090,7 +1090,7 @@ DESCRIPTION="issue 19: --iddef is implemented (4)"
     --quiet \
     --userfield "id4" \
     --userout - | \
-    grep -qw "28.6" && \
+    grep -qx "28.6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1153,7 +1153,7 @@ DESCRIPTION="issue 21: --alnout (match)"
     --id 1.0 \
     --quiet \
     --alnout - | \
-    grep -qw "^Qry" && \
+    grep -qx "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1165,7 +1165,7 @@ DESCRIPTION="issue 21: --alnout (no match)"
     --id 1.0 \
     --quiet \
     --alnout - | \
-    grep -qw "^Qry" && \
+    grep -qx "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -1177,7 +1177,7 @@ DESCRIPTION="issue 21: --blast6out (match)"
     --id 1.0 \
     --quiet \
     --blast6out - | \
-    grep -qw "^query" && \
+    grep -qx "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1202,7 +1202,7 @@ DESCRIPTION="issue 21: --userout (match)"
     --quiet \
     --userfields query \
     --userout - | \
-    grep -qw "query" && \
+    grep -qx "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1227,7 +1227,7 @@ DESCRIPTION="issue 21: --uc (match)"
     --id 1.0 \
     --quiet \
     --uc - | \
-    grep -qw "H" && \
+    grep -qx "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1239,7 +1239,7 @@ DESCRIPTION="issue 21: --uc (no match)"
     --id 1.0 \
     --quiet \
     --uc - | \
-    grep -qw "N" && \
+    grep -qx "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1253,7 +1253,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits (match)"
     --quiet \
     --output_no_hits \
     --alnout - | \
-    grep -qw "^Qry" && \
+    grep -qx "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1266,7 +1266,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits (no match)"
     --quiet \
     --output_no_hits \
     --alnout - | \
-    grep -qw "^Qry" && \
+    grep -qx "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -1279,7 +1279,7 @@ DESCRIPTION="issue 21: --blast6out --output_no_hits (match)"
     --quiet \
     --output_no_hits \
     --blast6out - | \
-    grep -qw "^query" && \
+    grep -qx "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1306,7 +1306,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits (match)"
     --output_no_hits \
     --userfields query \
     --userout - | \
-    grep -qw "query" && \
+    grep -qx "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1320,7 +1320,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits (no match)"
     --output_no_hits \
     --userfields query \
     --userout - | \
-    grep -qw "query" && \
+    grep -qx "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1333,7 +1333,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits (match)"
     --quiet \
     --output_no_hits \
     --uc - | \
-    grep -qw "H" && \
+    grep -qx "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1346,7 +1346,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits (no match)"
     --quiet \
     --output_no_hits \
     --uc - | \
-    grep -qw "N" && \
+    grep -qx "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1360,7 +1360,7 @@ DESCRIPTION="issue 21: --alnout --uc_allhits (match)"
     --quiet \
     --uc_allhits \
     --alnout - | \
-    grep -qw "^Qry" && \
+    grep -qx "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1373,7 +1373,7 @@ DESCRIPTION="issue 21: --alnout --uc_allhits (no match)"
     --quiet \
     --uc_allhits \
     --alnout - | \
-    grep -qw "^Qry" && \
+    grep -qx "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -1386,7 +1386,7 @@ DESCRIPTION="issue 21: --blast6out --uc_allhits (match)"
     --quiet \
     --uc_allhits \
     --blast6out - | \
-    grep -qw "^query" && \
+    grep -qx "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1413,7 +1413,7 @@ DESCRIPTION="issue 21: --userout --uc_allhits (match)"
     --uc_allhits \
     --userfields query \
     --userout - | \
-    grep -qw "query" && \
+    grep -qx "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1440,7 +1440,7 @@ DESCRIPTION="issue 21: --uc --uc_allhits (match)"
     --quiet \
     --uc_allhits \
     --uc - | \
-    grep -qw "H" && \
+    grep -qx "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1453,7 +1453,7 @@ DESCRIPTION="issue 21: --uc --uc_allhits (no match)"
     --quiet \
     --uc_allhits \
     --uc - | \
-    grep -qw "N" && \
+    grep -qx "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1468,7 +1468,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits --uc_allhits (match)"
     --output_no_hits \
     --uc_allhits \
     --alnout - | \
-    grep -qw "^Qry" && \
+    grep -qx "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1482,7 +1482,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits --uc_allhits (no match)"
     --output_no_hits \
     --uc_allhits \
     --alnout - | \
-    grep -qw "^Qry" && \
+    grep -qx "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -1496,7 +1496,7 @@ DESCRIPTION="issue 21: --blast6out --output_no_hits --uc_allhits (match)"
     --output_no_hits \
     --uc_allhits \
     --blast6out - | \
-    grep -qw "^query" && \
+    grep -qx "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1510,7 +1510,7 @@ DESCRIPTION="issue 21: --blast6out --output_no_hits --uc_allhits (no match)"
     --output_no_hits \
     --uc_allhits \
     --blast6out - | \
-    grep -qw "^query" && \
+    grep -qx "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1525,7 +1525,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits --uc_allhits (match)"
     --uc_allhits \
     --userfields query \
     --userout - | \
-    grep -qw "query" && \
+    grep -qx "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1540,7 +1540,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits --uc_allhits (no match)"
     --uc_allhits \
     --userfields query \
     --userout - | \
-    grep -qw "query" && \
+    grep -qx "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1554,7 +1554,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits --uc_allhits (match)"
     --output_no_hits \
     --uc_allhits \
     --uc - | \
-    grep -qw "H" && \
+    grep -qx "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1568,7 +1568,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits --uc_allhits (no match)"
     --output_no_hits \
     --uc_allhits \
     --uc - | \
-    grep -qw "N" && \
+    grep -qx "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1849,7 +1849,7 @@ DESCRIPTION="issue 28: --sortbylength sorts by decreasing sequence length"
     --quiet \
     --output - | \
     head -n 1 | \
-    grep -qw ">s2" && \
+    grep -qx ">s2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1860,7 +1860,7 @@ DESCRIPTION="issue 28: --sortbylength sorts ties by decreasing abundance"
     --sizein \
     --output - | \
     head -n 1 | \
-    grep -qw ">s2;size=2" && \
+    grep -qx ">s2;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1870,7 +1870,7 @@ DESCRIPTION="issue 28: --sortbylength sorts ties by decreasing abundance (--size
     --quiet \
     --output - | \
     head -n 1 | \
-    grep -qw ">s2;size=2" && \
+    grep -qx ">s2;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1880,7 +1880,7 @@ DESCRIPTION="issue 28: --sortbylength sorts ties by decreasing abundance (if abu
     --quiet \
     --output - | \
     head -n 1 | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1890,7 +1890,7 @@ DESCRIPTION="issue 28: --sortbylength sorts ties by increasing label"
     --quiet \
     --output - | \
     head -n 1 | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1901,7 +1901,7 @@ DESCRIPTION="issue 28: --sortbylength sorts ties by increasing label (assume uni
     --quiet \
     --output - | \
     head -n 2 | \
-    grep -qw "TT" && \
+    grep -qx "TT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1952,7 +1952,7 @@ DESCRIPTION="issue 29: --derep_fulllength --minuniquesize discards abundances le
     --quiet \
     --minuniquesize 2 \
     --output - | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1963,7 +1963,7 @@ DESCRIPTION="issue 29: --derep_fulllength --minuniquesize discards abundances le
     --quiet \
     --minuniquesize 2 \
     --output - | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2007,7 +2007,7 @@ DESCRIPTION="issue 29: --derep_fulllength --maxuniquesize discards abundances gr
     --quiet \
     --maxuniquesize 2 \
     --output - | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2018,7 +2018,7 @@ DESCRIPTION="issue 29: --derep_fulllength --maxuniquesize discards abundances gr
     --quiet \
     --maxuniquesize 2 \
     --output - | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2080,7 +2080,7 @@ ${VSEARCH} \
     --maskfasta <(printf ">s1\nacgtacgtacgt\n") \
     --quiet \
     --output - | \
-    grep -qw "ACGTACGTACGT" && \
+    grep -qx "ACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2089,7 +2089,7 @@ ${VSEARCH} \
     --maskfasta <(printf ">s1\nACGTACGTACGT\n") \
     --quiet \
     --output - | \
-    grep -qw "ACGTACGTACGT" && \
+    grep -qx "ACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2098,7 +2098,7 @@ ${VSEARCH} \
     --maskfasta <(printf ">s1\naaaaaaaaaaaa\n") \
     --quiet \
     --output - | \
-    grep -qw "aaaaaaaaaaaa" && \
+    grep -qx "aaaaaaaaaaaa" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2107,7 +2107,7 @@ ${VSEARCH} \
     --maskfasta <(printf ">s1\nAAAAAAAAAAAA\n") \
     --quiet \
     --output - | \
-    grep -qw "aaaaaaaaaaaa" && \
+    grep -qx "aaaaaaaaaaaa" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2121,7 +2121,7 @@ ${VSEARCH} \
     --quiet \
     --qmask none \
     --output - | \
-    grep -qw "acgtacgtacgt" && \
+    grep -qx "acgtacgtacgt" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2131,7 +2131,7 @@ ${VSEARCH} \
     --quiet \
     --qmask none \
     --output - | \
-    grep -qw "ACGTACGTACGT" && \
+    grep -qx "ACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2141,7 +2141,7 @@ ${VSEARCH} \
     --quiet \
     --qmask none \
     --output - | \
-    grep -qw "aaaaaaaaaaaa" && \
+    grep -qx "aaaaaaaaaaaa" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2151,7 +2151,7 @@ ${VSEARCH} \
     --quiet \
     --qmask none \
     --output - | \
-    grep -qw "AAAAAAAAAAAA" && \
+    grep -qx "AAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2165,7 +2165,7 @@ ${VSEARCH} \
     --quiet \
     --qmask soft \
     --output - | \
-    grep -qw "acgtacgtacgt" && \
+    grep -qx "acgtacgtacgt" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2175,7 +2175,7 @@ ${VSEARCH} \
     --quiet \
     --qmask soft \
     --output - | \
-    grep -qw "ACGTACGTACGT" && \
+    grep -qx "ACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2185,7 +2185,7 @@ ${VSEARCH} \
     --quiet \
     --qmask soft \
     --output - | \
-    grep -qw "aaaaaaaaaaaa" && \
+    grep -qx "aaaaaaaaaaaa" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2195,7 +2195,7 @@ ${VSEARCH} \
     --quiet \
     --qmask soft \
     --output - | \
-    grep -qw "AAAAAAAAAAAA" && \
+    grep -qx "AAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2209,7 +2209,7 @@ ${VSEARCH} \
     --quiet \
     --qmask dust \
     --output - | \
-    grep -qw "ACGTACGTACGT" && \
+    grep -qx "ACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2219,7 +2219,7 @@ ${VSEARCH} \
     --quiet \
     --qmask dust \
     --output - | \
-    grep -qw "ACGTACGTACGT" && \
+    grep -qx "ACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2229,7 +2229,7 @@ ${VSEARCH} \
     --quiet \
     --qmask dust \
     --output - | \
-    grep -qw "aaaaaaaaaaaa" && \
+    grep -qx "aaaaaaaaaaaa" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2239,7 +2239,7 @@ ${VSEARCH} \
     --quiet \
     --qmask dust \
     --output - | \
-    grep -qw "aaaaaaaaaaaa" && \
+    grep -qx "aaaaaaaaaaaa" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2253,7 +2253,7 @@ ${VSEARCH} \
     --quiet \
     --hardmask \
     --output - | \
-    grep -qw "acgtacgtacgt" && \
+    grep -qx "acgtacgtacgt" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2263,7 +2263,7 @@ ${VSEARCH} \
     --quiet \
     --hardmask \
     --output - | \
-    grep -qw "ACGTACGTACGT" && \
+    grep -qx "ACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2273,7 +2273,7 @@ ${VSEARCH} \
     --quiet \
     --hardmask \
     --output - | \
-    grep -qw "NNNNNNNNNNNN" && \
+    grep -qx "NNNNNNNNNNNN" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2283,7 +2283,7 @@ ${VSEARCH} \
     --quiet \
     --hardmask \
     --output - | \
-    grep -qw "NNNNNNNNNNNN" && \
+    grep -qx "NNNNNNNNNNNN" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2298,7 +2298,7 @@ ${VSEARCH} \
     --qmask none \
     --hardmask \
     --output - | \
-    grep -qw "acgtacgtacgt" && \
+    grep -qx "acgtacgtacgt" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2309,7 +2309,7 @@ ${VSEARCH} \
     --qmask none \
     --hardmask \
     --output - | \
-    grep -qw "ACGTACGTACGT" && \
+    grep -qx "ACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2320,7 +2320,7 @@ ${VSEARCH} \
     --qmask none \
     --hardmask \
     --output - | \
-    grep -qw "aaaaaaaaaaaa" && \
+    grep -qx "aaaaaaaaaaaa" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2331,7 +2331,7 @@ ${VSEARCH} \
     --qmask none \
     --hardmask \
     --output - | \
-    grep -qw "AAAAAAAAAAAA" && \
+    grep -qx "AAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2346,7 +2346,7 @@ ${VSEARCH} \
     --qmask soft \
     --hardmask \
     --output - | \
-    grep -qw "NNNNNNNNNNNN" && \
+    grep -qx "NNNNNNNNNNNN" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2357,7 +2357,7 @@ ${VSEARCH} \
     --qmask soft \
     --hardmask \
     --output - | \
-    grep -qw "ACGTACGTACGT" && \
+    grep -qx "ACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2368,7 +2368,7 @@ ${VSEARCH} \
     --qmask soft \
     --hardmask \
     --output - | \
-    grep -qw "NNNNNNNNNNNN" && \
+    grep -qx "NNNNNNNNNNNN" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2379,7 +2379,7 @@ ${VSEARCH} \
     --qmask soft \
     --hardmask \
     --output - | \
-    grep -qw "AAAAAAAAAAAA" && \
+    grep -qx "AAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2394,7 +2394,7 @@ ${VSEARCH} \
     --qmask dust \
     --hardmask \
     --output - | \
-    grep -qw "acgtacgtacgt" && \
+    grep -qx "acgtacgtacgt" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2405,7 +2405,7 @@ ${VSEARCH} \
     --qmask dust \
     --hardmask \
     --output - | \
-    grep -qw "ACGTACGTACGT" && \
+    grep -qx "ACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2416,7 +2416,7 @@ ${VSEARCH} \
     --qmask dust \
     --hardmask \
     --output - | \
-    grep -qw "NNNNNNNNNNNN" && \
+    grep -qx "NNNNNNNNNNNN" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2427,7 +2427,7 @@ ${VSEARCH} \
     --qmask dust \
     --hardmask \
     --output - | \
-    grep -qw "NNNNNNNNNNNN" && \
+    grep -qx "NNNNNNNNNNNN" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2645,7 +2645,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -wq ">s1U" && \
+    grep -qx ">s1U" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2656,7 +2656,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -wq ">s1T" && \
+    grep -qx ">s1T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2667,7 +2667,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -wq ">s1U" && \
+    grep -qx ">s1U" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2678,7 +2678,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -wq ">s1T" && \
+    grep -qx ">s1T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2689,7 +2689,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -wq ">s1U" && \
+    grep -qx ">s1U" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2700,7 +2700,7 @@ ${VSEARCH} \
     --quiet \
     --output - | \
     tr -d "\n" | \
-    grep -wq ">s1T" && \
+    grep -qx ">s1T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2711,7 +2711,7 @@ ${VSEARCH} \
     --quiet \
     --fastaout - | \
     tr -d "\n" | \
-    grep -wq ">s1U" && \
+    grep -qx ">s1U" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2722,7 +2722,7 @@ ${VSEARCH} \
     --quiet \
     --fastaout - | \
     tr -d "\n" | \
-    grep -wq ">s1T" && \
+    grep -qx ">s1T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2745,7 +2745,7 @@ ${VSEARCH} \
     --quiet \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1A" && \
+    grep -qx ">s1A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2760,7 +2760,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=2A" && \
+    grep -qx ">s1;size=2A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2773,7 +2773,7 @@ ${VSEARCH} \
     --quiet \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=2A" && \
+    grep -qx ">s1;size=2A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2787,7 +2787,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=3A" && \
+    grep -qx ">s1;size=3A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2800,7 +2800,7 @@ ${VSEARCH} \
     --quiet \
     --dbmatched - | \
     tr -d "\n" | \
-    grep -wq ">t1A" && \
+    grep -qx ">t1A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2814,7 +2814,7 @@ ${VSEARCH} \
     --sizeout \
     --dbmatched - | \
     tr -d "\n" | \
-    grep -wq ">t1;size=1A" && \
+    grep -qx ">t1;size=1A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3276,7 +3276,7 @@ ${VSEARCH} \
     --quiet \
     --userfields qlo \
     --userout - | \
-    grep -wq "1" && \
+    grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3290,7 +3290,7 @@ ${VSEARCH} \
     --quiet \
     --userfields qlo \
     --userout - | \
-    grep -wq "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3303,7 +3303,7 @@ ${VSEARCH} \
     --quiet \
     --userfields qilo \
     --userout - | \
-    grep -wq "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3321,7 +3321,7 @@ ${VSEARCH} \
     --alnout - \
     --userfields qilo \
     --userout - | \
-    grep -wq "2" && \
+    grep -qx "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3334,7 +3334,7 @@ ${VSEARCH} \
     --quiet \
     --userfields qhi \
     --userout - | \
-    grep -wq "2" && \
+    grep -qx "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3348,7 +3348,7 @@ ${VSEARCH} \
     --quiet \
     --userfields qhi \
     --userout - | \
-    grep -wq "1" && \
+    grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3361,7 +3361,7 @@ ${VSEARCH} \
     --quiet \
     --userfields qihi \
     --userout - | \
-    grep -wq "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3376,7 +3376,7 @@ ${VSEARCH} \
     --alnout - \
     --userfields qihi \
     --userout - | \
-    grep -wq "4" && \
+    grep -qx "4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3389,7 +3389,7 @@ ${VSEARCH} \
     --quiet \
     --userfields tlo \
     --userout - | \
-    grep -wq "1" && \
+    grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3403,7 +3403,7 @@ ${VSEARCH} \
     --quiet \
     --userfields tlo \
     --userout - | \
-    grep -wq "1" && \
+    grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3416,7 +3416,7 @@ ${VSEARCH} \
     --quiet \
     --userfields tilo \
     --userout - | \
-    grep -wq "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3431,7 +3431,7 @@ ${VSEARCH} \
     --alnout - \
     --userfields tilo \
     --userout - | \
-    grep -wq "1" && \
+    grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3444,7 +3444,7 @@ ${VSEARCH} \
     --quiet \
     --userfields thi \
     --userout - | \
-    grep -wq "2" && \
+    grep -qx "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3458,7 +3458,7 @@ ${VSEARCH} \
     --quiet \
     --userfields thi \
     --userout - | \
-    grep -wq "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3471,7 +3471,7 @@ ${VSEARCH} \
     --quiet \
     --userfields tihi \
     --userout - | \
-    grep -wq "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3486,7 +3486,7 @@ ${VSEARCH} \
     --alnout - \
     --userfields tihi \
     --userout - | \
-    grep -wq "4" && \
+    grep -qx "4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3604,7 +3604,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=1AA>s2;size=1T" && \
+    grep -qx ">s1;size=1AA>s2;size=1T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3618,7 +3618,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s2;size=1AA>s1;size=1T" && \
+    grep -qx ">s2;size=1AA>s1;size=1T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3632,7 +3632,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=2AA>s2;size=1TT" && \
+    grep -qx ">s1;size=2AA>s2;size=1TT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3646,7 +3646,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s2;size=2TT>s1;size=1AA" && \
+    grep -qx ">s2;size=2TT>s1;size=1AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3660,7 +3660,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=1AA>s2;size=1TT" && \
+    grep -qx ">s1;size=1AA>s2;size=1TT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3674,7 +3674,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=1TT>s2;size=1AA" && \
+    grep -qx ">s1;size=1TT>s2;size=1AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3689,7 +3689,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=2AA>s2;size=1TT" && \
+    grep -qx ">s1;size=2AA>s2;size=1TT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3703,7 +3703,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s2;size=2TT>s1;size=1AA" && \
+    grep -qx ">s2;size=2TT>s1;size=1AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3717,7 +3717,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=1AA>s2;size=1TT" && \
+    grep -qx ">s1;size=1AA>s2;size=1TT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3731,7 +3731,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=1TT>s2;size=1AA" && \
+    grep -qx ">s1;size=1TT>s2;size=1AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3757,7 +3757,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=2A" && \
+    grep -qx ">s1;size=2A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3771,7 +3771,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=2A" && \
+    grep -qx ">s1;size=2A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3784,7 +3784,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=2A" && \
+    grep -qx ">s1;size=2A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3798,7 +3798,7 @@ ${VSEARCH} \
     --sizeout \
     --centroids - | \
     tr -d "\n" | \
-    grep -wq ">s1;size=3A" && \
+    grep -qx ">s1;size=3A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4915,7 +4915,7 @@ printf "@s\nA\n+\nI\n" | \
         --quiet \
         --lengthout \
         --fastaout - | \
-    grep -wq ">s;length=1" && \
+    grep -qx ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4938,7 +4938,7 @@ printf ">s\n\n" | \
         --quiet \
         --lengthout \
         --output -  | \
-    grep -wq ">s;length=0" && \
+    grep -qx ">s;length=0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4975,7 +4975,7 @@ printf "@s;length=2\nA\n+\nI\n" | \
         --quiet \
         --lengthout \
         --fastaout - | \
-    grep -wq ">s;length=1" && \
+    grep -qx ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4985,7 +4985,7 @@ printf "@s;length=2\nA\n+\nI\n" | \
         --fastq_filter - \
         --quiet \
         --fastaout - | \
-    grep -wq ">s;length=2" && \
+    grep -qx ">s;length=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4995,7 +4995,7 @@ printf "@s;length=2;\nA\n+\nI\n" | \
         --fastq_filter - \
         --quiet \
         --fastaout - | \
-    grep -wq ">s;length=2;" && \
+    grep -qx ">s;length=2;" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5019,7 +5019,7 @@ printf "@s;length=1\nA\n+\nI\n" | \
         --quiet \
         --xlength \
         --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5030,7 +5030,7 @@ printf "@s;length=1;\nA\n+\nI\n" | \
         --quiet \
         --xlength \
         --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5040,7 +5040,7 @@ printf "@s;length=1\nA\n+\nI\n" | \
         --fastq_filter - \
         --quiet \
         --fastaout - | \
-    grep -wq ">s;length=1" && \
+    grep -qx ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5050,7 +5050,7 @@ printf "@s;length=1;\nA\n+\nI\n" | \
         --fastq_filter - \
         --quiet \
         --fastaout - | \
-    grep -wq ">s;length=1;" && \
+    grep -qx ">s;length=1;" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5061,7 +5061,7 @@ printf "@s\nA\n+\nI\n" | \
         --quiet \
         --xlength \
         --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5072,7 +5072,7 @@ printf "@s;\nA\n+\nI\n" | \
         --quiet \
         --xlength \
         --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6556,7 +6556,7 @@ printf "@s;size=1;\nA\n+\nI\n" | \
         --xsize \
         --quiet \
         --fastqout - | \
-    grep -qw "@s" && \
+    grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6568,7 +6568,7 @@ printf "@s;size=1;\r\nA\n+\nI\n" | \
         --xsize \
         --quiet \
         --fastqout - | \
-    grep -qw "@s" && \
+    grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6702,7 +6702,7 @@ printf ">q\nAAA\n" | \
         --quiet \
         --userfields pv \
         --userout - | \
-    grep -qw "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6718,7 +6718,7 @@ printf ">q\nAAA\n" | \
         --quiet \
         --userfields pv \
         --userout - | \
-    grep -qw "0" && \
+    grep -qx "0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6760,7 +6760,7 @@ printf ">q\nAAA\n>s\nNNN\n" | \
         --quiet \
         --userfields pv \
         --userout - | \
-    grep -qw "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6787,7 +6787,7 @@ printf ">q\nAAA\n>s\nNNN\n" | \
         --quiet \
         --userfields pv \
         --userout - | \
-    grep -qw "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6814,7 +6814,7 @@ printf ">q\nAAA\n>s\nNNN\n" | \
         --quiet \
         --userfields pv \
         --userout - | \
-    grep -qw "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -6841,7 +6841,7 @@ printf ">q;size=32;\nAAA\n>s;size=8;\nNNN\n" | \
         --quiet \
         --userfields pv \
         --userout - | \
-    grep -qw "3" && \
+    grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7222,7 +7222,7 @@ DESCRIPTION="issue 473: use qrow and trow fields to output aligned sequences"
     --userfields "qrow+trow" \
     --userout - | \
     tr "\t" "@" | \
-    grep -qw "AAATCG@AAATGG" && \
+    grep -qx "AAATCG@AAATGG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7332,7 +7332,7 @@ printf ">s1;size=2;sample=A1;\nA\n>s2;size=1;sample=A2;\nA\n>s3;size=4;sample=A3
         --otutabout - | \
     tr -d '\n' | \
     tr "\t" "@" | \
-    grep -qw "#OTU ID@A1@A2@A3OTU_1@2@1@4" && \
+    grep -qx "#OTU ID@A1@A2@A3OTU_1@2@1@4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7400,7 +7400,7 @@ printf ">s1\nA\n" | \
         --quiet \
         --label "s1" \
         --fastaout - | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7411,7 +7411,7 @@ printf ">s1\nA\n" | \
         --quiet \
         --label "S1" \
         --fastaout - | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7422,7 +7422,7 @@ printf ">s1;size=1\nA\n" | \
         --quiet \
         --label "s1" \
         --fastaout - | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -7436,7 +7436,7 @@ printf ">s1\nA\n" | \
         --label "s1" \
         --label_substr_match \
         --fastaout - | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7448,7 +7448,7 @@ printf ">s11\nA\n" | \
         --label "s1" \
         --label_substr_match \
         --fastaout - | \
-    grep -qw ">s11" && \
+    grep -qx ">s11" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7460,7 +7460,7 @@ printf ">s11\nA\n" | \
         --label "S1" \
         --label_substr_match \
         --fastaout - | \
-    grep -qw ">s11" && \
+    grep -qx ">s11" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7475,7 +7475,7 @@ printf ">s1\nA\n" | \
         --quiet \
         --label_word "s1" \
         --fastaout - | \
-    grep -qw ">s1" && \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7486,7 +7486,7 @@ printf ">s1;size=1\nA\n" | \
         --quiet \
         --label_word "s1" \
         --fastaout - | \
-    grep -qw ">s1;size=1" && \
+    grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7497,7 +7497,7 @@ printf ">s11;size=1\nA\n" | \
         --quiet \
         --label_word "s1" \
         --fastaout - | \
-    grep -qw ">s1;size=1" && \
+    grep -qx ">s1;size=1" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -7508,7 +7508,7 @@ printf ">s1;size=1\nA\n" | \
         --quiet \
         --label_word "S1" \
         --fastaout - | \
-    grep -qw ">s1;size=1" && \
+    grep -qx ">s1;size=1" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9641,7 +9641,7 @@ printf ">s\nAT\n" | \
         --quiet \
         --fastaout - | \
     tr "\n" "_" | \
-    grep -qw ">s_AT_" && \
+    grep -qx ">s_AT_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -9653,7 +9653,7 @@ printf ">s\nAT\n" | \
         --quiet \
         --fastaout - | \
     tr "\n" "_" | \
-    grep -qw ">s_T_" && \
+    grep -qx ">s_T_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -9674,7 +9674,7 @@ printf ">s\nAT\n" | \
         --fastq_stripleft 2 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9695,7 +9695,7 @@ printf ">s\nAT\n" | \
         --fastq_stripleft 3 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9709,7 +9709,7 @@ printf ">s\nAT\n" | \
         --quiet \
         --fastaout - | \
     tr "\n" "_" | \
-    grep -qw ">s_AT_" && \
+    grep -qx ">s_AT_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -9721,7 +9721,7 @@ printf ">s\nAT\n" | \
         --quiet \
         --fastaout - | \
     tr "\n" "_" | \
-    grep -qw ">s_A_" && \
+    grep -qx ">s_A_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -9742,7 +9742,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 2 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9763,7 +9763,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 3 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9782,7 +9782,7 @@ printf ">s\nAT\n" | \
         --quiet \
         --fastaout - | \
     tr "\n" "_" | \
-    grep -qw ">s_AT_" && \
+    grep -qx ">s_AT_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -9795,7 +9795,7 @@ printf ">s\nAT\n" | \
         --quiet \
         --fastaout - | \
     tr "\n" "_" | \
-    grep -qw ">s_A_" && \
+    grep -qx ">s_A_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -9818,7 +9818,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 2 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9841,7 +9841,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 3 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9854,7 +9854,7 @@ printf ">s\nAT\n" | \
         --quiet \
         --fastaout - | \
     tr "\n" "_" | \
-    grep -qw ">s_T_" && \
+    grep -qx ">s_T_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -9877,7 +9877,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 1 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9900,7 +9900,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 2 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9923,7 +9923,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 3 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9946,7 +9946,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 0 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9969,7 +9969,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 1 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -9992,7 +9992,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 2 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10015,7 +10015,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 3 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10038,7 +10038,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 0 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10061,7 +10061,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 1 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10084,7 +10084,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 2 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10107,7 +10107,7 @@ printf ">s\nAT\n" | \
         --fastq_stripright 3 \
         --quiet \
         --fastaout - | \
-    grep -qw ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10149,7 +10149,7 @@ printf "@s1\nA\n+\nI\n" | \
         --quiet \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_A_+_I_" && \
+    grep -qx "@s1_A_+_I_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10162,7 +10162,7 @@ printf "@s1\nAA\n+\nII\n" | \
         --quiet \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_A_+_I_" && \
+    grep -qx "@s1_A_+_I_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10174,7 +10174,7 @@ printf "@s1\nAA\n+\nII\n" | \
         --quiet \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_AA_+_II_" && \
+    grep -qx "@s1_AA_+_II_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10186,7 +10186,7 @@ printf "@s1\nA\n+\nI\n" | \
         --quiet \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10199,7 +10199,7 @@ printf "@s1\nAA\n+\nII\n" | \
         --quiet \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_A_+_I_" && \
+    grep -qx "@s1_A_+_I_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10211,7 +10211,7 @@ printf "@s1\nAA\n+\nII\n" | \
         --quiet \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_AA_+_II_" && \
+    grep -qx "@s1_AA_+_II_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10223,7 +10223,7 @@ printf "@s1\nA\n+\nI\n" | \
         --quiet \
         --fastqout - | \
     tr "\n" "_" | \
-        grep -wq "@s1_A_+_I_" && \
+        grep -qx "@s1_A_+_I_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10236,7 +10236,7 @@ printf "@s1\nA\n+\nI\n" | \
         --fastq_maxns 0 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_A_+_I_" && \
+    grep -qx "@s1_A_+_I_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10248,7 +10248,7 @@ printf "@s1\nN\n+\nI\n" | \
         --fastq_maxns 0 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10263,7 +10263,7 @@ printf '@s1\nA\n+\n!\n' | \
         --fastq_maxee 1.0 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq '@s1_A_+_!_' && \
+    grep -qx '@s1_A_+_!_' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10275,7 +10275,7 @@ printf '@s1\nA\n+\n!\n' | \
         --fastq_maxee 0.9 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10287,7 +10287,7 @@ printf '@s1\nAA\n+\n!!\n' | \
         --fastq_maxee 2.0 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq '@s1_AA_+_!!_' && \
+    grep -qx '@s1_AA_+_!!_' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10299,7 +10299,7 @@ printf '@s1\nAA\n+\n!!\n' | \
         --fastq_maxee 1.9 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10314,7 +10314,7 @@ printf "@s1\nA\n+\nI\n" | \
         --fastq_truncqual 39 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_A_+_I_" && \
+    grep -qx "@s1_A_+_I_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10326,7 +10326,7 @@ printf "@s1\nA\n+\nI\n" | \
         --fastq_truncqual 40 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10338,7 +10338,7 @@ printf "@s1\nACG\n+\nJJI\n" | \
         --fastq_truncqual 40 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_AC_+_JJ_" && \
+    grep -qx "@s1_AC_+_JJ_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10350,7 +10350,7 @@ printf "@s1\nACG\n+\nJIJ\n" | \
         --fastq_truncqual 40 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_A_+_J_" && \
+    grep -qx "@s1_A_+_J_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10362,7 +10362,7 @@ printf "@s1\nACG\n+\nIJJ\n" | \
         --fastq_truncqual 40 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10383,7 +10383,7 @@ printf "@s1\nACG\n+\nJJJ\n" | \
         --fastq_trunclen 3 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_ACG_+_JJJ_" && \
+    grep -qx "@s1_ACG_+_JJJ_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10396,7 +10396,7 @@ printf "@s1\nACG\n+\nJJJ\n" | \
         --fastq_trunclen 2 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_AC_+_JJ_" && \
+    grep -qx "@s1_AC_+_JJ_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10409,7 +10409,7 @@ printf "@s1\nACG\n+\nJJI\n" | \
         --fastq_trunclen 2 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_AC_+_JJ_" && \
+    grep -qx "@s1_AC_+_JJ_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10422,7 +10422,7 @@ printf "@s1\nACG\n+\nJIJ\n" | \
         --fastq_trunclen 1 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq "@s1_A_+_J_" && \
+    grep -qx "@s1_A_+_J_" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10436,7 +10436,7 @@ printf "@s1\nACG\n+\nJIJ\n" | \
         --fastq_trunclen 2 \
         --fastqout - | \
     tr "\n" "_" | \
-    grep -wq ".*" && \
+    grep -qx ".*" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -10500,7 +10500,7 @@ printf "" | \
         --dbmask none \
         --quiet \
         --otutabout - | \
-    grep -qw "#OTU ID" && \
+    grep -qx "#OTU ID" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10616,7 +10616,7 @@ printf ">s1;sample=sample1\nAA\n" | \
         --dbmask none \
         --quiet \
         --otutabout - | \
-    grep -qw "#OTU ID" && \
+    grep -qx "#OTU ID" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10909,7 +10909,7 @@ DESCRIPTION="issue 536: otutabout cluster names are alpha sorted (normal input o
     cut -f 1 | \
     tail --lines=+2 | \
     tr "\n" "@" | \
-    grep -qw "s1@s2@s3@" && \
+    grep -qx "s1@s2@s3@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -10930,7 +10930,7 @@ DESCRIPTION="issue 536: otutabout cluster names are alpha sorted (reverse input 
     cut -f 1 | \
     tail --lines=+2 | \
     tr "\n" "@" | \
-    grep -qw "s1@s2@s3@" && \
+    grep -qx "s1@s2@s3@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -11120,7 +11120,7 @@ ${VSEARCH} \
     --udb2fasta "${TMP}" \
     --quiet \
     --output - | \
-    grep -qw ">t1" && \
+    grep -qx ">t1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP}"
@@ -11139,7 +11139,7 @@ ${VSEARCH} \
     --udb2fasta "${TMP}" \
     --quiet \
     --output - | \
-    grep -qw ">t1" && \
+    grep -qx ">t1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP}"
@@ -11157,7 +11157,7 @@ ${VSEARCH} \
     --udb2fasta "${TMP}" \
     --quiet \
     --output - | \
-    grep -qw ">t1" && \
+    grep -qx ">t1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP}"
@@ -11176,7 +11176,7 @@ ${VSEARCH} \
     --udb2fasta "${TMP}" \
     --quiet \
     --output - | \
-    grep -qw ">t1 extra" && \
+    grep -qx ">t1 extra" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP}"
@@ -11358,7 +11358,7 @@ ${VSEARCH} \
     --userfields query+target \
     --userout - | \
     tr "\t" " " | \
-    grep -qw "q1 t1" && \
+    grep -qx "q1 t1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -11375,7 +11375,7 @@ ${VSEARCH} \
     --quiet \
     --userfields query+target \
     --userout - | \
-    grep -qw "." && \
+    grep -qx "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -11391,7 +11391,7 @@ ${VSEARCH} \
     --userfields query+target \
     --userout - | \
     tr "\t" " " | \
-    grep -qw "q1 *" && \
+    grep -qx "q1 *" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -11407,7 +11407,7 @@ ${VSEARCH} \
     --userfields query+target \
     --userout - | \
     tr "\t" " " | \
-    grep -qw "q1 t1" && \
+    grep -qx "q1 t1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12410,7 +12410,7 @@ DESCRIPTION="issue 557: consout consensus keeps common bases (A)"
     --id 1.0 \
     --quiet \
     --consout - | \
-    grep -wq "A" && \
+    grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12421,7 +12421,7 @@ DESCRIPTION="issue 557: consout consensus keeps common bases (C)"
     --id 1.0 \
     --quiet \
     --consout - | \
-    grep -wq "C" && \
+    grep -qx "C" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12432,7 +12432,7 @@ DESCRIPTION="issue 557: consout consensus keeps common bases (G)"
     --id 1.0 \
     --quiet \
     --consout - | \
-    grep -wq "G" && \
+    grep -qx "G" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12443,7 +12443,7 @@ DESCRIPTION="issue 557: consout consensus keeps common bases (T)"
     --id 1.0 \
     --quiet \
     --consout - | \
-    grep -wq "T" && \
+    grep -qx "T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12454,7 +12454,7 @@ DESCRIPTION="issue 557: consout consensus is not case-sensitive (A-a)"
     --id 1.0 \
     --quiet \
     --consout - | \
-    grep -wq "A" && \
+    grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12465,7 +12465,7 @@ DESCRIPTION="issue 557: consout consensus is not case-sensitive (a-A)"
     --id 1.0 \
     --quiet \
     --consout - | \
-    grep -wq "A" && \
+    grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12476,7 +12476,7 @@ DESCRIPTION="issue 557: consout consensus is not case-sensitive (a-a)"
     --id 1.0 \
     --quiet \
     --consout - | \
-    grep -wq "A" && \
+    grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12487,7 +12487,7 @@ DESCRIPTION="issue 557: consout common bases are uppercased"
     --id 1.0 \
     --quiet \
     --consout - | \
-    grep -wq "A" && \
+    grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12498,7 +12498,7 @@ DESCRIPTION="issue 557: consout picks most common base (2/3rd AA)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12509,7 +12509,7 @@ DESCRIPTION="issue 557: consout does not pick least common base (1/3rd AC)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AC" && \
+    grep -qx "AC" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -12520,7 +12520,7 @@ DESCRIPTION="issue 557: consout picks most common base (3/5th AA)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12531,7 +12531,7 @@ DESCRIPTION="issue 557: consout does not pick least common base (2/5th AC)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AC" && \
+    grep -qx "AC" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -12542,7 +12542,7 @@ DESCRIPTION="issue 557: consout picks most common base (1/2 AT)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AT" && \
+    grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12553,7 +12553,7 @@ DESCRIPTION="issue 557: consout picks most common base (2/5 AT)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AT" && \
+    grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12564,7 +12564,7 @@ DESCRIPTION="issue 557: consout picks most common base (3/9 AT)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AT" && \
+    grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12583,7 +12583,7 @@ DESCRIPTION="issue 557: consout picks most common base (4/13 AT)"
         --id 0.5 \
         --quiet \
         --consout - | \
-    grep -wq "AT" && \
+    grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12602,7 +12602,7 @@ DESCRIPTION="issue 557: consout picks most common base (5/17 AT)"
         --id 0.5 \
         --quiet \
         --consout - | \
-    grep -wq "AT" && \
+    grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12621,7 +12621,7 @@ DESCRIPTION="issue 557: consout picks most common base (6/21 AT)"
         --id 0.5 \
         --quiet \
         --consout - | \
-    grep -wq "AT" && \
+    grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12640,7 +12640,7 @@ DESCRIPTION="issue 557: consout picks most common base (100/397 AT)"
         --id 0.5 \
         --quiet \
         --consout - | \
-    grep -wq "AT" && \
+    grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12660,7 +12660,7 @@ DESCRIPTION="issue 557: consout picks most common base (1000/3997 AT)"
         --id 0.5 \
         --quiet \
         --consout - | \
-    grep -wq "AT" && \
+    grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12673,7 +12673,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12684,7 +12684,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12695,7 +12695,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12706,7 +12706,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AC" && \
+    grep -qx "AC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12717,7 +12717,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AC" && \
+    grep -qx "AC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12728,7 +12728,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AG" && \
+    grep -qx "AG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12740,7 +12740,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12754,7 +12754,7 @@ DESCRIPTION="issue 557: consout picks any base rather than N (A)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12765,7 +12765,7 @@ DESCRIPTION="issue 557: consout picks any base rather than N (C)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AC" && \
+    grep -qx "AC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12776,7 +12776,7 @@ DESCRIPTION="issue 557: consout picks any base rather than N (G)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AG" && \
+    grep -qx "AG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12787,7 +12787,7 @@ DESCRIPTION="issue 557: consout picks any base rather than N (T)"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AT" && \
+    grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12798,7 +12798,7 @@ DESCRIPTION="issue 557: consout picks any base rather than N (t, case-insensitiv
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AT" && \
+    grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12809,7 +12809,7 @@ DESCRIPTION="issue 557: consout picks N if there are no other base"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "NA" && \
+    grep -qx "NA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12820,7 +12820,7 @@ DESCRIPTION="issue 557: consout picks N if there is only Ns"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "NA" && \
+    grep -qx "NA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12831,7 +12831,7 @@ DESCRIPTION="issue 557: consout picks a base, even if there are several Ns"
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12845,7 +12845,7 @@ DESCRIPTION="issue 557: consout never picks a gap even if gaps are dominant (5')
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "CGT" && \
+    grep -qx "CGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12856,7 +12856,7 @@ DESCRIPTION="issue 557: consout never picks a gap even if gaps are dominant (3')
     --id 0.5 \
     --quiet \
     --consout - | \
-    grep -wq "CGT" && \
+    grep -qx "CGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -12870,7 +12870,7 @@ printf ">q1\n%sC%s\n>q2\n%s%s\n>q3\n%s%s\n" ${SEQ} ${SEQ} ${SEQ} ${SEQ} ${SEQ} $
         --id 0.5 \
         --quiet \
         --consout - | \
-    grep -wq "ATATATATATATATAT" && \
+    grep -qx "ATATATATATATATAT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset SEQ
@@ -12884,7 +12884,7 @@ printf ">q1\n%sC%s\n>q2\n%s%s\n>q3\n%s%s\n" ${SEQ} ${SEQ} ${SEQ} ${SEQ} ${SEQ} $
         --id 0.5 \
         --quiet \
         --msaout - | \
-    grep -wq "ATATATAT-ATATATAT" && \
+    grep -qx "ATATATAT-ATATATAT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset SEQ
@@ -13130,7 +13130,7 @@ DESCRIPTION="issue 562: --consout consensus can be shorter than input sequences"
         --iddef 4 \
         --quiet \
         --consout - | \
-    grep -qw "GGGAAGCCCAAAGGGGGTGGTGACCGAGTACG" && \
+    grep -qx "GGGAAGCCCAAAGGGGGTGGTGACCGAGTACG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13155,7 +13155,7 @@ DESCRIPTION="issue 562: --msaout a star indicates the centroid"
         --iddef 4 \
         --quiet \
         --msaout - | \
-    grep -qw ">[*]A" && \
+    grep -qx ">[*]A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13172,7 +13172,7 @@ DESCRIPTION="issue 562: --msaout the last fasta entry is the consensus"
         --quiet \
         --msaout - | \
     tail -n 2 | \
-    grep -qw ">consensus" && \
+    grep -qx ">consensus" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13459,7 +13459,7 @@ printf "@s\nAA\n+\nJI\n" | \
         --fastq_minqual 39 \
         --quiet \
         --fastaout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13471,7 +13471,7 @@ printf "@s\nAA\n+\nJI\n" | \
         --fastq_minqual 40  \
         --quiet \
         --fastaout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13494,7 +13494,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastq_minqual 0 \
         --quiet \
         --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13507,7 +13507,7 @@ printf "@s\nA\n+\n~\n" | \
         --fastq_minqual 94 \
         --quiet \
         --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -13601,7 +13601,7 @@ printf "@s\nAA\n+\nJI\n" | \
         --fastq_minqual 39 \
         --quiet \
         --fastaout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13613,7 +13613,7 @@ printf "@s\nAA\n+\nJI\n" | \
         --fastq_minqual 40  \
         --quiet \
         --fastaout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13636,7 +13636,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastq_minqual 0 \
         --quiet \
         --fastaout - | \
-    grep -wq "A" && \
+    grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13649,7 +13649,7 @@ printf "@s\nA\n+\n~\n" | \
         --fastq_minqual 94 \
         --quiet \
         --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -14035,7 +14035,7 @@ cat "${SAMPLE1}" "${SAMPLE2}" | \
         --quiet \
         --otutabout - | \
     tr "\t" "@" | \
-    grep -wq "OTU_1@1@1" && \
+    grep -qx "OTU_1@1@1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14319,7 +14319,7 @@ printf "@s\nAAA\n+\nIII\n" | \
         --fastq_truncee_rate 0.001 \
         --quiet \
         --fastaout - | \
-    grep -wq "AAA" && \
+    grep -qx "AAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14331,7 +14331,7 @@ printf "@s\nAAA\n+\n???\n" | \
         --fastq_truncee_rate 0.001 \
         --quiet \
         --fastaout - | \
-    grep -wq "AAA" && \
+    grep -qx "AAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14343,7 +14343,7 @@ printf "@s\nAAA\n+\n??>\n" | \
         --fastq_truncee_rate 0.001 \
         --quiet \
         --fastaout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14448,7 +14448,7 @@ printf "@s\nAAA\n+\nIII\n" | \
         --fastq_truncee_rate 0.001 \
         --quiet \
         --fastaout - | \
-    grep -wq "AAA" && \
+    grep -qx "AAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14460,7 +14460,7 @@ printf "@s\nAAA\n+\n???\n" | \
         --fastq_truncee_rate 0.001 \
         --quiet \
         --fastaout - | \
-    grep -wq "AAA" && \
+    grep -qx "AAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14472,7 +14472,7 @@ printf "@s\nAAA\n+\n??>\n" | \
         --fastq_truncee_rate 0.001 \
         --quiet \
         --fastaout - | \
-    grep -wq "AA" && \
+    grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14904,7 +14904,7 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
         --id 1.0 \
         --quiet \
         --centroids - | \
-    grep -qw "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" && \
+    grep -qx "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -14916,7 +14916,7 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
         --quiet \
         --qmask none \
         --centroids - | \
-    grep -qw "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" && \
+    grep -qx "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -15558,7 +15558,7 @@ printf ">query\nT\n>target\nTT\n" | \
         --quiet \
         --userfields caln \
         --userout - | \
-    grep -qw "IM" && \
+    grep -qx "IM" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -15571,7 +15571,7 @@ printf ">query\nTT\n>target\nT\n" | \
         --quiet \
         --userfields caln \
         --userout - | \
-    grep -qw "DM" && \
+    grep -qx "DM" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -15585,7 +15585,7 @@ printf ">query\nT\n>target\nTT\n" | \
         --quiet \
         --userfields qrow \
         --userout - | \
-    grep -qw "T" && \
+    grep -qx "T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -15598,7 +15598,7 @@ printf ">query\nT\n>target\nTT\n" | \
         --quiet \
         --userfields trow \
         --userout - | \
-    grep -qw "T" && \
+    grep -qx "T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -15611,7 +15611,7 @@ printf ">query\nTT\n>target\nT\n" | \
         --quiet \
         --userfields qrow \
         --userout - | \
-    grep -qw "T" && \
+    grep -qx "T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -15624,7 +15624,7 @@ printf ">query\nTT\n>target\nT\n" | \
         --quiet \
         --userfields trow \
         --userout - | \
-    grep -qw "T" && \
+    grep -qx "T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -15638,7 +15638,7 @@ printf ">query\nAAAATTTT\n>target\nAAAAGGGGTTTT\n" | \
         --quiet \
         --userfields qrow \
         --userout - | \
-    grep -qw "AAAA----TTTT" && \
+    grep -qx "AAAA----TTTT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -15651,7 +15651,7 @@ printf ">query\nAAAATTTT\n>target\nAAAAGGGGTTTT\n" | \
         --quiet \
         --userfields trow \
         --userout - | \
-    grep -qw "AAAAGGGGTTTT" && \
+    grep -qx "AAAAGGGGTTTT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -15664,7 +15664,7 @@ printf ">query\nAAAAGGGGTTTT\n>target\nAAAATTTT\n" | \
         --quiet \
         --userfields qrow \
         --userout - | \
-    grep -qw "AAAAGGGGTTTT" && \
+    grep -qx "AAAAGGGGTTTT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -15677,7 +15677,7 @@ printf ">query\nAAAAGGGGTTTT\n>target\nAAAATTTT\n" | \
         --quiet \
         --userfields trow \
         --userout - | \
-    grep -qw "AAAA----TTTT" && \
+    grep -qx "AAAA----TTTT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

@@ -64,7 +64,7 @@ DESCRIPTION="vsearch mentions --help (stderr)"
 
 DESCRIPTION="vsearch mentions man vsearch (stderr)"
 "${VSEARCH}" 2>&1 | \
-    grep -wq "man" && \
+    grep -qx "man" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

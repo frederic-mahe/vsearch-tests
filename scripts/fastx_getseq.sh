@@ -55,7 +55,7 @@ printf "@s1\nA\n+\nI\n" | \
     --label "s1" \
     --quiet \
     --fastqout - | \
-    grep -qw "@s1" && \
+    grep -qx "@s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -66,7 +66,7 @@ printf "@s2\nA\n+\nI\n" | \
     --label "s1" \
     --quiet \
     --fastqout - | \
-    grep -qw "@s2" && \
+    grep -qx "@s2" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -78,7 +78,7 @@ printf "@s1\nA\n+\nI\n" | \
     --label "S1" \
     --quiet \
     --fastqout - | \
-    grep -qw "@s1" && \
+    grep -qx "@s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -89,7 +89,7 @@ printf "@S1\nA\n+\nI\n" | \
     --label "s1" \
     --quiet \
     --fastqout - | \
-    grep -qw "@S1" && \
+    grep -qx "@S1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -103,7 +103,7 @@ printf "@s11\nA\n+\nI\n" | \
     --label_substr_match \
     --quiet \
     --fastqout - | \
-    grep -qw "@s11" && \
+    grep -qx "@s11" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -115,7 +115,7 @@ printf "@1s1\nA\n+\nI\n" | \
     --label_substr_match \
     --quiet \
     --fastqout - | \
-    grep -qw "@1s1" && \
+    grep -qx "@1s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -128,7 +128,7 @@ printf "@s1 suffix\nA\n+\nI\n" | \
     --label "s1" \
     --quiet \
     --fastqout - | \
-    grep -qw "@s1" && \
+    grep -qx "@s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -139,7 +139,7 @@ printf "@s1\tsuffix\nA\n+\nI\n" | \
     --label "s1" \
     --quiet \
     --fastqout - | \
-    grep -qw "@s1" && \
+    grep -qx "@s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

@@ -1192,7 +1192,7 @@ DESCRIPTION="fastq_mergepairs forward read 5' overhanging (1 nucleotide)"
     --fastq_mergepairs <(printf "@s\nGAAATAAAAAA\n+\nIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastaout - 2>&1 | \
-    grep -qw "GAAATAAAAAA" && \
+    grep -qx "GAAATAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1205,7 +1205,7 @@ DESCRIPTION="fastq_mergepairs forward read 5' overhanging (2 nucleotides)"
     --fastq_mergepairs <(printf "@s\nGGAAATAAAAAA\n+\nIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastaout - 2>&1 | \
-    grep -qw "GGAAATAAAAAA" && \
+    grep -qx "GGAAATAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1218,7 +1218,7 @@ DESCRIPTION="fastq_mergepairs forward read 5' overhanging (3 nucleotides)"
     --fastq_mergepairs <(printf "@s\nGGGAAATAAAAAA\n+\nIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastaout - 2>&1 | \
-    grep -qw "GGGAAATAAAAAA" && \
+    grep -qx "GGGAAATAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1231,7 +1231,7 @@ DESCRIPTION="fastq_mergepairs forward read 5' overhanging (10 nucleotides)"
     --fastq_mergepairs <(printf "@s\nGGGGGGGGGGAAATAAAAAA\n+\nIIIIIIIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastaout - 2>&1 | \
-    grep -qw "GGGGGGGGGGAAATAAAAAA" && \
+    grep -qx "GGGGGGGGGGAAATAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1244,7 +1244,7 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (1 nucleotide)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nCTTTTTTATTT\n+\nIIIIIIIIIII\n") \
     --fastaout - 2>&1 | \
-    grep -qw "AAATAAAAAAG" && \
+    grep -qx "AAATAAAAAAG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1257,7 +1257,7 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (2 nucleotides)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nCCTTTTTTATTT\n+\nIIIIIIIIIIII\n") \
     --fastaout - 2>&1 | \
-    grep -qw "AAATAAAAAAGG" && \
+    grep -qx "AAATAAAAAAGG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1270,7 +1270,7 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (3 nucleotides)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nCCCTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
     --fastaout - 2>&1 | \
-    grep -qw "AAATAAAAAAGGG" && \
+    grep -qx "AAATAAAAAAGGG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1283,7 +1283,7 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (10 nucleotides)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nCCCCCCCCCCTTTTTTATTT\n+\nIIIIIIIIIIIIIIIIIIII\n") \
     --fastaout - 2>&1 | \
-    grep -qw "AAATAAAAAAGGGGGGGGGG" && \
+    grep -qx "AAATAAAAAAGGGGGGGGGG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1405,7 +1405,7 @@ DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, same Q values)
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTATTT\n+\nIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAA" && \
+    grep -qx "AAATAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1414,7 +1414,7 @@ DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, different Q va
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTATTT\n+\nIIIIIIIIIIH\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAA" && \
+    grep -qx "AAATAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1423,7 +1423,7 @@ DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, different Q va
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIIIH\n") \
     --reverse <(printf "@s\nTTTTTTTATTT\n+\nIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAA" && \
+    grep -qx "AAATAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1433,7 +1433,7 @@ DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, Q value below 
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTATTT\n+\nIIIIIIIIII!\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAA" && \
+    grep -qx "AAATAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1443,7 +1443,7 @@ DESCRIPTION="fastq_mergepairs consensus output (same nucleotides, Q value below 
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAA\n+\nIIIIIIIIII!\n") \
     --reverse <(printf "@s\nTTTTTTTATTT\n+\nIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAA" && \
+    grep -qx "AAATAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1459,7 +1459,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs N, same Q values '#')"
     --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\n#IIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII#\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "NAATAAAAAAAAAA" && \
+    grep -qx "NAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1473,7 +1473,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs N, same Q values 'I')"
     --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "NAATAAAAAAAAAA" && \
+    grep -qx "NAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1487,7 +1487,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #1)"
     --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII#\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "NAATAAAAAAAAAA" && \
+    grep -qx "NAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1501,7 +1501,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs N, different Q values #2)"
     --fastq_mergepairs <(printf "@s\nNAATAAAAAAAAAA\n+\n#IIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "NAATAAAAAAAAAA" && \
+    grep -qx "NAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1517,7 +1517,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs N, different Q values #1)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIII#\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1531,7 +1531,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs A, different Q values #2)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAN\n+\nIIIIIIIIIIIII#\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1545,7 +1545,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs N, same Q values)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1559,7 +1559,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs A, same Q values)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAN\n+\nIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1573,7 +1573,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs N, N with higher Q value)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\nHIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTN\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1587,7 +1587,7 @@ DESCRIPTION="fastq_mergepairs consensus output (N vs A, N with higher Q value)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAN\n+\nIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nHIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1603,7 +1603,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs T, T has a much lower Q val
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTA\n+\nIIIIIIIIIIIII#\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1617,7 +1617,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs T, T has a lower Q value)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTTATTA\n+\nIIIIIIIIIIIIIIH\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1631,7 +1631,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs T, same Q value) R2 wins"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTTATTA\n+\nIIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "TAATAAAAAAAAAAA" && \
+    grep -qx "TAATAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1645,7 +1645,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs T, A has a lower Q value)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nHIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTTATTA\n+\nIIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "TAATAAAAAAAAAAA" && \
+    grep -qx "TAATAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1659,7 +1659,7 @@ DESCRIPTION="fastq_mergepairs consensus output (A vs T, A has a much lower Q val
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAA\n+\n#IIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTA\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "TAATAAAAAAAAAA" && \
+    grep -qx "TAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1675,7 +1675,7 @@ DESCRIPTION="fastq_mergepairs consensus output (T vs A, A has a much lower Q val
     --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAA\n+\nIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIII#\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "TAATAAAAAAAAAA" && \
+    grep -qx "TAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1689,7 +1689,7 @@ DESCRIPTION="fastq_mergepairs consensus output (T vs A, A has a lower Q value)"
     --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIIH\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "TAATAAAAAAAAAAA" && \
+    grep -qx "TAATAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1703,7 +1703,7 @@ DESCRIPTION="fastq_mergepairs consensus output (T vs A, same Q value) R2 wins"
     --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1717,7 +1717,7 @@ DESCRIPTION="fastq_mergepairs consensus output (T vs A, T has a lower Q value)"
     --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nHIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1731,7 +1731,7 @@ DESCRIPTION="fastq_mergepairs consensus output (T vs A, T has a much lower Q val
     --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAA\n+\n#IIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1747,7 +1747,7 @@ DESCRIPTION="fastq_mergepairs consensus output (conflict, same Q values, R1 5' R
     --fastq_mergepairs <(printf "@s\nTAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAAA" && \
+    grep -qx "AAATAAAAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1761,7 +1761,7 @@ DESCRIPTION="fastq_mergepairs consensus output (conflict, same Q values, R1 3' R
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nATTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAAAAAAAAAAT" && \
+    grep -qx "AAATAAAAAAAAAAT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1775,7 +1775,7 @@ DESCRIPTION="fastq_mergepairs consensus output (conflict, same Q values, mid-R1 
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAA\n+\nIIIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTATTATTT\n+\nIIIIIIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw "AAATAATAAAAAAAA" && \
+    grep -qx "AAATAATAAAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2286,7 +2286,7 @@ DESCRIPTION="fastq_mergepairs option fastq_maxdiffs (1 diff on R2, maxdiffs = 2,
     --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
     --fastq_maxdiffs 2 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2297,7 +2297,7 @@ DESCRIPTION="fastq_mergepairs option fastq_maxdiffs (1 diff on R2, maxdiffs = 1,
     --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
     --fastq_maxdiffs 1 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2308,7 +2308,7 @@ DESCRIPTION="fastq_mergepairs option fastq_maxdiffs (1 diff on R2, maxdiffs = 0,
     --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
     --fastq_maxdiffs 0 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -2323,7 +2323,7 @@ DESCRIPTION="fastq_mergepairs option fastq_maxdiffs (1 diff on R1, 1 diff on R2,
     --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
     --fastq_maxdiffs 2 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2334,7 +2334,7 @@ DESCRIPTION="fastq_mergepairs option fastq_maxdiffs (1 diff on R1, 1 diff on R2,
     --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIII#\n") \
     --fastq_maxdiffs 1 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -2622,7 +2622,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxee accepts sequences with any EE value (d
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2633,7 +2633,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxee accepts sequences with EE smaller or e
     --reverse <(printf "@s\nTTTTTTATTT\n+\n++++++++++\n") \
     --fastq_maxee 0.04 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2644,7 +2644,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxee rejects sequences with EE greater than
     --reverse <(printf "@s\nTTTTTTTATTT\n+\n+++++++++++\n") \
     --fastq_maxee 0.04 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -2656,7 +2656,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxee accepts sequences with EE smaller or e
     --fastq_qmaxout 20 \
     --fastq_maxee 0.1 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2667,7 +2667,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxee rejects sequences with EE greater than
     --fastq_qmaxout 20 \
     --fastq_maxee 0.1 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -2786,7 +2786,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxlen accept sequences of up to LONG_MAX le
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2796,7 +2796,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxlen accept sequences of length smaller or
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_maxlen 10 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2806,7 +2806,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxlen reject sequences of length greater th
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_maxlen 9 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -2938,7 +2938,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxmergelen accepts long merged sequences (d
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2948,7 +2948,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxmergelen accepts merged sequences shorter
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_maxmergelen 10 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2958,7 +2958,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxmergelen rejects merged sequences longer 
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_maxmergelen 9 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -3080,7 +3080,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxns accepts sequences with Ns (default)"
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAN\n+\nIIIIIIIIII#\n") \
     --reverse <(printf "@s\nNTTTTTTATTT\n+\n#IIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3090,7 +3090,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxns accepts sequences with up to n Ns (1)"
     --reverse <(printf "@s\nNTTTTTTATTT\n+\n#IIIIIIIIII\n") \
     --fastq_maxns 1 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3100,7 +3100,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxns rejects sequences with more than n Ns 
     --reverse <(printf "@s\nNTTTTTTATTT\n+\n#IIIIIIIIII\n") \
     --fastq_maxns 0 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -3110,7 +3110,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxns accepts sequences with up to n Ns (1, 
     --reverse <(printf "@s\nNTTTTTTATTT\n+\n#IIIIIIIIII\n") \
     --fastq_maxns 1 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3120,7 +3120,7 @@ DESCRIPTION="fastq_mergepairs fastq_maxns rejects sequences with more than n Ns 
     --reverse <(printf "@s\nNTTTTTTATTT\n+\n#IIIIIIIIII\n") \
     --fastq_maxns 0 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -3241,7 +3241,7 @@ DESCRIPTION="fastq_mergepairs fastq_minlen accept sequences of length 1 or more 
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3251,7 +3251,7 @@ DESCRIPTION="fastq_mergepairs fastq_minlen accept sequences of length greater or
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_minlen 10 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3261,7 +3261,7 @@ DESCRIPTION="fastq_mergepairs fastq_minlen reject sequences of length smaller th
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_minlen 11 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -3386,7 +3386,7 @@ DESCRIPTION="fastq_mergepairs fastq_minmergelen accepts short merged sequences (
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3396,7 +3396,7 @@ DESCRIPTION="fastq_mergepairs fastq_minmergelen accepts merged sequences equal o
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_minmergelen 10 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3406,7 +3406,7 @@ DESCRIPTION="fastq_mergepairs fastq_minmergelen rejects merged sequences shorter
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_minmergelen 11 \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -3847,7 +3847,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual set to zero, no trunc"
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_truncqual 0 \
     --fastqout - 2> /dev/null | \
-    grep -qw "AAATAAAAAA" && \
+    grep -qx "AAATAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3857,7 +3857,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual set to 39 (Q = 40), no trun
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_truncqual 39 \
     --fastqout - 2> /dev/null | \
-    grep -qw "AAATAAAAAA" && \
+    grep -qx "AAATAAAAAA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3867,7 +3867,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual set to 40 (Q = 40), trunc b
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --fastq_truncqual 40 \
     --fastqout - 2> /dev/null | \
-    grep -qw "AAATAAAAAA" && \
+    grep -qx "AAATAAAAAA" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -3882,7 +3882,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is truncated f
     --reverse <(printf "@s\nTTTTTTTTATTT\n+\nIIIIIIIIIIII\n") \
     --fastq_truncqual 10 \
     --fastqout - 2> /dev/null | \
-    grep -qw "JJJJJJJJJJJI" && \
+    grep -qx "JJJJJJJJJJJI" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3898,7 +3898,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is truncated f
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
     --fastq_truncqual 10 \
     --fastqout - 2> /dev/null | \
-    grep -qw "JJJJJJJJJJIII" && \
+    grep -qx "JJJJJJJJJJIII" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3914,7 +3914,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is too short f
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
     --fastq_truncqual 10 \
     --fastqout - 2> /dev/null | \
-    grep -qw "JJJJJJJJIIIII" && \
+    grep -qx "JJJJJJJJIIIII" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -3925,7 +3925,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is longer than
     --fastq_truncqual 10 \
     --fastq_minlen 10 \
     --fastqout - 2> /dev/null | \
-    grep -qw "JJJJJJJJJJJII" && \
+    grep -qx "JJJJJJJJJJJII" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3936,7 +3936,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is shorter tha
     --fastq_truncqual 10 \
     --fastq_minlen 12 \
     --fastqout - 2> /dev/null | \
-    grep -qw "JJJJJJJJJJJII" && \
+    grep -qx "JJJJJJJJJJJII" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -3952,7 +3952,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is truncated f
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIII+II\n") \
     --fastq_truncqual 10 \
     --fastqout - 2> /dev/null | \
-    grep -qw "IIIJJJJJJJJJJ" && \
+    grep -qx "IIIJJJJJJJJJJ" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3968,7 +3968,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is too short f
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIII+IIII\n") \
     --fastq_truncqual 10 \
     --fastqout - 2> /dev/null | \
-    grep -qw "IIIIIJJJJJJJJ" && \
+    grep -qx "IIIIIJJJJJJJJ" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -3979,7 +3979,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is longer than
     --fastq_truncqual 10 \
     --fastq_minlen 10 \
     --fastqout - 2> /dev/null | \
-    grep -qw "IIJJJJJJJJJJJ" && \
+    grep -qx "IIJJJJJJJJJJJ" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3990,7 +3990,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is shorter tha
     --fastq_truncqual 10 \
     --fastq_minlen 12 \
     --fastqout - 2> /dev/null | \
-    grep -qw "IIJJJJJJJJJJJ" && \
+    grep -qx "IIJJJJJJJJJJJ" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
@@ -4119,7 +4119,7 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sample ABC \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s;sample=ABC" && \
+    grep -qx ">s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4129,7 +4129,7 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sample ABC \
     --fastqout - 2> /dev/null | \
-    grep -qw "@s;sample=ABC" && \
+    grep -qx "@s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4139,7 +4139,7 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sample=ABC \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s;sample=ABC" && \
+    grep -qx ">s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4149,7 +4149,7 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sample "ABC" \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s;sample=ABC" && \
+    grep -qx ">s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4159,7 +4159,7 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sample 'ABC' \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s;sample=ABC" && \
+    grep -qx ">s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4169,7 +4169,7 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sample="ABC" \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s;sample=ABC" && \
+    grep -qx ">s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4179,7 +4179,7 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sample="" \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s;sample=" && \
+    grep -qx ">s;sample=" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4189,7 +4189,7 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sample=" " \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s;sample= " && \
+    grep -qx ">s;sample= " && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4199,7 +4199,7 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sample="é" \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s;sample=é" && \
+    grep -qx ">s;sample=é" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

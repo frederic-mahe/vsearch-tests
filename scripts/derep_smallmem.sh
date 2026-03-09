@@ -190,7 +190,7 @@ printf ">s\nA\n" > "${TMP}"
 "${VSEARCH}" \
     --derep_smallmem "${TMP}" \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -203,7 +203,7 @@ printf ">s\nA\n" > "${TMP}"
 "${VSEARCH}" \
     --derep_smallmem "${TMP}" \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -215,7 +215,7 @@ printf ">s\n" > "${TMP}"
 "${VSEARCH}" \
     --derep_smallmem "${TMP}" \
     --fastaout - 2> /dev/null | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -281,7 +281,7 @@ printf ">s\n" > "${TMP}"
     --minseqlength 0 \
     --quiet \
     --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -319,7 +319,7 @@ printf ">s1\nA\n>s2\nA\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1@A@" && \
+    grep -qx ">s1@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -333,7 +333,7 @@ printf ">s2\nA\n>s1\nA\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s2@A@" && \
+    grep -qx ">s2@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -349,7 +349,7 @@ printf ">s2\nA\n>s1\nC\n>s3\nC\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s2@A@>s1@C@" && \
+    grep -qx ">s2@A@>s1@C@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -365,7 +365,7 @@ printf ">s2\nA\n>s1\nG\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s2@A@>s1@G@" && \
+    grep -qx ">s2@A@>s1@G@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -381,7 +381,7 @@ printf ">s1\nG\n>s2\nA\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1@G@>s2@A@" && \
+    grep -qx ">s1@G@>s2@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -397,7 +397,7 @@ printf ">s1;size=3\nA\n>s2;size=1\nC\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=3@A@>s2;size=1@C@" && \
+    grep -qx ">s1;size=3@A@>s2;size=1@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -412,7 +412,7 @@ printf ">s1;size=1\nA\n>s2;size=3\nC\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=1@A@>s2;size=3@C@" && \
+    grep -qx ">s1;size=1@A@>s2;size=3@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -428,7 +428,7 @@ printf ">s1;size=2\nA\n>s2;size=2\nC\n" > "${TMP}"
         --quiet \
         --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@A@>s2;size=2@C@" && \
+    grep -qx ">s1;size=2@A@>s2;size=2@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -443,7 +443,7 @@ printf ">s2;size=2\nA\n>s1;size=2\nC\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s2;size=2@A@>s1;size=2@C@" && \
+    grep -qx ">s2;size=2@A@>s1;size=2@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -459,7 +459,7 @@ printf ">s1;size=2\nC\n>s1;size=2\nA\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@C@>s1;size=2@A@" && \
+    grep -qx ">s1;size=2@C@>s1;size=2@A@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -474,7 +474,7 @@ printf ">s1;size=2\nA\n>s1;size=2\nC\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1;size=2@A@>s1;size=2@C@" && \
+    grep -qx ">s1;size=2@A@>s1;size=2@C@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -489,7 +489,7 @@ printf ">s1\nA\n>s2\na\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1@A@" && \
+    grep -qx ">s1@A@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -504,7 +504,7 @@ printf ">s1\na\n>s2\nA\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1@a@" && \
+    grep -qx ">s1@a@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -519,7 +519,7 @@ printf ">s1\nT\n>s2\nU\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1@T@" && \
+    grep -qx ">s1@T@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -533,7 +533,7 @@ printf ">s1\nU\n>s2\nT\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1@U@" && \
+    grep -qx ">s1@U@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -548,7 +548,7 @@ printf ">s1\nU\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     tr "\n" "@" | \
-    grep -qw ">s1@U@" && \
+    grep -qx ">s1@U@" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -1399,7 +1399,7 @@ printf ">s\nA\n" > "${TMP}"
     --sizein \
     --quiet \
     --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -1414,7 +1414,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --sizeout \
     --fastaout - | \
-    grep -qw ">s;size=1" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -1428,7 +1428,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --sizein \
     --quiet \
     --fastaout - | \
-    grep -qw ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -1675,7 +1675,7 @@ printf "@s\nA\n+\nH\n" > "${TMP}"
     --fastq_qmax 40 \
     --quiet \
     --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -1689,7 +1689,7 @@ printf "@s\nA\n+\nI\n" > "${TMP}"
     --fastq_qmax 40 \
     --quiet \
     --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -1704,7 +1704,7 @@ printf "@s\nA\n+\nJ\n" > "${TMP}"
     --fastq_qmax 40 \
     --quiet \
     --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -1815,7 +1815,7 @@ printf "@s\nA\n+\n0\n" > "${TMP}"
     --fastq_qmin 14 \
     --quiet \
     --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -1829,7 +1829,7 @@ printf "@s\nA\n+\n0\n" > "${TMP}"
     --fastq_qmin 15 \
     --quiet \
     --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -1844,7 +1844,7 @@ printf "@s\nA\n+\n0\n" > "${TMP}"
     --fastq_qmin 16 \
     --quiet \
     --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2039,7 +2039,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --label_suffix ";suffix" \
     --fastaout - | \
-    grep -qw ">s;suffix" && \
+    grep -qx ">s;suffix" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2053,7 +2053,7 @@ printf "@s\nA\n+\nI\n" > "${TMP}"
     --quiet \
     --label_suffix ";suffix" \
     --fastaout - | \
-    grep -qw ">s;suffix" && \
+    grep -qx ">s;suffix" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2067,7 +2067,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --label_suffix "" \
     --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2096,7 +2096,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --lengthout \
     --fastaout - | \
-    grep -wq ">s;length=1" && \
+    grep -qx ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2112,7 +2112,7 @@ printf ">s\nA\n" > "${TMP}"
     --lengthout \
     --sizeout \
     --fastaout - | \
-    grep -wq ">s;size=1;length=1" && \
+    grep -qx ">s;size=1;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2524,7 +2524,7 @@ printf ">s extra\nA\n" > "${TMP}"
     --quiet \
     --notrunclabels \
     --fastaout - | \
-    grep -wq ">s extra" && \
+    grep -qx ">s extra" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2594,7 +2594,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --relabel "label" \
     --fastaout - | \
-    grep -wq ">label1" && \
+    grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2608,7 +2608,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --relabel "" \
     --fastaout - | \
-    grep -wq ">1" && \
+    grep -qx ">1" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2667,7 +2667,7 @@ printf ">s\nA\n" > "${TMP}"
     --relabel "label" \
     --relabel_keep \
     --fastaout - | \
-    grep -wq ">label1 s" && \
+    grep -qx ">label1 s" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2696,7 +2696,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --relabel_md5 \
     --fastaout - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2725,7 +2725,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --relabel_self \
     --fastaout - | \
-    grep -qw ">A" && \
+    grep -qx ">A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2754,7 +2754,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --relabel_sha1 \
     --fastaout - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2783,7 +2783,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --sample "ABC" \
     --fastaout - | \
-    grep -qw ">s;sample=ABC" && \
+    grep -qx ">s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2828,7 +2828,7 @@ printf ">s\nA\n" > "${TMP}"
     --derep_smallmem "${TMP}" \
     --quiet \
     --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2843,7 +2843,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --quiet \
     --sizeout \
     --fastaout - | \
-    grep -qw ">s;size=1" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2858,7 +2858,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --quiet \
     --sizeout \
     --fastaout - | \
-    grep -qw ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2871,7 +2871,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --derep_smallmem "${TMP}" \
     --quiet \
     --fastaout - | \
-    grep -qw ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2886,7 +2886,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --relabel "label" \
     --fastaout - | \
-    grep -qw ">label1" && \
+    grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2901,7 +2901,7 @@ printf ">s\nA\n" > "${TMP}"
     --relabel "label" \
     --sizeout \
     --fastaout - | \
-    grep -qw ">label1;size=1" && \
+    grep -qx ">label1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2915,7 +2915,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --relabel_self \
     --fastaout - | \
-    grep -qw ">A" && \
+    grep -qx ">A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2930,7 +2930,7 @@ printf ">s\nA\n" > "${TMP}"
     --relabel_self \
     --sizeout \
     --fastaout - | \
-    grep -qw ">A;size=1" && \
+    grep -qx ">A;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2944,7 +2944,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --relabel_md5 \
     --fastaout - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2959,7 +2959,7 @@ printf ">s\nA\n" > "${TMP}"
     --relabel_md5 \
     --sizeout \
     --fastaout - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2973,7 +2973,7 @@ printf ">s\nA\n" > "${TMP}"
     --quiet \
     --relabel_sha1 \
     --fastaout - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2988,7 +2988,7 @@ printf ">s\nA\n" > "${TMP}"
     --relabel_sha1 \
     --sizeout \
     --fastaout - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3003,7 +3003,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --quiet \
     --relabel "label" \
     --fastaout - | \
-    grep -qw ">label1" && \
+    grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3018,7 +3018,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --relabel "label" \
     --sizeout \
     --fastaout - | \
-    grep -qw ">label1;size=1" && \
+    grep -qx ">label1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3034,7 +3034,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --relabel "label" \
     --sizeout \
     --fastaout - | \
-    grep -qw ">label1;size=2" && \
+    grep -qx ">label1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3048,7 +3048,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --quiet \
     --relabel_self \
     --fastaout - | \
-    grep -qw ">A" && \
+    grep -qx ">A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3063,7 +3063,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --relabel_self \
     --sizeout \
     --fastaout - | \
-    grep -qw ">A;size=1" && \
+    grep -qx ">A;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3079,7 +3079,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --relabel_self \
     --sizeout \
     --fastaout - | \
-    grep -qw ">A;size=2" && \
+    grep -qx ">A;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3093,7 +3093,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --quiet \
     --relabel_md5 \
     --fastaout - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3108,7 +3108,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --relabel_md5 \
     --sizeout \
     --fastaout - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3124,7 +3124,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --relabel_md5 \
     --sizeout \
     --fastaout - | \
-    grep -qw ">7fc56270e7a70fa81a5935b72eacbe29;size=2" && \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3138,7 +3138,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --quiet \
     --relabel_sha1 \
     --fastaout - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3153,7 +3153,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --relabel_sha1 \
     --sizeout \
     --fastaout - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3169,7 +3169,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --relabel_sha1 \
     --sizeout \
     --fastaout - | \
-    grep -qw ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=2" && \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3227,7 +3227,7 @@ printf ">s;ee=1.00\nA\n" > "${TMP}"
     --xee \
     --quiet \
     --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3256,7 +3256,7 @@ printf ">s;length=1\nA\n" > "${TMP}"
     --xlength \
     --quiet \
     --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3270,7 +3270,7 @@ printf ">s\nA\n" > "${TMP}"
     --xlength \
     --quiet \
     --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3285,7 +3285,7 @@ printf ">s;length=2\nA\n" > "${TMP}"
     --lengthout \
     --quiet \
     --fastaout - | \
-    grep -wq ">s;length=1" && \
+    grep -qx ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3345,7 +3345,7 @@ printf ">s;size=2;\nA\n" > "${TMP}"
     --quiet \
     --sizeout \
     --fastaout - | \
-    grep -wq ">s;size=1" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3360,7 +3360,7 @@ printf ">s;size=2;\nA\n" > "${TMP}"
     --xsize \
     --quiet \
     --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3375,7 +3375,7 @@ printf ">s;size=2;\nA\n" > "${TMP}"
     --xsize \
     --quiet \
     --fastaout - | \
-    grep -wq ">s;size=1" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3392,7 +3392,7 @@ printf ">s;size=2;\nA\n" > "${TMP}"
     --quiet \
     --sizeout \
     --fastaout - | \
-    grep -wq ">s;size=2" && \
+    grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3408,7 +3408,7 @@ printf ">s;size=2; extra\nA\n" > "${TMP}"
     --quiet \
     --sizeout \
     --fastaout - | \
-    grep -wq ">s; extra;size=1" && \
+    grep -qx ">s; extra;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3424,7 +3424,7 @@ printf ">s;size=2; extra\nA\n" > "${TMP}"
     --sizein \
     --sizeout \
     --fastaout - | \
-    grep -wq ">s; extra;size=2" && \
+    grep -qx ">s; extra;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3441,7 +3441,7 @@ printf ">s;size=2; extra\nA\n" > "${TMP}"
     --sizein \
     --sizeout \
     --fastaout - | \
-    grep -wq ">s; extra;size=2" && \
+    grep -qx ">s; extra;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3456,7 +3456,7 @@ printf ">s;size=2\nA\n" > "${TMP}"
     --notrunclabels \
     --quiet \
     --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3471,7 +3471,7 @@ printf ">s;size=2;\nA\n" > "${TMP}"
     --notrunclabels \
     --quiet \
     --fastaout - | \
-    grep -wq ">s" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3486,7 +3486,7 @@ printf ">s;size=2; \nA\n" > "${TMP}"
     --notrunclabels \
     --quiet \
     --fastaout - | \
-    grep -wq ">s; " && \
+    grep -qx ">s; " && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3501,7 +3501,7 @@ printf ">s;size=2 \nA\n" > "${TMP}"
     --notrunclabels \
     --quiet \
     --fastaout - | \
-    grep -wq ">s;size=2 " && \
+    grep -qx ">s;size=2 " && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3517,7 +3517,7 @@ printf ">s;\nA\n" > "${TMP}"
     --notrunclabels \
     --quiet \
     --fastaout - | \
-    grep -wq ">s;" && \
+    grep -qx ">s;" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"

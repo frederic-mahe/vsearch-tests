@@ -439,7 +439,7 @@ printf "@søs\nA\n+\nI\n" | \
         --fastx_uniques - \
         --quiet \
         --fastqout - 2> /dev/null | \
-    grep -wq "@søs" && \
+    grep -qx "@søs" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

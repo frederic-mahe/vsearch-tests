@@ -150,7 +150,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastx_revcomp - \
         --quiet \
         --fastqout - | \
-    grep -qw "@s" && \
+    grep -qx "@s" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -160,7 +160,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastx_revcomp - \
         --quiet \
         --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -170,7 +170,7 @@ printf ">s\nA\n" | \
         --fastx_revcomp - \
         --quiet \
         --fastaout - | \
-    grep -qw ">s" && \
+    grep -qx ">s" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -190,7 +190,7 @@ for NUC in A C G T N ; do
             --fastx_revcomp - \
             --quiet \
             --fastqout - 2> /dev/null | \
-        grep -qw "$(tr "ACGTN" "TGCAN" <<< "${NUC}")" || \
+        grep -qx "$(tr "ACGTN" "TGCAN" <<< "${NUC}")" || \
             failure "${DESCRIPTION}"
 done && success "${DESCRIPTION}"
 
@@ -201,7 +201,7 @@ for NUC in A C G T N ; do
             --fastx_revcomp - \
             --quiet \
             --fastaout - 2> /dev/null | \
-        grep -qw "$(tr "ACGTN" "TGCAN" <<< "${NUC}")" || \
+        grep -qx "$(tr "ACGTN" "TGCAN" <<< "${NUC}")" || \
             failure "${DESCRIPTION}"
 done && success "${DESCRIPTION}"
 
@@ -212,7 +212,7 @@ for NUC in A C G T N ; do
             --fastx_revcomp - \
             --quiet \
             --fastaout - 2> /dev/null | \
-        grep -qw "$(tr "ACGTN" "TGCAN" <<< "${NUC}")" || \
+        grep -qx "$(tr "ACGTN" "TGCAN" <<< "${NUC}")" || \
             failure "${DESCRIPTION}"
 done && success "${DESCRIPTION}"
 
@@ -223,7 +223,7 @@ printf "@s\nGTCA\n+\nFGHI\n" | \
         --quiet \
         --fastqout - 2> /dev/null | \
     tr "\n" " " | \
-    grep -qw "@s TGAC + IHGF" && \
+    grep -qx "@s TGAC + IHGF" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -234,7 +234,7 @@ printf "@s\nGTCA\n+\nFGHI\n" | \
         --quiet \
         --fastaout - 2> /dev/null | \
     tr "\n" " " | \
-    grep -qw ">s TGAC" && \
+    grep -qx ">s TGAC" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -245,7 +245,7 @@ printf ">s\nGTCA\n" | \
         --quiet \
         --fastaout - 2> /dev/null | \
     tr "\n" " " | \
-    grep -qw ">s TGAC" && \
+    grep -qx ">s TGAC" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -260,7 +260,7 @@ printf "@s\nA\n+\nI\n" | \
         --label_suffix "_suffix" \
         --quiet \
         --fastqout - 2> /dev/null | \
-    grep -qw "@s_suffix" && \
+    grep -qx "@s_suffix" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

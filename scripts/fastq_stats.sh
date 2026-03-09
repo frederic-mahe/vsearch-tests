@@ -130,7 +130,7 @@ DESCRIPTION="--fastq_stats writes the number of reads to stderr (one read)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - 2>&1 | \
-    grep -qw "Read 1" && \
+    grep -qx "Read 1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -138,7 +138,7 @@ DESCRIPTION="--fastq_stats writes the number of reads to stderr (two reads)"
 printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - 2>&1 | \
-    grep -qw "Read 2" && \
+    grep -qx "Read 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -146,7 +146,7 @@ DESCRIPTION="--fastq_stats writes the number of reads to stderr (no read)"
 printf "" | \
     "${VSEARCH}" \
         --fastq_stats - 2>&1 | \
-    grep -qw "Read 0" && \
+    grep -qx "Read 0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -155,7 +155,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log /dev/null 2>&1 | \
-    grep -qw "Read 1" && \
+    grep -qx "Read 1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -213,7 +213,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qw "Read length distribution" && \
+    grep -qx "Read length distribution" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -256,7 +256,7 @@ printf "@s\nA\n+\nI\n" | \
         --log - 2> /dev/null | \
     grep -w -A 3 "Read length distribution" | \
     tail -n 1 | \
-    grep -qw ">=" && \
+    grep -qx ">=" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -470,7 +470,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qw "Q score distribution" && \
+    grep -qx "Q score distribution" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2175,7 +2175,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qw "Started" && \
+    grep -qx "Started" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2184,7 +2184,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qw "Finished" && \
+    grep -qx "Finished" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2193,7 +2193,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qw "Elapsed time" && \
+    grep -qx "Elapsed time" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2202,7 +2202,7 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log - 2> /dev/null | \
-    grep -qw "Max memory" && \
+    grep -qx "Max memory" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

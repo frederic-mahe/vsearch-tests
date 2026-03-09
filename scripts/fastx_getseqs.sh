@@ -54,7 +54,7 @@ printf "@s;field1=s1\nA\n+\nI\n" | \
         --label_word "s1" \
         --quiet \
         --fastaout - | \
-    grep -qw ">s;field1=s1" && \
+    grep -qx ">s;field1=s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -66,7 +66,7 @@ printf "@s;field1=s1\nA\n+\nI\n" | \
         --label_word "s2" \
         --quiet \
         --fastaout - | \
-    grep -qw ">s;field1=s1" && \
+    grep -qx ">s;field1=s1" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 

@@ -140,7 +140,7 @@ printf "@s\nCBA\n+\nIII\n" | \
     grep -oE "^[[:blank:]]+[ABC]" | \
     tr -d " " | \
     tr -d "\n" | \
-    grep -wq "ABC" && \
+    grep -qx "ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -408,7 +408,7 @@ printf "@s\nNNN\n+\nCBA\n" | \
     tr -d " " | \
     tr -d "'" | \
     tr -d "\n" | \
-    grep -wq "ABC" && \
+    grep -qx "ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
