@@ -2769,17 +2769,17 @@ printf ">s;size=2;\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# strip the old size annotation, replace with a new one (size=1)
-DESCRIPTION="sizein + --xsize + --sizeout (no size)"
-printf ">s;size=2;\nA\n" | \
+# no size annotation to strip, insert a new one (size=1)
+DESCRIPTION="--xsize + --sizeout (new size)"
+printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_fulllength - \
         --minseqlength 1 \
-        --sizeout \
-        --xsize \
         --quiet \
+        --xsize \
+        --sizeout \
         --output - | \
-    grep -wq ">s" && \
+    grep -xq ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
