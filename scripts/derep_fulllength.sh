@@ -2755,7 +2755,7 @@ printf ">s;size=1;\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-# xsize + sizein + sizeout + relabel_keep: ?
+# strip the old size annotation, replace with a new one (size=1)
 DESCRIPTION="--xsize + sizeout (new size)"
 printf ">s;size=2;\nA\n" | \
     "${VSEARCH}" \
