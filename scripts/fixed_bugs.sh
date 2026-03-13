@@ -15695,6 +15695,28 @@ printf ">query\nAAAAGGGGTTTT\n>target\nAAAATTTT\n" | \
 # same as issue 618
 
 
+# **************************************************************************** #
+#                                                                              #
+#                    Single linkage clustering (issue 620)                     #
+#                                                                              #
+# **************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/620
+
+# not testable
+
+
+# **************************************************************************** #
+#                                                                              #
+#                       Read demultiplexing (issue 621)                        #
+#                                                                              #
+# **************************************************************************** #
+##
+## https://github.com/torognes/vsearch/issues/621
+
+# not testable
+
+
 exit 0
 
 
@@ -15709,4 +15731,3 @@ exit 0
 #       - in the absence of ';sample=abcd1234;' each cluster is assigned to its own sample (matrix diagonal)?
 #       - clusters are sorted by decreasing abundance?
 #       - show that it work with both --sample and --relabel
-
