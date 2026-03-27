@@ -15717,6 +15717,64 @@ printf ">query\nAAAAGGGGTTTT\n>target\nAAAATTTT\n" | \
 # not testable
 
 
+#******************************************************************************#
+#                                                                              #
+#         Segmentation fault : LCA taxonomy classification (issue 622)         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/622
+
+# Wen using the --lcaout option, vsearch --usearch_global can crash
+# (segmentation fault) if there are no hits for a query.
+
+DESCRIPTION="issue 622: --usearch_global --lcaout (single hit, query + tab + taxa)"
+SEQ="TGATACATAGTATCGTCACATGAAAGGATTGG"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQ}") \
+    --db <(printf ">s1;tax=k:K,p:P\n%s\n" "${SEQ}") \
+    --threads 1 \
+    --quiet \
+    --id 0.97 \
+    --lcaout - | \
+    tr "\t" "@" | \
+    grep -q "^s1@k:K,p:P$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+DESCRIPTION="issue 622: --usearch_global --lcaout (no hit, no issue)"
+SEQ1="TGATACATAGTATCGTCACATGAAAGGATTGG"
+SEQ2="CCAATCCTTTCATGTGACGATACTATGTATCA"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQ1}") \
+    --db <(printf ">s1;tax=k:K,p:P\n%s\n" "${SEQ2}") \
+    --threads 1 \
+    --quiet \
+    --id 0.97 \
+    --lcaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ1 SEQ2
+
+
+DESCRIPTION="issue 622: --usearch_global --lcaout (no hit, query + tab)"
+SEQ1="TGATACATAGTATCGTCACATGAAAGGATTGG"
+SEQ2="CCAATCCTTTCATGTGACGATACTATGTATCA"
+"${VSEARCH}" \
+    --usearch_global <(printf ">s1\n%s\n" "${SEQ1}") \
+    --db <(printf ">s1;tax=k:K,p:P\n%s\n" "${SEQ2}") \
+    --threads 1 \
+    --quiet \
+    --id 0.97 \
+    --lcaout - | \
+    tr "\t" "@" | \
+    grep -q "^s1@$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ1 SEQ2
+
+
 exit 0
 
 
