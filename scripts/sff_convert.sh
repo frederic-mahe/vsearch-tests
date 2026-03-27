@@ -187,12 +187,15 @@ DESCRIPTION="--sff_convert --fastqout can write to '-' (stream is not empty)"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--sff_convert --fastqout can write to process substitution (stream is not empty)"
+TMP=$(mktemp)
 "${VSEARCH}" \
     --sff_convert "${SFF}" \
-    --fastqout >(grep -q "." && \
-                     success "${DESCRIPTION}" || \
-                         failure "${DESCRIPTION}"
-                ) 2> /dev/null
+    --fastqout >(cat > "${TMP}") 2> /dev/null
+grep -q "." "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${TMP}"
+unset TMP
 
 DESCRIPTION="--sff_convert --fastqout outputs in fastq format"
 "${VSEARCH}" \
