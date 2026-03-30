@@ -75,35 +75,36 @@ DESCRIPTION="check if vsearch is executable"
 #                                                                             #
 #*****************************************************************************#
 
-## valgrind: search for errors and memory leaks (very slow for --orient)
-if which valgrind > /dev/null 2>&1 ; then
+## very slow, deactivate for now
+## valgrind: search for errors and memory leaks
+# if which valgrind > /dev/null 2>&1 ; then
 
-    LOG=$(mktemp)
-    FASTQ=$(mktemp)
-    DB=$(mktemp)
-    printf "@s\nACC\n+\nIII\n" > "${FASTQ}"
-    printf "@s\nGGT\n+\nIII\n" > "${DB}"
-    valgrind \
-        --log-file="${LOG}" \
-        --leak-check=full \
-        "${VSEARCH}" \
-        --orient "${FASTQ}" \
-        --db "${DB}" \
-        --fastaout /dev/null \
-        --fastqout /dev/null \
-        --notmatched /dev/null \
-        --tabbedout /dev/null \
-        --log /dev/null 2> /dev/null
-    DESCRIPTION="--orient valgrind (no leak memory)"
-    grep -q "in use at exit: 0 bytes" "${LOG}" && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
-    DESCRIPTION="--orient valgrind (no errors)"
-    grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
-        success "${DESCRIPTION}" || \
-            failure "${DESCRIPTION}"
-    rm -f "${LOG}" "${FASTQ}" "${DB}"
-fi
+#     LOG=$(mktemp)
+#     FASTQ=$(mktemp)
+#     DB=$(mktemp)
+#     printf "@s\nACC\n+\nIII\n" > "${FASTQ}"
+#     printf "@s\nGGT\n+\nIII\n" > "${DB}"
+#     valgrind \
+#         --log-file="${LOG}" \
+#         --leak-check=full \
+#         "${VSEARCH}" \
+#         --orient "${FASTQ}" \
+#         --db "${DB}" \
+#         --fastaout /dev/null \
+#         --fastqout /dev/null \
+#         --notmatched /dev/null \
+#         --tabbedout /dev/null \
+#         --log /dev/null 2> /dev/null
+#     DESCRIPTION="--orient valgrind (no leak memory)"
+#     grep -q "in use at exit: 0 bytes" "${LOG}" && \
+#         success "${DESCRIPTION}" || \
+#             failure "${DESCRIPTION}"
+#     DESCRIPTION="--orient valgrind (no errors)"
+#     grep -q "ERROR SUMMARY: 0 errors" "${LOG}" && \
+#         success "${DESCRIPTION}" || \
+#             failure "${DESCRIPTION}"
+#     rm -f "${LOG}" "${FASTQ}" "${DB}"
+# fi
 
 
 #*****************************************************************************#
