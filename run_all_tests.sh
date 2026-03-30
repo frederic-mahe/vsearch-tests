@@ -26,7 +26,7 @@ for test_script in vsearch.sh \
     echo
 done
 
-## non-specific tests: fastq tests, fixed bugs
+## non-specific tests
 for test_script in fastq_parsing.sh \
                        fixed_bugs.sh \
                        test_accepted_chars.sh ; do
@@ -36,7 +36,6 @@ done
 
 ## (preliminary) command-specific tests (valgrind)
 # goal: all commands have at least a valgrind test
-# orient.sh: very slow, lots of memory allocation, no error or leak [2025-07-19 sam.]
 for test_script in allpairs_global.sh \
                        cluster_fast.sh \
                        cluster_size.sh \
@@ -71,5 +70,8 @@ done
 ## unfinished commands (with errors)
 # - chimeras_denovo.sh
 # - fastq_mergepairs.sh
+
+## missing commands
+# - orient.sh: valgrind very slow, lots of memory allocation, no error or leak [2025-07-19 sam.]
 
 exit 0
