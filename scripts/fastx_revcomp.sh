@@ -77,6 +77,19 @@ DESCRIPTION="--fastx_revcomp fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_revcomp fails if input file is not readable"
+TMPFA=$(mktemp)
+printf ">s1\nACGT\n" > "${TMPFA}"
+chmod u-r "${TMPFA}"
+"${VSEARCH}" \
+    --fastx_revcomp "${TMPFA}" \
+    --fastaout /dev/null \
+    --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+r "${TMPFA}" && rm -f "${TMPFA}"
+unset TMPFA
+
 DESCRIPTION="--fastx_revcomp fails without any output option"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
@@ -135,6 +148,18 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     grep -qx "@s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastqout fails if unable to open output file for writing"
+TMP=$(mktemp) && chmod u-w "${TMP}"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastqout "${TMP}" \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+w "${TMP}" && rm -f "${TMP}"
+unset TMP
 
 DESCRIPTION="--fastqout fails with fasta input (no quality scores)"
 printf ">s1\nACGT\n" | \
@@ -283,6 +308,19 @@ printf ">myseq1\nACGT\n" | \
         --fasta_width 0 \
         --quiet 2>/dev/null | \
     grep -qx ">myseq1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# sequences longer than 512 nucleotides trigger a realloc in the source code
+DESCRIPTION="--fastx_revcomp handles sequences longer than 512 nucleotides"
+printf ">s1\n%s\n" "$(awk 'BEGIN {for (i = 1; i <= 513; i++) printf "A"; printf "\n"}')" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastaout - \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -v "^>" | \
+    grep -qx "$(awk 'BEGIN {for (i = 1; i <= 513; i++) printf "T"; printf "\n"}')" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
