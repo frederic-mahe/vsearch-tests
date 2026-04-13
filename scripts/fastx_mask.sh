@@ -145,6 +145,32 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# coverage: mask.cc (unable to open fasta output file)
+DESCRIPTION="--fastaout fails if unable to open output file for writing"
+TMP=$(mktemp) && chmod u-w "${TMP}"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout "${TMP}" \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+w "${TMP}" && rm -f "${TMP}"
+unset TMP
+
+# coverage: mask.cc (unable to open fastq output file)
+DESCRIPTION="--fastqout fails if unable to open output file for writing"
+TMP=$(mktemp) && chmod u-w "${TMP}"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout "${TMP}" \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+w "${TMP}" && rm -f "${TMP}"
+unset TMP
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -625,6 +651,68 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# coverage: mask.cc (stderr message when min_unmasked_pct discards sequences)
+# atGC: 2 lowercase + 2 uppercase = 50% unmasked; 50% < 51% -> discarded
+DESCRIPTION="--min_unmasked_pct discards are reported on stderr"
+printf ">s1\natGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask soft \
+        --min_unmasked_pct 51 \
+        2>&1 | \
+    grep -q "sequences with less than" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# coverage: mask.cc (stderr message when max_unmasked_pct discards sequences)
+# ACGT: all uppercase = 100% unmasked; 100% > 49% -> discarded
+DESCRIPTION="--max_unmasked_pct discards are reported on stderr"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --max_unmasked_pct 49 \
+        2>&1 | \
+    grep -q "sequences with more than" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# coverage: mask.cc (log message when min_unmasked_pct discards sequences)
+DESCRIPTION="--min_unmasked_pct discards are written to --log"
+TMPLOG=$(mktemp)
+printf ">s1\natGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask soft \
+        --min_unmasked_pct 51 \
+        --log "${TMPLOG}" \
+        --quiet 2>/dev/null
+grep -q "sequences with less than" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPLOG}"
+unset TMPLOG
+
+# coverage: mask.cc (log message when max_unmasked_pct discards sequences)
+DESCRIPTION="--max_unmasked_pct discards are written to --log"
+TMPLOG=$(mktemp)
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --max_unmasked_pct 49 \
+        --log "${TMPLOG}" \
+        --quiet 2>/dev/null
+grep -q "sequences with more than" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPLOG}"
+unset TMPLOG
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -671,6 +759,64 @@ printf ">s1\nACGTACGTACGTACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --bzip2_decompress
+
+DESCRIPTION="--bzip2_decompress reads bzip2-compressed fasta from stdin"
+printf ">s1\nACGT\n" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --bzip2_decompress \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--bzip2_decompress reads bzip2-compressed fastq from stdin"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout - \
+        --bzip2_decompress \
+        --qmask none \
+        --quiet 2>/dev/null | \
+    grep -qx "@s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --gzip_decompress
+
+DESCRIPTION="--gzip_decompress reads gzip-compressed fasta from stdin"
+printf ">s1\nACGT\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --gzip_decompress \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--gzip_decompress reads gzip-compressed fastq from stdin"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout - \
+        --gzip_decompress \
+        --qmask none \
+        --quiet 2>/dev/null | \
+    grep -qx "@s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --fastq_ascii
 
 DESCRIPTION="--fastq_ascii 33 is accepted"
@@ -709,6 +855,18 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_qmax has no effect on sequence content"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout - \
+        --qmask none \
+        --fastq_qmax 41 \
+        --quiet 2>/dev/null | \
+    grep -qx "ACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --fastq_qmin
 
 DESCRIPTION="--fastq_qmin is accepted"
@@ -719,6 +877,18 @@ printf "@s1\nACGT\n+\nIIII\n" | \
         --qmask none \
         --fastq_qmin 0 \
         --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_qmin has no effect on sequence content"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout - \
+        --qmask none \
+        --fastq_qmin 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "ACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -734,6 +904,20 @@ printf ">s1\nACGT\n" | \
         --label_suffix ";foo=bar" \
         --quiet 2>/dev/null | \
     grep -qx ">s1;foo=bar" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--label_suffix and --lengthout annotations appear together in header"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --label_suffix ";foo=bar" \
+        --lengthout \
+        --quiet 2>/dev/null | \
+    grep -q "length=4.*foo=bar\|foo=bar.*length=4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -764,6 +948,21 @@ printf ">s1\nACGT\n" | \
         --log "${TMPLOG}" \
         --quiet 2>/dev/null
 [[ -s "${TMPLOG}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPLOG}"
+unset TMPLOG
+
+DESCRIPTION="--log does not suppress stderr messages"
+TMPLOG=$(mktemp)
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --log "${TMPLOG}" \
+        2>&1 | \
+    grep -q "." && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMPLOG}"
@@ -822,6 +1021,19 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--quiet does not suppress fatal error messages"
+TMP=$(mktemp) && chmod u-w "${TMP}"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout "${TMP}" \
+        --quiet 2>&1 | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+chmod u+w "${TMP}" && rm -f "${TMP}"
+unset TMP
+
 ## --relabel
 
 DESCRIPTION="--relabel replaces header with prefix and ticker"
@@ -834,6 +1046,19 @@ printf ">s1\nACGT\n" | \
         --relabel "seq" \
         --quiet 2>/dev/null | \
     grep -qx ">seq1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--relabel with empty string produces just the ticker as label"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel "" \
+        --quiet 2>/dev/null | \
+    grep -qx ">1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -868,6 +1093,19 @@ printf ">s1\nACGT\n" | \
     grep -qx ">f1f8f4bf413b16ad135722aa4591043e" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+# --relabel and --relabel_md5 are mutually exclusive
+DESCRIPTION="--relabel and --relabel_md5 together produce an error"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --relabel "seq" \
+        --relabel_md5 \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## --relabel_sha1
 
@@ -941,6 +1179,34 @@ printf ">s1;size=5\nACGT\n" | \
         --sizeout \
         --quiet 2>/dev/null | \
     grep -qx ">s1;size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sizein without size annotation in header defaults to size=1"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --sizein \
+        --sizeout \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sizeout and --relabel_self can be used together"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel_self \
+        --sizeout \
+        --quiet 2>/dev/null | \
+    grep -qx ">ACGT;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

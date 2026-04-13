@@ -106,6 +106,18 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--output fails if unable to open output file for writing"
+TMP=$(mktemp) && chmod u-w "${TMP}"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output "${TMP}" \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+w "${TMP}" && rm -f "${TMP}"
+unset TMP
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -447,6 +459,38 @@ printf ">s1\nACGTACGTACGTACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --bzip2_decompress
+
+DESCRIPTION="--bzip2_decompress reads bzip2-compressed fasta from stdin"
+printf ">s1\nACGT\n" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output - \
+        --bzip2_decompress \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --gzip_decompress
+
+DESCRIPTION="--gzip_decompress reads gzip-compressed fasta from stdin"
+printf ">s1\nACGT\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output - \
+        --gzip_decompress \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --label_suffix
 
 DESCRIPTION="--label_suffix appends suffix to sequence header"
@@ -459,6 +503,20 @@ printf ">s1\nACGT\n" | \
         --label_suffix ";foo=bar" \
         --quiet 2>/dev/null | \
     grep -qx ">s1;foo=bar" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--label_suffix and --lengthout annotations appear together in header"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output - \
+        --qmask none \
+        --fasta_width 0 \
+        --label_suffix ";foo=bar" \
+        --lengthout \
+        --quiet 2>/dev/null | \
+    grep -q "length=4.*foo=bar\|foo=bar.*length=4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -489,6 +547,21 @@ printf ">s1\nACGT\n" | \
         --log "${TMPLOG}" \
         --quiet 2>/dev/null
 [[ -s "${TMPLOG}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPLOG}"
+unset TMPLOG
+
+DESCRIPTION="--log does not suppress stderr messages"
+TMPLOG=$(mktemp)
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output /dev/null \
+        --qmask none \
+        --log "${TMPLOG}" \
+        2>&1 | \
+    grep -q "." && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMPLOG}"
@@ -616,6 +689,19 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--quiet does not suppress fatal error messages"
+TMP=$(mktemp) && chmod u-w "${TMP}"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output "${TMP}" \
+        --quiet 2>&1 | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+chmod u+w "${TMP}" && rm -f "${TMP}"
+unset TMP
+
 ## --relabel
 
 DESCRIPTION="--relabel replaces header with prefix and ticker"
@@ -628,6 +714,19 @@ printf ">s1\nACGT\n" | \
         --relabel "seq" \
         --quiet 2>/dev/null | \
     grep -qx ">seq1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--relabel with empty string produces just the ticker as label"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel "" \
+        --quiet 2>/dev/null | \
+    grep -qx ">1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -662,6 +761,19 @@ printf ">s1\nACGT\n" | \
     grep -qx ">f1f8f4bf413b16ad135722aa4591043e" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+# --relabel and --relabel_md5 are mutually exclusive
+DESCRIPTION="--relabel and --relabel_md5 together produce an error"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output /dev/null \
+        --qmask none \
+        --relabel "seq" \
+        --relabel_md5 \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## --relabel_sha1
 
@@ -735,6 +847,34 @@ printf ">s1;size=3\nACGT\n" | \
         --sizeout \
         --quiet 2>/dev/null | \
     grep -qx ">s1;size=3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sizein without size annotation in header defaults to size=1"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output - \
+        --qmask none \
+        --fasta_width 0 \
+        --sizein \
+        --sizeout \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sizeout and --relabel_self can be used together"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel_self \
+        --sizeout \
+        --quiet 2>/dev/null | \
+    grep -qx ">ACGT;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
