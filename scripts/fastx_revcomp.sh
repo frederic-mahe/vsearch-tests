@@ -40,7 +40,7 @@ DESCRIPTION="check if vsearch is executable"
 ## vsearch --fastx_revcomp inputfile (--fastaout | --fastqout) outputfile [options]
 
 DESCRIPTION="--fastx_revcomp is accepted"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -49,7 +49,7 @@ printf ">s1\nACGT\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_revcomp reads from stdin (-)"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -59,7 +59,7 @@ printf ">s1\nACGT\n" | \
 
 DESCRIPTION="--fastx_revcomp reads from a file"
 TMPFA=$(mktemp)
-printf ">s1\nACGT\n" > "${TMPFA}"
+printf ">s\nACGT\n" > "${TMPFA}"
 "${VSEARCH}" \
     --fastx_revcomp "${TMPFA}" \
     --fastaout /dev/null \
@@ -79,7 +79,7 @@ DESCRIPTION="--fastx_revcomp fails if input file does not exist"
 
 DESCRIPTION="--fastx_revcomp fails if input file is not readable"
 TMPFA=$(mktemp)
-printf ">s1\nACGT\n" > "${TMPFA}"
+printf ">s\nACGT\n" > "${TMPFA}"
 chmod u-r "${TMPFA}"
 "${VSEARCH}" \
     --fastx_revcomp "${TMPFA}" \
@@ -91,7 +91,7 @@ chmod u+r "${TMPFA}" && rm -f "${TMPFA}"
 unset TMPFA
 
 DESCRIPTION="--fastx_revcomp fails without any output option"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --quiet 2>/dev/null && \
@@ -99,7 +99,7 @@ printf ">s1\nACGT\n" | \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastaout is accepted"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -108,19 +108,19 @@ printf ">s1\nACGT\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastaout - writes to stdout"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --quiet 2>/dev/null | \
-    grep -qx ">s1" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastaout fails if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout "${TMP}" \
@@ -131,7 +131,7 @@ chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--fastqout is accepted with fastq input"
-printf "@s1\nACGT\n+\nIIII\n" | \
+printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout /dev/null \
@@ -140,18 +140,18 @@ printf "@s1\nACGT\n+\nIIII\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastqout - writes to stdout"
-printf "@s1\nACGT\n+\nIIII\n" | \
+printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout - \
         --quiet 2>/dev/null | \
-    grep -qx "@s1" && \
+    grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastqout fails if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
-printf "@s1\nACGT\n+\nIIII\n" | \
+printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout "${TMP}" \
@@ -162,7 +162,7 @@ chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 DESCRIPTION="--fastqout fails with fasta input (no quality scores)"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout /dev/null \
@@ -181,7 +181,7 @@ printf "" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastaout and --fastqout can be used together with fastq input"
-printf "@s1\nACGT\n+\nIIII\n" | \
+printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -199,7 +199,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
 
 # manpage example: AACGT -> ACGTT
 DESCRIPTION="--fastx_revcomp reverse-complements fasta input (manpage example)"
-printf ">s1\nAACGT\n" | \
+printf ">s\nAACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -211,7 +211,7 @@ printf ">s1\nAACGT\n" | \
 
 # revcomp of GTCA: complement = CAGT, reversed = TGAC
 DESCRIPTION="--fastx_revcomp reverse-complements GTCA to TGAC (fasta out)"
-printf ">s1\nGTCA\n" | \
+printf ">s\nGTCA\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -222,7 +222,7 @@ printf ">s1\nGTCA\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_revcomp reverse-complements GTCA to TGAC (fastq in, fasta out)"
-printf "@s1\nGTCA\n+\nFGHI\n" | \
+printf "@s\nGTCA\n+\nFGHI\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -234,7 +234,7 @@ printf "@s1\nGTCA\n+\nFGHI\n" | \
 
 # fastq: quality scores are reversed (not complemented)
 DESCRIPTION="--fastx_revcomp reverses quality scores (FGHI becomes IHGF)"
-printf "@s1\nGTCA\n+\nFGHI\n" | \
+printf "@s\nGTCA\n+\nFGHI\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout - \
@@ -245,7 +245,7 @@ printf "@s1\nGTCA\n+\nFGHI\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_revcomp sequence and quality in fastq out are both correct"
-printf "@s1\nGTCA\n+\nFGHI\n" | \
+printf "@s\nGTCA\n+\nFGHI\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout - \
@@ -257,7 +257,7 @@ printf "@s1\nGTCA\n+\nFGHI\n" | \
 
 # lowercase letters: complement is lowercase (a->t, c->g, g->c, t->a)
 DESCRIPTION="--fastx_revcomp preserves lowercase: revcomp of acgt is acgt"
-printf ">s1\nacgt\n" | \
+printf ">s\nacgt\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -268,7 +268,7 @@ printf ">s1\nacgt\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_revcomp complement of N is N (uppercase)"
-printf ">s1\nACNT\n" | \
+printf ">s\nACNT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -289,7 +289,7 @@ printf "" | \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_revcomp multiple sequences are all output"
-printf ">s1\nACGT\n>s2\nTGCA\n" | \
+printf ">s\nACGT\n>s2\nTGCA\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -340,7 +340,7 @@ printf ">s\n%s\n" "$(printf '%513s' " " | tr ' ' 'A')" | \
 # only verify that the options are accepted and do not corrupt the output.
 
 DESCRIPTION="--fastq_ascii 33 is accepted"
-printf "@s1\nACGT\n+\nIIII\n" | \
+printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout /dev/null \
@@ -350,7 +350,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_ascii 64 is accepted"
-printf "@s1\nACGT\n+\n@@@@\n" | \
+printf "@s\nACGT\n+\n@@@@\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout /dev/null \
@@ -360,7 +360,7 @@ printf "@s1\nACGT\n+\n@@@@\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_ascii has no effect on quality output (scores passed through as-is)"
-printf "@s1\nACGT\n+\nIIII\n" | \
+printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout - \
@@ -374,7 +374,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
 ## --fastq_qmax
 
 DESCRIPTION="--fastq_qmax is accepted"
-printf "@s1\nACGT\n+\nIIII\n" | \
+printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout /dev/null \
@@ -384,7 +384,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_qmax has no effect on sequence output"
-printf "@s1\nGTCA\n+\nFGHI\n" | \
+printf "@s\nGTCA\n+\nFGHI\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout - \
@@ -398,7 +398,7 @@ printf "@s1\nGTCA\n+\nFGHI\n" | \
 ## --fastq_qmin
 
 DESCRIPTION="--fastq_qmin is accepted"
-printf "@s1\nACGT\n+\nIIII\n" | \
+printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout /dev/null \
@@ -408,7 +408,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_qmin has no effect on sequence output"
-printf "@s1\nGTCA\n+\nFGHI\n" | \
+printf "@s\nGTCA\n+\nFGHI\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout - \
@@ -429,7 +429,7 @@ printf "@s1\nGTCA\n+\nFGHI\n" | \
 ## --bzip2_decompress
 
 DESCRIPTION="--bzip2_decompress reads bzip2-compressed fasta from stdin"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastx_revcomp - \
@@ -437,19 +437,19 @@ printf ">s1\nACGT\n" | \
         --bzip2_decompress \
         --fasta_width 0 \
         --quiet 2>/dev/null | \
-    grep -qx ">s1" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--bzip2_decompress reads bzip2-compressed fastq from stdin"
-printf "@s1\nACGT\n+\nIIII\n" | \
+printf "@s\nACGT\n+\nIIII\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout - \
         --bzip2_decompress \
         --quiet 2>/dev/null | \
-    grep -qx "@s1" && \
+    grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -457,7 +457,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
 
 # 84-nt sequence (> 80) appears on one line with --fasta_width 0
 DESCRIPTION="--fasta_width 0 suppresses line folding"
-printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+printf ">s\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -470,7 +470,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG
 
 # 84-nt sequence is folded; first sequence line must be exactly 80 chars by default
 DESCRIPTION="--fasta_width default folds at 80 characters"
-printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+printf ">s\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -480,7 +480,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fasta_width 10 folds sequence at 10 characters"
-printf ">s1\nACGTACGTACGTACGT\n" | \
+printf ">s\nACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -493,7 +493,7 @@ printf ">s1\nACGTACGTACGTACGT\n" | \
 ## --gzip_decompress
 
 DESCRIPTION="--gzip_decompress reads gzip-compressed fasta from stdin"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     gzip | \
     "${VSEARCH}" \
         --fastx_revcomp - \
@@ -501,38 +501,38 @@ printf ">s1\nACGT\n" | \
         --gzip_decompress \
         --fasta_width 0 \
         --quiet 2>/dev/null | \
-    grep -qx ">s1" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--gzip_decompress reads gzip-compressed fastq from stdin"
-printf "@s1\nACGT\n+\nIIII\n" | \
+printf "@s\nACGT\n+\nIIII\n" | \
     gzip | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastqout - \
         --gzip_decompress \
         --quiet 2>/dev/null | \
-    grep -qx "@s1" && \
+    grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## --label_suffix
 
 DESCRIPTION="--label_suffix appends suffix to sequence header"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --label_suffix ";foo=bar" \
         --quiet 2>/dev/null | \
-    grep -qx ">s1;foo=bar" && \
+    grep -qx ">s;foo=bar" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--label_suffix and --lengthout annotations appear together in header"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -547,14 +547,14 @@ printf ">s1\nACGT\n" | \
 ## --lengthout
 
 DESCRIPTION="--lengthout adds length annotation to header"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --lengthout \
         --quiet 2>/dev/null | \
-    grep -qx ">s1;length=4" && \
+    grep -qx ">s;length=4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -562,7 +562,7 @@ printf ">s1\nACGT\n" | \
 
 DESCRIPTION="--log writes to a file"
 TMPLOG=$(mktemp)
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -576,7 +576,7 @@ unset TMPLOG
 
 DESCRIPTION="--log does not suppress stderr messages"
 TMPLOG=$(mktemp)
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -591,7 +591,7 @@ unset TMPLOG
 ## --no_progress
 
 DESCRIPTION="--no_progress is accepted"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -608,7 +608,7 @@ printf ">s1\nACGT\n" | \
 # Both tests below verify accepted behavior.
 
 DESCRIPTION="--notrunclabels is accepted"
-printf ">s1 some description\nACGT\n" | \
+printf ">s some description\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -619,20 +619,20 @@ printf ">s1 some description\nACGT\n" | \
 
 # fastx_revcomp preserves full header (truncateatspace=false in implementation)
 DESCRIPTION="--fastx_revcomp preserves full header including space by default"
-printf ">s1 some description\nACGT\n" | \
+printf ">s some description\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --quiet 2>/dev/null | \
-    grep -qx ">s1 some description" && \
+    grep -qx ">s some description" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## --quiet
 
 DESCRIPTION="--quiet suppresses stderr output"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -643,7 +643,7 @@ printf ">s1\nACGT\n" | \
 
 DESCRIPTION="--quiet does not suppress fatal error messages"
 TMP=$(mktemp) && chmod u-w "${TMP}"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout "${TMP}" \
@@ -657,7 +657,7 @@ unset TMP
 ## --relabel
 
 DESCRIPTION="--relabel replaces header with prefix and ticker"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -669,7 +669,7 @@ printf ">s1\nACGT\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--relabel with empty string produces just the ticker as label"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -683,7 +683,7 @@ printf ">s1\nACGT\n" | \
 ## --relabel_keep
 
 DESCRIPTION="--relabel_keep retains original identifier after relabeling"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -691,7 +691,7 @@ printf ">s1\nACGT\n" | \
         --relabel "seq" \
         --relabel_keep \
         --quiet 2>/dev/null | \
-    grep -qx ">seq1 s1" && \
+    grep -qx ">seq1 s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -699,7 +699,7 @@ printf ">s1\nACGT\n" | \
 
 # MD5 of "ACGT" (revcomp of ACGT is ACGT, a palindrome)
 DESCRIPTION="--relabel_md5 replaces header with MD5 digest of the revcomp sequence"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -712,7 +712,7 @@ printf ">s1\nACGT\n" | \
 
 # --relabel and --relabel_md5 are mutually exclusive
 DESCRIPTION="--relabel and --relabel_md5 together produce an error"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -726,7 +726,7 @@ printf ">s1\nACGT\n" | \
 
 # revcomp of GTCA = TGAC, so relabel_self -> ">TGAC"
 DESCRIPTION="--relabel_self replaces header with the revcomp sequence itself"
-printf ">s1\nGTCA\n" | \
+printf ">s\nGTCA\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -741,7 +741,7 @@ printf ">s1\nGTCA\n" | \
 
 # SHA1 of "ACGT" (revcomp of ACGT is ACGT, a palindrome)
 DESCRIPTION="--relabel_sha1 replaces header with SHA1 digest of the revcomp sequence"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -755,33 +755,33 @@ printf ">s1\nACGT\n" | \
 ## --sample
 
 DESCRIPTION="--sample adds sample annotation to header"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --sample "ABC" \
         --quiet 2>/dev/null | \
-    grep -qx ">s1;sample=ABC" && \
+    grep -qx ">s;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## --sizein and --sizeout
 
 DESCRIPTION="--sizeout adds size annotation to header (default size=1)"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --sizeout \
         --quiet 2>/dev/null | \
-    grep -qx ">s1;size=1" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--sizein reads existing size annotation; --sizeout propagates it"
-printf ">s1;size=5\nACGT\n" | \
+printf ">s;size=5\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -789,12 +789,12 @@ printf ">s1;size=5\nACGT\n" | \
         --sizein \
         --sizeout \
         --quiet 2>/dev/null | \
-    grep -qx ">s1;size=5" && \
+    grep -qx ">s;size=5" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--sizein without size annotation in header defaults to size=1"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -802,12 +802,12 @@ printf ">s1\nACGT\n" | \
         --sizein \
         --sizeout \
         --quiet 2>/dev/null | \
-    grep -qx ">s1;size=1" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--sizeout and --relabel_self can be used together"
-printf ">s1\nGTCA\n" | \
+printf ">s\nGTCA\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
@@ -822,42 +822,42 @@ printf ">s1\nGTCA\n" | \
 ## --xee
 
 DESCRIPTION="--xee strips ee annotation from header"
-printf ">s1;ee=0.5\nACGT\n" | \
+printf ">s;ee=0.5\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --xee \
         --quiet 2>/dev/null | \
-    grep -qx ">s1" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## --xlength
 
 DESCRIPTION="--xlength strips length annotation from header"
-printf ">s1;length=10\nACGT\n" | \
+printf ">s;length=10\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --xlength \
         --quiet 2>/dev/null | \
-    grep -qx ">s1" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 ## --xsize
 
 DESCRIPTION="--xsize strips size annotation from header"
-printf ">s1;size=5\nACGT\n" | \
+printf ">s;size=5\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --xsize \
         --quiet 2>/dev/null | \
-    grep -qx ">s1" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -871,7 +871,7 @@ printf ">s1;size=5\nACGT\n" | \
 ## --threads (command is not multithreaded, option has no effect)
 
 DESCRIPTION="--threads is accepted"
-printf ">s1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout /dev/null \
@@ -881,7 +881,7 @@ printf ">s1\nACGT\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--threads has no effect on sequence output"
-printf ">s1\nGTCA\n" | \
+printf ">s\nGTCA\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
