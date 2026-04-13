@@ -301,13 +301,13 @@ printf ">s\nACGT\n>s2\nTGCA\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_revcomp sequence header is preserved"
-printf ">myseq1\nACGT\n" | \
+printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --quiet 2>/dev/null | \
-    grep -qx ">myseq1" && \
+    grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
