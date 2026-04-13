@@ -39,12 +39,176 @@ DESCRIPTION="check if vsearch is executable"
 
 ## vsearch --fastx_mask fastxfile (--fastaout | --fastqout) outputfile [options]
 
+DESCRIPTION="--fastx_mask is accepted"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask reads from stdin (-)"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask reads from a file"
+TMPFA=$(mktemp)
+printf ">s1\nACGT\n" > "${TMPFA}"
+"${VSEARCH}" \
+    --fastx_mask "${TMPFA}" \
+    --fastaout /dev/null \
+    --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}"
+unset TMPFA
+
+DESCRIPTION="--fastx_mask fails if input file does not exist"
+"${VSEARCH}" \
+    --fastx_mask /no/such/file \
+    --fastaout /dev/null \
+    --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask fails without an output option"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastaout is accepted"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastaout - writes to stdout"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastqout is accepted with fastq input"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastqout - writes to stdout"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout - \
+        --qmask none \
+        --quiet 2>/dev/null | \
+    grep -qx "@s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastqout fails with fasta input"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastaout and --fastqout can be used together"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --fastqout /dev/null \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
 #                            default behaviour                                #
 #                                                                             #
 #*****************************************************************************#
+
+# ten A's followed by GCATGC: DUST masks the poly-A run
+DESCRIPTION="--fastx_mask default masking is dust (low-complexity region is lowercased)"
+printf ">s1\nAAAAAAAAAAGCATGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "aaaaaaaaaaGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask non-low-complexity sequence is unchanged"
+printf ">s1\nACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask empty fasta input produces empty output"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --quiet 2>/dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask multiple sequences are all output"
+printf ">s1\nACGT\n>s2\nTGCA\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask sequence header is preserved"
+printf ">myseq1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx ">myseq1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -53,12 +217,790 @@ DESCRIPTION="check if vsearch is executable"
 #                                                                             #
 #*****************************************************************************#
 
+## --qmask
+
+DESCRIPTION="--qmask dust is accepted"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask dust \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--qmask soft is accepted"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask soft \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--qmask none is accepted"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--qmask with no argument fails"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--qmask with invalid value fails"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask invalid \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--qmask dust lowercases low-complexity region in fasta input"
+printf ">s1\nAAAAAAAAAAGCATGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask dust \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "aaaaaaaaaaGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--qmask dust lowercases low-complexity region in fastq input"
+printf "@s1\nAAAAAAAAAAGCATGC\n+\nIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout - \
+        --qmask dust \
+        --quiet 2>/dev/null | \
+    grep -qx "aaaaaaaaaaGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--qmask dust does not alter quality scores"
+printf "@s1\nAAAAAAAAAAGCATGC\n+\nIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout - \
+        --qmask dust \
+        --quiet 2>/dev/null | \
+    awk "NR==4" | \
+    grep -qx "IIIIIIIIIIIIIIII" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--qmask none leaves uppercase sequence unchanged"
+printf ">s1\nACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "ACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--qmask none preserves existing lowercase letters"
+printf ">s1\naaGCATGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "aaGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--qmask soft preserves existing lowercase letters"
+printf ">s1\naaGCATGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask soft \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "aaGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --qmask soft does not apply DUST; only pre-existing lowercase is masked
+DESCRIPTION="--qmask soft does not mask new low-complexity regions"
+printf ">s1\nAAAAAAAAAAGCATGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask soft \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "AAAAAAAAAAGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --hardmask
+
+DESCRIPTION="--hardmask is accepted"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --hardmask \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--hardmask with --qmask dust replaces low-complexity region with Ns (fasta)"
+printf ">s1\nAAAAAAAAAAGCATGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask dust \
+        --hardmask \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "NNNNNNNNNNGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--hardmask with --qmask dust replaces low-complexity region with Ns (fastq)"
+printf "@s1\nAAAAAAAAAAGCATGC\n+\nIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout - \
+        --qmask dust \
+        --hardmask \
+        --quiet 2>/dev/null | \
+    grep -qx "NNNNNNNNNNGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--hardmask with --qmask soft replaces existing lowercase with Ns"
+printf ">s1\naaGCATGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask soft \
+        --hardmask \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "NNGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--hardmask with --qmask none leaves sequence unchanged"
+printf ">s1\nAAAAAAAAAAGCATGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --hardmask \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "AAAAAAAAAAGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--hardmask with --qmask soft and all-uppercase input leaves sequence unchanged"
+printf ">s1\nAAAAAAAAAAGCATGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask soft \
+        --hardmask \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "AAAAAAAAAAGCATGC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--hardmask output sequence contains no lowercase letters"
+printf ">s1\nAAAAAAAAAAGCATGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask dust \
+        --hardmask \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -v "^>" | \
+    grep -q "[a-z]" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --max_unmasked_pct and --min_unmasked_pct
+
+DESCRIPTION="--max_unmasked_pct is accepted"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --max_unmasked_pct 100 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--min_unmasked_pct is accepted"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --min_unmasked_pct 0 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--max_unmasked_pct with no argument fails"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --max_unmasked_pct \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--min_unmasked_pct with no argument fails"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --min_unmasked_pct \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--max_unmasked_pct with non-numeric value fails"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --max_unmasked_pct abc \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--min_unmasked_pct with non-numeric value fails"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --min_unmasked_pct abc \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--max_unmasked_pct 100 retains all sequences"
+printf ">s1\nACGT\n>s2\nTGCA\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --max_unmasked_pct 100 \
+        --quiet 2>/dev/null | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--min_unmasked_pct 0 retains all sequences"
+printf ">s1\nACGT\n>s2\nTGCA\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --min_unmasked_pct 0 \
+        --quiet 2>/dev/null | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# atGC: 2 masked (at) out of 4 = 50% unmasked; fails min_unmasked_pct 100
+DESCRIPTION="--min_unmasked_pct 100 filters out partially masked sequences"
+printf ">s1\natGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask soft \
+        --min_unmasked_pct 100 \
+        --quiet 2>/dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# atGC: 2 uppercase (GC) out of 4 = 50% unmasked
+DESCRIPTION="--min_unmasked_pct 50 keeps sequence with exactly 50% unmasked"
+printf ">s1\natGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask soft \
+        --fasta_width 0 \
+        --min_unmasked_pct 50 \
+        --quiet 2>/dev/null | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--min_unmasked_pct 51 discards sequence with 50% unmasked"
+printf ">s1\natGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask soft \
+        --min_unmasked_pct 51 \
+        --quiet 2>/dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--max_unmasked_pct 50 keeps sequence with exactly 50% unmasked"
+printf ">s1\natGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask soft \
+        --fasta_width 0 \
+        --max_unmasked_pct 50 \
+        --quiet 2>/dev/null | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--max_unmasked_pct 49 discards sequence with 50% unmasked"
+printf ">s1\natGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask soft \
+        --max_unmasked_pct 49 \
+        --quiet 2>/dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--max_unmasked_pct > 100 fails"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --max_unmasked_pct 101 \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--min_unmasked_pct < 0 fails"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --min_unmasked_pct -1 \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
 #                            secondary options                                #
 #                                                                             #
 #*****************************************************************************#
+
+## --fasta_width
+
+# 84-nt sequence (> 80) appears on one line with --fasta_width 0
+DESCRIPTION="--fasta_width 0 suppresses line folding"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 84-nt sequence is folded; line 2 must be exactly 80 chars by default
+DESCRIPTION="--fasta_width default folds at 80 characters"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --quiet 2>/dev/null | \
+    awk "NR==2 {exit length(\$0) != 80}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fasta_width 10 folds sequence at 10 characters"
+printf ">s1\nACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 10 \
+        --quiet 2>/dev/null | \
+    awk "NR==2 {exit length(\$0) != 10}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --fastq_ascii
+
+DESCRIPTION="--fastq_ascii 33 is accepted"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --qmask none \
+        --fastq_ascii 33 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# quality '@' = ASCII 64, offset 64 -> quality score 0
+DESCRIPTION="--fastq_ascii 64 is accepted"
+printf "@s1\nACGT\n+\n@@@@\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --qmask none \
+        --fastq_ascii 64 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --fastq_qmax
+
+DESCRIPTION="--fastq_qmax is accepted"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --qmask none \
+        --fastq_qmax 41 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --fastq_qmin
+
+DESCRIPTION="--fastq_qmin is accepted"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --qmask none \
+        --fastq_qmin 0 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --label_suffix
+
+DESCRIPTION="--label_suffix appends suffix to sequence header"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --label_suffix ";foo=bar" \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1;foo=bar" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --lengthout
+
+DESCRIPTION="--lengthout adds length annotation to header"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --lengthout \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1;length=4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --log
+
+DESCRIPTION="--log writes to a file"
+TMPLOG=$(mktemp)
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --log "${TMPLOG}" \
+        --quiet 2>/dev/null
+[[ -s "${TMPLOG}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPLOG}"
+unset TMPLOG
+
+## --no_progress
+
+DESCRIPTION="--no_progress is accepted"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --no_progress \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --notrunclabels
+
+DESCRIPTION="--notrunclabels preserves full header including space"
+printf ">s1 some description\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --notrunclabels \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1 some description" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="without --notrunclabels header is truncated at first space"
+printf ">s1 some description\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --quiet
+
+DESCRIPTION="--quiet suppresses stderr output"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --quiet 2>&1 | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --relabel
+
+DESCRIPTION="--relabel replaces header with prefix and ticker"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel "seq" \
+        --quiet 2>/dev/null | \
+    grep -qx ">seq1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --relabel_keep
+
+DESCRIPTION="--relabel_keep retains original identifier after relabeling"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel "seq" \
+        --relabel_keep \
+        --quiet 2>/dev/null | \
+    grep -qx ">seq1 s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --relabel_md5
+
+# MD5 of "ACGT" (uppercase, U->T applied) = f1f8f4bf413b16ad135722aa4591043e
+DESCRIPTION="--relabel_md5 replaces header with MD5 digest of the sequence"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel_md5 \
+        --quiet 2>/dev/null | \
+    grep -qx ">f1f8f4bf413b16ad135722aa4591043e" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --relabel_sha1
+
+# SHA1 of "ACGT" (uppercase, U->T applied) = 2108994e17f6cca9ff2352ada92b6511db076034
+DESCRIPTION="--relabel_sha1 replaces header with SHA1 digest of the sequence"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel_sha1 \
+        --quiet 2>/dev/null | \
+    grep -qx ">2108994e17f6cca9ff2352ada92b6511db076034" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --relabel_self
+
+DESCRIPTION="--relabel_self replaces header with the sequence itself"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel_self \
+        --quiet 2>/dev/null | \
+    grep -qx ">ACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --sample
+
+DESCRIPTION="--sample adds sample annotation to header"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --sample "ABC" \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --sizein and --sizeout
+
+DESCRIPTION="--sizeout adds size annotation to header (default size=1)"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --sizeout \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sizein reads existing size annotation; --sizeout propagates it"
+printf ">s1;size=5\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --sizein \
+        --sizeout \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1;size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --threads
+
+DESCRIPTION="--threads 1 is accepted"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask none \
+        --threads 1 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --xee
+
+DESCRIPTION="--xee strips ee annotation from header"
+printf ">s1;ee=0.5\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --xee \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --xlength
+
+DESCRIPTION="--xlength strips length annotation from header"
+printf ">s1;length=10\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --xlength \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --xsize
+
+DESCRIPTION="--xsize strips size annotation from header"
+printf ">s1;size=5\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --xsize \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -68,6 +1010,7 @@ DESCRIPTION="check if vsearch is executable"
 #*****************************************************************************#
 
 # none
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -107,348 +1050,5 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-
-exit 0
-
-
-#*****************************************************************************#
-#                                                                             #
-#                                fastx_mask                                   #    
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--fastx_mask is accepted"
-OUTPUT=$(mktemp)
-printf '>seq1\nA\n' | \
-    "${VSEARCH}" --fastx_mask - --fastaout "${OUTPUT}"  &> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm "${OUTPUT}"
-
-DESCRIPTION="--fastx_mask if argument given is not valid"
-OUTPUT=$(mktemp)
-"${VSEARCH}" --fastx_mask OUTEST --output "${OUTPUT}"  &> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-rm "${OUTPUT}"
-
-DESCRIPTION="--fastx_mask if no argument"
-OUTPUT=$(mktemp)
-"${VSEARCH}" --output "${OUTPUT}" --fastx_mask  &> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-rm "${OUTPUT}"
-
-DESCRIPTION="--fastx_mask --fastaout is accepted"
-printf ">seq1\nACG" | \
-    "${VSEARCH}" --fastx_mask - fastaout - &> /dev/null 
-success "${DESCRIPTION}" || \
-    failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --fastqout is accepted"
-printf "@seq1\nACG\n+\n!!!" | \
-    "${VSEARCH}" --fastx_mask - fastqout - &> /dev/null 
-success "${DESCRIPTION}" || \
-    failure "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                            fasta hardmask off                               #    
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--fastx_mask --qmask none output is correct for a fasta input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-EXPECTED=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL})
-OUTPUT=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL} | "${VSEARCH}" --fastx_mask - --qmask none --fastaout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-               "${EXPECTED}" ]] && \
-success "${DESCRIPTION}" || \
-failure "${DESCRIPTION}"
-unset "OUTPUT" "EXPECTED"
-			
-DESCRIPTION="--fastx_mask --qmask dust output is correct for a fasta input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"        
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-EXPECTED=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL})
-OUTPUT=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL} | "${VSEARCH}" --fastx_mask - --qmask dust --fastaout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-               "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "EXPECTED"
-
-DESCRIPTION="--fastx_mask --qmask soft output is correct for a fasta input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"        
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-EXPECTED=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL})
-OUTPUT=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL} | "${VSEARCH}" --fastx_mask - --qmask soft --fastaout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-               "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "EXPECTED"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                            fastq hardmask off                               #    
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--fastx_mask --qmask none output is correct for a fastq input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-QUALITY=$(printf "!%.0s" {1..89})
-EXPECTED=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY})
-OUTPUT=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY}| "${VSEARCH}" --fastx_mask - --qmask none --fastqout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-              "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "EXPECTED" "OUTPUT"
-
-DESCRIPTION="--fastx_mask --qmask soft output is correct for a fastq input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-QUALITY=$(printf "!%.0s" {1..89})
-EXPECTED=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY})
-OUTPUT=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY}| "${VSEARCH}" --fastx_mask - --qmask soft --fastqout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-              "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "EXPECTED" "OUTPUT"
-DESCRIPTION="--fastx_mask --qmask dust output is correct for a fastq input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"
-MIDDLE_LC=$(echo $MIDDLE | tr [:upper:] [:lower:])
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-QUALITY=$(printf "!%.0s" {1..89})
-EXPECTED=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE_LC} ${TAIL} ${QUALITY})
-OUTPUT=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY}| "${VSEARCH}" --fastx_mask - --qmask dust --fastqout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-              "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "EXPECTED" "OUTPUT"
-
-#*****************************************************************************#
-#                                                                             #
-#                            fasta hardmask on                                #    
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--fastx_mask --qmask none --hardmask output is correct for a fasta input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-EXPECTED=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL})
-OUTPUT=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL} | "${VSEARCH}" --fastx_mask - --qmask none --hardmask --fastaout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-               "${EXPECTED}" ]] && \
-success "${DESCRIPTION}" || \
-failure "${DESCRIPTION}"
-unset "OUTPUT" "EXPECTED"
-			
-DESCRIPTION="--fastx_mask --qmask dust --hardmask output is correct for a fasta input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"        
-MIDDLE_UC=$(echo $MIDDLE | tr [:lower:] [:upper:])
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-EXPECTED=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE_UC} ${TAIL})
-OUTPUT=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL} | "${VSEARCH}" --fastx_mask - --qmask dust --hardmask --fastaout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-               "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "EXPECTED"
-
-DESCRIPTION="--fastx_mask --qmask soft --hardmask output is correct for a fasta input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"        
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-EXPECTED=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL})
-OUTPUT=$(printf ">seq1\n%s%s%s\n" ${HEAD} ${MIDDLE} ${TAIL} | "${VSEARCH}" --fastx_mask - --qmask soft --hardmask --fastaout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-               "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "EXPECTED"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                            fastq hardmask on                                #    
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--fastx_mask --qmask none --hardmask output is correct for a fastq input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-QUALITY=$(printf "!%.0s" {1..89})
-EXPECTED=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY})
-OUTPUT=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY}| "${VSEARCH}" --fastx_mask - --qmask none --hardmask --fastqout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-              "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "EXPECTED" "OUTPUT"
-
-DESCRIPTION="--fastx_mask --qmask soft --hardmask output is correct for a fastq input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="TAAAACTTAAAGTATAATAATAATAAAATTAAAAAAAAA"
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-QUALITY=$(printf "!%.0s" {1..89})
-EXPECTED=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY})
-OUTPUT=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY}| "${VSEARCH}" --fastx_mask - --qmask soft --hardmask --fastqout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-              "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "EXPECTED" "OUTPUT"
-
-DESCRIPTION="--fastx_mask --qmask dust --hardmask output is correct for a fastq input"
-HEAD="ACCTGCACATTGTGCACATGTACCC"
-MIDDLE="NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"        
-TAIL="TGCTACAGTATGACCCCACTCCTGG"
-QUALITY=$(printf "!%.0s" {1..89})
-EXPECTED=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY})
-OUTPUT=$(printf "@seq1\n%s%s%s\n+\n%s" ${HEAD} ${MIDDLE} ${TAIL} ${QUALITY}| "${VSEARCH}" --fastx_mask - --qmask dust --hardmask --fastqout - --fasta_width 0 2> /dev/null)
-[[ "${OUTPUT}" == \
-              "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "EXPECTED" "OUTPUT"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                            max/min_unmasked_pct                             #    
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--fastx_mask --max_unmasked_pct is accepted"
-"${VSEARCH}" --fastx_mask <(printf '>seq1\natGC') --qmask soft \
-             --hardmask --max_unmasked_pct 0 --fastaout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --min_unmasked_pct is accepted"
-printf '>seq1\natGC' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --min_unmasked_pct 0 --fastaout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --max_unmasked_pct fails if no argument given"
-printf '>seq1\natGC' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --max_unmasked_pct --fastaout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --min_unmasked_pct fails if no argument given"
-printf '>seq1\natGC' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --min_unmasked_pct --fastaout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --max_unmasked_pct fails if value given is not valid"
-printf '>seq1\natGC' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --max_unmasked_pct toto --fastaout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --min_unmasked_pct fails if value given is not valid"
-printf '>seq1\natGC' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --min_unmasked_pct toto --fastaout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --max_unmasked_pct gives the correct result"
-OUTPUT=$(printf '>seq1\natGC\n>seq2\na' | \
-		"${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-			     --max_unmasked_pct 49 --fastaout - 2>/dev/null)
-[[ "${OUTPUT}" == \
-               $(printf '>seq2\nN') ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --min_unmasked_pct gives the correct result"
-OUTPUT=$(printf '>seq1\natGC\n>seq2\na' | \
-		"${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-			     --min_unmasked_pct 50 --fastaout - 2>/dev/null)
-[[ "${OUTPUT}" == \
-               $(printf '>seq1\nNNGC') ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --max_unmasked_pct fails if value is more than 100"
-printf '>seq1\natGC\n>seq2\na' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --max_unmasked_pct 110 --fastaout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --min_unmasked_pct fails if value is greater than 100"
-printf '>seq1\natGC\n>seq2\na' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --min_unmasked_pct 110 --fastaout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --min_unmasked_pct fails if value is less than 100"
-printf '>seq1\natGC\n>seq2\na' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --fastaout - --max_unmasked_pct \-10 --min_unmasked_pct \-40 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --max_unmasked_pct --min_unmasked_pct fails if min between 100 and max with max greater than 100"
-printf '>seq1\natGC\n>seq2\na' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --max_unmasked_pct 140 --min_unmasked_pct 110 --fastaout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --max_unmasked_pct fails if value greater than 100"
-printf '>seq1\natGC\n>seq2\na' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --fastaout - --max_unmasked_pct \-1 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --max_unmasked_pct --min_unmasked_pct fails if min less than 0"
-printf '>seq1\natGC\n>seq2\na' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --min_unmasked_pct \-1 --fastaout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --min_unmasked_pct fails if value less than 0"
-printf '>seq1\natGC\n>seq2\na' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --min_unmasked_pct -10 --fastaout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--fastx_mask --min_unmasked_pct --max_unmasked_pct fails if min greater than max"
-printf '>seq1\natGC\n>seq2\na' | \
-    "${VSEARCH}" --fastx_mask - --qmask soft --hardmask \
-		 --min_unmasked_pct 60 --max_unmasked_pct 40 --fastaout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
 
 exit 0
