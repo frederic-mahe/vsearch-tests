@@ -313,14 +313,14 @@ printf ">myseq1\nACGT\n" | \
 
 # sequences longer than 512 nucleotides trigger a realloc in the source code
 DESCRIPTION="--fastx_revcomp handles sequences longer than 512 nucleotides"
-printf ">s1\n%s\n" "$(awk 'BEGIN {for (i = 1; i <= 513; i++) printf "A"; printf "\n"}')" | \
+printf ">s\n%s\n" "$(printf '%513s' " " | tr ' ' 'A')" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
         --fastaout - \
         --fasta_width 0 \
         --quiet 2>/dev/null | \
     grep -v "^>" | \
-    grep -qx "$(awk 'BEGIN {for (i = 1; i <= 513; i++) printf "T"; printf "\n"}')" && \
+    grep -qx "$(printf '%513s' " " | tr ' ' 'T')" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
