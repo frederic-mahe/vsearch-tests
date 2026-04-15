@@ -90,6 +90,31 @@ chmod u-r "${TMPFA}"
 chmod u+r "${TMPFA}" && rm -f "${TMPFA}"
 unset TMPFA
 
+# a readable file whose content starts with neither '>' nor '@' is not
+# recognised as FASTA or FASTQ; fastx_open() calls fatal("File type not
+# recognized.") -- which is [[noreturn]] -- before it can return nullptr,
+# so the nullptr-guard at fastqops.cc:86-89 (line 88) is dead code
+DESCRIPTION="--fastx_revcomp fails with input that is not FASTA or FASTQ (file)"
+TMPFILE=$(mktemp)
+printf "not a fasta or fastq file\n" > "${TMPFILE}"
+"${VSEARCH}" \
+    --fastx_revcomp "${TMPFILE}" \
+    --fastaout /dev/null \
+    --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPFILE}"
+unset TMPFILE
+
+DESCRIPTION="--fastx_revcomp fails with stdin that is not FASTA or FASTQ"
+printf "not a fasta or fastq file\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastaout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_revcomp fails without any output option"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
