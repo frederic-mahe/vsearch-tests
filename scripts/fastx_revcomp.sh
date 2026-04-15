@@ -334,7 +334,7 @@ printf ">s\n%s\n" "$(printf '%513s' " " | tr ' ' 'A')" | \
 ## --fastq_ascii
 #
 # NOTE for human review: the manpage lists --fastq_ascii, --fastq_qmax, and
-# --fastq_qmin as core options for --fastx_revcomp, but the implementation
+# --fastq_qmin as accepted options for --fastx_revcomp, but the implementation
 # (fastqops.cc) does not use these options: quality scores are reversed as
 # raw ASCII bytes without offset conversion or range validation. Tests below
 # only verify that the options are accepted and do not corrupt the output.
