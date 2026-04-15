@@ -331,93 +331,7 @@ printf ">s\n%s\n" "$(printf '%513s' " " | tr ' ' 'A')" | \
 #                                                                             #
 #*****************************************************************************#
 
-## --fastq_ascii
-#
-# NOTE for human review: the manpage lists --fastq_ascii, --fastq_qmax, and
-# --fastq_qmin as accepted options for --fastx_revcomp, but the implementation
-# (fastqops.cc) does not use these options: quality scores are reversed as
-# raw ASCII bytes without offset conversion or range validation. Tests below
-# only verify that the options are accepted and do not corrupt the output.
-
-DESCRIPTION="--fastq_ascii 33 is accepted"
-printf "@s\nACGT\n+\nIIII\n" | \
-    "${VSEARCH}" \
-        --fastx_revcomp - \
-        --fastqout /dev/null \
-        --fastq_ascii 33 \
-        --quiet 2>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastq_ascii 64 is accepted"
-printf "@s\nACGT\n+\n@@@@\n" | \
-    "${VSEARCH}" \
-        --fastx_revcomp - \
-        --fastqout /dev/null \
-        --fastq_ascii 64 \
-        --quiet 2>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastq_ascii has no effect on quality output (scores passed through as-is)"
-printf "@s\nACGT\n+\nIIII\n" | \
-    "${VSEARCH}" \
-        --fastx_revcomp - \
-        --fastqout - \
-        --fastq_ascii 64 \
-        --quiet 2>/dev/null | \
-    awk "NR==4" | \
-    grep -qx "IIII" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --fastq_qmax
-
-DESCRIPTION="--fastq_qmax is accepted"
-printf "@s\nACGT\n+\nIIII\n" | \
-    "${VSEARCH}" \
-        --fastx_revcomp - \
-        --fastqout /dev/null \
-        --fastq_qmax 41 \
-        --quiet 2>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastq_qmax has no effect on sequence output"
-printf "@s\nGTCA\n+\nFGHI\n" | \
-    "${VSEARCH}" \
-        --fastx_revcomp - \
-        --fastqout - \
-        --fastq_qmax 41 \
-        --quiet 2>/dev/null | \
-    awk "NR==2" | \
-    grep -qx "TGAC" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --fastq_qmin
-
-DESCRIPTION="--fastq_qmin is accepted"
-printf "@s\nACGT\n+\nIIII\n" | \
-    "${VSEARCH}" \
-        --fastx_revcomp - \
-        --fastqout /dev/null \
-        --fastq_qmin 0 \
-        --quiet 2>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--fastq_qmin has no effect on sequence output"
-printf "@s\nGTCA\n+\nFGHI\n" | \
-    "${VSEARCH}" \
-        --fastx_revcomp - \
-        --fastqout - \
-        --fastq_qmin 0 \
-        --quiet 2>/dev/null | \
-    awk "NR==2" | \
-    grep -qx "TGAC" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+# none
 
 
 #*****************************************************************************#
@@ -867,6 +781,94 @@ printf ">s;size=5\nACGT\n" | \
 #                             ignored options                                 #
 #                                                                             #
 #*****************************************************************************#
+
+## --fastq_ascii
+#
+# NOTE for human review: the manpage lists --fastq_ascii, --fastq_qmax, and
+# --fastq_qmin as accepted options for --fastx_revcomp, but the implementation
+# (fastqops.cc) does not use these options: quality scores are reversed as
+# raw ASCII bytes without offset conversion or range validation. Tests below
+# only verify that the options are accepted and do not corrupt the output.
+
+DESCRIPTION="--fastq_ascii 33 is accepted"
+printf "@s\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastqout /dev/null \
+        --fastq_ascii 33 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_ascii 64 is accepted"
+printf "@s\nACGT\n+\n@@@@\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastqout /dev/null \
+        --fastq_ascii 64 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_ascii has no effect on quality output (scores passed through as-is)"
+printf "@s\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastqout - \
+        --fastq_ascii 64 \
+        --quiet 2>/dev/null | \
+    awk "NR==4" | \
+    grep -qx "IIII" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --fastq_qmax
+
+DESCRIPTION="--fastq_qmax is accepted"
+printf "@s\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastqout /dev/null \
+        --fastq_qmax 41 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_qmax has no effect on sequence output"
+printf "@s\nGTCA\n+\nFGHI\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastqout - \
+        --fastq_qmax 41 \
+        --quiet 2>/dev/null | \
+    awk "NR==2" | \
+    grep -qx "TGAC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --fastq_qmin
+
+DESCRIPTION="--fastq_qmin is accepted"
+printf "@s\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastqout /dev/null \
+        --fastq_qmin 0 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_qmin has no effect on sequence output"
+printf "@s\nGTCA\n+\nFGHI\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastqout - \
+        --fastq_qmin 0 \
+        --quiet 2>/dev/null | \
+    awk "NR==2" | \
+    grep -qx "TGAC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## --threads (command is not multithreaded, option has no effect)
 
