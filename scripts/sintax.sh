@@ -334,6 +334,76 @@ printf ">q\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 unset SEQ
 
+## empty query file produces no output lines
+DESCRIPTION="--sintax empty query produces no output"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf "" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk 'END {exit (NR != 0)}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+## empty query file: classified count reports "0 of 0"
+DESCRIPTION="--sintax empty query reports 0 of 0 classified"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf "" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --tabbedout /dev/null 2>&1 | \
+    grep -q "0 of 0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+## fastq query input is classified correctly
+DESCRIPTION="--sintax classifies fastq query correctly"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+QUAL=$(printf 'I%.0s' $(seq 1 50))
+printf "@q\n%s\n+\n%s\n" "${SEQ}" "${QUAL}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 == "")}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ QUAL
+
+## all 9 taxonomy levels are reported
+DESCRIPTION="--sintax reports all 9 taxonomy levels"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:D,k:K,p:P,c:C,o:O,f:F,g:G,s:S,t:T\n%s\n" "${SEQ}") \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 !~ /d:D.*k:K.*p:P.*c:C.*o:O.*f:F.*g:G.*s:S.*t:T/)}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+## DB header without ;tax= field: query gets empty taxonomy
+DESCRIPTION="--sintax DB without ;tax= produces empty taxonomy"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s_no_taxonomy\n%s\n" "${SEQ}") \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 != "")}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
 
 #*****************************************************************************#
 #                                                                             #
