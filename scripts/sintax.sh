@@ -306,7 +306,7 @@ printf ">q1\n%s\n>q2\n%s\n" "${SEQ}" "${SEQ}" | \
 unset SEQ
 
 ## a query with fewer than 32 unique k-mers is unclassified (empty taxonomy column)
-## (37-nt sequence → 30 possible 8-mers < 32 = subset_size, so no bootstrap runs)
+## (37-nt sequence -> 30 possible 8-mers < 32 = subset_size, so no bootstrap runs)
 DESCRIPTION="--sintax short query with < 32 unique k-mers is unclassified"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 SHORT="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAG"
