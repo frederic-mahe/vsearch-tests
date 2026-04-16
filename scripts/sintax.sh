@@ -224,116 +224,102 @@ unset SEQ OUTPUT_DIR
 ## output has 3 tab-separated columns without --sintax_cutoff
 DESCRIPTION="--sintax output has 3 tab-separated columns (no --sintax_cutoff)"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit (NF != 3)}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit (NF != 3)}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## column 1 is the query label
 DESCRIPTION="--sintax output column 1 is the query label"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">query1\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($1 != "query1")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($1 != "query1")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## column 2 contains taxonomy with bootstrap confidence values
 DESCRIPTION="--sintax output column 2 contains taxonomy with confidence values"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($2 !~ /^[a-z]:[^(]+\([0-9.]+\)/)}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 !~ /^[a-z]:[^(]+\([0-9.]+\)/)}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## column 3 is '+' for a plus-strand match (default)
 DESCRIPTION="--sintax output column 3 is '+' (plus strand, default)"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($3 != "+")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($3 != "+")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## one output line per query
 DESCRIPTION="--sintax writes one output line per query"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-[[ $(wc -l < "${TABBEDOUT}") -eq 1 ]] && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk 'END {exit (NR != 1)}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## two queries → two output lines
 DESCRIPTION="--sintax writes one output line per query (two queries)"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q1\n%s\n>q2\n%s\n" "${SEQ}" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-[[ $(wc -l < "${TABBEDOUT}") -eq 2 ]] && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk 'END {exit (NR != 2)}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## a query with fewer than 32 unique k-mers is unclassified (empty taxonomy column)
 ## (37-nt sequence → 30 possible 8-mers < 32 = subset_size, so no bootstrap runs)
 DESCRIPTION="--sintax short query with < 32 unique k-mers is unclassified"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 SHORT="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAG"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SHORT}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($2 != "")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 != "")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ SHORT TABBEDOUT
+unset SEQ SHORT
 
 ## classified/total count is reported to stderr
 DESCRIPTION="--sintax reports classified count to stderr"
@@ -372,58 +358,51 @@ unset SEQ
 ## --sintax_cutoff adds a 4th column to the output
 DESCRIPTION="--sintax_cutoff adds a 4th column (filtered taxonomy)"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
         --sintax_cutoff 0.8 \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit (NF != 4)}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit (NF != 4)}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## --sintax_cutoff 0.0 is treated as no cutoff (column 4 absent; opt_sintax_cutoff > 0.0)
 DESCRIPTION="--sintax_cutoff 0.0 produces 3 columns (treated as no cutoff)"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
         --sintax_cutoff 0.0 \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit (NF != 3)}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit (NF != 3)}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## --sintax_cutoff 0.01 includes all ranks in column 4 (all pass threshold 0.01)
 DESCRIPTION="--sintax_cutoff 0.01 includes all classified ranks in column 4"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
         --sintax_cutoff 0.01 \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($4 == "")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($4 == "")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## --sintax_cutoff 1.0 with 100% confidence includes ranks in column 4
 DESCRIPTION="--sintax_cutoff 1.0 includes ranks with 100% bootstrap support in column 4"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
@@ -431,48 +410,43 @@ printf ">q\n%s\n" "${SEQ}" | \
         --sintax_cutoff 1.0 \
         --randseed 1 \
         --threads 1 \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($4 == "")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($4 == "")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## column 4 (filtered taxonomy) contains no confidence values (no parentheses)
 DESCRIPTION="--sintax column 4 (filtered taxonomy) has no confidence values"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --sintax_cutoff 0.0 \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($4 ~ /\(/)}'  "${TABBEDOUT}" && \
+        --sintax_cutoff 0.01 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($4 ~ /\(/)}'  && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## unclassified query + --sintax_cutoff: output has 4 fields (all empty after label)
 DESCRIPTION="--sintax_cutoff unclassified query produces 4-column output"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 SHORT="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAG"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SHORT}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
         --sintax_cutoff 0.8 \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit (NF != 4)}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit (NF != 4)}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ SHORT TABBEDOUT
+unset SEQ SHORT
 
 ## --sintax_random is accepted
 DESCRIPTION="--sintax_random is accepted"
@@ -519,38 +493,34 @@ unset SEQ
 ## --strand both: plus strand match is reported as '+'
 DESCRIPTION="--strand both reports '+' for plus-strand match"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
         --strand both \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($3 != "+")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($3 != "+")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## --strand both: minus strand match is reported as '-'
 ## RCSEQ is the reverse complement of SEQ; it matches the DB only on the minus strand
 DESCRIPTION="--strand both reports '-' for minus-strand match"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 RCSEQ="GTAATTCCGATTAACGCTTGCACCCTCCGTATTACCGCGGCTGCTGGCAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${RCSEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
         --strand both \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($3 != "-")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($3 != "-")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ RCSEQ TABBEDOUT
+unset SEQ RCSEQ
 
 ## --randseed is accepted
 DESCRIPTION="--randseed is accepted"
@@ -764,19 +734,17 @@ unset SEQ
 ## --gzip_decompress reads gzip-compressed input and classifies correctly
 DESCRIPTION="--gzip_decompress classifies gzip-compressed query correctly"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | gzip | \
     "${VSEARCH}" \
         --sintax - \
         --gzip_decompress \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($2 == "")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 == "")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## --fastq_ascii is accepted (with fastq query)
 DESCRIPTION="--fastq_ascii is accepted (with fastq query)"
@@ -918,20 +886,18 @@ unset SEQ
 ## --maxseqlength discards long DB sequences (query is unclassified when DB is empty)
 DESCRIPTION="--maxseqlength discards DB sequences above the threshold"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 ## maxseqlength=49 discards the 50-nt DB sequence, leaving an empty DB
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
         --maxseqlength 49 \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($2 != "")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 != "")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## --minseqlength is accepted
 DESCRIPTION="--minseqlength is accepted"
@@ -952,37 +918,33 @@ DESCRIPTION="--minseqlength discards DB sequences below the threshold"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 ## DB has a 20-nt sequence; default minseqlength=32 discards it
 DB_SHORT="GTGCCAGCAGCCGCGGTAAT"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${DB_SHORT}") \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($2 != "")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 != "")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ DB_SHORT TABBEDOUT
+unset SEQ DB_SHORT
 
 ## --minseqlength 1 allows short DB sequences that would otherwise be discarded
 DESCRIPTION="--minseqlength 1 allows short DB sequences"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 ## DB has a 20-nt sequence; with --minseqlength 1 it is kept and query is classified
 DB_SHORT="GTGCCAGCAGCCGCGGTAAT"
-TABBEDOUT=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${DB_SHORT}") \
         --minseqlength 1 \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($2 == "")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 == "")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ DB_SHORT TABBEDOUT
+unset SEQ DB_SHORT
 
 ## --no_progress is accepted
 DESCRIPTION="--no_progress is accepted"
@@ -1001,18 +963,16 @@ unset SEQ
 ## --notrunclabels is on by default for --sintax (headers with spaces are preserved)
 DESCRIPTION="--notrunclabels is on by default (header with space is preserved)"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-TABBEDOUT=$(mktemp)
 printf ">query with spaces\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --tabbedout "${TABBEDOUT}" \
-        --quiet 2>/dev/null
-awk -F'\t' 'NR == 1 {exit ($1 != "query with spaces")}' "${TABBEDOUT}" && \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($1 != "query with spaces")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
-rm -f "${TABBEDOUT}"
-unset SEQ TABBEDOUT
+unset SEQ
 
 ## --notrunclabels is accepted explicitly
 DESCRIPTION="--notrunclabels is accepted"
