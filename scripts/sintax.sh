@@ -185,6 +185,49 @@ printf ">q\n%s\n" "${SEQ}" | \
 chmod u+r "${DB}" && rm -f "${DB}"
 unset SEQ DB
 
+## --db accepts a UDB format database
+DESCRIPTION="--db accepts a UDB format database"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB_FASTA=$(mktemp)
+DB_UDB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB_FASTA}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB_FASTA}" \
+    --output "${DB_UDB}" \
+    --quiet 2>/dev/null
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB_UDB}" \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB_FASTA}" "${DB_UDB}"
+unset SEQ DB_FASTA DB_UDB
+
+## --db with UDB format classifies correctly
+DESCRIPTION="--db with UDB format classifies correctly"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB_FASTA=$(mktemp)
+DB_UDB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB_FASTA}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB_FASTA}" \
+    --output "${DB_UDB}" \
+    --quiet 2>/dev/null
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB_UDB}" \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 !~ /d:Bacteria/)}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB_FASTA}" "${DB_UDB}"
+unset SEQ DB_FASTA DB_UDB
+
 ## --tabbedout is accepted
 DESCRIPTION="--tabbedout is accepted"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
@@ -635,6 +678,8 @@ printf ">q\n%s\n" "${PALSEQ}" | \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${PALSEQ}") \
         --strand both \
+        --randseed 1 \
+        --threads 1 \
         --tabbedout /dev/stdout \
         --quiet 2>/dev/null | \
     awk -F'\t' 'NR == 1 {exit ($3 != "+")}' && \
