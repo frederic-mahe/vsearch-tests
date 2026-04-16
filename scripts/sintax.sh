@@ -693,6 +693,34 @@ unset SEQ
 #         failure "${DESCRIPTION}"
 # unset SEQ
 
+## --wordlength 2 is rejected (below the minimum of 3)
+DESCRIPTION="--wordlength 2 is rejected (below minimum of 3)"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --wordlength 2 \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+unset SEQ
+
+## --wordlength 16 is rejected (above the maximum of 15)
+DESCRIPTION="--wordlength 16 is rejected (above maximum of 15)"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --wordlength 16 \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+unset SEQ
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -1010,33 +1038,6 @@ unset SEQ
 #                                                                             #
 #*****************************************************************************#
 
-## --wordlength 2 is rejected (below the minimum of 3)
-DESCRIPTION="--wordlength 2 is rejected (below minimum of 3)"
-SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-printf ">q\n%s\n" "${SEQ}" | \
-    "${VSEARCH}" \
-        --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --wordlength 2 \
-        --tabbedout /dev/null \
-        --quiet 2>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset SEQ
-
-## --wordlength 16 is rejected (above the maximum of 15)
-DESCRIPTION="--wordlength 16 is rejected (above maximum of 15)"
-SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-printf ">q\n%s\n" "${SEQ}" | \
-    "${VSEARCH}" \
-        --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --wordlength 16 \
-        --tabbedout /dev/null \
-        --quiet 2>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset SEQ
 
 
 #*****************************************************************************#
