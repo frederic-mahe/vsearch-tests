@@ -626,6 +626,36 @@ printf ">q\n%s\n" "${RCSEQ}" | \
         failure "${DESCRIPTION}"
 unset SEQ RCSEQ
 
+## --strand both with palindromic query: equal score on both strands defaults to '+'
+## PALSEQ is an 80-nt palindrome (equal to its own reverse complement, 71 unique 8-mers)
+DESCRIPTION="--strand both with palindromic query defaults to plus strand"
+PALSEQ="ATGCTAGCAACTTGGCCAATCGGTAACCTTGGAATCGCTATAGCGATTCCAAGGTTACCGATTGGCCAAGTTGCTAGCAT"
+printf ">q\n%s\n" "${PALSEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${PALSEQ}") \
+        --strand both \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($3 != "+")}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset PALSEQ
+
+## --strand minus is rejected (only plus and both are valid)
+DESCRIPTION="--strand minus is rejected"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --strand minus \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+unset SEQ
+
 ## --randseed is accepted
 DESCRIPTION="--randseed is accepted"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
