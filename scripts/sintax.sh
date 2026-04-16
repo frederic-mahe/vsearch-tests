@@ -42,11 +42,11 @@ DESCRIPTION="check if vsearch is executable"
 
 ## test sequences:
 ## SEQ is a 50-nt sequence producing 43 possible 8-mers (>= 32 = subset_size)
-## → should be classified when it matches the DB
+## -> should be classified when it matches the DB
 ## SHORT is a 37-nt sequence producing 30 possible 8-mers (< 32 = subset_size)
-## → unclassified (too few unique k-mers for bootstrap)
+## -> unclassified (too few unique k-mers for bootstrap)
 ## RCSEQ is the reverse complement of SEQ
-## → used to test minus-strand classification with --strand both
+## -> used to test minus-strand classification with --strand both
 
 ## --sintax is accepted
 DESCRIPTION="--sintax is accepted"
