@@ -532,6 +532,40 @@ printf ">q\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 unset SEQ
 
+## --sintax_random breaks ties between DB sequences with equal k-mer counts
+DESCRIPTION="--sintax_random exercises random tie-breaking with equal k-mer DB seqs"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s1;tax=d:Archaea\n%s\n>s2;tax=d:Bacteria\n%s\n" "${SEQ}" "${SEQ}") \
+        --sintax_random \
+        --randseed 1 \
+        --threads 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 == "")}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+## default tie-breaking prefers the earlier DB sequence when same length
+DESCRIPTION="--sintax default tie-breaking prefers earlier DB sequence (same length)"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">first;tax=d:Archaea\n%s\n>second;tax=d:Bacteria\n%s\n" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 !~ /d:Archaea/)}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB
+
 ## --strand plus is accepted
 DESCRIPTION="--strand plus is accepted"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
