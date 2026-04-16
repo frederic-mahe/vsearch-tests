@@ -91,9 +91,7 @@ chmod u+r "${TMPFA}" && rm -f "${TMPFA}"
 unset TMPFA
 
 # a readable file whose content starts with neither '>' nor '@' is not
-# recognised as FASTA or FASTQ; fastx_open() calls fatal("File type not
-# recognized.") -- which is [[noreturn]] -- before it can return nullptr,
-# so the nullptr-guard at fastqops.cc:86-89 (line 88) is dead code
+# recognised as FASTA or FASTQ
 DESCRIPTION="--fastx_revcomp fails with input that is not FASTA or FASTQ (file)"
 TMPFILE=$(mktemp)
 printf "not a fasta or fastq file\n" > "${TMPFILE}"
