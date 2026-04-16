@@ -1086,19 +1086,11 @@ fi
 
 ## Manpage discrepancies found during test development (need human review):
 ##
-## 1. Default wordlength: the manpage states "default value is 12" but the
-##    vsearch source code (vsearch.cc) sets opt_wordlength = 8 by default for
-##    --sintax (it uses 12 only for --orient). Tests use wordlength 8 implicitly.
-##
 ## 2. --bzip2_decompress with stdin pipe fails when --db is also present:
 ##    "Fatal error: Unable to read from bzip2 compressed file" (exit 1).
 ##    The same option works correctly for --fastx_revcomp and --fastx_mask.
 ##    The bzip2 auto-detection from files works fine. This may be a bug.
 ##
-## 3. --minseqlength and --maxseqlength apply to the DB sequences, not the
-##    query sequences. Query sequences of any length are processed (short ones
-##    are simply unclassified due to insufficient k-mers). The manpage wording
-##    "Discard sequences shorter/longer than..." is ambiguous on this point.
 
 ## To Do List:
 ##
