@@ -561,6 +561,44 @@ printf ">q\n%s\n" "${SHORT}" | \
         failure "${DESCRIPTION}"
 unset SEQ SHORT
 
+## --sintax_cutoff with a negative value is rejected
+DESCRIPTION="--sintax_cutoff rejects negative value"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --sintax_cutoff -0.1 \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+unset SEQ
+
+## --sintax_cutoff 0.99 filters ranks with less than 99% bootstrap support
+## with multiple DB entries and different taxonomies, some ranks may have
+## less than full support and be excluded from column 4
+DESCRIPTION="--sintax_cutoff 0.99 can exclude low-confidence ranks from column 4"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s1;tax=d:Bacteria,p:Proteo,c:Gamma\n%s\n" "${SEQ}" > "${DB}"
+printf ">s2;tax=d:Bacteria,p:Proteo,c:Alpha\n%s\n" "${SEQ}" >> "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_cutoff 0.99 \
+        --sintax_random \
+        --randseed 1 \
+        --threads 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit (NF != 4)}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB
+
 ## --sintax_random is accepted
 DESCRIPTION="--sintax_random is accepted"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
@@ -1000,6 +1038,21 @@ printf "@q\n%s\n+\n%s\n" "${SEQ}" "${QUAL}" | \
         failure "${DESCRIPTION}"
 unset SEQ QUAL
 
+## --fastq_ascii 50 is rejected (only 33 or 64 allowed)
+DESCRIPTION="--fastq_ascii 50 is rejected"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+QUAL="IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+printf "@q\n%s\n+\n%s\n" "${SEQ}" "${QUAL}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --fastq_ascii 50 \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+unset SEQ QUAL
+
 ## --fastq_qmax is accepted (with fastq query)
 DESCRIPTION="--fastq_qmax is accepted"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
@@ -1040,6 +1093,21 @@ printf ">q\n%s\n" "${SEQ}" | \
         --label_suffix ";modified" \
         --tabbedout /dev/null \
         --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+## --label_suffix does not alter query label in tabbedout output
+DESCRIPTION="--label_suffix does not alter query label in tabbedout"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">query1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --label_suffix ";modified" \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($1 != "query1")}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset SEQ
