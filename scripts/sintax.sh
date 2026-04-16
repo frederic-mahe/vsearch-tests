@@ -678,19 +678,20 @@ printf ">q\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 unset SEQ
 
-## --wordlength 15 is accepted (maximum value)
-DESCRIPTION="--wordlength 15 is accepted (maximum)"
-SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
-printf ">q\n%s\n" "${SEQ}" | \
-    "${VSEARCH}" \
-        --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
-        --wordlength 15 \
-        --tabbedout /dev/null \
-        --quiet 2>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset SEQ
+## test requires too much RAM
+# ## --wordlength 15 is accepted (maximum value)
+# DESCRIPTION="--wordlength 15 is accepted (maximum)"
+# SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+# printf ">q\n%s\n" "${SEQ}" | \
+#     "${VSEARCH}" \
+#         --sintax - \
+#         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+#         --wordlength 15 \
+#         --tabbedout /dev/null \
+#         --quiet 2>/dev/null && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+# unset SEQ
 
 
 #*****************************************************************************#
