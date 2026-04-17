@@ -11,9 +11,11 @@ for test_script in vsearch.sh \
                        derep_smallmem.sh \
                        fasta2fastq.sh \
                        fastq_chars.sh \
+                       fastq_convert.sh \
                        fastq_join.sh \
                        fastq_stats.sh \
                        fastx_mask.sh \
+                       fastx_revcomp.sh \
                        fastx_subsample.sh \
                        fastx_uniques.sh \
                        help.sh \
@@ -44,7 +46,6 @@ for test_script in allpairs_global.sh \
                        cluster_size.sh \
                        cluster_smallmem.sh \
                        cluster_unoise.sh \
-                       fastq_convert.sh \
                        fastq_eestats.sh \
                        fastq_eestats2.sh \
                        fastq_filter.sh \
@@ -52,7 +53,6 @@ for test_script in allpairs_global.sh \
                        fastx_getseq.sh \
                        fastx_getseqs.sh \
                        fastx_getsubseq.sh \
-                       fastx_revcomp.sh \
                        makeudb_usearch.sh \
                        search_exact.sh \
                        uchime_denovo.sh \
