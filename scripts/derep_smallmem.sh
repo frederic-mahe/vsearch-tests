@@ -1481,7 +1481,7 @@ printf ">s\nA\n" | bzip2 --stdout > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--derep_smallmem --bzip2_decompress rejects uncompressed input"
+DESCRIPTION="--derep_smallmem --bzip2_decompress accepts uncompressed input"
 TMP=$(mktemp)
 printf ">s\nA\n" > "${TMP}"
 "${VSEARCH}" \
@@ -1489,8 +1489,8 @@ printf ">s\nA\n" > "${TMP}"
     --bzip2_decompress \
     --quiet \
     --fastaout /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm -f "${TMP}"
 unset TMP
 
