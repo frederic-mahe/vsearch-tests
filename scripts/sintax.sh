@@ -1050,6 +1050,120 @@ printf ">q\n%s\n" "${SEQ}" | gzip | \
         failure "${DESCRIPTION}"
 unset SEQ
 
+## Decompression-flag × input-stream matrix for stdin pipes. Together with
+## the two tests above (gzip stdin + --gzip_decompress), the six tests below
+## cover all 3 (plain/gzip/bzip2) × 2 (--gzip_decompress/--bzip2_decompress)
+## combinations. Regression guard for vsearch commit 92ce5ba (bzip2 stdin
+## with --db present used to fail). --db is a real file in all tests: the
+## fix relies on seekable-file auto-detection, which does not apply to
+## process substitution (bash <(...) is a pipe).
+
+## zlib passes non-gzip bytes through, so a plain stdin pipe with
+## --gzip_decompress is accepted (implementation quirk, not a bug)
+DESCRIPTION="--gzip_decompress accepts plain stdin pipe"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --gzip_decompress \
+        --db "${DB}" \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB
+
+## bzip2 decoder is strict: a plain stdin pipe with --bzip2_decompress fails
+DESCRIPTION="--bzip2_decompress rejects plain stdin pipe"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --bzip2_decompress \
+        --db "${DB}" \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB
+
+## gzip-compressed stdin pipe with --bzip2_decompress fails
+DESCRIPTION="--bzip2_decompress rejects gzip-compressed stdin pipe"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | gzip | \
+    "${VSEARCH}" \
+        --sintax - \
+        --bzip2_decompress \
+        --db "${DB}" \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB
+
+## bzip2-compressed stdin pipe with --gzip_decompress fails
+DESCRIPTION="--gzip_decompress rejects bzip2-compressed stdin pipe"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | bzip2 | \
+    "${VSEARCH}" \
+        --sintax - \
+        --gzip_decompress \
+        --db "${DB}" \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB
+
+## bzip2-compressed stdin pipe with --bzip2_decompress is accepted
+## (this combination was broken before vsearch commit 92ce5ba when --db
+## was also present: --db got the bzip2 format instead of auto-detection)
+DESCRIPTION="--bzip2_decompress accepts bzip2-compressed stdin pipe"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | bzip2 | \
+    "${VSEARCH}" \
+        --sintax - \
+        --bzip2_decompress \
+        --db "${DB}" \
+        --tabbedout /dev/null \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB
+
+## bzip2-compressed stdin pipe is decoded and classified correctly
+DESCRIPTION="--bzip2_decompress classifies bzip2-compressed stdin pipe"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | bzip2 | \
+    "${VSEARCH}" \
+        --sintax - \
+        --bzip2_decompress \
+        --db "${DB}" \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 == "")}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB
+
 ## --fastq_ascii is accepted (with fastq query)
 DESCRIPTION="--fastq_ascii is accepted (with fastq query)"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
