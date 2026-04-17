@@ -171,6 +171,35 @@ printf "@s1\nACGT\n+\nIIII\n" | \
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
+DESCRIPTION="--fastaout with fastq input drops the quality scores"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastaout and --fastqout together produce both output streams"
+TMPFA=$(mktemp)
+TMPFQ=$(mktemp)
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout "${TMPFA}" \
+        --fastqout "${TMPFQ}" \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null
+[[ -s "${TMPFA}" ]] && [[ -s "${TMPFQ}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}" "${TMPFQ}"
+unset TMPFA TMPFQ
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -629,6 +658,50 @@ printf ">s1\natGC\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# --max_unmasked_pct 0 keeps only sequences where every residue is masked
+DESCRIPTION="--max_unmasked_pct 0 discards a fully-unmasked sequence"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --max_unmasked_pct 0 \
+        --quiet 2>/dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--min_unmasked_pct 100 keeps a fully-unmasked sequence"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --min_unmasked_pct 100 \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# both filters combined: only sequences whose unmasked fraction lies in
+# the [25%, 75%] window are kept; atGC (50%) passes, ACGT (100%) and
+# atgc (0%) do not
+DESCRIPTION="--min_unmasked_pct and --max_unmasked_pct combine as a range"
+printf ">s1\nACGT\n>s2\natGC\n>s3\natgc\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask soft \
+        --fasta_width 0 \
+        --min_unmasked_pct 25 \
+        --max_unmasked_pct 75 \
+        --quiet 2>/dev/null | \
+    grep "^>" | \
+    grep -qx ">s2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--max_unmasked_pct > 100 fails"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
@@ -788,6 +861,17 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--bzip2_decompress fails on an uncompressed input pipe"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --bzip2_decompress \
+        --qmask none \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## --gzip_decompress
 
 DESCRIPTION="--gzip_decompress reads gzip-compressed fasta from stdin"
@@ -817,6 +901,20 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# gzip detects an uncompressed stream and passes it through unchanged
+DESCRIPTION="--gzip_decompress passes through an uncompressed input pipe"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --gzip_decompress \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --fastq_ascii
 
 DESCRIPTION="--fastq_ascii 33 is accepted"
@@ -841,6 +939,18 @@ printf "@s1\nACGT\n+\n@@@@\n" | \
         --quiet 2>/dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+# offset is restricted to either 33 or 64
+DESCRIPTION="--fastq_ascii with a value other than 33 or 64 fails"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --qmask none \
+        --fastq_ascii 50 \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## --fastq_qmax
 
@@ -867,6 +977,19 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# with offset 33, fastq_qmax + fastq_ascii must fit in the ASCII range,
+# i.e. qmax <= 93
+DESCRIPTION="--fastq_qmax above 93 (with default offset 33) fails"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --qmask none \
+        --fastq_qmax 94 \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## --fastq_qmin
 
 DESCRIPTION="--fastq_qmin is accepted"
@@ -891,6 +1014,31 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     grep -qx "ACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+# the minimum accepted quality score cannot exceed the maximum (default
+# --fastq_qmax is 41)
+DESCRIPTION="--fastq_qmin greater than --fastq_qmax fails"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --qmask none \
+        --fastq_qmin 50 \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# with default offset 33, fastq_qmin must keep the ASCII sum >= 33
+DESCRIPTION="--fastq_qmin below 0 (with default offset 33) fails"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --qmask none \
+        --fastq_qmin -1 \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## --label_suffix
 
@@ -918,6 +1066,19 @@ printf ">s1\nACGT\n" | \
         --lengthout \
         --quiet 2>/dev/null | \
     grep -q "length=4.*foo=bar\|foo=bar.*length=4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--label_suffix with empty string leaves header unchanged"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --label_suffix "" \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1062,6 +1223,49 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--relabel ticker increments across sequences"
+printf ">s1\nACGT\n>s2\nTGCA\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel "x" \
+        --quiet 2>/dev/null | \
+    grep "^>" | \
+    tr "\n" " " | \
+    grep -qx ">x1 >x2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--relabel with --lengthout appends length annotation to the new label"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel "x" \
+        --lengthout \
+        --quiet 2>/dev/null | \
+    grep -qx ">x1;length=4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--relabel with --sizeout appends size annotation to the new label"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel "x" \
+        --sizeout \
+        --quiet 2>/dev/null | \
+    grep -qx ">x1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --relabel_keep
 
 DESCRIPTION="--relabel_keep retains original identifier after relabeling"
@@ -1106,6 +1310,34 @@ printf ">s1\nACGT\n" | \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+# 'U' is replaced with 'T' before computing the digest, so RNA input
+# yields the same MD5 hash as the equivalent DNA input
+DESCRIPTION="--relabel_md5 converts U to T before computing the digest"
+printf ">s1\nACGU\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel_md5 \
+        --quiet 2>/dev/null | \
+    grep -qx ">f1f8f4bf413b16ad135722aa4591043e" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--relabel_md5 converts sequence to upper case before computing the digest"
+printf ">s1\nacgt\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --relabel_md5 \
+        --quiet 2>/dev/null | \
+    grep -qx ">f1f8f4bf413b16ad135722aa4591043e" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## --relabel_sha1
 
@@ -1196,6 +1428,21 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# without --sizein, --sizeout still carries over an existing abundance
+# value from the input header
+DESCRIPTION="--sizeout without --sizein propagates existing size annotation"
+printf ">s1;size=5\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout - \
+        --qmask none \
+        --fasta_width 0 \
+        --sizeout \
+        --quiet 2>/dev/null | \
+    grep -qx ">s1;size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--sizeout and --relabel_self can be used together"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
@@ -1275,7 +1522,16 @@ printf ">s1;size=5\nACGT\n" | \
 #                                                                             #
 #*****************************************************************************#
 
-# none
+# --output belongs to --maskfasta (the deprecated command); --fastx_mask
+# writes through --fastaout and/or --fastqout instead
+DESCRIPTION="--fastx_mask rejects --output"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --output /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
