@@ -120,6 +120,35 @@ printf "" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_convert accepts a regular fastq file as input"
+TMP=$(mktemp)
+printf "@s\nACGT\n+\nIIII\n" > "${TMP}"
+"${VSEARCH}" \
+    --fastq_convert "${TMP}" \
+    --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+# quality line shorter than sequence line: malformed fastq
+DESCRIPTION="--fastq_convert rejects fastq with quality shorter than sequence"
+printf "@s\nACGT\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# missing '+' separator line: malformed fastq
+DESCRIPTION="--fastq_convert rejects fastq with missing separator line"
+printf "@s\nA\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -200,6 +229,40 @@ printf "@s1\nA\n+\nI\n@s2\nC\n+\nI\n@s3\nG\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_convert preserves entry order"
+printf "@s1\nA\n+\nI\n@s2\nC\n+\nI\n@s3\nG\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    awk 'NR==1||NR==5||NR==9' | \
+    tr '\n' ' ' | \
+    grep -qx "@s1 @s2 @s3 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# sequence and quality line length must always match in the output
+DESCRIPTION="--fastq_convert output sequence and quality lines have equal length"
+printf "@s\nACGTACGT\n+\nIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    awk 'NR==2 {s=length($0)} NR==4 {exit length($0) == s ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# entry with empty sequence and empty quality (length 0)
+DESCRIPTION="--fastq_convert accepts an entry with empty sequence and quality"
+printf "@s\n\n+\n\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    awk 'NR==1 {exit /^@s$/ ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -241,6 +304,15 @@ printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_convert - \
         --fastq_ascii 34 \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_ascii requires a numeric argument"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii abc \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -350,6 +422,19 @@ printf "@s\nA\n+\n!\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# multi-character quality line is fully converted (not just the first byte)
+DESCRIPTION="--fastq_ascii 64 --fastq_asciiout 33 converts every byte of a multi-char quality line"
+printf "@s\nACGT\n+\nhhhh\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_asciiout 33 \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    awk 'NR==4 {exit $0 == "IIII" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- fastq_qmaxout
 
 DESCRIPTION="--fastq_qmaxout is accepted"
@@ -428,6 +513,70 @@ printf "@s\nA\n+\n&\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# --fastq_qminout cannot exceed --fastq_qmaxout (validated up front)
+DESCRIPTION="--fastq_qminout larger than --fastq_qmaxout is rejected"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_qminout 30 \
+        --fastq_qmaxout 10 \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# sum of --fastq_asciiout and --fastq_qminout must be at least 33 (printable ASCII floor)
+DESCRIPTION="--fastq_qminout with negative value is rejected"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_qminout -5 \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# manpage example: --fastq_ascii 64 --fastq_asciiout 33 --fastq_qmaxout 40
+# input 'h' = phred 40; no clamp; output 'I' (ascii 73 = 33 + 40)
+DESCRIPTION="--fastq_ascii 64 --fastq_asciiout 33 --fastq_qmaxout 40 combination (manpage example)"
+printf "@s\nACGT\n+\nhhhh\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_asciiout 33 \
+        --fastq_qmaxout 40 \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    awk 'NR==4 {exit $0 == "IIII" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# conversion 33 -> 64 with --fastq_qmaxout clamp: 'J' (phred 41) clamped to 40 -> 'h' (ascii 104)
+DESCRIPTION="--fastq_ascii 33 --fastq_asciiout 64 --fastq_qmaxout 40 clamps then shifts (J -> h)"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 33 \
+        --fastq_asciiout 64 \
+        --fastq_qmaxout 40 \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    awk 'NR==4 {exit $0 == "h" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# conversion 33 -> 64 with --fastq_qminout clamp: '!' (phred 0) raised to 5 -> 'E' (ascii 69)
+DESCRIPTION="--fastq_ascii 33 --fastq_asciiout 64 --fastq_qminout 5 clamps then shifts (! -> E)"
+printf "@s\nA\n+\n!\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 33 \
+        --fastq_asciiout 64 \
+        --fastq_qminout 5 \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    awk 'NR==4 {exit $0 == "E" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -458,6 +607,25 @@ printf "@s\nACGT\n+\nIIII\n" | \
     grep -qx "ACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--bzip2_decompress fails on uncompressed input"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --bzip2_decompress \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--bzip2_decompress and --gzip_decompress together is rejected"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --bzip2_decompress \
+        --gzip_decompress \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## ----------------------------------------------------------------- fastq_qmax
 
@@ -504,6 +672,17 @@ printf "@s\nA\n+\nT\n" | \
     "${VSEARCH}" \
         --fastq_convert - \
         --fastq_qmax 50 \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# --fastq_qmin cannot exceed --fastq_qmax (validated up front)
+DESCRIPTION="--fastq_qmin larger than --fastq_qmax is rejected"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_qmin 30 \
+        --fastq_qmax 10 \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -602,6 +781,17 @@ printf "@s\nA\n+\nI\n" | \
         --quiet \
         --fastqout - 2> /dev/null | \
     grep -qx "@s;tag=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--label_suffix with empty string leaves header unchanged"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --label_suffix "" \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -719,6 +909,17 @@ printf "@s1\nA\n+\nI\n@s2\nC\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--relabel with empty prefix yields bare counter"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --relabel "" \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    grep -qx "@1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- relabel_keep
 
 DESCRIPTION="--relabel_keep is accepted"
@@ -762,6 +963,19 @@ printf "@s\nA\n+\nI\n" | \
         --quiet \
         --fastqout - 2> /dev/null | \
     grep -qEx "@[0-9a-f]{32}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# MD5 of "A" is 7fc56270e7a70fa81a5935b72eacbe29
+DESCRIPTION="--relabel_md5 with --relabel_keep preserves original header after hash"
+printf "@original\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --relabel_md5 \
+        --relabel_keep \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    grep -qx "@7fc56270e7a70fa81a5935b72eacbe29 original" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -873,6 +1087,18 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sample and --sizeout annotations appear together"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --sample "ABC" \
+        --sizeout \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    grep -qx "@s;sample=ABC;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------------- sizein
 
 DESCRIPTION="--sizein is accepted"
@@ -962,6 +1188,30 @@ printf "@s;length=1\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--xlength is a no-op when header has no length annotation"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --xlength \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    grep -qx "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --xlength strips the existing annotation before --lengthout re-inserts the current length
+DESCRIPTION="--xlength combined with --lengthout replaces stale length annotation"
+printf "@s;length=999\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --xlength \
+        --lengthout \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    grep -qx "@s;length=4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ------------------------------------------------------------------- xsize
 
 DESCRIPTION="--xsize is accepted"
@@ -978,6 +1228,28 @@ printf "@s;size=3\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_convert - \
         --xsize \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    grep -qx "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize is a no-op when header has no size annotation"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --xsize \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    grep -qx "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xee is a no-op when header has no ee annotation"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --xee \
         --quiet \
         --fastqout - 2> /dev/null | \
     grep -qx "@s" && \
@@ -1007,6 +1279,34 @@ printf "@s\nA\n+\nI\n" | \
         --quiet \
         --fastqout - 2> /dev/null | \
     grep -qx "@seq1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--relabel_self and --sizeout can be combined"
+printf "@s\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --relabel_self \
+        --sizeout \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    grep -qx "@ACGT;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# conversion, clamping, relabeling and annotation combined in a single pass
+DESCRIPTION="--fastq_ascii --fastq_asciiout --relabel --sizeout --lengthout combined"
+printf "@s\nACGT\n+\nhhhh\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_asciiout 33 \
+        --relabel "seq" \
+        --sizeout \
+        --lengthout \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    awk 'NR==1 {h=$0} NR==4 {exit (h == "@seq1;size=1;length=4" && $0 == "IIII") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1046,7 +1346,34 @@ printf "@s\nA\n+\nI\n" | \
 #                                                                             #
 #*****************************************************************************#
 
-# none
+# --fastq_convert accepts only --fastqout, not --fastaout
+DESCRIPTION="--fastq_convert rejects --fastaout"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# --notrunclabels is not listed among the accepted options for --fastq_convert
+DESCRIPTION="--fastq_convert rejects --notrunclabels"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --notrunclabels \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# --fasta_width is not listed among the accepted options for --fastq_convert
+DESCRIPTION="--fastq_convert rejects --fasta_width"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fasta_width 0 \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
