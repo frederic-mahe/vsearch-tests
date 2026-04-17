@@ -13,12 +13,15 @@ for test_script in vsearch.sh \
                        fastq_chars.sh \
                        fastq_join.sh \
                        fastq_stats.sh \
+                       fastx_mask.sh \
                        fastx_subsample.sh \
                        fastx_uniques.sh \
                        help.sh \
+                       maskfasta.sh \
                        rereplicate.sh \
                        sff_convert.sh \
                        shuffle.sh \
+                       sintax.sh \
                        sortbylength.sh \
                        sortbysize.sh \
                        version.sh ; do
@@ -49,12 +52,9 @@ for test_script in allpairs_global.sh \
                        fastx_getseq.sh \
                        fastx_getseqs.sh \
                        fastx_getsubseq.sh \
-                       fastx_mask.sh \
                        fastx_revcomp.sh \
                        makeudb_usearch.sh \
-                       maskfasta.sh \
                        search_exact.sh \
-                       sintax.sh \
                        uchime_denovo.sh \
                        uchime2_denovo.sh \
                        uchime3_denovo.sh \
