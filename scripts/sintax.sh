@@ -1004,9 +1004,6 @@ unset SEQ
 #*****************************************************************************#
 
 ## --bzip2_decompress: bzip2-compressed query file is auto-detected and classified
-## Note: --bzip2_decompress with stdin pipe fails when --db is also present
-## (Fatal error: Unable to read from bzip2 compressed file); testing file
-## auto-detection instead
 DESCRIPTION="--sintax accepts bzip2-compressed query file (auto-detection)"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 QUERY=$(mktemp)
@@ -1543,14 +1540,6 @@ fi
 #                                    notes                                    #
 #                                                                             #
 #*****************************************************************************#
-
-## Manpage discrepancies found during test development (need human review):
-##
-## 2. --bzip2_decompress with stdin pipe fails when --db is also present:
-##    "Fatal error: Unable to read from bzip2 compressed file" (exit 1).
-##    The same option works correctly for --fastx_revcomp and --fastx_mask.
-##    The bzip2 auto-detection from files works fine. This may be a bug.
-##
 
 ## To Do List:
 ##
