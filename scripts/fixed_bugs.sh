@@ -753,7 +753,7 @@ DESCRIPTION="issue 13: vsearch documentation (call to vsearch outputs basic help
 
 DESCRIPTION="issue 13: vsearch documentation (state that vsearch --help exists)"
 "${VSEARCH}" 2>&1 | \
-    grep -q "vsearch --help" && \
+    grep -Eq "vsearch[^[:blank:]]* --help" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
