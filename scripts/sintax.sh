@@ -647,6 +647,64 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset SEQ DB
 
+## default tie-breaking picks the shortest DB sequence (short first)
+## LONG embeds SHORT between non-matching padding, so the query SHORT
+## hits both DB entries with the same k-mer count; the shorter one wins.
+DESCRIPTION="--sintax default tie-breaking picks the shortest DB sequence (short first)"
+SHORT="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+PAD="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+LONG="${PAD}${SHORT}${PAD}${PAD}${PAD}"
+printf ">q\n%s\n" "${SHORT}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s1;tax=d:short\n%s\n>s2;tax=d:long\n%s\n" "${SHORT}" "${LONG}") \
+        --threads 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 !~ /d:short/)}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SHORT PAD LONG
+
+## default tie-breaking picks the shortest DB sequence (long first)
+## regression guard for vsearch commit adc51cb: ties were resolved by
+## input order, not length. Swapping DB entries must not flip the pick.
+DESCRIPTION="--sintax default tie-breaking picks the shortest DB sequence (long first)"
+SHORT="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+PAD="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+LONG="${PAD}${SHORT}${PAD}${PAD}${PAD}"
+printf ">q\n%s\n" "${SHORT}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s1;tax=d:long\n%s\n>s2;tax=d:short\n%s\n" "${LONG}" "${SHORT}") \
+        --threads 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 !~ /d:short/)}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SHORT PAD LONG
+
+## same-length tie-breaking is input-order driven, not taxonomic:
+## symmetric to the Archaea-first test above, swapping the DB order
+## must swap the prediction
+DESCRIPTION="--sintax default tie-breaking prefers earlier DB sequence (Bacteria first)"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">first;tax=d:Bacteria\n%s\n>second;tax=d:Archaea\n%s\n" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --threads 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 !~ /d:Bacteria/)}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB
+
 ## --strand plus is accepted
 DESCRIPTION="--strand plus is accepted"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
