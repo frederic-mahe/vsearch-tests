@@ -830,7 +830,7 @@ printf "@s\nA\n+\nI\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n" | bzip2) \
+        --reverse <(printf "@s\nA\n+\nI\n") \
         --bzip2_decompress \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -851,7 +851,7 @@ printf "" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "" | bzip2) \
+        --reverse <(printf "") \
         --bzip2_decompress \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -863,7 +863,7 @@ printf "@s\nA\n+\nI\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n" | bzip2) \
+        --reverse <(printf "@s\nA\n+\nI\n") \
         --bzip2_decompress \
         --quiet \
         --fastaout /dev/null 2> /dev/null && \
@@ -874,14 +874,14 @@ DESCRIPTION="--fastq_join --bzip2_decompress rejects uncompressed stdin (forward
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n" | bzip2) \
+        --reverse <(printf "@s\nA\n+\nI\n") \
         --bzip2_decompress \
         --quiet \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join --bzip2_decompress rejects uncompressed stdin (reverse)"
+DESCRIPTION="--fastq_join --bzip2_decompress accepts compressed stdin (forward)"
 printf "@s\nA\n+\nI\n" | \
     bzip2 | \
     "${VSEARCH}" \
@@ -890,8 +890,8 @@ printf "@s\nA\n+\nI\n" | \
         --bzip2_decompress \
         --quiet \
         --fastaout /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## ---------------------------------------------------------------- fasta_width
 
@@ -1300,7 +1300,7 @@ printf "@s\nA\n+\nI\n" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n" | gzip) \
+        --reverse <(printf "@s\nA\n+\nI\n") \
         --gzip_decompress \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1321,7 +1321,7 @@ printf "" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "" | gzip) \
+        --reverse <(printf "") \
         --gzip_decompress \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1332,7 +1332,7 @@ printf "@s\nA\n+\nI\n" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n" | gzip) \
+        --reverse <(printf "@s\nA\n+\nI\n") \
         --gzip_decompress \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
