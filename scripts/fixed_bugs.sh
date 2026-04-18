@@ -1,6 +1,8 @@
 #!/bin/bash -
 # shellcheck disable=SC2015
 
+export LC_NUMERIC=C  # use US/EN decimal separator (.)
+
 ## Print a header
 SCRIPT_NAME="Fixed bugs"
 LINE=$(printf "%76s\n" " " | tr " " "-")
