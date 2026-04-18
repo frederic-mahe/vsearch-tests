@@ -6966,7 +6966,7 @@ DESCRIPTION="issue 432: id3 similarity value for large sequences with a small ov
     --iddef 3 \
     --userfields id3+mism+gaps+opens+tl \
     --userout - | \
-    awk '{exit ($1 == 98.7 && $2 == 9 && $3 == 0 && $4 == 0 && $5 == 855) ? 0 : 1}' && \
+    awk '{exit ($1 == "98.7" && $2 == 9 && $3 == 0 && $4 == 0 && $5 == 855) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7025,7 +7025,7 @@ DESCRIPTION="issue 432: userfields 'opens' excludes terminal gaps (no gap)"
     --id 1.0 \
     --userfields id+opens+caln \
     --userout - | \
-    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "32M") ? 0 : 1}' && \
+    awk '{exit ($1 == "100.0" && $2 == 0 && $3 == "32M") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7042,7 +7042,7 @@ DESCRIPTION="issue 432: userfields 'opens' excludes terminal gaps (left gap)"
     --id 1.0 \
     --userfields id+opens+caln \
     --userout - | \
-    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "32M4I") ? 0 : 1}' && \
+    awk '{exit ($1 == "100.0" && $2 == 0 && $3 == "32M4I") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7059,7 +7059,7 @@ DESCRIPTION="issue 432: userfields 'opens' excludes terminal gaps (right gap)"
     --id 1.0 \
     --userfields id+opens+caln \
     --userout - | \
-    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "4I32M") ? 0 : 1}' && \
+    awk '{exit ($1 == "100.0" && $2 == 0 && $3 == "4I32M") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7076,7 +7076,7 @@ DESCRIPTION="issue 432: userfields 'opens' excludes terminal gaps (left & right 
     --id 1.0 \
     --userfields id+opens+caln \
     --userout - | \
-    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "4I32M4I") ? 0 : 1}' && \
+    awk '{exit ($1 == "100.0" && $2 == 0 && $3 == "4I32M4I") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7093,7 +7093,7 @@ DESCRIPTION="issue 432: userfields 'gaps' excludes terminal gaps (no gap)"
     --id 1.0 \
     --userfields id+gaps+caln \
     --userout - | \
-    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "32M") ? 0 : 1}' && \
+    awk '{exit ($1 == "100.0" && $2 == 0 && $3 == "32M") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7110,7 +7110,7 @@ DESCRIPTION="issue 432: userfields 'gaps' excludes terminal gaps (left gap)"
     --id 1.0 \
     --userfields id+gaps+caln \
     --userout - | \
-    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "32M4I") ? 0 : 1}' && \
+    awk '{exit ($1 == "100.0" && $2 == 0 && $3 == "32M4I") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7127,7 +7127,7 @@ DESCRIPTION="issue 432: userfields 'gaps' excludes terminal gaps (right gap)"
     --id 1.0 \
     --userfields id+gaps+caln \
     --userout - | \
-    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "4I32M") ? 0 : 1}' && \
+    awk '{exit ($1 == "100.0" && $2 == 0 && $3 == "4I32M") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7144,7 +7144,7 @@ DESCRIPTION="issue 432: userfields 'gaps' excludes terminal gaps (left & right g
     --id 1.0 \
     --userfields id+gaps+caln \
     --userout - | \
-    awk '{exit ($1 == 100.0 && $2 == 0 && $3 == "4I32M4I") ? 0 : 1}' && \
+    awk '{exit ($1 == "100.0" && $2 == 0 && $3 == "4I32M4I") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
