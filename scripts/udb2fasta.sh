@@ -85,6 +85,52 @@ printf ">s\n%s\n" "${SEQ}" > "${TMPFA}"
 rm -f "${TMPFA}"
 unset TMPFA
 
+## a UDB file must be at least 200 bytes long (50 header uint32_t values)
+DESCRIPTION="--udb2fasta fails on a truncated UDB file (< 200 bytes)"
+TMPUDB=$(mktemp)
+TMPTRUNC=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
+head -c 4 "${TMPUDB}" > "${TMPTRUNC}"
+"${VSEARCH}" \
+    --udb2fasta "${TMPTRUNC}" \
+    --output /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPTRUNC}"
+unset TMPUDB TMPTRUNC
+
+## a file larger than 200 bytes but without the UDB signature is rejected
+DESCRIPTION="--udb2fasta rejects a large non-UDB file (bad signature)"
+TMPBAD=$(mktemp)
+head -c 600 /dev/urandom > "${TMPBAD}"
+"${VSEARCH}" \
+    --udb2fasta "${TMPBAD}" \
+    --output /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPBAD}"
+unset TMPBAD
+
+## UDB files cannot be read from a pipe (udb_read requires xstat).
+## 'cat file |' is needed to create an actual FIFO on stdin; a redirect
+## '< file' would leave stdin as a seekable regular file and not trigger
+## the pipe-detection branch.
+DESCRIPTION="--udb2fasta rejects a pipe as input"
+TMPUDB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
+# shellcheck disable=SC2002
+cat "${TMPUDB}" | \
+    "${VSEARCH}" \
+        --udb2fasta /dev/stdin \
+        --output /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
 DESCRIPTION="--udb2fasta fails if input file is not readable"
 TMPUDB=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
@@ -123,6 +169,20 @@ printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
         failure "${DESCRIPTION}"
 rm -f "${TMPUDB}" "${TMPFA}"
 unset TMPUDB TMPFA
+
+DESCRIPTION="--output fails if destination is not writable"
+TMPUDB=$(mktemp)
+TMPDIR=$(mktemp -d)
+printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
+chmod u-w "${TMPDIR}"
+"${VSEARCH}" \
+    --udb2fasta "${TMPUDB}" \
+    --output "${TMPDIR}/out.fa" \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+w "${TMPDIR}" && rm -rf "${TMPDIR}" && rm -f "${TMPUDB}"
+unset TMPUDB TMPDIR
 
 
 #*****************************************************************************#
