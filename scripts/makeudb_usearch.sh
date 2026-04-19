@@ -329,15 +329,16 @@ printf ">s\n%s\n" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--wordlength accepts maximum value (15)"
-printf ">s\n%s\n" "${SEQ}" | \
-    "${VSEARCH}" \
-        --makeudb_usearch - \
-        --wordlength 15 \
-        --output /dev/null \
-        --quiet 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+## test requires too much memory
+# DESCRIPTION="--wordlength accepts maximum value (15)"
+# printf ">s\n%s\n" "${SEQ}" | \
+#     "${VSEARCH}" \
+#         --makeudb_usearch - \
+#         --wordlength 15 \
+#         --output /dev/null \
+#         --quiet 2> /dev/null && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
 
 DESCRIPTION="--wordlength rejects value below minimum (2)"
 printf ">s\n%s\n" "${SEQ}" | \
