@@ -75,6 +75,39 @@ printf ">s\n%s\n" "${SEQ}" > "${TMPFA}"
 rm -f "${TMPFA}"
 unset TMPFA
 
+## a UDB file must provide a 200-byte header; truncating below that
+## triggers a distinct read-error path in udb_info
+DESCRIPTION="--udbinfo fails on a truncated UDB file (< 200 bytes)"
+TMPUDB=$(mktemp)
+TMPTRUNC=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+head -c 4 "${TMPUDB}" > "${TMPTRUNC}"
+"${VSEARCH}" \
+    --udbinfo "${TMPTRUNC}" \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPTRUNC}"
+unset TMPUDB TMPTRUNC
+
+## a ≥ 200 byte non-UDB file passes the size check but fails the
+## signature validation
+DESCRIPTION="--udbinfo rejects a large non-UDB file (bad signature)"
+TMPBAD=$(mktemp)
+head -c 600 /dev/urandom > "${TMPBAD}"
+"${VSEARCH}" \
+    --udbinfo "${TMPBAD}" \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPBAD}"
+unset TMPBAD
+
 DESCRIPTION="--udbinfo fails if input file is not readable"
 TMPUDB=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | \
@@ -185,6 +218,87 @@ printf ">s\n%s\n" "${SEQ}" | \
 rm -f "${TMPUDB}"
 unset TMPUDB
 
+DESCRIPTION="--udbinfo reports the SeqIx bits (32)"
+TMPUDB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbinfo "${TMPUDB}" 2>&1 | \
+    grep -qE "SeqIx bits[[:space:]]+32" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
+DESCRIPTION="--udbinfo reports the number of slots"
+TMPUDB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbinfo "${TMPUDB}" 2>&1 | \
+    grep -qE "Slots[[:space:]]+[0-9]+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
+## Dict size = 4^wordlength (65536 at default wordlength 8)
+DESCRIPTION="--udbinfo reports the dictionary size (4^wordlength)"
+TMPUDB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbinfo "${TMPUDB}" 2>&1 | \
+    grep -qE "Dict size[[:space:]]+65536" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
+DESCRIPTION="--udbinfo reports the DBstep (1 by default)"
+TMPUDB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbinfo "${TMPUDB}" 2>&1 | \
+    grep -qE "DBstep[[:space:]]+1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
+DESCRIPTION="--udbinfo reports the DBAccel (100%)"
+TMPUDB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbinfo "${TMPUDB}" 2>&1 | \
+    grep -qE "DBAccel[[:space:]]+100%" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
 ## number of sequences grows with input
 DESCRIPTION="--udbinfo reports the correct count for a 2-sequence UDB"
 TMPUDB=$(mktemp)
@@ -260,6 +374,29 @@ printf ">s\n%s\n" "${SEQ}" | \
     --quiet \
     --log "${TMPLOG}" 2> /dev/null
 grep -qE "Seqs[[:space:]]+1" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+## the info block in --log should include all header fields
+DESCRIPTION="--log captures the full info block (Word width, Dict size, DBstep, DBAccel)"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbinfo "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "Word width[[:space:]]+8" "${TMPLOG}" && \
+    grep -qE "Dict size[[:space:]]+65536" "${TMPLOG}" && \
+    grep -qE "DBstep[[:space:]]+1" "${TMPLOG}" && \
+    grep -qE "DBAccel[[:space:]]+100%" "${TMPLOG}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMPUDB}" "${TMPLOG}"
