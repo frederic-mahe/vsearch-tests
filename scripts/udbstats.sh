@@ -75,6 +75,37 @@ printf ">s\n%s\n" "${SEQ}" > "${TMPFA}"
 rm -f "${TMPFA}"
 unset TMPFA
 
+## a UDB file must be at least 200 bytes (50 header uint32_t values)
+DESCRIPTION="--udbstats fails on a truncated UDB file (< 200 bytes)"
+TMPUDB=$(mktemp)
+TMPTRUNC=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+head -c 4 "${TMPUDB}" > "${TMPTRUNC}"
+"${VSEARCH}" \
+    --udbstats "${TMPTRUNC}" \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPTRUNC}"
+unset TMPUDB TMPTRUNC
+
+## a ≥ 200 byte non-UDB file passes the size check but fails validation
+DESCRIPTION="--udbstats rejects a large non-UDB file (bad signature)"
+TMPBAD=$(mktemp)
+head -c 600 /dev/urandom > "${TMPBAD}"
+"${VSEARCH}" \
+    --udbstats "${TMPBAD}" \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPBAD}"
+unset TMPBAD
+
 DESCRIPTION="--udbstats fails if input file is not readable"
 TMPUDB=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | \
@@ -104,6 +135,25 @@ printf ">s\n%s\n" "${SEQ}" | \
 "${VSEARCH}" \
     --udbstats - \
     --quiet < "${TMPUDB}" 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
+## --udbstats also rejects a stat-able pipe (/dev/stdin backed by a FIFO)
+DESCRIPTION="--udbstats rejects /dev/stdin when it is a pipe"
+TMPUDB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+# shellcheck disable=SC2002
+cat "${TMPUDB}" | \
+    "${VSEARCH}" \
+        --udbstats /dev/stdin \
+        --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 rm -f "${TMPUDB}"
@@ -178,6 +228,100 @@ grep -qE "Size lo" "${TMPLOG}" && \
 rm -f "${TMPUDB}" "${TMPLOG}"
 unset TMPUDB TMPLOG
 
+## the log header also reports Word ones / Spaced / Hashed / Coded / Stepped
+DESCRIPTION="--udbstats reports Word ones / Spaced / Hashed / Coded / Stepped (via log)"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "Word ones[[:space:]]+8" "${TMPLOG}" && \
+    grep -qE "Spaced[[:space:]]+No" "${TMPLOG}" && \
+    grep -qE "Hashed[[:space:]]+No" "${TMPLOG}" && \
+    grep -qE "Coded[[:space:]]+No" "${TMPLOG}" && \
+    grep -qE "Stepped[[:space:]]+No" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+## the log reports DB size / Words / Median size / Mean size
+DESCRIPTION="--udbstats reports DB size / Words / Median / Mean size (via log)"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "DB size" "${TMPLOG}" && \
+    grep -qE "Words$" "${TMPLOG}" && \
+    grep -qE "Median size" "${TMPLOG}" && \
+    grep -qE "Mean size" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+## the log reports the per-word table header and Max size
+DESCRIPTION="--udbstats reports the per-word table header and Max size (via log)"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "iWord" "${TMPLOG}" && \
+    grep -qE "sWord" "${TMPLOG}" && \
+    grep -qE "Cap" "${TMPLOG}" && \
+    grep -qE "Row" "${TMPLOG}" && \
+    grep -qE "Max size" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+## the log trailer reports Upper / Lower / Total / Indexed words
+DESCRIPTION="--udbstats reports Upper / Lower / Total / Indexed words (via log)"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "[0-9]+[[:space:]]+Upper" "${TMPLOG}" && \
+    grep -qE "Lower" "${TMPLOG}" && \
+    grep -qE "[0-9]+[[:space:]]+Total$" "${TMPLOG}" && \
+    grep -qE "Indexed words" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
 ## sequence counts reflect the input
 DESCRIPTION="--udbstats reports the correct count for a 2-sequence UDB"
 TMPUDB=$(mktemp)
@@ -194,6 +338,58 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         failure "${DESCRIPTION}"
 rm -f "${TMPUDB}"
 unset TMPUDB
+
+## nine identical sequences make a kmer appear nine times, which exercises
+## both the "list sequences for a kmer" inner loop (capped at 8 entries)
+## and the trailing "..." marker for buckets with more than 8 matches
+DESCRIPTION="--udbstats truncates per-kmer sequence lists above 8 entries"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+TMPFA=$(mktemp)
+for i in 1 2 3 4 5 6 7 8 9 ; do
+    printf ">s%d\n%s\n" "${i}" "${SEQ}"
+done > "${TMPFA}"
+"${VSEARCH}" \
+    --makeudb_usearch "${TMPFA}" \
+    --dbmask none \
+    --wordlength 3 \
+    --output "${TMPUDB}" \
+    --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "\.\.\." "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}" "${TMPFA}"
+unset TMPUDB TMPLOG TMPFA
+
+## with ≥ 5 sequences the size-bucket widths grow beyond 1,
+## causing both the size_lo column to be populated and size_hi
+## to be doubled (rather than incremented from zero)
+DESCRIPTION="--udbstats widens size buckets beyond 1 when seqcount ≥ 5"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+TMPFA=$(mktemp)
+for i in 1 2 3 4 5 6 7 8 9 ; do
+    printf ">s%d\n%s\n" "${i}" "${SEQ}"
+done > "${TMPFA}"
+"${VSEARCH}" \
+    --makeudb_usearch "${TMPFA}" \
+    --dbmask none \
+    --wordlength 3 \
+    --output "${TMPUDB}" \
+    --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^[[:space:]]+3[[:space:]]+4" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}" "${TMPFA}"
+unset TMPUDB TMPLOG TMPFA
 
 ## word width recorded at UDB creation is reported by udbstats
 DESCRIPTION="--udbstats reports a non-default word width (10) in the log"
