@@ -587,6 +587,36 @@ printf ">s\n%s\n" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## With >= 16 sequences whose kmers mostly occur only once, the bitmap
+## threshold (seqcount / 8) is >= 2, so rare kmers fall below it and get
+## stored without a bitmap. makeudb_usearch then takes the non-bitmap
+## write path for them (raw kmerindex write instead of bitmap iteration,
+## see src/udb.cc). Round-tripping through udb2fasta must still produce
+## 16 preserved sequences.
+DESCRIPTION="--makeudb_usearch handles rare kmers via the non-bitmap write path"
+TMPFA=$(mktemp)
+TMPUDB=$(mktemp)
+TMPOUT=$(mktemp)
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; do
+    printf ">s%d\n" "${i}"
+    LC_ALL=C tr -dc 'ACGT' < /dev/urandom | head -c 32
+    printf "\n"
+done > "${TMPFA}"
+"${VSEARCH}" \
+    --makeudb_usearch "${TMPFA}" \
+    --dbmask none \
+    --output "${TMPUDB}" \
+    --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udb2fasta "${TMPUDB}" \
+    --output "${TMPOUT}" \
+    --quiet 2> /dev/null
+[[ $(grep -c "^>s" "${TMPOUT}") -eq 16 ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}" "${TMPUDB}" "${TMPOUT}"
+unset TMPFA TMPUDB TMPOUT
+
 
 #*****************************************************************************#
 #                                                                             #
