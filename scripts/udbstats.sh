@@ -412,6 +412,62 @@ grep -qE "Word width[[:space:]]+10" "${TMPLOG}" && \
 rm -f "${TMPUDB}" "${TMPLOG}"
 unset TMPUDB TMPLOG
 
+## udbstats formats large count and size values with a 'k' suffix
+## (via %9.1fk) instead of the plain %10.1f decimal representation.
+## Ten identical ~10,010-nt sequences produce a kmerindexsize of
+## ~92,000, which drives the "DB size", "Indexed words" and
+## per-bucket "Total size" printouts into the >= 10,000 branch.
+DESCRIPTION="--udbstats formats DB size with a 'k' suffix for large UDBs"
+TMPFA=$(mktemp)
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+SEQ10K=$(LC_ALL=C tr -dc 'ACGT' < /dev/urandom | head -c 10010)
+for i in 1 2 3 4 5 6 7 8 9 10 ; do
+    printf ">s%d\n%s\n" "${i}" "${SEQ10K}"
+done > "${TMPFA}"
+"${VSEARCH}" \
+    --makeudb_usearch "${TMPFA}" \
+    --dbmask none \
+    --output "${TMPUDB}" \
+    --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "DB size \([0-9]+\.[0-9]+k\)" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}" "${TMPUDB}" "${TMPLOG}"
+unset TMPFA TMPUDB TMPLOG SEQ10K
+
+## the per-bucket "Total size" column also uses the 'k' suffix when
+## a bucket accumulates >= 10,000 word occurrences (line 802-803 of
+## src/udb.cc). With ten identical large sequences, every shared kmer
+## has count = 10 and all fall into the last bucket, whose accumulated
+## size exceeds 92,000.
+DESCRIPTION="--udbstats formats bucket 'Total size' with a 'k' suffix for full buckets"
+TMPFA=$(mktemp)
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+SEQ10K=$(LC_ALL=C tr -dc 'ACGT' < /dev/urandom | head -c 10010)
+for i in 1 2 3 4 5 6 7 8 9 10 ; do
+    printf ">s%d\n%s\n" "${i}" "${SEQ10K}"
+done > "${TMPFA}"
+"${VSEARCH}" \
+    --makeudb_usearch "${TMPFA}" \
+    --dbmask none \
+    --output "${TMPUDB}" \
+    --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "[0-9]+\.[0-9]+k[[:space:]]+[0-9]+\.[0-9]+[[:space:]]+[0-9]+\.[0-9]+%" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}" "${TMPUDB}" "${TMPLOG}"
+unset TMPFA TMPUDB TMPLOG SEQ10K
+
 
 #*****************************************************************************#
 #                                                                             #
