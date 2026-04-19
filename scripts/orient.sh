@@ -1191,6 +1191,162 @@ printf "@s\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --hardmask
+
+# In orient.cc, --hardmask has an effect only when --dbmask soft is set
+# AND the db is not a UDB file; in that case hardmask_all() replaces
+# lowercase db nucleotides with Ns (see orient.cc and mask.cc:277).
+# However, unique_count() (unique.cc:212) already treats both lowercase
+# and N as "bad" positions when seqmask != MASK_NONE, so the kmer index
+# built by dbindex_addallsequences() is identical whether lowercase is
+# retained or replaced by N. As a consequence, --hardmask is silently
+# accepted in orient but produces no observable effect through the
+# --tabbedout or --fastaout outputs.
+
+DESCRIPTION="--hardmask is accepted (bare flag, no argument)"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\nACGT\n") \
+        --fastaout /dev/null \
+        --hardmask \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# with --dbmask soft, hardmask converts lowercase db nucleotides to Ns,
+# but the kmer index behaviour is unchanged: orient still counts the
+# same kmers on each strand (fwd/rev) for a query against a db with
+# lowercase regions
+DESCRIPTION="--hardmask with --dbmask soft has no observable effect on tabbedout"
+SEQ="GACTGCATGACGTATGCGTATCGATCATCATCGATCATCA"
+SEQ_MIXED="GACTGCATGACGTATGCGTAtcgatcatcatcgatcatca"
+OUT_SOFT=$(printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\n%s\n" "${SEQ_MIXED}") \
+        --dbmask soft \
+        --qmask none \
+        --tabbedout - \
+        --quiet 2>/dev/null)
+OUT_SOFT_HARD=$(printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\n%s\n" "${SEQ_MIXED}") \
+        --dbmask soft \
+        --hardmask \
+        --qmask none \
+        --tabbedout - \
+        --quiet 2>/dev/null)
+[[ "${OUT_SOFT}" == "${OUT_SOFT_HARD}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ SEQ_MIXED OUT_SOFT OUT_SOFT_HARD
+
+# with --dbmask none, hardmask_all() is not invoked (orient.cc:197-204)
+DESCRIPTION="--hardmask with --dbmask none is a no-op"
+OUT_NONE=$(printf ">q\nACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\nACGTACGTACGTACGT\n") \
+        --dbmask none \
+        --qmask none \
+        --tabbedout - \
+        --quiet 2>/dev/null)
+OUT_NONE_HARD=$(printf ">q\nACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\nACGTACGTACGTACGT\n") \
+        --dbmask none \
+        --hardmask \
+        --qmask none \
+        --tabbedout - \
+        --quiet 2>/dev/null)
+[[ "${OUT_NONE}" == "${OUT_NONE_HARD}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset OUT_NONE OUT_NONE_HARD
+
+# with --dbmask dust, dust_all() runs instead of hardmask_all(); the
+# hardmask branch is skipped entirely (orient.cc:197-204)
+DESCRIPTION="--hardmask with --dbmask dust is a no-op (dust branch takes precedence)"
+OUT_DUST=$(printf ">q\nAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\nAAAAAAAAAAAAAAAA\n") \
+        --dbmask dust \
+        --qmask none \
+        --tabbedout - \
+        --quiet 2>/dev/null)
+OUT_DUST_HARD=$(printf ">q\nAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\nAAAAAAAAAAAAAAAA\n") \
+        --dbmask dust \
+        --hardmask \
+        --qmask none \
+        --tabbedout - \
+        --quiet 2>/dev/null)
+[[ "${OUT_DUST}" == "${OUT_DUST_HARD}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset OUT_DUST OUT_DUST_HARD
+
+# with a UDB database, the hardmask (and dust) branch is gated by
+# `not is_udb` (orient.cc:195-205); hardmask therefore has no effect
+DESCRIPTION="--hardmask has no effect when the db is a UDB file"
+TMPUDB=$(mktemp --suffix=.udb)
+printf ">s\nGACTGCATGACGTATGCGTATCGATCATCATCGATCATCA\n" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --output "${TMPUDB}" \
+        --wordlength 12 \
+        --quiet 2>/dev/null
+OUT_UDB=$(printf ">q\nGACTGCATGACGTATGCGTATCGATCATCATCGATCATCA\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db "${TMPUDB}" \
+        --dbmask soft \
+        --tabbedout - \
+        --quiet 2>/dev/null)
+OUT_UDB_HARD=$(printf ">q\nGACTGCATGACGTATGCGTATCGATCATCATCGATCATCA\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db "${TMPUDB}" \
+        --dbmask soft \
+        --hardmask \
+        --tabbedout - \
+        --quiet 2>/dev/null)
+[[ "${OUT_UDB}" == "${OUT_UDB_HARD}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB OUT_UDB OUT_UDB_HARD
+
+# --hardmask is not applied to queries in orient (unlike cluster.cc or
+# allpairs.cc, which have a qmask-soft + hardmask branch); a lowercase
+# query produces the same tabbedout result with or without --hardmask
+DESCRIPTION="--hardmask with --qmask soft does not affect query-side processing"
+OUT_Q=$(printf ">q\ngactgcatgacgtatgcgtatcgatcatcatcgatcatca\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\nGACTGCATGACGTATGCGTATCGATCATCATCGATCATCA\n") \
+        --qmask soft \
+        --tabbedout - \
+        --quiet 2>/dev/null)
+OUT_Q_HARD=$(printf ">q\ngactgcatgacgtatgcgtatcgatcatcatcgatcatca\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\nGACTGCATGACGTATGCGTATCGATCATCATCGATCATCA\n") \
+        --qmask soft \
+        --hardmask \
+        --tabbedout - \
+        --quiet 2>/dev/null)
+[[ "${OUT_Q}" == "${OUT_Q_HARD}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset OUT_Q OUT_Q_HARD
+
 ## --label_suffix
 
 DESCRIPTION="--label_suffix is accepted"
