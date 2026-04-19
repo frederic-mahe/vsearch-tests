@@ -575,6 +575,18 @@ printf ">s\n%s\n" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## combination: --dbmask soft and --hardmask triggers the hardmask path
+DESCRIPTION="--dbmask soft combined with --hardmask is accepted"
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask soft \
+        --hardmask \
+        --output /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
