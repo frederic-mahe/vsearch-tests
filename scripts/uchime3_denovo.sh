@@ -611,7 +611,7 @@ printf ">s;size=1\n%s\n" "${PARENT_A}" | \
         --uchime3_denovo - \
         --maxseqlength 50 \
         --nonchimeras - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -634,7 +634,7 @@ printf ">s;size=1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
         --uchime3_denovo - \
         --minseqlength 33 \
         --nonchimeras - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"

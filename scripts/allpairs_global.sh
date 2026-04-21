@@ -997,7 +997,7 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         --acceptall \
         --maxseqlength 10 \
         --blast6out - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1114,7 +1114,7 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         --acceptall \
         --minseqlength 100 \
         --blast6out - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1789,7 +1789,7 @@ for OPT_PAIR in "--band 16" "--fulldp" "--hspw 5" "--minhsp 16" \
             --acceptall \
             ${OPT_PAIR} \
             --blast6out /dev/null \
-            --quiet && \
+            --quiet 2> /dev/null && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
 done

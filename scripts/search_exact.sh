@@ -1024,7 +1024,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --db "${DB}" \
         --maxseqlength 10 \
         --blast6out - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -q "q" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1125,7 +1125,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --db "${DB}" \
         --minseqlength 100 \
         --blast6out - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -q "q" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
