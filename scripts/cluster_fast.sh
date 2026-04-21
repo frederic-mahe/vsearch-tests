@@ -1220,8 +1220,9 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## wordlength = 15 is too slow and requires too much memory
 DESCRIPTION="--cluster_fast --wordlength accepts a value in [3, 15]"
-for V in 3 8 15 ; do
+for V in 3 8 ; do
     printf ">s1\nAAAAAAAAAAAAAAAAAAAA\n" | \
         "${VSEARCH}" \
             --cluster_fast - \
