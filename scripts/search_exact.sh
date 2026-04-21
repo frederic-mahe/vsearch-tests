@@ -31,6 +31,1711 @@ DESCRIPTION="check if vsearch is executable"
         failure "${DESCRIPTION}"
 
 
+## vsearch --search_exact fastxfile --db fastafile (--alnout | --biomout
+## | --blast6out | --fastapairs | --matched | --mothur_shared_out |
+## --notmatched | --otutabout | --qsegout | --samout | --tsegout | --uc
+## | --userout) outputfile [options]
+
+## A 20-nt sequence used in most tests; both query and target are
+## identical by default, producing a single full-length exact match.
+SEQ="ACGTACGTACGTACGTACGT"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                           mandatory options                                 #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--search_exact is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --quiet \
+        --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact reads query from stdin (-)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --quiet \
+        --blast6out - | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact reads query from a regular file"
+DB=$(mktemp)
+QUERY=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" > "${QUERY}"
+"${VSEARCH}" \
+    --search_exact "${QUERY}" \
+    --db "${DB}" \
+    --quiet \
+    --blast6out - | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${QUERY}"
+unset DB QUERY
+
+DESCRIPTION="--search_exact fails if query file does not exist"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+"${VSEARCH}" \
+    --search_exact /no/such/file \
+    --db "${DB}" \
+    --quiet \
+    --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact fails if query file is not readable"
+DB=$(mktemp)
+QUERY=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" > "${QUERY}"
+chmod u-r "${QUERY}"
+"${VSEARCH}" \
+    --search_exact "${QUERY}" \
+    --db "${DB}" \
+    --quiet \
+    --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+r "${QUERY}" && rm -f "${QUERY}" "${DB}"
+unset DB QUERY
+
+DESCRIPTION="--search_exact accepts empty query input"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --quiet \
+        --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact accepts fasta query input"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --quiet \
+        --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact accepts fastq query input"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "@q\n%s\n+\nIIIIIIIIIIIIIIIIIIII\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --quiet \
+        --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact rejects query that is not fasta or fastq"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "not a fasta file\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact fails without --db"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--search_exact fails if --db file does not exist"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db /no/such/file \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## NOTE: an empty --db file triggers an assertion failure in vsearch
+## (core dumped). The manpage does not specify the behaviour for an
+## empty database, but other search commands (e.g., --uchime_ref)
+## accept it silently. To be reviewed.
+
+DESCRIPTION="--search_exact fails without any output option"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## each output option listed in the synopsis can be used as the sole
+## output option, with the exception of --qsegout and --tsegout (see
+## below)
+for OPT in --alnout --biomout --blast6out --fastapairs --matched \
+           --mothur_shared_out --notmatched --otutabout \
+           --samout --uc --userout ; do
+    DESCRIPTION="--search_exact accepts ${OPT} as sole output option"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --search_exact - \
+            --db "${DB}" \
+            "${OPT}" /dev/null \
+            --quiet && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset OPT
+
+## manpage claims --qsegout and --tsegout can be used as sole output
+## options, but vsearch rejects them with "No output files
+## specified". They can still be used alongside another output option
+## (see secondary options section). To be reviewed.
+for OPT in --qsegout --tsegout ; do
+    DESCRIPTION="--search_exact rejects ${OPT} as sole output option"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --search_exact - \
+            --db "${DB}" \
+            "${OPT}" /dev/null \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset OPT
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            default behaviour                                #
+#                                                                             #
+#*****************************************************************************#
+
+## identical query and target produce a full-length exact match
+DESCRIPTION="--search_exact reports a hit when query and target are identical"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out - \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "q" && $2 == "d" && $3 == "100.0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a single mismatch in a full-length alignment produces no hit
+DESCRIPTION="--search_exact reports no hit when one nucleotide differs"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nTCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## matches must be full-length: a query that is a prefix of the target
+## does not produce a hit
+DESCRIPTION="--search_exact reports no hit when query is a prefix of target"
+DB=$(mktemp)
+printf ">d\n%sAAAAA\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## matches must be full-length: a query longer than the target does
+## not produce a hit
+DESCRIPTION="--search_exact reports no hit when query is longer than target"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%sAAAAA\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## default strand is plus only: a reverse-complemented query does not
+## match (using a non-palindromic sequence)
+DESCRIPTION="--search_exact default searches plus strand only"
+DB=$(mktemp)
+printf ">d\nAAAACCCCGGGGTTTTAAAA\n" > "${DB}"
+printf ">q\nTTTTAAAACCCCGGGGTTTT\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## by default, non-matching queries are not written to --blast6out
+DESCRIPTION="--search_exact does not report non-matching queries by default"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nTCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --blast6out reports 12 tab-separated fields per match
+DESCRIPTION="--search_exact --blast6out reports 12 tab-separated fields"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out - \
+        --quiet | \
+    awk -F'\t' '{exit NF == 12 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --uc reports 10 tab-separated fields for each hit record
+DESCRIPTION="--search_exact --uc reports 10 tab-separated fields"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --uc - \
+        --quiet | \
+    awk -F'\t' '{exit NF == 10 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+## ------------------------------------------------------------------- dbmask
+
+for METHOD in none dust soft ; do
+    DESCRIPTION="--search_exact --dbmask ${METHOD} is accepted"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --search_exact - \
+            --db "${DB}" \
+            --dbmask "${METHOD}" \
+            --blast6out /dev/null \
+            --quiet && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset METHOD
+
+DESCRIPTION="--search_exact --dbmask invalid is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --dbmask xxx \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- qmask
+
+for METHOD in none dust soft ; do
+    DESCRIPTION="--search_exact --qmask ${METHOD} is accepted"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --search_exact - \
+            --db "${DB}" \
+            --qmask "${METHOD}" \
+            --blast6out /dev/null \
+            --quiet && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset METHOD
+
+DESCRIPTION="--search_exact --qmask invalid is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --qmask xxx \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ strand
+
+DESCRIPTION="--search_exact --strand plus is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --strand plus \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --strand both is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --strand both \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --strand both finds a reverse-complemented match (using a
+## non-palindromic sequence)
+DESCRIPTION="--search_exact --strand both matches the reverse complement"
+DB=$(mktemp)
+printf ">d\nAAAACCCCGGGGTTTTAAAA\n" > "${DB}"
+printf ">q\nTTTTAAAACCCCGGGGTTTT\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --strand both \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --strand invalid is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --strand xxx \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ threads
+
+DESCRIPTION="--search_exact --threads 1 is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --threads 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --search_exact is multithreaded: --threads > 1 should not produce a
+## warning about the command not being multithreaded
+DESCRIPTION="--search_exact --threads > 1 does not warn about non-multithreaded command"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --threads 2 \
+        --blast6out /dev/null 2>&1 | \
+    grep -iq "not multi-threaded\|only one thread will be used" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --threads above 1024 is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --threads 1025 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact negative --threads is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --threads -1 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
+#*****************************************************************************#
+#                                                                             #
+#                           secondary options                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## ---------------------------------------------------------------- bzip2_decompress
+
+DESCRIPTION="--search_exact --bzip2_decompress reads bzip2-compressed stdin"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --bzip2_decompress \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --bzip2_decompress rejects uncompressed stdin"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --bzip2_decompress \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ dbmatched
+
+DESCRIPTION="--search_exact --dbmatched writes matched target sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out /dev/null \
+        --dbmatched - \
+        --quiet | \
+    grep -qw ">d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --dbmatched --sizeout reports the number of matching queries"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+(
+    printf ">q1\n%s\n" "${SEQ}"
+    printf ">q2\n%s\n" "${SEQ}"
+) | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out /dev/null \
+        --dbmatched - \
+        --sizeout \
+        --quiet | \
+    grep -qx ">d;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- dbnotmatched
+
+DESCRIPTION="--search_exact --dbnotmatched writes unmatched target sequences"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\nAAAAAAAAAAAAAAAAAAAA\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out /dev/null \
+        --dbnotmatched - \
+        --quiet | \
+    grep -qw ">d2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- fasta_width
+
+DESCRIPTION="--search_exact --fasta_width is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --fasta_width 5 \
+        --matched /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --fasta_width folds sequences in the matched output file (here,
+## onto four 5-nt lines)
+DESCRIPTION="--search_exact --fasta_width folds matched sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --fasta_width 5 \
+        --matched - \
+        --quiet | \
+    awk '/^>/ {next} {exit length($0) <= 5 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------ gzip_decompress
+
+DESCRIPTION="--search_exact --gzip_decompress reads gzip-compressed stdin"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    gzip | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --gzip_decompress \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## NOTE: unlike --bzip2_decompress, --gzip_decompress does not fail
+## when the input pipe is uncompressed; the fasta data is processed
+## as-is. To be reviewed.
+
+## ------------------------------------------------------------------ hardmask
+
+## with --hardmask and --qmask soft, the lowercase query is masked
+## with Ns and no longer matches the unmasked target
+DESCRIPTION="--search_exact --hardmask is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --hardmask \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- label_suffix
+
+DESCRIPTION="--search_exact --label_suffix is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --label_suffix ";x=1" \
+        --matched /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --label_suffix appends the suffix to matched headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --label_suffix ";x=1" \
+        --matched - \
+        --quiet | \
+    grep -qx ">q;x=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- lca_cutoff
+
+DESCRIPTION="--search_exact --lca_cutoff is accepted"
+DB=$(mktemp)
+printf ">d;tax=k:A\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --lca_cutoff 1.0 \
+        --lcaout /dev/null \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- lcaout
+
+DESCRIPTION="--search_exact --lcaout is accepted"
+DB=$(mktemp)
+printf ">d;tax=k:A\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --lcaout /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --lcaout writes the taxonomic lineage"
+DB=$(mktemp)
+printf ">d;tax=k:Archaea\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --lcaout - \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "q" && $2 ~ /Archaea/) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------- lengthout
+
+DESCRIPTION="--search_exact --lengthout adds ;length=integer to headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --lengthout \
+        --matched - \
+        --quiet | \
+    grep -qx ">q;length=20" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- log
+
+DESCRIPTION="--search_exact --log is accepted"
+DB=$(mktemp)
+LOG=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --log "${LOG}" \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${LOG}"
+unset DB LOG
+
+DESCRIPTION="--search_exact --log writes the version line"
+DB=$(mktemp)
+LOG=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --log "${LOG}" \
+        --blast6out /dev/null \
+        --quiet
+grep -q "vsearch" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${LOG}"
+unset DB LOG
+
+## ------------------------------------------------------------------- maxhits
+
+DESCRIPTION="--search_exact --maxhits is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --maxhits 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --maxhits caps the number of reported hits per query
+DESCRIPTION="--search_exact --maxhits caps the number of reported hits"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\n%s\n" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --maxhits 1 \
+        --blast6out - \
+        --quiet | \
+    wc -l | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ maxqsize
+
+DESCRIPTION="--search_exact --maxqsize is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --sizein \
+        --maxqsize 10 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --maxqsize rejects queries with abundance greater than the limit
+DESCRIPTION="--search_exact --maxqsize rejects queries above the abundance limit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=5\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --sizein \
+        --maxqsize 2 \
+        --blast6out - \
+        --quiet | \
+    grep -q "q" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ maxqt
+
+DESCRIPTION="--search_exact --maxqt is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --maxqt 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- maxseqlength
+
+DESCRIPTION="--search_exact --maxseqlength is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --maxseqlength 100 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --maxseqlength discards longer query sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --maxseqlength 10 \
+        --blast6out - \
+        --quiet | \
+    grep -q "q" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------- maxsizeratio
+
+DESCRIPTION="--search_exact --maxsizeratio is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --maxsizeratio 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- maxsl
+
+DESCRIPTION="--search_exact --maxsl is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --maxsl 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- mincols
+
+DESCRIPTION="--search_exact --mincols is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --mincols 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- minqt
+
+DESCRIPTION="--search_exact --minqt is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --minqt 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- minseqlength
+
+DESCRIPTION="--search_exact --minseqlength is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --minseqlength 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --minseqlength discards shorter query sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --minseqlength 100 \
+        --blast6out - \
+        --quiet | \
+    grep -q "q" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------- minsizeratio
+
+DESCRIPTION="--search_exact --minsizeratio is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --minsizeratio 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- minsl
+
+DESCRIPTION="--search_exact --minsl is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --minsl 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- mintsize
+
+DESCRIPTION="--search_exact --mintsize is accepted"
+DB=$(mktemp)
+printf ">d;size=5\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --sizein \
+        --mintsize 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --mintsize rejects target sequences with abundance below the limit
+DESCRIPTION="--search_exact --mintsize rejects low-abundance targets"
+DB=$(mktemp)
+printf ">d;size=2\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --sizein \
+        --mintsize 10 \
+        --blast6out - \
+        --quiet | \
+    grep -q "q" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- no_progress
+
+DESCRIPTION="--search_exact --no_progress is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --no_progress \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------- notrunclabels
+
+DESCRIPTION="--search_exact --notrunclabels retains full query headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q extra words\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --notrunclabels \
+        --matched - \
+        --quiet | \
+    grep -qx ">q extra words" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- output_no_hits
+
+DESCRIPTION="--search_exact --output_no_hits is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --output_no_hits \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --output_no_hits writes non-matching queries to --blast6out
+DESCRIPTION="--search_exact --output_no_hits writes non-matching queries"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nTCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --output_no_hits \
+        --blast6out - \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "q" && $2 == "*") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ qsegout
+
+DESCRIPTION="--search_exact --qsegout writes the aligned query segment"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out /dev/null \
+        --qsegout - \
+        --quiet | \
+    grep -qw ">q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- quiet
+
+DESCRIPTION="--search_exact --quiet suppresses messages on stderr"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out /dev/null \
+        --quiet 2>&1 > /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- relabel
+
+DESCRIPTION="--search_exact --relabel renames matched sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --relabel "renamed" \
+        --matched - \
+        --quiet | \
+    grep -qx ">renamed1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------- relabel_keep
+
+DESCRIPTION="--search_exact --relabel_keep retains the old header after a space"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --relabel "renamed" \
+        --relabel_keep \
+        --matched - \
+        --quiet | \
+    grep -qx ">renamed1 q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- relabel_md5
+
+DESCRIPTION="--search_exact --relabel_md5 renames sequences with md5 digests"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --relabel_md5 \
+        --matched - \
+        --quiet | \
+    grep -qE "^>[0-9a-f]{32}$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------- relabel_self
+
+DESCRIPTION="--search_exact --relabel_self is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --relabel_self \
+        --matched /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------- relabel_sha1
+
+DESCRIPTION="--search_exact --relabel_sha1 renames sequences with sha1 digests"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --relabel_sha1 \
+        --matched - \
+        --quiet | \
+    grep -qE "^>[0-9a-f]{40}$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --relabel and --relabel_md5 are mutually exclusive"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --relabel "renamed" \
+        --relabel_md5 \
+        --matched /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- rowlen
+
+DESCRIPTION="--search_exact --rowlen is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --alnout /dev/null \
+        --rowlen 64 \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------- samheader
+
+DESCRIPTION="--search_exact --samheader adds @HD lines to --samout"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -q "^@HD" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- sample
+
+DESCRIPTION="--search_exact --sample adds ;sample=string to headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --sample "ABC" \
+        --matched - \
+        --quiet | \
+    grep -qx ">q;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------------- self
+
+DESCRIPTION="--search_exact --self is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --self \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --self rejects matches where query and target share the same label
+DESCRIPTION="--search_exact --self rejects matches with identical labels"
+DB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" > "${DB}"
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --self \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ sizein
+
+DESCRIPTION="--search_exact --sizein is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=5\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --sizein \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- sizeout
+
+DESCRIPTION="--search_exact --sizeout adds ;size=1 to unannotated headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --sizeout \
+        --matched - \
+        --quiet | \
+    grep -qx ">q;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- top_hits_only
+
+DESCRIPTION="--search_exact --top_hits_only is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --top_hits_only \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- tsegout
+
+DESCRIPTION="--search_exact --tsegout writes the aligned target segment"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out /dev/null \
+        --tsegout - \
+        --quiet | \
+    grep -qw ">d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- uc_allhits
+
+DESCRIPTION="--search_exact --uc_allhits reports all hits per query"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\n%s\n" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --uc - \
+        --uc_allhits \
+        --quiet | \
+    awk -F'\t' '$1 == "H"' | \
+    wc -l | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------- userfields
+
+DESCRIPTION="--search_exact --userfields restricts --userout fields"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields "query+target+id" \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "q" && $2 == "d" && $3 == "100.0" && NF == 3) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- xee
+
+DESCRIPTION="--search_exact --xee strips ;ee=float from headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;ee=0.5\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --xee \
+        --matched - \
+        --quiet | \
+    grep -qx ">q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- xlength
+
+DESCRIPTION="--search_exact --xlength strips ;length=integer from headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;length=20\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --xlength \
+        --matched - \
+        --quiet | \
+    grep -qx ">q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------------- xsize
+
+DESCRIPTION="--search_exact --xsize strips ;size=integer from headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=3\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --xsize \
+        --matched - \
+        --quiet | \
+    grep -qx ">q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
+#*****************************************************************************#
+#                                                                             #
+#                       pairwise alignment options                            #
+#                                                                             #
+#*****************************************************************************#
+
+## --------------------------------------------------------------------- match
+
+DESCRIPTION="--search_exact --match is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --match 2 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- mismatch
+
+DESCRIPTION="--search_exact --mismatch is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --mismatch -4 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              invalid options                                #
+#                                                                             #
+#*****************************************************************************#
+
+## the manpage states that --id, --maxaccepts and --maxrejects do not
+## apply and are not accepted
+for OPT_PAIR in "--id 1.0" "--maxaccepts 1" "--maxrejects 1" ; do
+    OPT_NAME="${OPT_PAIR%% *}"
+    DESCRIPTION="--search_exact rejects ${OPT_NAME}"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    # shellcheck disable=SC2086
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --search_exact - \
+            --db "${DB}" \
+            ${OPT_PAIR} \
+            --blast6out /dev/null \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset OPT_PAIR OPT_NAME
+
+
+## clean up common variables before the fixed bugs and memory leaks sections
+unset SEQ
+
+
 #*****************************************************************************#
 #                                                                             #
 #                               fixed bugs                                    #
@@ -115,1703 +1820,5 @@ if which valgrind > /dev/null 2>&1 ; then
     rm -f "${LOG}" "${FASTA}" "${DB}"
 fi
 
-
-exit 0
-
-
-#*****************************************************************************#
-#                                                                             #
-#                        accepted output options                              #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--search_exact --userout is accepted"
-"${VSEARCH}" \
-    --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-    --db <(printf '>seq2\n%s\n' "AAAA") \
-    --userout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --alnout is accepted"
-"${VSEARCH}" \
-    --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-    --db <(printf '>seq2\n%s\n' "AAAA") --alnout - &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--uc is accepted"
-printf ">a\nAAAA\n>b\nAAAC\n>c\nGGGG" | \
-    "${VSEARCH}" \
-	--derep_fulllength - \
-	--uc - --minseqlength 1 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --biomout is accepted"
-seq1="AAAA"
-seq2="TTTT"
-seq3="CCCC"
-seq3="GGGG"
-search_query=$(printf '>seq1\n%s\n' ${seq1})
-database=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-	     --db <(printf "${database}") --biomout - &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --blast6out is accepted"
-"${VSEARCH}" \
-    --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-    --db <(printf '>seq2\n%s\n' "AAAA") --blast6out - &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --samout is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-             --db <(printf "${database}") --samout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --fastapairs is accepted"
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf '>seq1\n%s\n' "AAAG") \
-	     --fastapairs - &>/dev/null && \
-		success "${DESCRIPTION}" || \
-		    failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --matched is accepted"
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf '>seq1\n%s\n' "AAAG") --matched - &>/dev/null && \
-		success "${DESCRIPTION}" || \
-		    failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --mothur_shared_out is accepted"
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-	     --db <(printf '>seq1\n%s\n' "AAAA") --mothur_shared_out - &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --notmatched is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --notmatched - 2>&1| \
-        awk 'NR==6 {print $1 " " $2}')
-[[ "${OUTPUT}" != "Fatal error:" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --dbmatched is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --dbmatched - &>/dev/null | \
-    success "${DESCRIPTION}" || \
-    failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --otutabout is accepted"
-seq1="AAAA"
-seq2="TTTT"
-seq3="CCCC"
-seq3="GGGG"
-search_query=$(printf '>seq1\n%s\n' ${seq1})
-database=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") --db <(printf "${database}") --otutabout - &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --wordlength is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --biomout - --wordlength 10 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --samout is accepted"
-seq1="AAAA"
-seq2="TTTT"
-seq3="CCCC"
-seq3="GGGG"
-search_query=$(printf '>seq1\n%s\n' ${seq1})
-database=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") --db <(printf "${database}") --samout - &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --uc is accepted"
-seq1="AAAA"
-seq2="TTTT"
-seq3="CCCC"
-seq3="GGGG"
-search_query=$(printf '>seq1\n%s\n' ${seq1})
-database=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") --db <(printf "${database}") --uc - &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - &>/dev/null | \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --alnout --rowlen is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --alnout - --rowlen 64 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                      alnout: test expected outputs                          #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--search_exact --alnout finds the identical sequence"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-         --db <(printf "${database}") --alnout - 2>&1 1>/dev/null | \
-    awk 'NR==9 {print $7}')
-[[ "${OUTPUT}" == "(100.00%)" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset OUTPUT database search_query seq{1..4}
-
-DESCRIPTION="--search_exact --alnout finds the identical sequence #2"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-         --db <(printf "${database}") --alnout - 2>&1 1>/dev/null | \
-    awk 'NR==9 {print $7}')
-[[ "${OUTPUT}" == "(0.00%)" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --alnout fails if wrong input"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2%s\n' ${seq1})  # bad fasta sequence
-"${VSEARCH}" --search_exact <(printf "${search_query}") \
-             --db <(printf "${database}") --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --alnout fails if wrong input with error message"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2%s\n' ${seq1})  # bad fasta sequence
-OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
-              --db <(printf "${database}") --alnout - 2>&1 | \
-      awk 'NR==10 {print $1 " " $2 " " $3 " " $4}')
-[[ "${OUTPUT}" == "Fatal error: Invalid FASTA" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --alnout fails if empty database"
-"${VSEARCH}" --search_exact <(printf '>seq2%s\n' "AAAA") \
-              --db <(printf '') --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --alnout fails if no database"
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq2\n%s\n' "AAAA") \
-              --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --alnout fails if no input"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq2} ${seq2} ${seq3} ${seq4})
-"${VSEARCH}" --search_exact  \
-         --db <(printf "${database}") --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-DESCRIPTION="--search_exact --alnout --rowlen gives the correct result"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-         --db <(printf "${database}") --alnout - --rowlen 1 2>&1 2>/dev/null | \
-    awk 'NR==11 {print $2} NR==15 {print $2} NR==19 {print $2} NR==23 {print $2}' | \
-    tr '\n' ' ')
-[[ "${OUTPUT}" == "1 2 3 4 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-# According to the man page, rowlen is only used with alnout. Using
-# rowlen for anything else than an alignment or a fasta output file
-# does not make sense. vsearch should stop with a fatal error, if
-# rowlen is used with else anything than a fasta or alignment
-# output. In the test below, vsearch accepts the --biomout and the
-# rowlen options. It should not.
-DESCRIPTION="--search_exact --!alnout --rowlen is not accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-         --db <(printf "${database}") --rowlen 64 --biomout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                     biomout: test expected outputs                          #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--search_exact --biomout finds the identical sequence"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-              --db <(printf "${database}") --biomout - 2>/dev/null | \
-        awk -F "\"" 'NR==12 {print $4}')
-[[ "${OUTPUT}" == "seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --biomout finds the identical sequence #2"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq2\n%s\n' "AAAA") \
-              --db <(printf "${database}") --biomout - 2>/dev/null | \
-        awk -F "\"" 'NR==15 {print $4}')
-[[ "${OUTPUT}" == "seq2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --biomout finds the identical sequence #3"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-              --db <(printf "${database}") --biomout - 2>/dev/null | \
-        awk -F "," 'NR==15 {print $4} ')
-[[ "${OUTPUT}" != "seq2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --biomout finds the identical sequence #3"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq2\n%s\n' "AAAA") \
-              --db <(printf "${database}") --biomout - 2>/dev/null | \
-        awk -F "," 'NR==15 {print $4} ')
-[[ "${OUTPUT}" != "seq2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --biomout fails if empty database"
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-              --db <(printf '') --biomout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --biomout fails if no database"
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-              --biomout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --biomout fails if no input"
-"${VSEARCH}" --search_exact  \
-         --db <(printf '>seq1\n%s\n' "AAAA") --biomout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --biomout fails if wrong input"
-"${VSEARCH}" --search_exact <(printf 'echec' ) \
-              --db <(printf 'echec') --biomout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-#*****************************************************************************#
-#                                                                             #
-#                    blast6out: test expected outputs                         #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--search_exact --blast6out fails if empty database"
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-              --db <(printf '') --blast6out - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out fails if no database"
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAA") \
-              --blast6out - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --blast6out fails if no input"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact  \
-             --db <(printf "${database}") \
-	     --blast6out - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --blast6out fails if wrong input"
-"${VSEARCH}" --search_exact <(printf "echec") \
-             --db <(printf '>seq1\n%s\n' "AAAA") \
-	     --blast6out - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct query"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq1\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --blast6out - 2>/dev/null | \
-      awk '{print $1}')
-[[ "${OUTPUT}" == "seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct target"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --blast6out - 2>/dev/null | \
-        awk '{print $2}')
-[[ "${OUTPUT}" == "seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct similarity percentage"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --blast6out - 2>/dev/null | \
-		awk '{print $3}')
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct alnlen"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --blast6out - 2>/dev/null | \
-		awk '{print $4}')
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct mism"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --blast6out - 2>/dev/null | \
-		awk '{print $5}')
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct opens"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --blast6out - 2>/dev/null | \
-		awk '{print $6}')
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct qlo"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --blast6out - 2>/dev/null | \
-		awk '{print $7}')
-[[ "${OUTPUT}" == "1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct qhi"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --blast6out - 2>/dev/null | \
-		awk '{print $8}')
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct tlo"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --blast6out - 2>/dev/null | \
-		awk '{print $9}')
-[[ "${OUTPUT}" == "1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct thi"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --blast6out - 2>/dev/null | \
-		awk '{print $10}')
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct evalue"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --blast6out - 2>/dev/null | \
-		awk '{print $11}')
-[[ "${OUTPUT}" == "-1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --blast6out finds the correct bits"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --blast6out - 2>/dev/null | \
-		awk '{print $12}')
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                  (db)(not)matched: test expected outputs                    #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--search_exact --dbmatched displays the matched sequence"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --dbmatched - 2>/dev/null)
-EXPECTED=$(printf '>seq1\n%s\n' ${seq1})
-[[ "${OUTPUT}" == "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-unset "EXPECTED"
-
-DESCRIPTION="--search_exact --dbmatched displays the matched sequence #2"
-seq1="AAAG"
-seq2="AAAA"
-database=$(printf '>seq1\n%s\n' ${seq1})
-search_query=$(printf '>seq2\n%s\n' ${seq2})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq2\n%s\n' "AAAA") \
-              --db <(printf "${database}") --dbmatched - 2>/dev/null)
-EXPECTED=$(printf '>seq1\n%s\n' ${seq1})
-[[ "${OUTPUT}" != "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-unset "EXPECTED"
-
-DESCRIPTION="--search_exact --dbnotmatched displays the matched sequence"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --dbnotmatched - 2>/dev/null)
-EXPECTED=$(printf '>seq1\n%s\n' ${seq1})
-[[ "${OUTPUT}" != "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "EXPECTED"
-
-DESCRIPTION="--search_exact --dbnotmatched displays the matched sequence #2"
-seq1="AAAG"
-seq2="AAAA"
-database=$(printf '>seq1\n%s\n' ${seq1})
-search_query=$(printf '>seq2\n%s\n' ${seq2})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq2\n%s\n' "AAAA") \
-              --db <(printf "${database}") --dbnotmatched - 2>/dev/null)
-EXPECTED=$(printf '>seq1\n%s\n' ${seq1})
-[[ "${OUTPUT}" == "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --matched displays the correct sequences"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq4\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --matched - 2>/dev/null | \
-		awk 'NR==1')
-[[ "${OUTPUT}" == ">seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --matched displays the correct sequences #2"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq4\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq4} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --matched - 2>/dev/null | \
-		awk 'NR==1')
-[[ "${OUTPUT}" != ">seq2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --notmatched displays the correct sequences"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT" 
-database=$(printf '>seq1\n%s\n>seq4\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --notmatched - 2>/dev/null | \
-        awk 'NR==1')
-[[ "${OUTPUT}" != ">seq2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--search_exact --notmatched displays the correct sequences #2"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq4\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq4} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --notmatched - 2>/dev/null | \
-		awk 'NR==1')
-[[ "${OUTPUT}" == ">seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                mothur_shared_out: test expected outputs                     #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--search_exact --mothur_shared_out displays the correct sequences"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATG"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		      ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
-         --db <(printf "${database}") --mothur_shared_out - 2>/dev/null | \
-        awk  'NR==2 {print $4} NR==3 {print $5} NR==4 {print $6} NR==5 {print $7}' | \
-        tr '\n' ' ')
-[[ "${OUTPUT}" == "1 1 1 1 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                     otutabout: test expected outputs                        #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--search_exact --otutabout displays the correct sequences"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATG"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		      ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf "${search_query}") \
-              --db <(printf "${database}") --otutabout - 2>/dev/null | \
-        awk  'NR==2 {print $2} NR==3 {print $3} NR==4 {print $4} NR==5 {print $5}' | \
-        tr '\n' ' ')
-[[ "${OUTPUT}" == "1 1 1 1 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                           uc: test expected outputs                         #
-#                                                                             #
-#*****************************************************************************#
-#--uc already tested in dereplication_replication.sh
-
-## --uc fails if no filename given
-DESCRIPTION="--uc fails if no filename given"
-printf ">a\nAAAA\n>b\nAAAC\n>c\nGGGG" | \
-    "${VSEARCH}" --search_exact - --minseqlength 1 --uc &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-## --uc creates and fills file given in argument
-DESCRIPTION="--uc creates and fills file given in argument"
-OUTPUT=$(printf '>a_1\nAAAA\n>b_1\nAAAC\n>c_1\nGGGG\n' | \
-		"${VSEARCH}" --search_exact - \
-			     --db <(printf '>seq1\n%s\n' "AAAA") \
-			     --minseqlength 1 --uc - 2>/dev/null)
-[[ -n "${OUTPUT}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --uc number of hits is correct in 1st column #1
-DESCRIPTION="--uc number of hits is correct in st column #1"
-OUTPUT=$(printf ">a\nAA\n>b\nCC\n" | \
-		"${VSEARCH}" --search_exact - --db - --uc - \
-			     --minseqlength 1 2>/dev/null)
-NUMBER_OF_HITS=$(grep -c "^H" <<< "${OUTPUT}")
-(( "${NUMBER_OF_HITS}" == 0 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-## --uc number of hits is correct in 1st column #2
-DESCRIPTION="--uc number of hits is correct in st column #2"
-seq1="GG"
-seq2="TT"
-seq3="AA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-OUTPUT=$(printf ">s1\nGG\n" | \
-		"${VSEARCH}" --search_exact - \
-			     --db <(printf "${database}") --uc - \
-			     --minseqlength 1 2>/dev/null)
-NUMBER_OF_HITS=$(grep -c "^H" <<< "${OUTPUT}")
-(( "${NUMBER_OF_HITS}" == 1 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-## --uc hit length is correct in 3rd column #1
-DESCRIPTION="--uc hit length is correct in 3rd column #1"
-seq1="GG"
-seq2="TT"
-seq3="AA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-HIT_LENGTH=$(printf ">s1\nAA\n>s2\nAA" | \
-		    "${VSEARCH}" --search_exact - \
-				 --db <(printf "${database}") --uc - \
-                   --minseqlength 1 2> /dev/null | \
-              awk '/^H/ {v = $3} END {print v}' -)
-[[ "${HIT_LENGTH}" == "2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --uc hit length is correct in 3rd column #2
-DESCRIPTION="--uc hit length is correct in 3rd column #2"
-seq1="TT"
-seq2="AA"
-seq3="GG"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-HIT_LENGTH=$(printf ">s1\nAA\n>s2\nAA" | \
-		    "${VSEARCH}" --search_exact - \
-				 --db <(printf "${database}") --uc - \
-            --minseqlength 1 2>/dev/null | \
-            awk '/^H/ {v = $3} END {print v}' -)
-(( "${HIT_LENGTH}" == 2 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --uc similarity percentage is correct in 4th column
-DESCRIPTION="--uc similarity percentage is correct in 4th column"
-SIMILARITY_PERCENTAGE=$(printf ">s2\nAT\n>s3\nAA\n" | \
-			       "${VSEARCH}" --search_exact - \
-					    --db <(printf "${database}") \
-					    --uc - \
-                        --minseqlength 1 2> /dev/null | \
-                   awk '/^H/ {v = $4} END {print v}' -)
-[[ "${SIMILARITY_PERCENTAGE}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --uc match orientation is correct in 5th column with H (+)
-DESCRIPTION="--uc match orientation is correct in 5th column with H (+)"
-"${VSEARCH}" \
-    --search_exact <(printf ">q1;size=1;\nGACT\n") \
-	--db <(printf ">s1\nGACT\n") \
-    --minseqlength 1 \
-    --strand both \
-    --quiet \
-	--uc - | \
-    awk -F "\t" '{exit /^H/ && $5 == "+" ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --uc match orientation is correct in 5th column with H (-)
-DESCRIPTION="--uc match orientation is correct in 5th column with H (-)"
-"${VSEARCH}" \
-    --search_exact <(printf ">q1;size=1;\nGACT\n") \
-	--db <(printf ">s1\nAGTC\n") \
-    --minseqlength 1 \
-    --strand both \
-    --quiet \
-	--uc - | \
-    awk -F "\t" '{exit /^H/ && $5 == "-" ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --uc 6th column is 0 with H
-DESCRIPTION="--uc 6th column is 0 with H"
-seq1="AA"
-seq2="AA"
-seq3="AA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-COLUMN_6=$(printf ">s1\nAT\n>s2\nAA\n" | \
-		  "${VSEARCH}" --search_exact - \
-			       --db <(printf "${database}") --uc - \
-                   --minseqlength 1 2> /dev/null | \
-          awk '/^H/ {v = $6} END {print v}' -)
-(( "${COLUMN_6}" == 0 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --uc 7th column is 0 with H
-DESCRIPTION="--uc 7th column is 0 with H"
-seq1="AA"
-seq2="AA"
-seq3="AA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-COLUMN_7=$(printf ">s1\nAT\n>s2\nAA\n" | \
-		  "${VSEARCH}" --search_exact - \
-			       --db <(printf "${database}") \
-			       --uc - \
-                   --minseqlength 1 2> /dev/null | \
-          awk '/^H/ {v = $7} END {print v}' -)
-[[ "${COLUMN_7}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --uc 8th collumn is * with H
-DESCRIPTION="--uc 8th collumn is * with H"
-seq1="AA"
-seq2="AA"
-seq3="AA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-COLUMN_8=$(printf ">s1\nAT\n>s2\nAA\n" | \
-		  "${VSEARCH}" --search_exact - \
-			       --db <(printf "${database}") --uc - \
-                   --minseqlength 1 2> /dev/null | \
-          awk '/^H/ {v = $8} END {print v}' -)
-[[ "${COLUMN_8}" == "=" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --uc query sequence's label is correct in 9th column with H
-DESCRIPTION="--uc query sequence's label is correct in 9th column with H"
-seq1="AA"
-seq2="AA"
-seq3="AA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-QUERY_LABEL=$(printf ">s1\nAT\n>s2\nAA\n" | \
-		     "${VSEARCH}" --search_exact - \
-				  --db <(printf "${database}") --uc - \
-                  --minseqlength 1 2> /dev/null | \
-             awk '/^H/ {v = $9} END {print v}' -)
-[[ "${QUERY_LABEL}" == "s2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-## --uc centroid sequence's label is correct in 10th column with H
-DESCRIPTION="--uc centroid sequence's label is correct in 10th column with H"
-seq1="AA"
-seq2="AA"
-seq3="AA"
-database=$(printf '>s1\n%s\n>s2\n%s\n>s3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-CENTROID_LABEL=$(printf ">s1\nAT\n>s2\nAA\n" | \
-            "${VSEARCH}" --search_exact - --db <(printf "${database}") --uc - \
-                     --minseqlength 1 2> /dev/null | \
-            awk '/^H/ {v = $10} END {print v}' -)
-[[ "${CENTROID_LABEL}" == "s1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-#*****************************************************************************#
-#                                                                             #
-#                         userout: test expected outputs                      #
-#                                                                             #
-#*****************************************************************************#
-DESCRIPTION="--search_exact --userout is empty when no --userfields"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - 2>/dev/null)
-[[ "${OUTPUT}" == "" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields accepts all fields #1"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields \
-              aln+alnlen+bits+caln+evalue+exts+gaps+id+id0+id1 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields accepts all fields #2"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields \
-              ids+mism+opens+pairs+pctgaps+pctpv+pv+qcov+qframe+qhi+qihi &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields accepts all fields #3"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields \
-              qilo+ql+qlo+qrow+qs+qstrand+query+raw+target+tcov+tframe &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields accepts all fields #4"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields \
-              tilo+tl+tlo+trow+ts+tstrand+id3+id4+id2+tihi+thi  &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields aln is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields aln 2>/dev/null)
-[[ "${OUTPUT}" == "MMMM" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields alnlen is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields alnlen 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields bits is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields bits 2>/dev/null)
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields caln is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields caln 2>/dev/null)
-[[ "${OUTPUT}" == "4M" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields evalue is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields evalue 2>/dev/null)
-[[ "${OUTPUT}" == "-1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields exts is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields exts 2>/dev/null)
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields gaps is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields gaps 2>/dev/null)
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields id is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields id 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields id0 is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields id0 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields id1 is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields id1 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields id2 is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields id2 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields id3 is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields id3 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields id4 is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields id4 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields ids is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields ids 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields mism is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields mism 2>/dev/null)
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields opens is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields opens 2>/dev/null)
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields pairs is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields pairs 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields pctgaps is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields pctgaps 2>/dev/null)
-[[ "${OUTPUT}" == "0.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields pctpv is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields pctpv 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields pv is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields pv 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields qcov is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields qcov 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields qframe is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields qframe 2>/dev/null)
-[[ "${OUTPUT}" == "+0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields qhi is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields qhi 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields qihi is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields qihi 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields qilo is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields qilo 2>/dev/null)
-[[ "${OUTPUT}" == "1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields ql is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields ql 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields qlo is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields qlo 2>/dev/null)
-[[ "${OUTPUT}" == "1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields qrow is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields qrow 2>/dev/null)
-[[ "${OUTPUT}" == "AAAG" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields qs is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields qs 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields qstrand is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields qstrand 2>/dev/null)
-[[ "${OUTPUT}" == "+" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields query is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields query 2>/dev/null)
-[[ "${OUTPUT}" == "seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields raw is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields raw 2>/dev/null)
-[[ "${OUTPUT}" == "8" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields target is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields target 2>/dev/null)
-[[ "${OUTPUT}" == "seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields tcov is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") --userout - \
-		      --userfields tcov 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields tframe is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields tframe 2>/dev/null)
-[[ "${OUTPUT}" == "+0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields thi is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") --userout - \
-		      --userfields thi 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields tihi is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") --userout - \
-		      --userfields tihi 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields tilo is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") --userout - \
-		      --userfields tilo 2>/dev/null)
-[[ "${OUTPUT}" == "1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields tl is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields tl 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields tlo is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields tlo 2>/dev/null)
-[[ "${OUTPUT}" == "1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields trow is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") --userout - \
-		      --userfields trow 2>/dev/null)
-[[ "${OUTPUT}" == "AAAG" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields ts is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") --userout - \
-		      --userfields ts 2>/dev/null)
-[[ "${OUTPUT}" == "4" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--search_exact --userout --userfields tstrand is correct"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --search_exact <(printf '>seq1\n%s\n' "AAAG") \
-              --db <(printf "${database}") --userout - --userfields tstrand 2>/dev/null)
-[[ "${OUTPUT}" == "+" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
 
 exit 0
