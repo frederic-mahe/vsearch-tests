@@ -997,7 +997,8 @@ for OPT in --leftjust --rightjust --n_mismatch --self --selfid --top_hits_only ;
 done
 unset OPT
 
-for V in 3 8 15 ; do
+## wordlength = 15 is too slow and requires too much memory
+for V in 3 8 ; do
     DESCRIPTION="--cluster_size --wordlength accepts ${V}"
     printf ">s1\nAAAAAAAAAAAAAAAAAAAA\n" | \
         "${VSEARCH}" \
