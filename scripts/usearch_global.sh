@@ -31,6 +31,3630 @@ DESCRIPTION="check if vsearch is executable"
         failure "${DESCRIPTION}"
 
 
+## vsearch --usearch_global fastxfile --db filename --id real (--alnout |
+## --biomout | --blast6out | --fastapairs | --matched |
+## --mothur_shared_out | --notmatched | --otutabout | --qsegout |
+## --samout | --tsegout | --uc | --userout) filename [options]
+
+## A 40-nt sequence used in most tests; both query and target are
+## identical by default, producing a single full-length global match.
+## 40 nt is long enough to pass the default k-mer index thresholds
+## without needing --minseqlength.
+SEQ="ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                           mandatory options                                 #
+#                                                                             #
+#*****************************************************************************#
+
+DESCRIPTION="--usearch_global is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --quiet \
+        --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global reads query from stdin (-)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --quiet \
+        --blast6out - | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global reads query from a regular file"
+DB=$(mktemp)
+QUERY=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" > "${QUERY}"
+"${VSEARCH}" \
+    --usearch_global "${QUERY}" \
+    --db "${DB}" \
+    --id 1.0 \
+    --quiet \
+    --blast6out - | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${QUERY}"
+unset DB QUERY
+
+DESCRIPTION="--usearch_global fails if query file does not exist"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+"${VSEARCH}" \
+    --usearch_global /no/such/file \
+    --db "${DB}" \
+    --id 1.0 \
+    --quiet \
+    --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global fails if query file is not readable"
+DB=$(mktemp)
+QUERY=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" > "${QUERY}"
+chmod u-r "${QUERY}"
+"${VSEARCH}" \
+    --usearch_global "${QUERY}" \
+    --db "${DB}" \
+    --id 1.0 \
+    --quiet \
+    --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+r "${QUERY}" && rm -f "${QUERY}" "${DB}"
+unset DB QUERY
+
+DESCRIPTION="--usearch_global accepts empty query input"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --quiet \
+        --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global accepts fasta query input"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --quiet \
+        --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global accepts fastq query input"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "@q\n%s\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --quiet \
+        --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects query that is not fasta or fastq"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "not a fasta file\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global fails without --db"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global fails if --db file does not exist"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db /no/such/file \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global accepts a fasta --db"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global accepts a fastq --db"
+DB=$(mktemp)
+printf "@d\n%s\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --db can also be a UDB file produced by --makeudb_usearch
+DESCRIPTION="--usearch_global accepts a UDB --db"
+DB=$(mktemp)
+UDB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB}" \
+    --output "${UDB}" \
+    --quiet 2> /dev/null
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${UDB}" \
+        --id 1.0 \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${UDB}"
+unset DB UDB
+
+DESCRIPTION="--usearch_global fails without --id"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global accepts --id 0.0"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global accepts --id 1.0"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects --id below 0.0"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id -0.1 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects --id above 1.0"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.1 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global fails without any output option"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## each output option listed in the synopsis can be used as the sole
+## output option, with the exception of --qsegout and --tsegout (see
+## below)
+for OPT in --alnout --biomout --blast6out --fastapairs --matched \
+           --mothur_shared_out --notmatched --otutabout \
+           --samout --uc --userout ; do
+    DESCRIPTION="--usearch_global accepts ${OPT} as sole output option"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            "${OPT}" /dev/null \
+            --quiet && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset OPT
+
+## manpage claims --qsegout and --tsegout can be used as sole output
+## options, but vsearch rejects them with "No output files
+## specified". They can still be used alongside another output option
+## (see secondary options section). To be reviewed.
+for OPT in --qsegout --tsegout ; do
+    DESCRIPTION="--usearch_global rejects ${OPT} as sole output option"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            "${OPT}" /dev/null \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset OPT
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            default behaviour                                #
+#                                                                             #
+#*****************************************************************************#
+
+## identical query and target produce a full-length global match
+DESCRIPTION="--usearch_global reports a hit when query and target are identical"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out - \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "q" && $2 == "d" && $3 == "100.0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a query below the identity threshold produces no hit
+DESCRIPTION="--usearch_global reports no hit below the identity threshold"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACCTAACTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## default strand is plus only: a reverse-complemented query does not
+## match the forward target (using a non-palindromic sequence)
+DESCRIPTION="--usearch_global default searches plus strand only"
+DB=$(mktemp)
+printf ">d\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" > "${DB}"
+printf ">q\nAAATTTTAAAAACCCCCGGGGGTTTTTGATCGATCGATCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.97 \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## by default, non-matching queries are not written to --blast6out
+DESCRIPTION="--usearch_global does not report non-matching queries by default"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.97 \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --blast6out reports 12 tab-separated fields per match
+DESCRIPTION="--usearch_global --blast6out reports 12 tab-separated fields"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out - \
+        --quiet | \
+    awk -F'\t' '{exit NF == 12 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --blast6out reports evalue -1 and bit score 0 (always for nucleotide
+## alignments)
+DESCRIPTION="--usearch_global --blast6out reports evalue -1 and bit score 0"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out - \
+        --quiet | \
+    awk -F'\t' '{exit ($11 == "-1" && $12 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --uc reports 10 tab-separated fields per record
+DESCRIPTION="--usearch_global --uc reports 10 tab-separated fields"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --uc - \
+        --quiet | \
+    awk -F'\t' '{exit NF == 10 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --uc reports an H record for a matching query
+DESCRIPTION="--usearch_global --uc reports an H record for a hit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --uc - \
+        --quiet | \
+    awk -F'\t' '{exit $1 == "H" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## default --maxaccepts is 1: only the first accepted target is
+## reported, even when several identical targets are present
+DESCRIPTION="--usearch_global default --maxaccepts is 1"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\n%s\n" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out - \
+        --quiet | \
+    wc -l | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              core options                                   #
+#                                                                             #
+#*****************************************************************************#
+
+## ------------------------------------------------------------------- dbmask
+
+for METHOD in none dust soft ; do
+    DESCRIPTION="--usearch_global --dbmask ${METHOD} is accepted"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            --dbmask "${METHOD}" \
+            --blast6out /dev/null \
+            --quiet && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset METHOD
+
+DESCRIPTION="--usearch_global --dbmask invalid is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --dbmask xxx \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- iddef
+
+for DEF in 0 1 2 3 4 ; do
+    DESCRIPTION="--usearch_global --iddef ${DEF} is accepted"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            --iddef "${DEF}" \
+            --blast6out /dev/null \
+            --quiet && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset DEF
+
+DESCRIPTION="--usearch_global --iddef 5 is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --iddef 5 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --iddef 2 (default) produces 100% for an exact full-length match
+DESCRIPTION="--usearch_global --iddef 2 reports 100.0 for exact match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --iddef 2 \
+        --userfields id \
+        --userout - \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- maxaccepts
+
+DESCRIPTION="--usearch_global --maxaccepts 1 is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxaccepts 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --maxaccepts caps the number of accepted hits per query
+DESCRIPTION="--usearch_global --maxaccepts caps the number of reported hits"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\n%s\n>d3\n%s\n" "${SEQ}" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxaccepts 2 \
+        --blast6out - \
+        --quiet | \
+    wc -l | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global negative --maxaccepts is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxaccepts -1 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- maxrejects
+
+DESCRIPTION="--usearch_global --maxrejects 32 is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxrejects 32 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## with --maxaccepts 0 --maxrejects 0, the full database is searched
+DESCRIPTION="--usearch_global --maxaccepts 0 --maxrejects 0 scans the whole db"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\n%s\n>d3\n%s\n" "${SEQ}" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxaccepts 0 \
+        --maxrejects 0 \
+        --blast6out - \
+        --quiet | \
+    wc -l | \
+    grep -qx "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- qmask
+
+for METHOD in none dust soft ; do
+    DESCRIPTION="--usearch_global --qmask ${METHOD} is accepted"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            --qmask "${METHOD}" \
+            --blast6out /dev/null \
+            --quiet && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset METHOD
+
+DESCRIPTION="--usearch_global --qmask invalid is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --qmask xxx \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- strand
+
+DESCRIPTION="--usearch_global --strand plus is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --strand plus \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --strand both is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --strand both \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --strand both finds a reverse-complemented match (non-palindromic
+## sequence)
+DESCRIPTION="--usearch_global --strand both matches the reverse complement"
+DB=$(mktemp)
+printf ">d\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" > "${DB}"
+printf ">q\nAAATTTTAAAAACCCCCGGGGGTTTTTGATCGATCGATCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.97 \
+        --strand both \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --strand invalid is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --strand xxx \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ threads
+
+DESCRIPTION="--usearch_global --threads 1 is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --threads 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --usearch_global is multi-threaded: --threads > 1 should not produce
+## a warning about the command not being multi-threaded
+DESCRIPTION="--usearch_global --threads > 1 does not warn about non-multithreaded command"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --threads 2 \
+        --blast6out /dev/null 2>&1 | \
+    grep -iq "not multi-threaded\|only one thread will be used" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --threads above 1024 is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --threads 1025 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global negative --threads is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --threads -1 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
+#*****************************************************************************#
+#                                                                             #
+#                           secondary options                                 #
+#                                                                             #
+#*****************************************************************************#
+
+## ------------------------------------------------------------------- alnout
+
+DESCRIPTION="--usearch_global --alnout is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --alnout /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --alnout writes a human-readable pairwise alignment including the
+## query and target labels
+DESCRIPTION="--usearch_global --alnout writes query and target labels"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --alnout - \
+        --quiet | \
+    grep -q "Query >q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ biomout
+
+DESCRIPTION="--usearch_global --biomout writes a JSON biom document"
+DB=$(mktemp)
+printf ">otu1\n%s\n" "${SEQ}" > "${DB}"
+printf ">q1;sample=s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --biomout - \
+        --quiet | \
+    grep -q "Biological Observation Matrix" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------- bzip2_decompress
+
+DESCRIPTION="--usearch_global --bzip2_decompress reads bzip2-compressed stdin"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --bzip2_decompress \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --bzip2_decompress rejects uncompressed stdin"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --bzip2_decompress \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- dbmatched
+
+DESCRIPTION="--usearch_global --dbmatched writes matched target sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --dbmatched - \
+        --quiet | \
+    grep -qw ">d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --dbmatched --sizeout reports the number of matching queries"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+(
+    printf ">q1\n%s\n" "${SEQ}"
+    printf ">q2\n%s\n" "${SEQ}"
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --dbmatched - \
+        --sizeout \
+        --quiet | \
+    grep -qx ">d;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- dbnotmatched
+
+DESCRIPTION="--usearch_global --dbnotmatched writes unmatched target sequences"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --dbnotmatched - \
+        --quiet | \
+    grep -qw ">d2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- fasta_width
+
+DESCRIPTION="--usearch_global --fasta_width is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --fasta_width 5 \
+        --matched /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --fasta_width folds sequences in the matched output file (here, onto
+## multiple lines of at most 5 nt each)
+DESCRIPTION="--usearch_global --fasta_width folds matched sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --fasta_width 5 \
+        --matched - \
+        --quiet | \
+    awk '/^>/ {next} {exit length($0) <= 5 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------- gzip_decompress
+
+DESCRIPTION="--usearch_global --gzip_decompress reads gzip-compressed stdin"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    gzip | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --gzip_decompress \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ hardmask
+
+DESCRIPTION="--usearch_global --hardmask is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --hardmask \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ idprefix
+
+DESCRIPTION="--usearch_global --idprefix is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --idprefix 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --idprefix rejects matches where the first N nt of the target do not
+## match the query
+DESCRIPTION="--usearch_global --idprefix rejects mismatched prefix"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nTCGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --idprefix 1 \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ idsuffix
+
+DESCRIPTION="--usearch_global --idsuffix is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --idsuffix 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --idsuffix rejects matches where the last N nt of the target do not
+## match the query
+DESCRIPTION="--usearch_global --idsuffix rejects mismatched suffix"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --idsuffix 1 \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- label_suffix
+
+DESCRIPTION="--usearch_global --label_suffix appends the suffix to matched headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --label_suffix ";x=1" \
+        --matched - \
+        --quiet | \
+    grep -qx ">q;x=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- lca_cutoff
+
+DESCRIPTION="--usearch_global --lca_cutoff is accepted"
+DB=$(mktemp)
+printf ">d;tax=k:A\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --lca_cutoff 1.0 \
+        --lcaout /dev/null \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --lca_cutoff 0.5 is rejected (must be greater than 0.5)"
+DB=$(mktemp)
+printf ">d;tax=k:A\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --lca_cutoff 0.5 \
+        --lcaout /dev/null \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- lcaout
+
+DESCRIPTION="--usearch_global --lcaout writes the taxonomic lineage"
+DB=$(mktemp)
+printf ">d;tax=k:Archaea\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --lcaout - \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "q" && $2 ~ /Archaea/) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ leftjust
+
+DESCRIPTION="--usearch_global --leftjust accepts a flush-left alignment"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --leftjust \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --leftjust rejects alignments that begin with gaps (query shorter
+## than target at the 5' end)
+DESCRIPTION="--usearch_global --leftjust rejects alignments starting with gaps"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --leftjust \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------- lengthout
+
+DESCRIPTION="--usearch_global --lengthout adds ;length=integer to headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --lengthout \
+        --matched - \
+        --quiet | \
+    grep -qx ">q;length=40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- log
+
+DESCRIPTION="--usearch_global --log writes the version line"
+DB=$(mktemp)
+LOG=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --log "${LOG}" \
+        --blast6out /dev/null \
+        --quiet
+grep -q "vsearch" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${LOG}"
+unset DB LOG
+
+## ------------------------------------------------------------------ matched
+
+DESCRIPTION="--usearch_global --matched writes matching query sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --matched - \
+        --quiet | \
+    grep -qw ">q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- maxdiffs
+
+DESCRIPTION="--usearch_global --maxdiffs is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxdiffs 0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --maxdiffs rejects matches with more than N substitutions,
+## insertions, or deletions
+DESCRIPTION="--usearch_global --maxdiffs 0 rejects a match with one mismatch"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACCTAACTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxdiffs 0 \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ maxgaps
+
+DESCRIPTION="--usearch_global --maxgaps is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxgaps 0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --maxgaps 0 rejects matches with internal gaps
+DESCRIPTION="--usearch_global --maxgaps 0 rejects a match with an internal gap"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxgaps 0 \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ maxhits
+
+DESCRIPTION="--usearch_global --maxhits caps the number of reported hits"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\n%s\n" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxaccepts 10 \
+        --maxhits 1 \
+        --blast6out - \
+        --quiet | \
+    wc -l | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- maxid
+
+DESCRIPTION="--usearch_global --maxid 1.0 accepts a full-identity match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxid 1.0 \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --maxid rejects matches above the upper identity limit
+DESCRIPTION="--usearch_global --maxid 0.95 rejects a perfect match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxid 0.95 \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- maxqsize
+
+DESCRIPTION="--usearch_global --maxqsize is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizein \
+        --maxqsize 10 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --maxqsize rejects queries with abundance greater than the limit
+DESCRIPTION="--usearch_global --maxqsize rejects queries above the abundance limit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=5\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizein \
+        --maxqsize 2 \
+        --blast6out - \
+        --quiet | \
+    grep -q "q" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- maxqt
+
+DESCRIPTION="--usearch_global --maxqt is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxqt 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- maxseqlength
+
+DESCRIPTION="--usearch_global --maxseqlength discards longer query sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxseqlength 10 \
+        --blast6out - \
+        --quiet 2> /dev/null | \
+    grep -q "q" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------- maxsizeratio
+
+DESCRIPTION="--usearch_global --maxsizeratio is accepted"
+DB=$(mktemp)
+printf ">d;size=1\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizein \
+        --maxsizeratio 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- maxsl
+
+DESCRIPTION="--usearch_global --maxsl is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxsl 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ maxsubs
+
+DESCRIPTION="--usearch_global --maxsubs is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxsubs 0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --maxsubs 0 rejects matches with any mismatches
+DESCRIPTION="--usearch_global --maxsubs 0 rejects a match with one mismatch"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACCTAACTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxsubs 0 \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- mid
+
+DESCRIPTION="--usearch_global --mid is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --mid 0.9 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ mincols
+
+DESCRIPTION="--usearch_global --mincols is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --mincols 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- minqt
+
+DESCRIPTION="--usearch_global --minqt is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --minqt 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- minseqlength
+
+DESCRIPTION="--usearch_global --minseqlength is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --minseqlength 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --minseqlength discards shorter query sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --minseqlength 100 \
+        --blast6out - \
+        --quiet 2> /dev/null | \
+    grep -q "q" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------- minsizeratio
+
+DESCRIPTION="--usearch_global --minsizeratio is accepted"
+DB=$(mktemp)
+printf ">d;size=1\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizein \
+        --minsizeratio 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- minsl
+
+DESCRIPTION="--usearch_global --minsl is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --minsl 1.0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- mintsize
+
+DESCRIPTION="--usearch_global --mintsize is accepted"
+DB=$(mktemp)
+printf ">d;size=5\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizein \
+        --mintsize 1 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --mintsize rejects target sequences with abundance below the limit
+DESCRIPTION="--usearch_global --mintsize rejects low-abundance targets"
+DB=$(mktemp)
+printf ">d;size=2\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizein \
+        --mintsize 10 \
+        --blast6out - \
+        --quiet | \
+    grep -q "q" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- minwordmatches
+
+DESCRIPTION="--usearch_global --minwordmatches is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --minwordmatches 0 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------- mothur_shared_out
+
+DESCRIPTION="--usearch_global --mothur_shared_out writes a header line"
+DB=$(mktemp)
+printf ">otu1\n%s\n" "${SEQ}" > "${DB}"
+printf ">q1;sample=s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --mothur_shared_out - \
+        --quiet | \
+    grep -q "^label" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ n_mismatch
+
+DESCRIPTION="--usearch_global --n_mismatch is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --n_mismatch \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --n_mismatch counts alignments of nucleotides against Ns as
+## mismatches; without it, Ns are counted neutrally (default behaviour
+## for the default --iddef 2)
+DESCRIPTION="--usearch_global --n_mismatch counts N as mismatch"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTNCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --n_mismatch \
+        --userfields mism \
+        --userout - \
+        --quiet | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- no_progress
+
+DESCRIPTION="--usearch_global --no_progress is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --no_progress \
+        --blast6out /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------- notmatched
+
+DESCRIPTION="--usearch_global --notmatched writes non-matching queries"
+DB=$(mktemp)
+printf ">d\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.97 \
+        --blast6out /dev/null \
+        --notmatched - \
+        --quiet | \
+    grep -qw ">q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------- notrunclabels
+
+DESCRIPTION="--usearch_global --notrunclabels retains full query headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q extra words\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --notrunclabels \
+        --matched - \
+        --quiet | \
+    grep -qx ">q extra words" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------- otutabout
+
+DESCRIPTION="--usearch_global --otutabout writes a tab-separated OTU table"
+DB=$(mktemp)
+printf ">otu1\n%s\n" "${SEQ}" > "${DB}"
+printf ">q1;sample=s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --otutabout - \
+        --quiet | \
+    head -n 1 | \
+    grep -q "^#OTU ID" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------ output_no_hits
+
+DESCRIPTION="--usearch_global --output_no_hits writes non-matching queries"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --blast6out - \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "q" && $2 == "*") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- qsegout
+
+DESCRIPTION="--usearch_global --qsegout writes the aligned query segment"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --qsegout - \
+        --quiet | \
+    grep -qw ">q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------- query_cov
+
+DESCRIPTION="--usearch_global --query_cov is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --query_cov 0.9 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- quiet
+
+DESCRIPTION="--usearch_global --quiet suppresses messages on stderr"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --quiet 2>&1 > /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ relabel
+
+DESCRIPTION="--usearch_global --relabel renames matched sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --relabel "renamed" \
+        --matched - \
+        --quiet | \
+    grep -qx ">renamed1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- relabel_keep
+
+DESCRIPTION="--usearch_global --relabel_keep retains the old header after a space"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --relabel "renamed" \
+        --relabel_keep \
+        --matched - \
+        --quiet | \
+    grep -qx ">renamed1 q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- relabel_md5
+
+DESCRIPTION="--usearch_global --relabel_md5 renames sequences with md5 digests"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --relabel_md5 \
+        --matched - \
+        --quiet | \
+    grep -qE "^>[0-9a-f]{32}$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- relabel_self
+
+DESCRIPTION="--usearch_global --relabel_self is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --relabel_self \
+        --matched /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- relabel_sha1
+
+DESCRIPTION="--usearch_global --relabel_sha1 renames sequences with sha1 digests"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --relabel_sha1 \
+        --matched - \
+        --quiet | \
+    grep -qE "^>[0-9a-f]{40}$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --relabel and --relabel_md5 are mutually exclusive"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --relabel "renamed" \
+        --relabel_md5 \
+        --matched /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- rightjust
+
+DESCRIPTION="--usearch_global --rightjust accepts a flush-right alignment"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --rightjust \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --rightjust rejects alignments that end with gaps (query shorter
+## than target at the 3' end)
+DESCRIPTION="--usearch_global --rightjust rejects alignments ending with gaps"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGTACGTAC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --rightjust \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- rowlen
+
+DESCRIPTION="--usearch_global --rowlen is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --alnout /dev/null \
+        --rowlen 64 \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------- samheader
+
+DESCRIPTION="--usearch_global --samheader adds @HD lines to --samout"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -q "^@HD" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- samout
+
+DESCRIPTION="--usearch_global --samout writes a SAM record for a hit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "q" && $3 == "d") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- sample
+
+DESCRIPTION="--usearch_global --sample adds ;sample=string to headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sample "ABC" \
+        --matched - \
+        --quiet | \
+    grep -qx ">q;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------------- self
+
+DESCRIPTION="--usearch_global --self rejects matches with identical labels"
+DB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" > "${DB}"
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --self \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- selfid
+
+DESCRIPTION="--usearch_global --selfid rejects matches with identical sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --selfid \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- sizein
+
+DESCRIPTION="--usearch_global --sizein is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=5\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizein \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ sizeout
+
+DESCRIPTION="--usearch_global --sizeout adds ;size=1 to unannotated headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizeout \
+        --matched - \
+        --quiet | \
+    grep -qx ">q;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- target_cov
+
+DESCRIPTION="--usearch_global --target_cov is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --target_cov 0.9 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------- top_hits_only
+
+DESCRIPTION="--usearch_global --top_hits_only reports only the best-identity hits"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGC\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxaccepts 10 \
+        --top_hits_only \
+        --blast6out - \
+        --quiet | \
+    wc -l | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ tsegout
+
+DESCRIPTION="--usearch_global --tsegout writes the aligned target segment"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --tsegout - \
+        --quiet | \
+    grep -qw ">d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------- uc_allhits
+
+DESCRIPTION="--usearch_global --uc_allhits reports all hits per query"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\n%s\n" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxaccepts 10 \
+        --uc - \
+        --uc_allhits \
+        --quiet | \
+    awk -F'\t' '$1 == "H"' | \
+    wc -l | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- weak_id
+
+DESCRIPTION="--usearch_global --weak_id is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.99 \
+        --weak_id 0.5 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --weak_id reports hits below --id that still clear --weak_id
+DESCRIPTION="--usearch_global --weak_id reports a weak hit"
+DB=$(mktemp)
+printf ">d\nACGTACGTACGTACGTACCTAACTACGTACGTACGTACGT\n" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --weak_id 0.5 \
+        --blast6out - \
+        --quiet | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------- wordlength
+
+for LEN in 3 8 15 ; do
+    DESCRIPTION="--usearch_global --wordlength ${LEN} is accepted"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            --wordlength "${LEN}" \
+            --blast6out /dev/null \
+            --quiet && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset LEN
+
+DESCRIPTION="--usearch_global --wordlength 2 is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --wordlength 2 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --wordlength 16 is rejected"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --wordlength 16 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- xee
+
+DESCRIPTION="--usearch_global --xee strips ;ee=float from headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;ee=0.5\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --xee \
+        --matched - \
+        --quiet | \
+    grep -qx ">q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- xlength
+
+DESCRIPTION="--usearch_global --xlength strips ;length=integer from headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;length=40\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --xlength \
+        --matched - \
+        --quiet | \
+    grep -qx ">q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------------- xsize
+
+DESCRIPTION="--usearch_global --xsize strips ;size=integer from headers"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=3\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --xsize \
+        --matched - \
+        --quiet | \
+    grep -qx ">q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
+#*****************************************************************************#
+#                                                                             #
+#                                 userfields                                  #
+#                                                                             #
+#*****************************************************************************#
+
+## --userfields selects the fields written to --userout; here, the
+## three-column output matches the expected values for an exact full-
+## length match of a 40-nt sequence
+DESCRIPTION="--usearch_global --userfields restricts --userout fields"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields "query+target+id" \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "q" && $2 == "d" && $3 == "100.0" && NF == 3) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## alignment representation ----------------------------------------------- aln
+
+## for a 40-nt exact match, aln is 40 M characters
+DESCRIPTION="--usearch_global --userfields aln reports matches as M"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields aln \
+        --quiet | \
+    grep -qx "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- caln
+
+DESCRIPTION="--usearch_global --userfields caln reports CIGAR string"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields caln \
+        --quiet | \
+    grep -qx "40M\|=" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- qrow
+
+DESCRIPTION="--usearch_global --userfields qrow reports the aligned query"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qrow \
+        --quiet | \
+    grep -qix "${SEQ}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- trow
+
+DESCRIPTION="--usearch_global --userfields trow reports the aligned target"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields trow \
+        --quiet | \
+    grep -qix "${SEQ}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## query and target identifiers ------------------------------------------ query
+
+DESCRIPTION="--usearch_global --userfields query reports the query label"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields query \
+        --quiet | \
+    grep -qx "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- target
+
+DESCRIPTION="--usearch_global --userfields target reports the target label"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields target \
+        --quiet | \
+    grep -qx "d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## sequence lengths -------------------------------------------------------- ql
+
+DESCRIPTION="--usearch_global --userfields ql reports the query length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields ql \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------------- tl
+
+DESCRIPTION="--usearch_global --userfields tl reports the target length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields tl \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------------- qs
+
+DESCRIPTION="--usearch_global --userfields qs reports the query segment length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qs \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------------- ts
+
+DESCRIPTION="--usearch_global --userfields ts reports the target segment length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields ts \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## alignment span --------------------------------------------------------- qlo
+
+DESCRIPTION="--usearch_global --userfields qlo reports the first aligned query position"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qlo \
+        --quiet | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------------- qhi
+
+DESCRIPTION="--usearch_global --userfields qhi reports the last aligned query position"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qhi \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- qilo
+
+DESCRIPTION="--usearch_global --userfields qilo reports the first aligned query position (no terminal gaps)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qilo \
+        --quiet | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- qihi
+
+DESCRIPTION="--usearch_global --userfields qihi reports the last aligned query position (no terminal gaps)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qihi \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------------- tlo
+
+DESCRIPTION="--usearch_global --userfields tlo reports the first aligned target position"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields tlo \
+        --quiet | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------------- thi
+
+DESCRIPTION="--usearch_global --userfields thi reports the last aligned target position"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields thi \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- tilo
+
+DESCRIPTION="--usearch_global --userfields tilo reports the first aligned target position (no terminal gaps)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields tilo \
+        --quiet | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- tihi
+
+DESCRIPTION="--usearch_global --userfields tihi reports the last aligned target position (no terminal gaps)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields tihi \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## alignment statistics ------------------------------------------------- alnlen
+
+DESCRIPTION="--usearch_global --userfields alnlen reports the alignment length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields alnlen \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------------- ids
+
+DESCRIPTION="--usearch_global --userfields ids reports the number of matching columns"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields ids \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- mism
+
+DESCRIPTION="--usearch_global --userfields mism reports the number of mismatches"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields mism \
+        --quiet | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- gaps
+
+DESCRIPTION="--usearch_global --userfields gaps reports zero for a gapless alignment"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields gaps \
+        --quiet | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------------- opens
+
+DESCRIPTION="--usearch_global --userfields opens reports zero for a gapless alignment"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields opens \
+        --quiet | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- exts
+
+DESCRIPTION="--usearch_global --userfields exts reports zero for a gapless alignment"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields exts \
+        --quiet | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------------- pairs
+
+DESCRIPTION="--usearch_global --userfields pairs reports the number of non-gap columns"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields pairs \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------------- pv
+
+DESCRIPTION="--usearch_global --userfields pv reports the number of positive columns"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields pv \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ pctgaps
+
+DESCRIPTION="--usearch_global --userfields pctgaps reports 0.0 for a gapless alignment"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields pctgaps \
+        --quiet | \
+    grep -qx "0.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- pctpv
+
+DESCRIPTION="--usearch_global --userfields pctpv reports 100.0 for a full match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields pctpv \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## identity percentages -------------------------------------------------- id
+
+DESCRIPTION="--usearch_global --userfields id reports 100.0 for a full match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- id0
+
+DESCRIPTION="--usearch_global --userfields id0 reports 100.0 for a full match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields id0 \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- id1
+
+DESCRIPTION="--usearch_global --userfields id1 reports 100.0 for a full match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields id1 \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- id2
+
+DESCRIPTION="--usearch_global --userfields id2 reports 100.0 for a full match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields id2 \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- id3
+
+DESCRIPTION="--usearch_global --userfields id3 reports 100.0 for a full match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields id3 \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- id4
+
+DESCRIPTION="--usearch_global --userfields id4 reports 100.0 for a full match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields id4 \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## coverage -------------------------------------------------------------- qcov
+
+DESCRIPTION="--usearch_global --userfields qcov reports 100.0 for a full match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qcov \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------------------------- tcov
+
+DESCRIPTION="--usearch_global --userfields tcov reports 100.0 for a full match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields tcov \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## score ---------------------------------------------------------------- raw
+
+## with default --match 2 and an exact 40-nt match, the raw score is 80
+DESCRIPTION="--usearch_global --userfields raw reports the raw alignment score"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields raw \
+        --quiet | \
+    grep -qx "80" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- bits
+
+## --bits is not computed for nucleotide alignments (always 0)
+DESCRIPTION="--usearch_global --userfields bits is always 0 for nucleotides"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields bits \
+        --quiet | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- evalue
+
+## --evalue is not computed for nucleotide alignments (always -1)
+DESCRIPTION="--usearch_global --userfields evalue is always -1 for nucleotides"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields evalue \
+        --quiet | \
+    grep -qx "\-1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## strand -------------------------------------------------------------- qstrand
+
+DESCRIPTION="--usearch_global --userfields qstrand is + for a plus-strand match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qstrand \
+        --quiet | \
+    grep -qx "+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ tstrand
+
+DESCRIPTION="--usearch_global --userfields tstrand is always +"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields tstrand \
+        --quiet | \
+    grep -qx "+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --tstrand is + and qstrand is - for a reverse-complement match
+DESCRIPTION="--usearch_global --userfields qstrand is - for a reverse-strand match"
+DB=$(mktemp)
+printf ">d\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" > "${DB}"
+printf ">q\nAAATTTTAAAAACCCCCGGGGGTTTTTGATCGATCGATCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.97 \
+        --strand both \
+        --userout - \
+        --userfields "qstrand+tstrand" \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "-" && $2 == "+") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## unused fields ------------------------------------------------------- qframe
+
+## --qframe is always +0 (not computed for nucleotide alignments)
+DESCRIPTION="--usearch_global --userfields qframe is always +0"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qframe \
+        --quiet | \
+    grep -qx "+0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- tframe
+
+## --tframe is always +0 (not computed for nucleotide alignments)
+DESCRIPTION="--usearch_global --userfields tframe is always +0"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields tframe \
+        --quiet | \
+    grep -qx "+0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --userfields rejects unknown field names
+DESCRIPTION="--usearch_global --userfields rejects unknown field"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout /dev/null \
+        --userfields "nosuchfield" \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
+#*****************************************************************************#
+#                                                                             #
+#                       pairwise alignment options                            #
+#                                                                             #
+#*****************************************************************************#
+
+## --------------------------------------------------------------------- match
+
+DESCRIPTION="--usearch_global --match is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --match 2 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --match affects the raw alignment score
+DESCRIPTION="--usearch_global --match changes the raw score"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --match 3 \
+        --userout - \
+        --userfields raw \
+        --quiet | \
+    grep -qx "120" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------- mismatch
+
+DESCRIPTION="--usearch_global --mismatch is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --mismatch -4 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------- gapopen
+
+DESCRIPTION="--usearch_global --gapopen is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --gapopen 20 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -------------------------------------------------------------------- gapext
+
+DESCRIPTION="--usearch_global --gapext is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --gapext 2 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              ignored options                                #
+#                                                                             #
+#*****************************************************************************#
+
+## options accepted for compatibility with usearch, but with no effect.
+## vsearch should accept them (exit 0) and emit a warning to stderr.
+for OPT_PAIR in "--band 16" "--fulldp" "--hspw 5" "--minhsp 3" \
+                "--pattern xxx" "--slots 1024" "--xdrop_nw 32" ; do
+    OPT_NAME="${OPT_PAIR%% *}"
+    DESCRIPTION="--usearch_global accepts ${OPT_NAME} (ignored)"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    # shellcheck disable=SC2086
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            ${OPT_PAIR} \
+            --blast6out /dev/null \
+            --quiet 2> /dev/null && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+
+    DESCRIPTION="--usearch_global ${OPT_NAME} emits an ignored warning"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    # shellcheck disable=SC2086
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            ${OPT_PAIR} \
+            --blast6out /dev/null 2>&1 >/dev/null | \
+        grep -qi "ignored" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset OPT_PAIR OPT_NAME
+
+
+#*****************************************************************************#
+#                                                                             #
+#                              invalid options                                #
+#                                                                             #
+#*****************************************************************************#
+
+## options that users might expect to work with --usearch_global but
+## that do not apply to it
+for OPT_PAIR in "--cluster_fast /dev/null" "--cluster_size /dev/null" \
+                "--eeout" "--fastq_qmax 41" "--fastq_qmin 0" \
+                "--fastq_ascii 33" "--fastqout /dev/null" ; do
+    OPT_NAME="${OPT_PAIR%% *}"
+    DESCRIPTION="--usearch_global rejects ${OPT_NAME}"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    # shellcheck disable=SC2086
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            ${OPT_PAIR} \
+            --blast6out /dev/null \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset OPT_PAIR OPT_NAME
+
+
+## clean up common variables before the memory leaks section
+unset SEQ
+
+
 #*****************************************************************************#
 #                                                                             #
 #                               memory leaks                                  #
@@ -84,3521 +3708,5 @@ if which valgrind > /dev/null 2>&1 ; then
     rm -f "${LOG}" "${FASTA}" "${DB}"
 fi
 
-
-exit 0
-
-#*****************************************************************************#
-#                                                                             #
-#                        accepted output options                              #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --alnout is accepted"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nAAAA\n') \
-    --db <(printf '>seq2\nAAAA\n') \
-    --id 1.0 \
-    --alnout - &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --alnout is accepted (warning for short sequences)"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nAAAA\n') \
-    --db <(printf '>seq2\nAAAA\n') \
-    --id 1.0 \
-    --alnout /dev/null 2>&1 | \
-    grep -q "^WARNING" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --alnout --minseqlength is accepted (no warning)"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nAAAA\n') \
-    --db <(printf '>seq2\nAAAA\n') \
-    --id 1.0 \
-    --minseqlength 1 \
-    --alnout /dev/null 2>&1 | \
-    grep -q "^WARNING" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --biomout is accepted"
-seq1="AAAA"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' ${seq1}) \
-    --db <(printf '>seq1\n%s\n' ${seq1}) \
-    --id 1.0 \
-    --biomout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --blast6out is accepted"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nAAAA\n') \
-    --db <(printf '>seq2\nAAAA\n') \
-    --id 1.0 \
-    --blast6out - &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --samout is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' ${seq1}) \
-    --db <(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4}) \
-    --samout - \
-    --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --fastapairs is accepted"
-"${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf '>seq1\n%s\n' "AAAG") \
-	     --fastapairs - --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --matched is accepted"
-"${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-             --db <(printf '>seq1\n%s\n' "AAAG") \
-	     --matched - \
-	     --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --mothur_shared_out is accepted"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nAAAA\n') \
-    --db <(printf '>seq1\nAAAA\n') \
-    --mothur_shared_out - \
-    --id 1.0 &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --notmatched is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-             --db <(printf "${database}") \
-	     --notmatched - \
-	     --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --dbmatched is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-             --db <(printf "${database}") \
-	     --dbmatched - \
-	     --id 1.0 &>/dev/null | \
-    success "${DESCRIPTION}" || \
-    failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --otutabout is accepted"
-seq1="AAAA"
-seq2="TTTT"
-seq3="CCCC"
-seq3="GGGG"
-search_query=$(printf '>seq1\n%s\n' ${seq1})
-database=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nAAAA\n') \
-    --db <(printf "${database}") \
-    --otutabout - \
-    --id 1.0 &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout is accepted"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nAAAA\n') \
-    --db <(printf '>seq2\nAAAA\n') \
-    --userout - --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --wordlength is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-    --db <(printf "${database}") \
-    --biomout - \
-    --wordlength 10 \
-    --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --samout is accepted"
-seq1="AAAA"
-seq2="TTTT"
-seq3="CCCC"
-seq3="GGGG"
-search_query=$(printf '>seq1\n%s\n' ${seq1})
-database=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nAAAA\n') \
-    --db <(printf "${database}") \
-    --samout - \
-    --id 1.0 &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --uc is accepted"
-seq1="AAAA"
-"${VSEARCH}" \
-    --usearch_global <(printf '>query\n%s\n' ${seq1}) \
-    --db <(printf '>target\n%s\n' ${seq1}) \
-    --id 1.0 \
-    --uc - &>/dev/null &&  \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-    --db <(printf "${database}") \
-    --userout - \
-    --id 1.0 &>/dev/null | \
-    success "${DESCRIPTION}" || \
-    failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --alnout --rowlen is accepted"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-    --db <(printf "${database}") \
-    --alnout - \
-    --rowlen 64 \
-    --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                      alnout: test expected outputs                          #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --alnout finds the matching sequence"
-r1="AAAA"
-r2="AAAT"
-r3="AATT"
-r4="ATTT"
-database=$(printf '>r1\n%s\n>r2\n%s\n>r3\n%s\n>r4\n%s\n' \
-		  ${r1} ${r2} ${r3} ${r4})
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAA\n') \
-    --db <(printf "${database}") \
-    --quiet \
-    --minseqlength 1 \
-    --id 1.0 \
-    --alnout - | \
-    grep -q "^100%.*r1$" && \
-    success "${DESCRIPTION}" ||
-    	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --alnout finds the non-matching sequence "
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nGCCC\n') \
-    --db <(printf '>r1\nAAAA\n>r2\nTTTT\n') \
-    --quiet \
-    --minseqlength 1 \
-    --id 0.0 \
-    --output_no_hits \
-    --alnout - | \
-    grep -q "^Query >q1$" && \
-    success "${DESCRIPTION}" ||
-    	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --alnout fails if wrong input"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2%s\n' ${seq1})  # bad fasta sequence
-"${VSEARCH}" --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --alnout - \
-	     --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --alnout fails if wrong input with error message"
-"${VSEARCH}" \
-    --usearch_global <(printf 'LSDLSDL\n') \
-    --db <(printf '>r1\nA\n') \
-    --id 1.0 \
-    --quiet \
-    --minseqlength 1 \
-    --alnout - 2>&1 | \
-    grep -q "^Fatal error:.*$" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --alnout fails if empty database"
-"${VSEARCH}" --usearch_global <(printf '>q1\nAAAA\n') \
-	     --db <(printf '') \
-	     --quiet \
-	     --minseqlength 1 \
-	     --id 1.0 \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --alnout fails if no database"
-"${VSEARCH}" --usearch_global <(printf '>seq2\nAAAA\n') \
-             --alnout - \
-	     --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --alnout fails if no input"
-seq1="AAAA"
-seq2="AAAT"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq2} ${seq2} ${seq3} ${seq4})
-"${VSEARCH}" \
-    --usearch_global  \
-    --db <(printf "${database}") --alnout - \
-    --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-DESCRIPTION="--usearch_global --alnout --rowlen gives the correct result"
-seq1="AAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq3="AATTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq4="ATTTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-             --db <(printf "${database}") \
-	     --alnout - \
-	     --rowlen 1 \
-	     --id 1.0 2>&1 2>/dev/null | \
-	     awk 'NR==11 {print $2} NR==15 {print $2} NR==19 {print $2} NR==23 {print $2}' | \
-             tr '\n' ' ')
-[[ "${OUTPUT}" == "1 2 3 4 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-# According to the man page, rowlen is only used with alnout. Using
-# rowlen for anything else than an alignment or a fasta output file
-# does not make sense. vsearch should stop with a fatal error, if
-# rowlen is used with anything else than a fasta or alignment
-# output. In the test below, vsearch accepts the --biomout and the
-# rowlen options. It should not.
-DESCRIPTION="--usearch_global --!alnout --rowlen is not accepted"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nA\n') \
-    --db <(printf '>q1\nA\n') \
-    --quiet \
-    --minseqlength 1 \
-    --rowlen 64 \
-    --id 1.0 \
-    --biomout /dev/null && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                     biomout: test expected outputs                          #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --biomout finds the identical sequence"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq3="AATTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq4="ATTTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-database=$(printf '>seq1\n%s\n>seq5\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq3\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --biomout - \
-	     --dbmask none \
-	     --id 1.0 2>/dev/null | \
-		awk -F "\"" 'NR==12 {print $4}')
-[[ "${OUTPUT}" == "seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --biomout finds the identical sequence #2"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq2\nAAAA\n') \
-             --db <(printf "${database}") \
-	     --biomout - \
-	     --id 1.0 2>/dev/null | \
-		awk -F "\"" 'NR==15 {print $4}')
-[[ "${OUTPUT}" == "seq2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --biomout finds the identical sequence #3"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq2\nAAAA\n') \
-             --db <(printf "${database}") \
-	     --biomout - \
-	     --id 1.0 2>/dev/null | \
-		awk -F "," 'NR==15 {print $4} ')
-[[ "${OUTPUT}" != "seq2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --biomout fails if empty database"
-"${VSEARCH}" --usearch_global <(printf '>seq1\nAAAA\n') \
-             --db <(printf '') \
-	     --biomout - \
-	     --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --biomout fails if no database"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\nAAAA\n') \
-    --biomout - \
-    --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --biomout fails if no input"
-"${VSEARCH}" \
-    --usearch_global  \
-    --db <(printf '>seq1\nAAAA\n') \
-    --biomout - \
-    --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --biomout fails if wrong input"
-"${VSEARCH}" --usearch_global <(printf 'echec' ) \
-             --db <(printf 'echec') \
-	     --biomout - \
-	     --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-#*****************************************************************************#
-#                                                                             #
-#                    blast6out: test expected outputs                         #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --blast6out fails if empty database"
-"${VSEARCH}" --usearch_global <(printf '>seq1\nAAAA\n') \
-             --db <(printf '') \
-	     --blast6out - \
-	     --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out fails if no database"
-"${VSEARCH}" --usearch_global <(printf '>seq1\nAAAA\n') \
-             --blast6out - \
-	     --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --blast6out fails if no input"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq2} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" --usearch_global  \
-             --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --blast6out fails if wrong input"
-"${VSEARCH}" --usearch_global <(printf "echec") \
-             --db <(printf '>seq1\nAAAA\n') \
-	     --blast6out - --id 1.0 &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct query"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq1\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-                awk '{print $1}')
-[[ "${OUTPUT}" == "seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct target"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-             --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-                awk '{print $2}')
-[[ "${OUTPUT}" == "seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct similarity percentage"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-		awk '{print $3}')
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct alnlen"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq1\n%s\n' \
-		      ${seq1})
-OUTPUT=$("${VSEARCH}" --usearch_global <(printf "${search_query}") \
-		      --db <(printf "${database}") \
-		      --blast6out - \
-		      --id 1.0 2>/dev/null | \
-		awk '{print $4}')
-[[ "${OUTPUT}" == "32" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-DESCRIPTION="--usearch_global alnlen can be shorter than both seqs."
-## expect an alignment of length 1:
-## AT-
-##  |
-## -TA
-"${VSEARCH}" \
-    --usearch_global <(printf ">q\nTA\n") \
-    --db <(printf ">t\nAT\n") \
-    --minseqlength 1 \
-    --id 0.5 \
-    --quiet \
-    --userfields alnlen \
-    --userout - | \
-    grep -qx "1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="--usearch_global --blast6out finds the correct mism"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-		awk '{print $5}')
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct opens"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-		awk '{print $6}')
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct qlo"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-		awk '{print $7}')
-(( "${OUTPUT}" == 1 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct qhi"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-		awk '{print $8}')
-(( "${OUTPUT}" == 4 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct tlo"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-		awk '{print $9}')
-[[ "${OUTPUT}" == "1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct thi"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-		awk '{print $10}')
-[[ "${OUTPUT}" == "32" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct evalue"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-		awk '{print $11}')
-[[ "${OUTPUT}" == "-1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --blast6out finds the correct bits"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --blast6out - \
-	     --id 1.0 2>/dev/null | \
-		awk '{print $12}')
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                  (db)(not)matched: test expected outputs                    #
-#                                                                             #
-#*****************************************************************************#
-
-# dbnotmatched: write database target sequences not matching query
-# sequences to filename, in fasta format.
-
-DESCRIPTION="--usearch_global --dbnotmatched does not report matched db entry"
-"${VSEARCH}" \
-    --usearch_global <(printf ">q1\nA\n") \
-    --db <(printf ">s1\nA\n") \
-    --minseqlength 1 \
-    --id 0.5 \
-    --quiet \
-    --dbnotmatched /dev/stdout | \
-    grep -q "^>" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-## Note: at some point there was a bug with --dbnotmatched (unmatched
-## were not reported)
-DESCRIPTION="--usearch_global --dbnotmatched reports unmatched db entry"
-"${VSEARCH}" \
-    --usearch_global <(printf ">q1\nA\n") \
-    --db <(printf ">s1\nC\n") \
-    --minseqlength 1 \
-    --id 0.5 \
-    --quiet \
-    --dbnotmatched /dev/stdout | \
-    grep -qx ">s1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --dbnotmatched reports unmatched db entry in fasta format"
-"${VSEARCH}" \
-    --usearch_global <(printf ">q1\nA\n") \
-    --db <(printf ">s1\nC\n") \
-    --minseqlength 1 \
-    --id 0.5 \
-    --quiet \
-    --dbnotmatched /dev/stdout | \
-    tr "\n" "@" | \
-    grep -qx ">s1@C@" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --dbmatched displays the matched sequence"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --dbmatched - \
-		      --dbmask none \
-		      --id 1.0 2>/dev/null)
-EXPECTED=$(printf '>seq1\n%s\n' ${seq1})
-[[ "${OUTPUT}" == "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-unset "EXPECTED"
-
-DESCRIPTION="--usearch_global --dbmatched displays the matched sequence #2"
-seq1="AAAG"
-seq2="AAAA"
-database=$(printf '>seq1\n%s\n' ${seq1})
-search_query=$(printf '>seq2\n%s\n' ${seq2})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq2\nAAAA\n') \
-             --db <(printf "${database}") \
-	     --dbmatched - \
-	     --id 1.0 2>/dev/null)
-EXPECTED=$(printf '>seq1\n%s\n' ${seq1})
-[[ "${OUTPUT}" != "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-unset "EXPECTED" 
-
-DESCRIPTION="--usearch_global --dbnotmatched displays the matched sequence"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --dbnotmatched - \
-	     --id 1.0 2>/dev/null)
-EXPECTED=$(printf '>seq1\n%s\n' ${seq1})
-[[ "${OUTPUT}" != "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT" "EXPECTED"
-
-DESCRIPTION="--usearch_global --dbnotmatched displays the matched sequence #2"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-database=$(printf '>seq1\n%s\n' ${seq1})
-search_query=$(printf '>seq2\n%s\n' ${seq2})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --dbnotmatched - \
-	     --dbmask none \
-	     --id 1.0 2>/dev/null)
-EXPECTED=$(printf '>seq1\n%s\n' ${seq1})
-[[ "${OUTPUT}" == "${EXPECTED}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --matched displays the correct sequences"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-seq3="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAATT"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAATTT"
-database=$(printf '>seq1\n%s\n>seq4\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-		      --db <(printf "${database}") \
-		      --matched - \
-		      --dbmask none \
-		      --id 1.0 2>/dev/null | \
-		awk 'NR==1')
-[[ "${OUTPUT}" == ">seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --matched displays the correct sequences #2"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq4\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq4} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --matched - \
-	     --id 1.0 2>/dev/null | \
-		awk 'NR==1')
-[[ "${OUTPUT}" != ">seq2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --notmatched displays the correct sequences"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT" 
-database=$(printf '>seq1\n%s\n>seq4\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-             --db <(printf "${database}") \
-	     --notmatched - \
-	     --id 1.0 2>/dev/null | \
-                awk 'NR==1')
-[[ "${OUTPUT}" != ">seq2" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-DESCRIPTION="--usearch_global --notmatched displays the correct sequences #2"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq4\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq4} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --notmatched - \
-	     --id 1.0 2>/dev/null | \
-		awk 'NR==1')
-[[ "${OUTPUT}" == ">seq1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                mothur_shared_out: test expected outputs                     #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --mothur_shared_out displays the correct sequences"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		      ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --mothur_shared_out - \
-	     --id 1.0 2>/dev/null | \
-		awk  \
-		    'NR==2 {print $4} NR==3 {print $5} 
-                     NR==4 {print $6} NR==5 {print $7}' | \
-		tr '\n' ' ')
-[[ "${OUTPUT}" == "1 1 1 1 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                     otutabout: test expected outputs                        #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --otutabout displays the correct sequences"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		      ${seq1} ${seq2} ${seq3} ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --otutabout - \
-	     --id 1.0 2>/dev/null | \
-		awk  \
-		    'NR==2 {print $2} NR==3 {print $3} NR==4 {print $4} NR==5 {print $5}' | \
-		tr '\n' ' ')
-[[ "${OUTPUT}" == "1 1 1 1 " ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "OUTPUT"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                           uc: test expected outputs                         #
-#                                                                             #
-#*****************************************************************************#
-#--uc already tested in dereplication_replication.sh
-
-#*****************************************************************************#
-#                                                                             #
-#                         userout: test expected outputs                      #
-#                                                                             #
-#*****************************************************************************#
-DESCRIPTION="--usearch_global --userout is empty when no --userfields"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields accepts all fields #1"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields \
-    aln+alnlen+bits+caln+evalue+exts+gaps+id+id0+id1 \
-    --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields accepts all fields #2"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields \
-    ids+mism+opens+pairs+pctgaps+pctpv+pv+qcov+qframe+qhi+qihi \
-    --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields accepts all fields #3"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields \
-    qilo+ql+qlo+qrow+qs+qstrand+query+raw+target+tcov+tframe \
-    --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "database" "OUTPUT"
-DESCRIPTION="--usearch_global --userout --userfields accepts all fields #4"
-seq1="AAAG"
-seq2="AAAA"
-seq3="AATT"
-seq4="ATTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields \
-    tilo+tl+tlo+trow+ts+tstrand+id3+id4+id2+tihi+thi  \
-    --id 1.0 &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields aln is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq4="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global \
-	     <(printf '>seq1\n%s\n' "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") \
-	     --db <(printf "${database}") \
-	     --userout - \
-	     --userfields aln \
-	     --id 0.4 2>/dev/null)
-[[ "${OUTPUT}" == "DMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMI" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields alnlen is correct"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAA\n') \
-    --db <(printf '>r1\nAAA\n') \
-    --minseqlength 1 \
-    --quiet \
-    --id 1.0 \
-    --userfields alnlen \
-    --userout - | \
-    grep -q "^3$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields bits is correct"
-seq1="AAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq3="AATTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq4="ATTTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf '>seq1\n%s\n' "AAAG") \
-	     --db <(printf "${database}") \
-	     --userout - \
-	     --userfields bits \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields caln is correct"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAGGGGGGGGGCCC\n') \
-    --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
-    --minseqlength 1 \
-    --quiet \
-    --id 0.1 \
-    --userfields caln \
-    --userout - | \
-    grep -q "^6M3I7MD$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields evalue is correct"
-seq1="AAAGAAAGAAAGAAAGAAAGAAAGAAAGAAAG"
-seq2="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq3="AAAGAAAGAAAGAAAGAAAGAAAGAAAGAAAG"
-seq4="AAAGAAAGAAAGAAAGAAAGAAAGAAAGAAAG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global \
-	     <(printf '>seq1\n%s\n' "AAAGAAAGAAAGAAAGAAAGAAAGAAAGAAAG") \
-	     --db <(printf "${database}") \
-	     --userout - \
-	     --userfields evalue \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "-1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields exts is correct"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAGGGGGGGGGCCC\n') \
-    --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
-    --minseqlength 1 \
-    --quiet \
-    --id 0.1 \
-    --userfields exts \
-    --userout - | \
-    grep -q "^2$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields gaps is correct"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAGGGGGGGGGCCC\n') \
-    --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
-    --minseqlength 1 \
-    --quiet \
-    --id 0.1 \
-    --userfields gaps \
-    --userout - | \
-    grep -q "^3$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields id is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields id \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields id0 is correct"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAGGGGGGGGGCCC\n') \
-    --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
-    --userfields id0 \
-    --id 0.7 \
-    --quiet \
-    --minseqlength 1 \
-    --userout - | \
-    grep -q "^85.7$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields id1 is correct"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAGGGGGGGGGCCC\n') \
-    --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
-    --userfields id1 \
-    --id 0.7 \
-    --quiet \
-    --minseqlength 1 \
-    --userout - | \
-    grep -q "70.6" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields id2 is correct"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAGGGGGGGGGCCC\n') \
-    --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
-    --userfields id2 \
-    --id 0.7 \
-    --quiet \
-    --minseqlength 1 \
-    --userout - | \
-    grep -q "^75.0$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields id3 is correct"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAGGGGGGGGGCCC\n') \
-    --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
-    --userfields id3 \
-    --id 0.7 \
-    --quiet \
-    --minseqlength 1 \
-    --userout - | \
-    grep -q "^81.2$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields id4 is correct"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAGGGGGGGGGCCC\n') \
-    --db <(printf '>r1\nAAGGGGAAAAGGGGCC\n') \
-    --userfields id4 \
-    --id 0.7 \
-    --quiet \
-    --minseqlength 1 \
-    --alnout - \
-    --userout - | \
-    grep -q "^75.0$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields ids is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields ids \
-	     --id 1.0 2>/dev/null)
-(( "${OUTPUT}" == 32 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-
-DESCRIPTION="--usearch_global --userout --userfields id1 is not id2 when terminal gaps"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-search_query=$(printf '>query\n%s\n' ${seq4})
-OUTPUT1=$("${VSEARCH}" \
-	      --usearch_global <(printf "${search_query}") \
-              --db <(printf "${database}") \
-	      --userout - \
-	      --userfields id1 \
-	      --id 0.5 2>/dev/null)
-OUTPUT2=$("${VSEARCH}" \
-	      --usearch_global <(printf "${search_query}") \
-              --db <(printf "${database}") \
-	      --userout - \
-	      --userfields id2 \
-	      --id 0.5 2>/dev/null)
-[[ "${OUTPUT1}" != "${OUTPUT2}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-
-DESCRIPTION="--usearch_global --userout --userfields id1 is not id3 when extended gaps"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="AAAAAAAAAAAAAAAAAGGGGAAAAAAAAAAAAAAA"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-search_query=$(printf '>query\n%s\n' ${seq4})
-OUTPUT1=$("${VSEARCH}" \
-	      --usearch_global <(printf "${search_query}") \
-              --db <(printf "${database}") \
-	      --userout - \
-	      --userfields id1 \
-	      --id 0.5 2>/dev/null)
-OUTPUT2=$("${VSEARCH}" \
-	      --usearch_global <(printf "${search_query}") \
-              --db <(printf "${database}") \
-	      --userout - \
-	      --userfields id3 \
-	      --id 0.5 2>/dev/null)
-[[ "${OUTPUT1}" != "${OUTPUT2}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields mism is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields mism \
-	     --id 1.0 2>/dev/null)
-(( "${OUTPUT}" == 0 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields mism is correct #2"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="ATATATATATATATATATATATATATATATAT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-search_query=$(printf '>seq2\n%s\n' ${seq4})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields mism \
-	     --id 0.1 2>/dev/null)
-(( "${OUTPUT}" == 16 )) && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields mism is correct #3"
-seq1="AAAA"
-seq2="TAAA"
-"${VSEARCH}" \
-    --usearch_global <(printf '>seq1\n%s\n' ${seq1}) \
-    --db <(printf '>seq2\n%s\n' ${seq2}) \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --userfields mism \
-    --userout - | \
-    grep -q "^1$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset seq1 seq2 DESCRIPTION
-
-DESCRIPTION="--usearch_global --userout --userfields mism is correct #4"
-"${VSEARCH}" \
-    --usearch_global <(printf ">q1\nGGGG\n") \
-    --db <(printf ">r1\nGCCG\n") \
-    --quiet \
-    --minseqlength 1 \
-    --id 0.1 \
-    --userfields mism \
-    --userout - | \
-    grep -q "2" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields mism is correct #5"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-search_query=$(printf '>seq2\n%s\n' ${seq4})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields mism \
-    --id 0.1 2>/dev/null | \
-    grep -q "1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields opens is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields opens \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields pairs is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields pairs \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "32" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields pctgaps is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields pctgaps \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "0.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields pctpv is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields pctpv \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields pv is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields pv \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "32" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields qcov is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields qcov \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields qframe is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields qframe \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "+0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields qhi is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields qhi \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "32" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields qihi is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields qihi \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "32" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields qilo is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields qilo \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields ql is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields ql \
-    --id 1.0 2>/dev/null | \
-    grep -q "^32$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields qlo is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields qlo \
-    --id 1.0 2>/dev/null | \
-    grep -q "^1$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database"
-
-DESCRIPTION="--usearch_global --userout --userfields qrow is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields qrow \
-    --id 1.0 2>/dev/null | \
-    grep -q "^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database"
-
-DESCRIPTION="--usearch_global --userout --userfields qs is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields qs \
-    --id 1.0 2>/dev/null | \
-    grep -q "^32$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-DESCRIPTION="--usearch_global --userout --userfields qstrand is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields qstrand \
-    --id 1.0 2>/dev/null | \
-    grep -q "^+$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq2" "seq3" "seq4" \
-      "search_query" "database" "OUTPUT"
-
-
-DESCRIPTION="--usearch_global --userout --userfields qstrand is correct #2"
-seq1="ATCGATCGATCGATCGATCGATCGATCGATCG"
-seq4="$(rev <<< ${seq1} | tr 'ACGT' 'TGCA')"
-database=$(printf '>target\n%s\n' \
-		  ${seq4})
-search_query=$(printf '>query\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --strand both \
-    --db <(printf "${database}") \
-    --userfields qstrand \
-    --quiet \
-    --id 0.1 \
-    --userout - | \
-    grep -q "^-$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "seq1" "seq4" \
-      "search_query" "database"
-
-DESCRIPTION="--usearch_global --userout --userfields query is correct"
-"${VSEARCH}" \
-    --usearch_global <(printf ">q1\nGT\n") \
-    --db <(printf ">r1\nGT\n") \
-    --userout - \
-    --quiet \
-    --minseqlength 1 \
-    --userfields query \
-    --id 1.0 | \
-    grep -q "^q1$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields raw is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields raw \
-    --id 1.0 2>/dev/null | \
-    grep -q "^64$" && \
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields target is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>query\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields target \
-    --id 1.0 2>/dev/null | \
-    grep -q "^seq1$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields tcov is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-	     --db <(printf "${database}") \
-	     --userout - \
-	     --userfields tcov \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "100.0" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields tframe is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields tframe \
-    --id 1.0 2>/dev/null | \
-    grep -q "^+0$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields thi is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n' \
-		  ${seq1} ${seq2} ${seq3})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields thi \
-    --id 1.0 2>/dev/null | \
-    grep -q "^32$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-DESCRIPTION="--usearch_global --userout --userfields tihi is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields tihi \
-    --id 1.0 2>/dev/null | \
-    grep -q "^32$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields tihi is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf ">q1\nGGCGCGCGATT\n") \
-                --db <(printf ">r1\nAGGCGCGCGATTCGAGGC\n") \
-    --userout - \
-    --quiet \
-    --minseqlength 1 \
-    --userfields tihi \
-    --id 0.4 | \
-    grep -q "^12$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields tilo is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields tilo \
-    --id 1.0 2>/dev/null | \
-    grep -q "^1$"
-success "${DESCRIPTION}" || \
-    failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields tl is correct"d
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields tl \
-    --id 1.0 2>/dev/null | \
-    grep -q "^32$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields tlo is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-             --db <(printf "${database}") \
-	     --userout - \
-	     --userfields tlo \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "1" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields trow is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-OUTPUT=$("${VSEARCH}" \
-	     --usearch_global <(printf "${search_query}") \
-	     --db <(printf "${database}") \
-	     --userout - \
-	     --dbmask none \
-	     --userfields trow \
-	     --id 1.0 2>/dev/null)
-[[ "${OUTPUT}" == "${seq1}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields ts is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields ts \
-    --id 1.0 2>/dev/null | \
-    grep -q "^32$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --userout --userfields tstrand is correct"
-seq1="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-seq2="TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-seq3="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-seq4="GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-database=$(printf '>seq1\n%s\n>seq2\n%s\n>seq3\n%s\n>seq4\n%s\n' \
-		  ${seq1} ${seq2} ${seq3} ${seq4})
-search_query=$(printf '>seq2\n%s\n' ${seq1})
-"${VSEARCH}" \
-    --usearch_global <(printf "${search_query}") \
-    --db <(printf "${database}") \
-    --userout - \
-    --userfields tstrand \
-    --id 1.0 2>/dev/null | \
-    grep -q "^+$" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-
-
-#*****************************************************************************#
-#                                                                             #
-#                                 Parameters                                  #
-#                                                                             #
-#*****************************************************************************#
-
-# --slots written in the vsearch --help but not the man
-DESCRIPTION="--usearch_global accept all man parameters"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --dbmask dust \
-	     --fulldp \
-	     --gapext 2I/1E \
-	     --gapopen 20I/1E \
-	     --hardmask \
-	     --id 1.0 \
-	     --iddef 2 \
-	     --idprefix 0 \
-	     --idsuffix 0 \
-	     --leftjust \
-	     --match 2 \
-	     --maxaccepts 1 \
-	     --maxdiffs 1 \
-	     --maxgaps 1 \
-	     --maxhits 1200 \
-	     --maxid 1.0 \
-	     --maxqsize 100 \
-	     --maxqt 2.0 \
-	     --maxrejects 32 \
-	     --maxsizeratio 20.0 \
-	     --maxsl 20.0 \
-	     --maxsubs 20 \
-	     --mid 0.1 \
-	     --mincols 1 \
-	     --minqt 1.0 \
-	     --minsizeratio 1.0 \
-	     --minsl 1.0 \
-	     --mintsize 1 \
-	     --minseqlength 1 \
-	     --minwordmatches 12 \
-	     --mismatch -4 \
-	     --pattern "test" \
-	     --qmask dust \
-	     --query_cov 1.0 \
-	     --rightjust \
-	     --sizein \
-	     --self \
-	     --selfid \
-	     --slots 1 \
-	     --strand plus \
-	     --target_cov 2.0 \
-	     --weak_id 1.0 \
-	     --wordlength 8 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-# masking option tested in fastx_mask
-
-#*****************************************************************************#
-#                                                                             #
-#                                 gapopen/ext                                 #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --gapopen parameters fails if not slash separated"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "10I2E" \
-	     --minseqlength 1 \
-	     --quiet \
-	     --id 0.1 \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-# associations
-DESCRIPTION="--usearch_global --gapopen accept all the context letter given"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "1QL/1QI/1QR/1TL/1TI/1TR/1TE/1QE" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-# alone
-DESCRIPTION="--usearch_global --gapopen accept all the context characters given"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "1L/1I/1R/1T/1Q/1E" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapopen fails if other characters"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "1X" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapopen fails if character first"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "L1" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapopen fails if starting with a slash"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "/1L" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapopen fails if ending with a slash"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "1L/" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapopen accepts number only"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "1" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapopen accept * symbol"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "*" \
-	     --id 0.1 \
-	     --minseqlength 1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-success "${DESCRIPTION}" || \
-    failure "${DESCRIPTION}"
-
-# man page says zero or positive integer
-DESCRIPTION="--usearch_global --gapopen fails if negative number"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "-1" \
-	     --minseqlength 1 \
-	     --quiet \
-	     --id 0.1 \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapopen fails if REAL number instead of INT"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "1.5" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-# Qry  1 + ATTTccccccaacccccccccACTTGATCCGCTC 34
-#           || ||||||  ||||||||   |    |    |
-# Tgt  1 + TTTccccccc--ccccccccACTTGATCCGCTCC 32
-DESCRIPTION="--usearch_global --gapopen * forbids gaps opening"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --minseqlength 1 \
-    --gapopen "*" \
-    --id 0.1 \
-    --quiet \
-    --alnout - | \
-    grep -q "^Query >q1$" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapopen * --gapext * forbids gaps"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --minseqlength 1 \
-    --gapopen "*" \
-    --gapext "*" \
-    --id 0.1 \
-    --quiet \
-    --alnout - | \
-    grep -q "^Query >q1$" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapext parameters fails if not slash separated"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "10I2E" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-# associations
-DESCRIPTION="--usearch_global --gapext accept all the context characters given"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "1QL/2QI/3QR/4TL/5TI/6TR/7TE/8QE/9E/*E" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-# alone
-DESCRIPTION="--usearch_global --gapext accept all the context characters given #2"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "1L/1I/1R/1T/1Q/1E" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapext fails if other characters"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "1X" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapext fails if character first"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "L1" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapext fails if starting with a slash"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "/1L" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapext fails if ending with a slash"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "1L/" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapext accept number only"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "1" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapext accept * symbol"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "*" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-# man page says zero or positive integer
-DESCRIPTION="--usearch_global --gapext fails if negative number"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "-1" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --gapext fails if REAL number instead of INT"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapext "1.5" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                          id(def)(prefix(suffix)                             #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --iddef accepts parameter 0"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --iddef 0 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --alnout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --iddef accepts parameter 1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --iddef 1 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --alnout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --iddef accepts parameter 2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --iddef 2 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --alnout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --iddef accepts parameter 3"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --iddef 3 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --alnout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --iddef accepts parameter 4"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --iddef 4 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --alnout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --iddef is 2 when not specified"
-SPECIFIED=$("${VSEARCH}" \
-		--usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-		--db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-		--id 0.1 \
-		--iddef 2 \
-		--minseqlength 1 \
-		--id 0.1 \
-		--quiet \
-		--alnout - | \
-		   awk 'NR==6 {print $1}')
-DEFAULT=$("${VSEARCH}" \
-	      --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-	      --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-	      --id 0.1 \
-	      --iddef 2 \
-	      --minseqlength 1 \
-	      --id 0.1 \
-	      --quiet \
-	      --alnout - | \
-		 awk 'NR==6 {print $1}')
-[[ "${SPECIFIED}" == "${DEFAULT}" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "SPECIFIED" "DEFAULT"
-
-DESCRIPTION="--usearch_global --iddef fails if other parameter than 0-4"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --iddef 5 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --iddef fails if no parameter"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --iddef \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-# sequence used gives almost a different for each 
-DESCRIPTION="--usearch_global --iddef 0 correct"
-SPECIFIED=$("${VSEARCH}" \
-		--usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-		--db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-		--id 0.1 \
-		--iddef 0 \
-		--minseqlength 1 \
-		--id 0.1 \
-		--quiet \
-		--alnout - | \
-		   awk 'NR==6 {print $1}')
-USERFIELD=$("${VSEARCH}" \
-	      --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-	      --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-	      --id 0.1 \
-	      --minseqlength 1 \
-	      --id 0.1 \
-	      --quiet \
-	      --userfield id0 \
-	      --userout -)
-USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc) 
-[[ "${SPECIFIED}" == "${USERFIELD}%" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "SPECIFIED" "USERFIELD"
-
-
-DESCRIPTION="--usearch_global --iddef 1 correct"
-SPECIFIED=$("${VSEARCH}" \
-		--usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-		--db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-		--id 0.1 \
-		--iddef 1 \
-		--minseqlength 1 \
-		--id 0.1 \
-		--quiet \
-		--alnout - | \
-		   awk 'NR==6 {print $1}')
-USERFIELD=$("${VSEARCH}" \
-	      --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-	      --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-	      --id 0.1 \
-	      --minseqlength 1 \
-	      --id 0.1 \
-	      --quiet \
-	      --userfield id1 \
-	      --userout -)
-USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc) 
-[[ "${SPECIFIED}" == "${USERFIELD}%" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "SPECIFIED" "USERFIELD"    
-
-
-DESCRIPTION="--usearch_global --iddef 2 correct"
-SPECIFIED=$("${VSEARCH}" \
-		--usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-		--db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-		--id 0.1 \
-		--iddef 2 \
-		--minseqlength 1 \
-		--id 0.1 \
-		--quiet \
-		--alnout - | \
-		   awk 'NR==6 {print $1}')
-USERFIELD=$("${VSEARCH}" \
-	      --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-	      --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-	      --id 0.1 \
-	      --minseqlength 1 \
-	      --id 0.1 \
-	      --quiet \
-	      --userfield id2 \
-	      --userout -)
-USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc) 
-[[ "${SPECIFIED}" == "${USERFIELD}%" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "SPECIFIED" "USERFIELD"    
-
-DESCRIPTION="--usearch_global --iddef 3 correct"
-SPECIFIED=$("${VSEARCH}" \
-		--usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-		--db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-		--iddef 3 \
-		--minseqlength 1 \
-		--id 0.1 \
-		--quiet \
-		--alnout - | \
-		   awk 'NR==6 {print $1}')
-USERFIELD=$("${VSEARCH}" \
-	      --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-	      --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-	      --minseqlength 1 \
-	      --id 0.1 \
-	      --quiet \
-	      --userfield id3 \
-	      --userout -)
-USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc) 
-[[ "${SPECIFIED}" == "${USERFIELD}%" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "SPECIFIED" "USERFIELD"    
-
-DESCRIPTION="--usearch_global --iddef 4 correct"
-SPECIFIED=$("${VSEARCH}" \
-		--usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-		--db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-		--iddef 4 \
-		--minseqlength 1 \
-		--id 0.1 \
-		--quiet \
-		--alnout - | \
-		   awk 'NR==6 {print $1}')
-USERFIELD=$("${VSEARCH}" \
-	      --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-	      --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-	      --minseqlength 1 \
-	      --id 0.1 \
-	      --quiet \
-	      --userfield id4 \
-	      --userout -)
-USERFIELD=$(echo "($USERFIELD+0.5)/1" | bc) 
-[[ "${SPECIFIED}" == "${USERFIELD}%" ]] && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-unset "SPECIFIED" "USERFIELD"    
-
-
-DESCRIPTION="--usearch_global --idprefix fails if negative"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "/1L" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --idprefix -1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --idsuffix fails if negative"
-"${VSEARCH}" --usearch_global <(printf '>q1\nA\n') \
-	     --db <(printf '>r1\nA\n') \
-	     --gapopen "/1L" \
-	     --minseqlength 1 \
-	     --id 0.1 \
-	     --idsuffix -1 \
-	     --quiet \
-	     --alnout - &>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-# query and target equals except for the 2nd nucleotide
-DESCRIPTION="--usearch_global --idprefix is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-    --db <(printf '>r1\nACAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-    --minseqlength 1 \
-    --idprefix 1 \
-    --id 0.1 \
-    --quiet \
-    --alnout - | \
-    grep -q "Query >q1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --idprefix is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-    --db <(printf '>r1\nACAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-    --minseqlength 1 \
-    --idprefix 2 \
-    --id 0.1 \
-    --quiet \
-    --alnout - | \
-    grep -q "Query >q1" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-# query and target equals except for the last 2nd nucleotide
-DESCRIPTION="--usearch_global --idsuffix is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-    --db <(printf '>r1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATCA\n') \
-    --minseqlength 1 \
-    --idsuffix 1 \
-    --id 0.1 \
-    --quiet \
-    --alnout - | \
-    grep -q "Query >q1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --idsuffix is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-    --db <(printf '>r1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATCA\n') \
-    --minseqlength 1 \
-    --idsuffix 2 \
-    --id 0.1 \
-    --quiet \
-    --alnout - | \
-    grep -q "Query >q1" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                                 left/rightjust                              #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --leftjust is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-    --db <(printf '>r1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATCA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --alnout - | \
-    grep -q "Query >q1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --leftjust is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-    --db <(printf '>r1\nGAAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATCA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --alnout - | \
-    grep -q "Query >q1" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --rightjust is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-    --db <(printf '>r1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATCA\n') \
-    --minseqlength 1 \
-    --rightjust \
-    --id 0.1 \
-    --quiet \
-    --alnout - | \
-    grep -q "Query >q1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --rightjust is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-    --db <(printf '>r1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATCATA\n') \
-    --minseqlength 1 \
-    --rightjust \
-    --id 0.1 \
-    --quiet \
-    --alnout - | \
-    grep -q "Query >q1" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                                (mis)match                                   #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --match is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAA\n') \
-    --db <(printf '>r1\nAAAA\n') \
-    --minseqlength 1 \
-    --match 4 \
-    --id 0.1 \
-    --userfield raw \
-    --quiet \
-    --userout - | \
-    grep -q "^16$" && \
-    success "${DESCRIPTION}" || \
-    failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --mismatch is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nGGCG\n') \
-    --db <(printf '>r1\nGGGG\n') \
-    --minseqlength 1 \
-    --match 1 \
-    --mismatch -1 \
-    --userfield raw \
-    --id 0.1 \
-    --quiet \
-    --userout - | \
-    grep -q "^2$" && \
-    success "${DESCRIPTION}" || \
-    	failure "${DESCRIPTION}"
-
-
-#*****************************************************************************#
-#                                                                             #
-#                                    max/min                                  #
-#                                                                             #
-#*****************************************************************************#
-
-DESCRIPTION="--usearch_global --maxaccepts is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATCTAG\n') \
-    --db <(printf '>r1\nATCTAG\n>r2\nATCTAG\n>r3\nATCTAG\n>r4\nATCTAG\n') \
-    --minseqlength 1 \
-    --id 0.1 \
-    --maxaccepts 2 \
-    --quiet \
-    --alnout - | \
-    grep -Ec "Target .* >r[12]$" | \
-    grep -q "^2$" && \
-    success "${DESCRIPTION}" || \
-    	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxaccepts is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATCTAG\n') \
-    --db <(printf '>r1\nATCTAG\n>r2\nATCTAG\n>r3\nATCTAG\n>r4\nATCTAG\n') \
-    --minseqlength 1 \
-    --id 0.1 \
-    --maxaccepts 1 \
-    --quiet \
-    --alnout - | \
-    grep -Ec "Target .* >r[12]$" | \
-    grep -q "^1$" && \
-    success "${DESCRIPTION}" || \
-    	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxaccepts 0 search in all database"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATCTAG\n') \
-    --db <(printf '>r1\nATCTAG\n>r2\nATCTAG\n>r3\nATCTAG\n>r4\nATCTAG\n') \
-    --minseqlength 1 \
-    --id 0.1 \
-    --maxaccepts 0 \
-    --quiet \
-    --alnout - | \
-    grep -Ec "Target .* >r[1234]$" | \
-    grep -q "^4$" && \
-    success "${DESCRIPTION}" || \
-    	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxaccepts fails if negative value"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATCTAG\n') \
-    --db <(printf '>r1\nATCTAG\n>r2\nATCTAG\n>r3\nATCTAG\n>r4\nATCTAG\n') \
-    --minseqlength 1 \
-    --id 0.1 \
-    --maxaccepts -1 \
-    --quiet \
-    --alnout - &>/dev/null && \
-	    failure "${DESCRIPTION}" || \
-    	    	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxdiffs is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATCTAG\n') \
-    --db <(printf '>r1\nATCTAG\n') \
-    --minseqlength 1 \
-    --id 0.1 \
-    --maxdiffs 1 \
-    --quiet \
-    --alnout - | \
-	grep -cq "Target .* >r[12]$" && \
-    success "${DESCRIPTION}" || \
-    	failure "${DESCRIPTION}"
-
-# positive integer
-DESCRIPTION="--usearch_global --maxdiffs fails if zero"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATCTAG\n') \
-    --db <(printf '>r1\nATCTAG\n') \
-    --minseqlength 1 \
-    --id 0.1 \
-    --maxdiffs 0 \
-    --quiet \
-    --alnout /dev/null && \
-    failure "${DESCRIPTION}" || \
-    	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxgaps is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-                --db <(printf '>r1\nAGAGCTTCAAGCGGCGTGGCGATGGTGCCCCATCA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxgaps 1 \
-    --alnout  - | \
-    grep -q "Query >q1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxgaps is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGAGCTTCAAGCGCGTGGCGATGGTGCCCCATGA\n') \
-                --db <(printf '>r1\nAGAGCTTCAAGCGGCGTGGCGATGGTGCCCCATCA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxgaps 0 \
-    --alnout  - | \
-    grep -q "Query >q1" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxhits is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAA\n') \
-                --db <(printf '>r1\nAA\n>r2\nAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxaccepts 0 \
-    --maxhits 2 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^2$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxhits is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAA\n') \
-                --db <(printf '>r1\nAA\n>r2\nAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxaccepts 0 \
-    --maxhits 1 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^1$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxhits is correct #3"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAA\n') \
-                --db <(printf '>r1\nAA\n>r2\nAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxaccepts 0 \
-    --maxhits 0 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^0$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxid is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAA\n') \
-                --db <(printf '>r1\nAAAC\n>r2\nAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxid 0.75 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^1$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxid is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAA\n') \
-                --db <(printf '>r1\nAAAC\n>r2\nAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxid 0.74 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^0$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxid is correct #3"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAA\n') \
-                --db <(printf '>r1\nAAAC\n>r2\nAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --maxaccepts 0 \
-    --quiet \
-    --maxid 1.0 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^2$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxid uses the formula of chosen iddef #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --maxid 0.95 \
-    --iddef 2 \
-    --alnout - | \
-    grep -q "^Query >q1$" && \
-    success "${DESCRIPTION}" || \
-    	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxid uses the formula of chosen iddef #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --maxid 0.95 \
-    --iddef 0 \
-    --alnout - | \
-    grep -q "^Query >q1$" && \
-    failure"${DESCRIPTION}" || \
-    	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxid fails if greater than one"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --maxid 1.5 \
-    --alnout /dev/null && \
-    failure "${DESCRIPTION}" || \
-    	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxid gives a warning if greater than one"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --maxid 1.5 \
-    --quiet \
-    --alnout - | \
-    grep -qEi "warning|Fatal Error" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-# objective is to find 2 k-mers profiles to test the maxrejects option
-DESCRIPTION="--usearch_global --maxrejects"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nGGCCCCCCCCCCGGGGGGGGGG\n') \
-    --db <(printf '>r1\nCCGGGGGGGGGGCCCCCCCCCC\n>r2\nGGCCCCCCCCCAGGGGGTGGGG\n') \
-    --id 0.1 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --maxrejects 1 \
-    --wordlength 3 \
-    --quiet \
-    --alnout - | \
-    grep -qEi "warning|Fatal Error" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxid fails if negative"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --quiet \
-    --maxid -0.1 \
-    --alnout /dev/null && \
-    failure "${DESCRIPTION}" || \
-    	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxid gives a warning if negative"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --maxid -0.1 \
-    --quiet \
-    --alnout - | \
-    grep -qEi "warning|Fatal Error" && \
-     success "${DESCRIPTION}" || \
-    	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxid shows nothing if zero"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTTCCCCCCAACCCCCCCCCACTTGATCCGCTC\n') \
-    --db <(printf '>r1\nTTTCCCCCCCCCCCCCCCACTTGATCCGCTCC\n') \
-    --id 0.1 \
-    --minseqlength 1 \
-    --id 0.1 \
-    --maxid 0 \
-    --quiet \
-    --alnout - | \
-    grep -q "Query >q1" && \
-     failure "${DESCRIPTION}" || \
-    	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxqsize is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAA\n') \
-                --db <(printf '>r1\nAAAC\n>r2;size=3\nAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxqsize 1 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^1$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxqsize is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAA\n') \
-                --db <(printf '>r1\nAAAC\n>r2\nAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxqsize 0 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^0$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxqsize is correct #3"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAA\n') \
-                --db <(printf '>r1\nAAAC\n>r2;size=3\nAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --maxaccepts 0 \
-    --quiet \
-    --maxqsize 4 \
-    --alnout - | \
-    grep -cE "Target .* (>r[12]|>r[12];size=3)$" | \
-    grep -q "^2$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxqt when query/target ratio > 1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGTCGGGATCGTGCCCACGA\n') \
-                --db <(printf '>r1\nAGTCGGGATCGTGCCCACGAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxqt 1.0 \
-    --matched - | \
-    grep -q "^>q1$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxqt when query/target ratio < 1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAGTCGGGATCGTGCCCACGAA\n') \
-                --db <(printf '>r1\nAGTCGGGATCGTGCCCACGA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxqt 1.0 \
-    --matched - | \
-    grep -q "^>q1$" && \
-      failure "${DESCRIPTION}" || \
-    	  success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxqt is zero returns no match"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAAAAAAAAAAAAAA\n') \
-                --db <(printf '>r1\nAAAAAAAAAAAAAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxqt 0 \
-    --matched - | \
-    grep -q "^>q1$" && \
-      failure "${DESCRIPTION}" || \
-    	 success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxqt is correct #3"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAA\n') \
-                --db <(printf '>r1\nAAAC\n>r2;size=3\nAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --maxaccepts 0 \
-    --quiet \
-    --maxqt 1 \
-    --alnout - | \
-    grep -cE "Target .* (>r[12]|>r[12];size=3)$" | \
-    grep -q "^2$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxsl is correct # 1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAAAAAAAA\n') \
-                --db <(printf '>r1\nAAAAAAAAAA\n>r2;size=3\nAAAAAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxsl 1.0 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^1$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxsl is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAAAAAAAAAAA\n') \
-                --db <(printf '>r1\nAAAAAAAAAAAAAA\n>r2\nAAAAAAAAAAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxsl 0 \
-    --alnout - | \
-    grep -c "Target .* >r[12]$" | \
-    grep -q "^0$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxsl is correct #3"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nAAAA\n') \
-                --db <(printf '>r1\nAAAC\n>r2;size=3\nAAAA\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --maxaccepts 0 \
-    --quiet \
-    --maxsl 1 \
-    --alnout - | \
-    grep -cE "Target .* (>r[12]|>r[12];size=3)$" | \
-    grep -q "^2$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxsubs is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxsubs 1 \
-    --alnout - | \
-    grep -c "Target .* >r1$" | \
-    grep -q "^1$" && \
-     success "${DESCRIPTION}" || \
-    	 failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --maxsubs is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --maxsubs 0 \
-    --alnout - | \
-    grep -c "Target .* >r1$" | \
-    grep -q "^1$" && \
-     failure "${DESCRIPTION}" || \
-    	 success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --mid is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --mid 96.2 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    success "${DESCRIPTION}" || \
-     	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --mid is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --mid 96.3 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    failure "${DESCRIPTION}" || \
-     	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --mincols is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --mincols 27 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    success "${DESCRIPTION}" || \
-     	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --mincols is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --mincols 28 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    failure "${DESCRIPTION}" || \
-     	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --minqt is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --minqt 1 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    success "${DESCRIPTION}" || \
-     	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --minqt is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --minqt 1.1 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    failure "${DESCRIPTION}" || \
-     	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --minsizeratio is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1;size=10\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1;size=5\nATTGCGCAATGGCATGCGCAATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --minsizeratio 2.0 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1;size=10$" && \
-    success "${DESCRIPTION}" || \
-     	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --minsizeratio is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1;size=10\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1;size=5\nATTGCGCAATGGCATGCGCAATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --minsizeratio 2.1 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1;size=10$" && \
-    failure "${DESCRIPTION}" || \
-     	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --minsl is correct when query shorter #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCAATAATG\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --minsl 0.96 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    success "${DESCRIPTION}" || \
-     	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --minsl is correct when query shorter #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCAATAATG\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --minsl 0.97 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    failure "${DESCRIPTION}" || \
-     	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --minsl is correct when target shorter #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATG\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --minsl 0.96 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    success "${DESCRIPTION}" || \
-     	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --minsl is correct when target shorter #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1\nATTGCGCAATGGCATGCGCAATAATG\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --minsl 0.97 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    failure "${DESCRIPTION}" || \
-     	success "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --mintsize is correct #1"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1;size=2\nATTGCGCAATGGCATGCGCAATAATG\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --mintsize 2 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    success "${DESCRIPTION}" || \
-     	failure "${DESCRIPTION}"
-
-DESCRIPTION="--usearch_global --mintsize is correct #2"
-"${VSEARCH}" \
-    --usearch_global <(printf '>q1\nATTGCGCAATGGCATGCGCTATAATGC\n') \
-                --db <(printf '>r1;size=2\nATTGCGCAATGGCATGCGCAATAATG\n') \
-    --minseqlength 1 \
-    --leftjust \
-    --id 0.1 \
-    --quiet \
-    --mintsize 3 \
-    --userfield query \
-    --userout - | \
-    grep -q "^q1$" && \
-    failure "${DESCRIPTION}" || \
-     	success "${DESCRIPTION}"
 
 exit 0
