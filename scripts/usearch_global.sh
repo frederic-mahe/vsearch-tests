@@ -2478,7 +2478,8 @@ unset DB
 
 ## ---------------------------------------------------------------- wordlength
 
-for LEN in 3 8 15 ; do
+## wordlength 15 requires too much memory
+for LEN in 3 8 ; do
     DESCRIPTION="--usearch_global --wordlength ${LEN} is accepted"
     DB=$(mktemp)
     printf ">d\n%s\n" "${SEQ}" > "${DB}"
