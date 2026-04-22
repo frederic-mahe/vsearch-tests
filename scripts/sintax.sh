@@ -783,6 +783,52 @@ printf ">q\n%s\n" "${PALSEQ}" | \
         failure "${DESCRIPTION}"
 unset PALSEQ
 
+## --strand both: when best k-mer counts tie between strands, the strand with more
+## successful bootstraps wins (plus on >= ties); the ref has only 3 unique 8-mers so
+## the maximum per-bootstrap k-mer count caps at 3 on both strands, guaranteeing a
+## best-count tie — the specific --randseed selects a plus-strand boot_count win.
+## PALQ is a 40-nt palindrome (33 unique 8-mers); PALREF is a 10-nt palindrome sharing
+## exactly 3 unique 8-mers with PALQ.
+DESCRIPTION="--strand both breaks best-count tie by bootstrap count (plus wins)"
+PALQ="ACTTAGGCAATCAAGGCATGCATGCCTTGATTGCCTAAGT"
+PALREF="GCATGCATGC"
+printf ">q\n%s\n" "${PALQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${PALREF}") \
+        --strand both \
+        --randseed 1 \
+        --threads 1 \
+        --minseqlength 10 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($3 != "+")}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset PALQ PALREF
+
+## --strand both: when best k-mer counts tie between strands and the minus strand has
+## strictly more successful bootstraps, the minus strand wins the tie-break. Same
+## capped setup as above (max best-count = 3 on both strands); --randseed 6 selects a
+## minus-strand boot_count win.
+DESCRIPTION="--strand both breaks best-count tie by bootstrap count (minus wins)"
+PALQ="ACTTAGGCAATCAAGGCATGCATGCCTTGATTGCCTAAGT"
+PALREF="GCATGCATGC"
+printf ">q\n%s\n" "${PALQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${PALREF}") \
+        --strand both \
+        --randseed 6 \
+        --threads 1 \
+        --minseqlength 10 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($3 != "-")}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset PALQ PALREF
+
 ## --strand minus is rejected (only plus and both are valid)
 DESCRIPTION="--strand minus is rejected"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
