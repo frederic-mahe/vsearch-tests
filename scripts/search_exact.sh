@@ -196,10 +196,19 @@ printf ">q\n%s\n" "${SEQ}" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-## NOTE: an empty --db file triggers an assertion failure in vsearch
-## (core dumped). The manpage does not specify the behaviour for an
-## empty database, but other search commands (e.g., --uchime_ref)
-## accept it silently. To be reviewed.
+DESCRIPTION="--search_exact accepts empty --db file"
+DB=$(mktemp)
+printf "" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
 
 DESCRIPTION="--search_exact fails without any output option"
 DB=$(mktemp)
@@ -1015,6 +1024,21 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+DESCRIPTION="--search_exact --maxseqlength does not crash when it filters out all db sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --maxseqlength 10 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 DESCRIPTION="--search_exact --maxseqlength discards longer query sequences"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
@@ -1111,6 +1135,21 @@ printf ">q\n%s\n" "${SEQ}" | \
         --minseqlength 1 \
         --blast6out /dev/null \
         --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --minseqlength does not crash when it filters out all db sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --minseqlength 100 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
