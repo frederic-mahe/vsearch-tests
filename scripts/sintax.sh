@@ -447,6 +447,34 @@ printf ">q\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 unset SEQ
 
+## --sintax classifies correctly when a shared k-mer's DB count falls below the
+## bitmap threshold (seqcount / 8), forcing the matchlist fallback in the k-mer
+## index lookup. With 16 DB sequences, the threshold is 2; the query's 8-mers
+## appear in exactly 1 DB sequence (kmercount == 1 < 2) so no bitmap is built for
+## them and the k-mer counter loop walks the matchlist instead. The 15 filler
+## sequences (AC-repeats) share no 8-mers with the query.
+DESCRIPTION="--sintax uses matchlist fallback when shared k-mers are below bitmap threshold"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+FILLER="ACACACACACACACACACACACACACACACAC"
+DB=$(mktemp)
+printf ">s1;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
+for n in 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do
+    printf ">s%d;tax=d:Filler\n%s\n" "${n}" "${FILLER}" >> "${DB}"
+done
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --dbmask none \
+        --threads 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    awk -F'\t' 'NR == 1 {exit ($2 !~ /d:Bacteria/)}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ FILLER DB
+
 
 #*****************************************************************************#
 #                                                                             #
