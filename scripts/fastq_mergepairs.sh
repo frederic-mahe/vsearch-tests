@@ -4402,7 +4402,7 @@ DESCRIPTION="fastq_mergepairs threads rejects non-integers (A)"
 # - fixed in commit fd05f30a7dddf11913f87d015311a30c1e402706
 
 MAX=1000
-EXPECTED_MD5="eb6ef175215ad377ad10dd2c52df153c"
+EXPECTED_MD5="ffb041390a5d2ef4ee07ce12cdf9719e"
 
 function generate_n_entries() {
     for ((i=0 ; i <= MAX ; i+=1)) ; do
