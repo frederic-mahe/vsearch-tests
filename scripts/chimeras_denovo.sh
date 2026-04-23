@@ -4296,6 +4296,51 @@ B_END="${B_START}"
 unset A_START A_END B_START B_END
 
 
+DESCRIPTION="chimeras_denovo: option qmask accepts 'dust' (default)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask dust \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option qmask accepts 'soft'"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask soft \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option qmask rejects unknown values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask bogus \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+# with --qmask soft, lowercase letters are preserved (soft masking)
+DESCRIPTION="chimeras_denovo: qmask soft preserves lowercase in output"
+printf ">s;size=1\n%s\n" "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask soft \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## ---------------------------------------------------------------------- quiet
 
 DESCRIPTION="chimeras_denovo: option quiet is accepted"
@@ -4333,12 +4378,442 @@ printf ">s;size=1\nA\n" | \
 
 
 ## -------------------------------------------------------------------- relabel
+
+# replace sequence headers with prefix + ticker
+
+DESCRIPTION="chimeras_denovo: option relabel is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel "new_" \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: relabel replaces nonchimeras headers with prefix + ticker"
+printf ">s1;size=1\nA\n>s2;size=1\nC\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel "new_" \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">new_1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: relabel uses an incrementing ticker"
+printf ">s1;size=1\nA\n>s2;size=1\nC\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel "new_" \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">new_2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: relabel applies to chimeras output too"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel "chimera_" \
+        --quiet \
+        --chimeras - | \
+    grep -qx ">chimera_1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+DESCRIPTION="chimeras_denovo: relabel accepts an empty prefix"
+printf ">s1;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel "" \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## --------------------------------------------------------------- relabel_keep
+
+# retain the original header after the new one, separated by a space
+
+DESCRIPTION="chimeras_denovo: option relabel_keep is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel "new_" \
+        --relabel_keep \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: relabel_keep retains the original header after the new one"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel "new_" \
+        --relabel_keep \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">new_1 s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# without any relabel option, relabel_keep has no visible effect (still works)
+DESCRIPTION="chimeras_denovo: relabel_keep alone is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_keep \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## ---------------------------------------------------------------- relabel_md5
+
+# replace header with MD5 hex digest of sequence (uppercase, U->T)
+
+DESCRIPTION="chimeras_denovo: option relabel_md5 is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_md5 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# md5 of "A" is 7fc56270e7a70fa81a5935b72eacbe29
+DESCRIPTION="chimeras_denovo: relabel_md5 replaces header with MD5 digest"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_md5 \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# md5 of "AAA" is e1faffb3e614e6c2fba74296962386b7; lowercase is normalized
+DESCRIPTION="chimeras_denovo: relabel_md5 normalizes lowercase to uppercase for the digest"
+printf ">s;size=1\naaa\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --relabel_md5 \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">e1faffb3e614e6c2fba74296962386b7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# md5 of "TTT" is da189c1824c1b701010054237bcc143e; U is normalized to T
+DESCRIPTION="chimeras_denovo: relabel_md5 normalizes U to T for the digest"
+printf ">s;size=1\nUUU\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --relabel_md5 \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">da189c1824c1b701010054237bcc143e" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## --------------------------------------------------------------- relabel_self
+
+# replace header with the sequence itself
+
+DESCRIPTION="chimeras_denovo: option relabel_self is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_self \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: relabel_self replaces header with the sequence itself"
+printf ">s;size=1\nACGT\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_self \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">ACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## --------------------------------------------------------------- relabel_sha1
+
+# replace header with SHA1 hex digest of sequence (uppercase, U->T)
+
+DESCRIPTION="chimeras_denovo: option relabel_sha1 is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_sha1 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# sha1 of "A" is 6dcd4ce23d88e2ee9568ba546c007c63d9131c1b
+DESCRIPTION="chimeras_denovo: relabel_sha1 replaces header with SHA1 digest"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_sha1 \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ---------------------------------------------- relabel options are mutually exclusive
+
+# only one of relabel, relabel_self, relabel_md5, relabel_sha1 may be used
+
+DESCRIPTION="chimeras_denovo: relabel and relabel_md5 are mutually exclusive"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel "new_" \
+        --relabel_md5 \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: relabel and relabel_sha1 are mutually exclusive"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel "new_" \
+        --relabel_sha1 \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: relabel and relabel_self are mutually exclusive"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel "new_" \
+        --relabel_self \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: relabel_md5 and relabel_sha1 are mutually exclusive"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_md5 \
+        --relabel_sha1 \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: relabel_md5 and relabel_self are mutually exclusive"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_md5 \
+        --relabel_self \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: relabel_sha1 and relabel_self are mutually exclusive"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_sha1 \
+        --relabel_self \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 ## --------------------------------------------------------------------- sample
+
+# add a ;sample=<string> annotation to sequence headers
+
+DESCRIPTION="chimeras_denovo: option sample is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --sample "ABC" \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: sample adds ';sample=<string>' to nonchimeras headers"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --sample "ABC" \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">s;size=1;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: sample adds ';sample=<string>' to chimeras headers"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --sample "ABC" \
+        --quiet \
+        --chimeras - | \
+    grep -qx ">sQ;size=1;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# sample is not added to tabbedout output
+DESCRIPTION="chimeras_denovo: sample does not modify tabbedout query label"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --sample "ABC" \
+        --quiet \
+        --tabbedout - | \
+    awk '{exit ($2 == "sQ;size=1") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
 ## -------------------------------------------------------------------- sizeout
+
+# add ;size=N annotations to sequence headers
+
+DESCRIPTION="chimeras_denovo: option sizeout is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --sizeout \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# abundance is already preserved by default (sizein is implied); sizeout
+# makes sure the ;size= annotation is written to output
+DESCRIPTION="chimeras_denovo: sizeout adds ;size=N to output headers"
+printf ">s\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --sizeout \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# sizeout applies to chimeras output
+DESCRIPTION="chimeras_denovo: sizeout adds ;size=N to chimeras output headers"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --sizeout \
+        --quiet \
+        --chimeras - | \
+    grep -qx ">sQ;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# sizeout combined with relabel_md5: size appears at the end of the digest header
+DESCRIPTION="chimeras_denovo: sizeout combines with relabel_md5"
+printf ">s;size=42\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --relabel_md5 \
+        --sizeout \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=42" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## -------------------------------------------------------------------- threads
 
 DESCRIPTION="chimeras_denovo: --threads is accepted"
