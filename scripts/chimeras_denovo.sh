@@ -2904,14 +2904,276 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 3 rejects chimera with
 
 ## ------------------------------------------------------------- chimeras_parts
 
-# number of parts to divide sequences (length/100)
+# number of parts to divide sequences (default: length/100)
+
+DESCRIPTION="chimeras_denovo: option chimeras_parts is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts 2 \
+        --quiet \
+        --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parts accepts integers"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts 3 \
+        --quiet \
+        --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# expected range is 2 to 100 (lower bound)
+DESCRIPTION="chimeras_denovo: option chimeras_parts accepts lower bound value (2)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts 2 \
+        --quiet \
+        --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# expected range is 2 to 100 (upper bound)
+DESCRIPTION="chimeras_denovo: option chimeras_parts accepts upper bound value (100)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts 100 \
+        --quiet \
+        --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parts rejects values below 2 (1)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts 1 \
+        --chimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parts rejects a null value"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts 0 \
+        --chimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parts rejects negative values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts -1 \
+        --chimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parts rejects values above 100 (101)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts 101 \
+        --chimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parts rejects floats"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts 2.5 \
+        --chimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parts rejects non-numeric values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts A \
+        --chimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option chimeras_parts rejects empty value"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras_parts  \
+        --chimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 ## --------------------------------------------------------------------- sizein
 
 # propagate abundance annotation from input
+# sizein is always implied for the chimeras_denovo command
 
-## test: sizein is active by default
+DESCRIPTION="chimeras_denovo: option sizein is accepted"
+printf ">s;size=9\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --sizein \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# sizein is implied: abundance from the input header is preserved in output
+DESCRIPTION="chimeras_denovo: sizein is always implied (abundance propagated to nonchimeras)"
+printf ">s;size=42\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras - | \
+    grep -q "^>s;size=42$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# sizein is implied: abundance is used for chimera detection (parents with
+# matching size get detected as chimera when abskew = 1.0)
+DESCRIPTION="chimeras_denovo: sizein is always implied (used for chimera detection)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras - | \
+    grep -q "^>sQ;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# sequences without abundance are assumed to have size=1
+DESCRIPTION="chimeras_denovo: entries without abundance are assumed size=1 (nonchimeras)"
+printf ">s\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --sizeout \
+        --nonchimeras - | \
+    grep -q "^>s;size=1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ------------------------------------------------------------------------- xn
+
+# weight of 'no' votes (beta), default 8.0. Manpage: "strictly positive real
+# number", but actual behaviour rejects any value <= 1.0.
+
+DESCRIPTION="chimeras_denovo: option xn is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xn 8.0 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option xn accepts integers"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xn 8 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option xn accepts values greater than 1.0"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xn 1.001 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option xn rejects 1.0 (must be > 1)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xn 1.0 \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option xn rejects a null value"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xn 0.0 \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option xn rejects negative values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xn -1 \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option xn rejects non-numeric values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xn A \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option xn accepts large values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xn 1000.0 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
