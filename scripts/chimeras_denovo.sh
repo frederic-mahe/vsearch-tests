@@ -4839,6 +4839,68 @@ printf ">s;size=1\nA\n" | \
 
 
 ## ------------------------------------------------------------------------ xee
+
+# strip ;ee= expected error annotations from output headers
+
+DESCRIPTION="chimeras_denovo: option xee is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xee \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: xee removes ee= annotations (nonchimeras)"
+printf ">s;size=1;ee=0.5\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xee \
+        --quiet \
+        --nonchimeras - | \
+    grep -q "ee=0.5" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+# without xee, the ee annotation is preserved
+DESCRIPTION="chimeras_denovo: ee= annotations are preserved by default"
+printf ">s;size=1;ee=0.5\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras - | \
+    grep -q "ee=0.5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# xee applies to chimeras output too
+DESCRIPTION="chimeras_denovo: xee removes ee= annotations (chimeras)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9;ee=0.5\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9;ee=0.5\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1;ee=0.5\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xee \
+        --quiet \
+        --chimeras - | \
+    grep -q "ee=0.5" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
 ## -------------------------------------------------------------------- xlength
 
 DESCRIPTION="chimeras_denovo: xlength is accepted"
@@ -4963,6 +5025,69 @@ printf ">s;length=2\nA\n" | \
 
 ## ------------------------------------------------------------------------- xn
 ## ---------------------------------------------------------------------- xsize
+
+# strip ;size= abundance annotations from output headers
+
+DESCRIPTION="chimeras_denovo: option xsize is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xsize \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: xsize removes size= annotations (nonchimeras)"
+printf ">s;size=9\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xsize \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# xsize applies to chimeras output too
+DESCRIPTION="chimeras_denovo: xsize removes size= annotations (chimeras)"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xsize \
+        --quiet \
+        --chimeras - | \
+    grep -qx ">sQ" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# xsize + sizeout: the new size annotation is still added (xsize strips the
+# original, sizeout appends the current abundance)
+DESCRIPTION="chimeras_denovo: xsize combined with sizeout still writes ;size="
+printf ">s;size=42\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xsize \
+        --sizeout \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">s;size=42" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
