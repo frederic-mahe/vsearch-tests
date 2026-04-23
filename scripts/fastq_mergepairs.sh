@@ -1,6 +1,8 @@
 #!/bin/bash -
 # shellcheck disable=SC2015
 
+export LC_numeric=C
+
 ## Print a header
 SCRIPT_NAME="fastq_mergepairs"
 LINE=$(printf "%76s\n" " " | tr " " "-")
