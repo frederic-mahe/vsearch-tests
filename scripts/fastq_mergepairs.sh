@@ -1,7 +1,7 @@
 #!/bin/bash -
 # shellcheck disable=SC2015
 
-export LC_numeric=C
+export LC_NUMERIC=C
 
 ## Print a header
 SCRIPT_NAME="fastq_mergepairs"
@@ -480,13 +480,16 @@ fi
 
 ## As of 2023-07-06
 
-# note: both input files need to be compressed
-DESCRIPTION="fastq_mergepairs option bzip2_decompress is accepted"
-"${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n" | bzip2) \
-    --reverse <(printf "@s\nT\n+\nI\n" | bzip2) \
-    --bzip2_decompress \
-    --fastaout /dev/null > /dev/null 2>&1 && \
+# note: vsearch honors --bzip2_decompress only on stdin pipes; for other
+# inputs, compression is sniffed from file magic bytes
+DESCRIPTION="fastq_mergepairs option bzip2_decompress is accepted (compressed stdin)"
+printf "@s\nA\n+\nI\n" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --fastq_mergepairs - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --bzip2_decompress \
+        --fastaout /dev/null > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -744,12 +747,16 @@ DESCRIPTION="fastq_mergepairs option fastqout_notmerged_rev is accepted"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs option gzip_decompress is accepted"
-"${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n" | gzip) \
-    --reverse <(printf "@s\nT\n+\nI\n" | gzip) \
-    --gzip_decompress \
-    --fastaout /dev/null > /dev/null 2>&1 && \
+# note: vsearch honors --gzip_decompress only on stdin pipes; for other
+# inputs, compression is sniffed from file magic bytes
+DESCRIPTION="fastq_mergepairs option gzip_decompress is accepted (compressed stdin)"
+printf "@s\nA\n+\nI\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --fastq_mergepairs - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --gzip_decompress \
+        --fastaout /dev/null > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
