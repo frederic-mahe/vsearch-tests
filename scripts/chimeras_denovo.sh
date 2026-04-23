@@ -3447,10 +3447,304 @@ unset A_START A_END B_START B_END
 
 
 ## ---------------------------------------------------------------- fasta_width
+
+# width of sequences in fasta output (default 80); 0 suppresses folding
+
+DESCRIPTION="chimeras_denovo: option fasta_width is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --fasta_width 80 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option fasta_width accepts a null value (no folding)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --fasta_width 0 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option fasta_width rejects non-numeric values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --fasta_width A \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+# default width is 80 nucleotides: an 81-nt sequence is folded to 2 lines
+DESCRIPTION="chimeras_denovo: default fasta_width is 80 (81-nt sequence is folded)"
+printf ">s;size=1\n%s%s\n" \
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" \
+    "A" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --nonchimeras - | \
+    grep -c "^A" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# with fasta_width = 0, the 81-nt sequence is not folded (single line)
+DESCRIPTION="chimeras_denovo: fasta_width 0 suppresses folding (81-nt sequence on one line)"
+printf ">s;size=1\n%s%s\n" \
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" \
+    "A" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --fasta_width 0 \
+        --quiet \
+        --nonchimeras - | \
+    grep -c "^A" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# fasta_width does not affect alnout (uses --alignwidth)
+DESCRIPTION="chimeras_denovo: fasta_width does not affect alnout"
+#        1...5...10
+A_START="AAAAAAAAAA"
+A_END="${A_START}"
+B_START="CCCCCCCCCC"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --fasta_width 2 \
+        --alnout - | \
+    awk '{if ($1 ~ /^Model/) matches += 1}
+         END {exit matches == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
 ## --------------------------------------------------------------------- gapext
+
+# gap extension penalties, default "2I/1E" (2 internal, 1 terminal)
+
+DESCRIPTION="chimeras_denovo: option gapext is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --gapext "2I/1E" \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option gapext accepts a single numeric value"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --gapext "2" \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option gapext rejects invalid strings"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --gapext "invalid" \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 ## -------------------------------------------------------------------- gapopen
+
+# gap opening penalties, default "20I/2E"
+
+DESCRIPTION="chimeras_denovo: option gapopen is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --gapopen "20I/2E" \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option gapopen accepts a single numeric value"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --gapopen "20" \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option gapopen rejects invalid strings"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --gapopen "invalid" \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 ## ------------------------------------------------------------------- hardmask
+
+# replace masked nucleotides with Ns
+
+DESCRIPTION="chimeras_denovo: option hardmask is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --hardmask \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# default qmask is dust: a homopolymer is masked (lowercased); with
+# --hardmask it is replaced by N
+DESCRIPTION="chimeras_denovo: hardmask replaces masked nucleotides with Ns (nonchimeras)"
+printf ">s;size=1\n%s\n" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --hardmask \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# when qmask is none, nothing is masked, hardmask has no effect
+DESCRIPTION="chimeras_denovo: hardmask has no effect when qmask is none"
+printf ">s;size=1\n%s\n" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --hardmask \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## --------------------------------------------------------------- label_suffix
+
+# add a user-specified suffix to sequence headers in output
+
+DESCRIPTION="chimeras_denovo: option label_suffix is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --label_suffix ";foo=bar" \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: label_suffix adds the suffix to nonchimeras headers"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --label_suffix ";foo=bar" \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">s;size=1;foo=bar" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: label_suffix adds the suffix to chimeras headers"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --label_suffix ";foo=bar" \
+        --quiet \
+        --chimeras - | \
+    grep -qx ">sQ;size=1;foo=bar" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# label_suffix is applied to fasta outputs, not to alnout (which does not
+# write a fasta header) or tabbedout
+DESCRIPTION="chimeras_denovo: label_suffix does not appear in alnout"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --label_suffix ";foo=bar" \
+        --quiet \
+        --alnout - | \
+    grep -q "foo=bar" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
+# combines with --sizeout: label_suffix is appended first, then size=
+DESCRIPTION="chimeras_denovo: label_suffix combines with sizeout (suffix before size)"
+printf ">s\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --sizeout \
+        --label_suffix ";foo=bar" \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">s;foo=bar;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## ------------------------------------------------------------------ lengthout
 
 DESCRIPTION="chimeras_denovo: lengthout is accepted"
