@@ -3856,12 +3856,374 @@ printf "@s;size=1\nA\n+\nI\n" | \
 
 
 ## ------------------------------------------------------------------------ log
+
+# write messages to a named file
+
+DESCRIPTION="chimeras_denovo: option log is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --log /dev/null \
+        --nonchimeras /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: log writes messages to the given file"
+TMP=$(mktemp)
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --log "${TMP}" \
+        --nonchimeras /dev/null 2> /dev/null
+[[ -s "${TMP}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+
+DESCRIPTION="chimeras_denovo: log records the vsearch version"
+TMP=$(mktemp)
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --log "${TMP}" \
+        --nonchimeras /dev/null 2> /dev/null
+grep --quiet --ignore-case "vsearch" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+
+DESCRIPTION="chimeras_denovo: log records the command line"
+TMP=$(mktemp)
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --log "${TMP}" \
+        --nonchimeras /dev/null 2> /dev/null
+grep --quiet -- "--chimeras_denovo" "${TMP}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+
+# log can be written to stdout
+DESCRIPTION="chimeras_denovo: log can output to stdout (-)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --log - \
+        --nonchimeras /dev/null 2> /dev/null | \
+    grep --quiet --ignore-case "vsearch" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## ---------------------------------------------------------------------- match
+
+# score for a nucleotide match (default 2)
+
+DESCRIPTION="chimeras_denovo: option match is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --match 2 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option match accepts arbitrary positive integers"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --match 10 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option match rejects floats"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --match 2.5 \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option match rejects non-numeric values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --match A \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 ## --------------------------------------------------------------- maxseqlength
+
+# discard sequences longer than N (default 50,000)
+
+DESCRIPTION="chimeras_denovo: option maxseqlength is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --maxseqlength 50000 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option maxseqlength discards longer sequences"
+printf ">s;size=1\nAAAAAAAAAA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --maxseqlength 5 \
+        --quiet \
+        --nonchimeras - | \
+    grep --quiet "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option maxseqlength keeps sequences at the boundary"
+printf ">s;size=1\nAAAAA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --maxseqlength 5 \
+        --quiet \
+        --nonchimeras - | \
+    grep --quiet "^>s;size=1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option maxseqlength rejects non-numeric values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --maxseqlength A \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 ## --------------------------------------------------------------- minseqlength
+
+# discard sequences shorter than N (default 32)
+
+DESCRIPTION="chimeras_denovo: option minseqlength is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --minseqlength 1 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option minseqlength accepts a null value"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --minseqlength 0 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option minseqlength rejects negative values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --minseqlength -1 \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option minseqlength rejects non-numeric values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --minseqlength A \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option minseqlength discards shorter sequences"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --minseqlength 5 \
+        --quiet \
+        --nonchimeras - | \
+    grep --quiet "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option minseqlength keeps sequences at the boundary"
+printf ">s;size=1\nAAAAA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --minseqlength 5 \
+        --quiet \
+        --nonchimeras - | \
+    grep --quiet "^>s;size=1$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## ------------------------------------------------------------------- mismatch
+
+# score for a nucleotide mismatch (default -4)
+
+DESCRIPTION="chimeras_denovo: option mismatch is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --mismatch 4 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option mismatch rejects floats"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --mismatch 4.5 \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option mismatch rejects non-numeric values"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --mismatch A \
+        --nonchimeras /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 ## ---------------------------------------------------------------- no_progress
+
+# suppress the progress indicator written to stderr
+
+DESCRIPTION="chimeras_denovo: option no_progress is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --no_progress \
+        --nonchimeras /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# no_progress still allows other stderr messages (version, stats)
+DESCRIPTION="chimeras_denovo: no_progress does not silence informational messages"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --no_progress \
+        --nonchimeras /dev/null 2>&1 | \
+    grep --quiet --ignore-case "vsearch" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## -------------------------------------------------------------- notrunclabels
+
+# do not truncate sequence headers at the first space or tab
+
+DESCRIPTION="chimeras_denovo: option notrunclabels is accepted"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --notrunclabels \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# by default, headers are truncated at the first space
+DESCRIPTION="chimeras_denovo: default truncates headers at first space"
+printf ">s foo\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: notrunclabels retains text after first space"
+printf ">s foo\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --notrunclabels \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">s foo" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: notrunclabels retains text after first tab"
+printf ">s\tfoo\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --notrunclabels \
+        --quiet \
+        --nonchimeras - | \
+    grep -qP "^>s\tfoo$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# notrunclabels applies to chimeras output too
+DESCRIPTION="chimeras_denovo: notrunclabels retains full header in chimeras output"
+#        1...5...10
+A_START="GTAGGCCGTG"
+A_END="${A_START}"
+B_START="CTGAGCCGTA"
+B_END="${B_START}"
+(
+    printf ">sA;size=9\n%s\n" "${A_START}${A_END}"
+    printf ">sB;size=9\n%s\n" "${B_START}${B_END}"
+    printf ">sQ;size=1 foo bar\n%s\n" "${A_START}${B_END}"
+) | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --notrunclabels \
+        --quiet \
+        --chimeras - | \
+    grep -qx ">sQ;size=1 foo bar" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset A_START A_END B_START B_END
+
+
 ## ---------------------------------------------------------------------- qmask
 
 DESCRIPTION="chimeras_denovo: homopolymers are masked"
