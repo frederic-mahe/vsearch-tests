@@ -4432,4 +4432,670 @@ DESCRIPTION="--fastq_mergepairs: fix regression in --eetabbedout (2025-03-10)"
 
 unset MAX EXPECTED_MD5 generate_n_entries
 
+
+#*****************************************************************************#
+#                                                                             #
+#                      additional manpage coverage tests                      #
+#                                                                             #
+#*****************************************************************************#
+
+## --------------------------------------------- output option is mandatory ---
+
+# The SYNOPSIS specifies (--fastaout | --fastqout) as mandatory.
+DESCRIPTION="fastq_mergepairs fails if neither --fastaout nor --fastqout is given"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# --eetabbedout and --*notmerged_* should be usable without --fastaout/fastqout
+DESCRIPTION="fastq_mergepairs accepts --eetabbedout alone as output"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --eetabbedout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ----------------------------------------- reverse-complementation of R2 ---
+
+# The manpage states: "The reverse read is reverse-complemented before
+# alignment." If we feed the same sequence on both reads, they will NOT
+# overlap (would need to revcomp). Use a reverse that is the exact
+# revcomp of the forward so they merge into the forward sequence.
+DESCRIPTION="fastq_mergepairs reverse read is reverse-complemented before alignment"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx "AAATAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# if R2 were not reverse-complemented, the two identical sequences would
+# not align (they lie on opposite strands once we orient R2)
+DESCRIPTION="fastq_mergepairs two identical R1/R2 sequences fail to merge"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx "AAATAAAAAA" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## ----------------------------- pairs are matched by position, not label ---
+
+# If forward and reverse differ in label but are paired by position,
+# merging still succeeds (sequences align).
+DESCRIPTION="fastq_mergepairs pairs are matched by position (labels may differ)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@forward\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@reverse\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx "AAATAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs error if R1 has more reads than R2"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1\nAAATAAAAAA\n+\nIIIIIIIIII\n@s2\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s1\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs error if R2 has more reads than R1"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s1\nTTTTTTATTT\n+\nIIIIIIIIII\n@s2\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## ---------------------------------------------------------- decompression ---
+
+# compressed stdin without --bzip2_decompress is rejected
+DESCRIPTION="fastq_mergepairs rejects bzip2-compressed stdin without --bzip2_decompress"
+printf "@s\nA\n+\nI\n" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --fastq_mergepairs - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs rejects gzip-compressed stdin without --gzip_decompress"
+printf "@s\nA\n+\nI\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --fastq_mergepairs - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# regular compressed files are sniffed; the flag is not needed
+DESCRIPTION="fastq_mergepairs reads a bzip2 regular file without --bzip2_decompress"
+TMP_REV=$(mktemp --suffix=.bz2)
+printf "@s\nT\n+\nI\n" | bzip2 > "${TMP_REV}"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse "${TMP_REV}" \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP_REV}"
+unset TMP_REV
+
+DESCRIPTION="fastq_mergepairs reads a gzip regular file without --gzip_decompress"
+TMP_REV=$(mktemp --suffix=.gz)
+printf "@s\nT\n+\nI\n" | gzip > "${TMP_REV}"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse "${TMP_REV}" \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP_REV}"
+unset TMP_REV
+
+# mutually exclusive
+DESCRIPTION="fastq_mergepairs rejects --bzip2_decompress combined with --gzip_decompress"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --bzip2_decompress \
+    --gzip_decompress \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## --------------------------------------------------- --fastq_ascii effect ---
+
+# The manpage states that the default offset is 33. With offset 33,
+# ASCII 'I' is Q40. With offset 64, 'I' is Q9. Feed a quality that is
+# accepted under 33 (I = Q40, default qmax = 41) but rejected under 64
+# because it is below the accepted range (I = Q9, qmax = 41 with offset
+# 64 still OK but qmin default = 0 is also OK). To make a real
+# distinction, use Q scores that straddle the boundary: with offset 64,
+# ASCII 'h' = 104 → Q40; under offset 33 the same char would be Q71, which
+# exceeds default fastq_qmax 41.
+DESCRIPTION="fastq_mergepairs --fastq_ascii 64 changes the Q value decoding"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nhhhhhhhhhh\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nhhhhhhhhhh\n") \
+    --fastq_ascii 64 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --fastq_ascii 33 rejects high ASCII (chars > offset + qmax)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nhhhhhhhhhh\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nhhhhhhhhhh\n") \
+    --fastq_ascii 33 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## ----------------------------------------------- --fastq_maxdiffpct effect ---
+
+# 15-nt pair, 1 mismatch in the overlap = 6.67%.
+# With a 15-nt overlap (R1 = AAATAAAAAAAAAAT, revcomp of R2 =
+# AAATAAAAAAAAAAA), the last position mismatches. Low Q on the
+# mismatching bases keeps the alignment acceptable.
+
+# with maxdiffpct 0, any mismatch in the overlap rejects the pair
+DESCRIPTION="fastq_mergepairs --fastq_maxdiffpct 0 rejects an overlap with a mismatch"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAT\n+\nIIIIIIIIIIIIII#\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --fastq_maxdiffpct 0 \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# with maxdiffpct 7 (greater than 6.67%), the mismatch is allowed
+DESCRIPTION="fastq_mergepairs --fastq_maxdiffpct 7 accepts 1 mismatch in a 15-nt overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAT\n+\nIIIIIIIIIIIIII#\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --fastq_maxdiffpct 7 \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# with maxdiffpct 6 (less than 6.67%), the mismatch is rejected
+DESCRIPTION="fastq_mergepairs --fastq_maxdiffpct 6 rejects 1 mismatch in a 15-nt overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAAAT\n+\nIIIIIIIIIIIIII#\n") \
+    --reverse <(printf "@s\nTTTTTTTTTTTATTT\n+\nIIIIIIIIIIIIIII\n") \
+    --fastq_maxdiffpct 6 \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## -------------------------------------------------- --fastq_qmaxout effect ---
+
+# --fastq_qmaxout clamps output quality scores in the merged region.
+# With two high-quality identical bases combined via the Phred formula,
+# the resulting Q can exceed the cap; --fastq_qmaxout clamps it.
+DESCRIPTION="fastq_mergepairs --fastq_qmaxout clamps output Q scores in the overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_qmaxout 10 \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    awk 'NR == 4 {exit $0 == "++++++++++" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# without the clamp, the quality is boosted by combination (Q > 40 = I)
+DESCRIPTION="fastq_mergepairs default --fastq_qmaxout leaves combined Q unclamped"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    awk 'NR == 4 {exit $0 == "IIIIIIIIII" ? 0 : 1}' && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## -------------------------------------------------- --fastq_qminout effect ---
+
+# Combining two identical Q10 bases yields Q24 (ASCII '9' under offset
+# 33). --fastq_qminout 40 raises those Q24 scores to Q40 (ASCII 'I').
+DESCRIPTION="fastq_mergepairs --fastq_qminout raises low output Q scores in the overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n++++++++++\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n++++++++++\n") \
+    --fastq_qminout 40 \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    awk 'NR == 4 {exit $0 == "IIIIIIIIII" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## -------------------------------------------------- --fastq_nostagger effect ---
+
+# --fastq_nostagger is the default; be explicit to confirm staggered
+# pairs are still discarded when the option is passed.
+DESCRIPTION="fastq_mergepairs --fastq_nostagger discards staggered pairs (explicit)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
+    --fastq_nostagger \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "staggered read pairs" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## -------------------------------------------- --eeout / --fastq_eeout effect ---
+
+DESCRIPTION="fastq_mergepairs --eeout adds ee annotation to output headers"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --eeout \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -q "^>s;ee=" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --fastq_eeout adds ee annotation to output headers (synonym of --eeout)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_eeout \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -q "^>s;ee=" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## -------------------------------------------------------- --fasta_width effect ---
+
+# default is 80 nucleotides; set to 5 to force a wrap after 5 bases
+DESCRIPTION="fastq_mergepairs --fasta_width wraps long fasta sequences"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fasta_width 5 \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    awk 'END {exit NR == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --fasta_width 0 suppresses fasta folding"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fasta_width 0 \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    awk 'NR == 2 {exit length($1) == 10 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## -------------------------------------------- --fastaout_notmerged_fwd effect ---
+
+# a pair that fails to merge writes the forward read to the unmerged
+# fasta output
+DESCRIPTION="fastq_mergepairs --fastaout_notmerged_fwd writes unmerged forward reads"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --fastaout_notmerged_fwd - 2> /dev/null | \
+    grep -qx ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --fastaout_notmerged_rev writes unmerged reverse reads"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --fastaout_notmerged_rev - 2> /dev/null | \
+    grep -qx ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --fastqout_notmerged_fwd writes unmerged forward reads"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --fastqout_notmerged_fwd - 2> /dev/null | \
+    grep -qx "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --fastqout_notmerged_rev writes unmerged reverse reads"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --fastqout_notmerged_rev - 2> /dev/null | \
+    grep -qx "@s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# successfully merged pairs do NOT appear in the unmerged output
+DESCRIPTION="fastq_mergepairs --fastaout_notmerged_fwd is empty when the pair is merged"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastaout /dev/null \
+    --fastaout_notmerged_fwd - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## ------------------------------------------------------ --label_suffix effect ---
+
+DESCRIPTION="fastq_mergepairs --label_suffix appends to merged headers (fasta)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --label_suffix ";tag" \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s;tag" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --label_suffix appends to merged headers (fastq)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --label_suffix ";tag" \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    grep -qx "@s;tag" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## -------------------------------------------------------- --lengthout effect ---
+
+DESCRIPTION="fastq_mergepairs --lengthout adds ;length=N to merged headers"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --lengthout \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s;length=10" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ---------------------------------------------------------- --relabel effect ---
+
+DESCRIPTION="fastq_mergepairs --relabel replaces headers with prefix + ticker"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --relabel "label" \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">label1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ticker increments with each merged read
+DESCRIPTION="fastq_mergepairs --relabel ticker increments with each merged read"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1\nAAATAAAAAA\n+\nIIIIIIIIII\n@s2\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s1\nTTTTTTATTT\n+\nIIIIIIIIII\n@s2\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --relabel "label" \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">label2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --relabel cannot combine with --relabel_md5"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --relabel "label" \
+    --relabel_md5 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --relabel cannot combine with --relabel_sha1"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --relabel "label" \
+    --relabel_sha1 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --relabel_md5 cannot combine with --relabel_sha1"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --relabel_md5 \
+    --relabel_sha1 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## ----------------------------------------------------- --relabel_keep effect ---
+
+DESCRIPTION="fastq_mergepairs --relabel_keep retains the original sequence identifier"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --relabel "label" \
+    --relabel_keep \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">label1 s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ------------------------------------------------------ --relabel_md5 effect ---
+
+# md5("AAATAAAAAA") = a4103b6f15525dd378d748cbdb3b3f7d
+DESCRIPTION="fastq_mergepairs --relabel_md5 replaces headers with the MD5 digest of the merged sequence"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --relabel_md5 \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">a4103b6f15525dd378d748cbdb3b3f7d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ----------------------------------------------------- --relabel_self effect ---
+
+DESCRIPTION="fastq_mergepairs --relabel_self replaces headers with the merged sequence"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --relabel_self \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">AAATAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ----------------------------------------------------- --relabel_sha1 effect ---
+
+# sha1("AAATAAAAAA") = 443ca69de97b92f8187fee86c713fdb986257dd0
+DESCRIPTION="fastq_mergepairs --relabel_sha1 replaces headers with the SHA1 digest of the merged sequence"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --relabel_sha1 \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">443ca69de97b92f8187fee86c713fdb986257dd0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ------------------------------------------------------------- --sizein effect ---
+
+# without --sizein, ;size=N in the input header is dropped
+DESCRIPTION="fastq_mergepairs --sizein preserves size annotation from input (implicit --sizeout)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s;size=5\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s;size=5\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sizein \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s;size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ------------------------------------------------------------ --sizeout effect ---
+
+# Note (2026-04-23, for human review): the manpage for --sizeout states
+# "If option --sizein is not used, abundance values are set to 1 for
+# all entries". In practice, with fastq_mergepairs, --sizeout alone
+# does NOT add ;size=1 to merged headers (unlike fastq_join, where it
+# does). The test below documents the observed behaviour rather than
+# the manpage-specified one.
+DESCRIPTION="fastq_mergepairs --sizeout alone leaves merged headers untouched (observed; manpage says ;size=1 should be added)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sizeout \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --sizein --sizeout reports the input abundance"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s;size=7\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s;size=7\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sizein \
+    --sizeout \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s;size=7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## ---------------------------------------------------------------- --xee effect ---
+
+DESCRIPTION="fastq_mergepairs --xee strips existing ee annotations from input headers"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s;ee=1.0\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s;ee=1.0\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --xee \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -q "ee=" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## ------------------------------------------------------------ --xlength effect ---
+
+DESCRIPTION="fastq_mergepairs --xlength strips existing length annotations from input headers"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s;length=10\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s;length=10\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --xlength \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -q "length=" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## -------------------------------------------------------------- --xsize effect ---
+
+DESCRIPTION="fastq_mergepairs --xsize strips existing size annotations from input headers"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s;size=5\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s;size=5\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --xsize \
+    --quiet \
+    --fastaout - 2> /dev/null | \
+    grep -q "size=" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## ----------------------------------- outside-overlap Q scores come from R1/R2 ---
+
+# forward read is longer than reverse: the 3' tail of the forward read
+# lies outside the overlap and its Q scores should pass through
+# unchanged (the reverse read doesn't contribute there).
+DESCRIPTION="fastq_mergepairs Q scores outside the overlap come from the contributing read"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nGGGAAATAAAAAA\n+\n#############\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    awk 'NR == 4 {exit substr($0, 1, 3) == "###" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+## -------------------------------- invalid options that users may try to use ---
+
+# --fastaout_discarded is a real vsearch option for fastx_filter/fastq_filter
+# but is not accepted by fastq_mergepairs
+DESCRIPTION="fastq_mergepairs rejects --fastaout_discarded (unrelated option)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --fastaout_discarded /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# --strand is a real vsearch option for search commands, not mergepairs
+DESCRIPTION="fastq_mergepairs rejects --strand (unrelated option)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --strand plus > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 exit 0
