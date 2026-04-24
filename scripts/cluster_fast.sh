@@ -414,6 +414,8 @@ printf ">s1\nAAAAAAAAAAAA\n>s2\nCCCCCCCCCCCC\n" | \
 rm -rf "${TMPDIR_}"
 unset PREFIX TMPDIR_
 
+## '-' is used as the literal prefix, so vsearch writes cluster files
+## named '-0', '-1', ... in the current directory; clean them up.
 DESCRIPTION="--cluster_fast --clusters accepts '-' as prefix"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
@@ -424,6 +426,7 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
         --quiet > /dev/null 2>&1 && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm -f ./-[0-9]*
 
 DESCRIPTION="--cluster_fast --clusters fails if prefix argument is missing"
 printf ">s1\nAAAAAAAAAAAA\n" | \
