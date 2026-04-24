@@ -3990,7 +3990,7 @@ printf ">s;size=1\nAAAAAAAAAA\n" | \
         --chimeras_denovo - \
         --maxseqlength 5 \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep --quiet "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -4070,7 +4070,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --minseqlength 5 \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep --quiet "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
