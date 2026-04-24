@@ -2250,6 +2250,12 @@ unset DB
 
 ## ------------------------------------------------------------------- samout
 
+## See vsearch-sam(5) for the SAM format produced by vsearch. A record
+## has 11 mandatory tab-separated fields (QNAME, FLAG, RNAME, POS,
+## MAPQ, CIGAR, RNEXT, PNEXT, TLEN, SEQ, QUAL) followed, for mapped
+## queries, by 8 optional tags in order: AS, XN, XM, XO, XG, NM, MD,
+## YT. Unmapped queries carry no optional tags.
+
 DESCRIPTION="--usearch_global --samout writes a SAM record for a hit"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
@@ -2261,6 +2267,810 @@ printf ">q\n%s\n" "${SEQ}" | \
         --samout - \
         --quiet | \
     awk -F'\t' '{exit ($1 == "q" && $3 == "d") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## by default, a query with no hit produces no SAM record
+DESCRIPTION="--usearch_global --samout produces no record for a query with no hit"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## no header is written unless --samheader is given
+DESCRIPTION="--usearch_global --samout emits no header by default"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -q "^@" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## records are terminated by a single line feed, with no carriage return
+DESCRIPTION="--usearch_global --samout lines do not end with a carriage return"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -q $'\r' && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## no trailing tabs are emitted after the last field of each record
+DESCRIPTION="--usearch_global --samout does not emit trailing tabs"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\t$' && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a mapped record has 11 mandatory fields plus 8 optional tags (AS,
+## XN, XM, XO, XG, NM, MD, YT): 19 tab-separated fields total
+DESCRIPTION="--usearch_global --samout mapped record has 19 tab-separated fields"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit (NF == 19) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------ mandatory fields (perfect 40-nt forward-strand hit) ------
+
+## field 1 (QNAME) is the query label as given in the input fasta
+DESCRIPTION="--usearch_global --samout QNAME is the query label"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($1 == "q") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## field 2 (FLAG) is 0 for a forward-strand primary hit
+DESCRIPTION="--usearch_global --samout FLAG is 0 for a forward-strand primary hit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($2 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## field 3 (RNAME) is the reference label
+DESCRIPTION="--usearch_global --samout RNAME is the reference label"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($3 == "d") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## field 4 (POS) is always 1 for a mapped query (global alignment)
+DESCRIPTION="--usearch_global --samout POS is 1 for a mapped query"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($4 == "1") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## field 5 (MAPQ) is always 255 (mapping quality not available)
+DESCRIPTION="--usearch_global --samout MAPQ is 255 (mapping quality not available)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($5 == "255") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## field 6 (CIGAR) uses only M for a 40-nt gapless perfect match
+DESCRIPTION="--usearch_global --samout CIGAR is 40M for a 40-nt gapless perfect hit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($6 == "40M") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## field 7 (RNEXT) is always * (vsearch does not output paired-end info)
+DESCRIPTION="--usearch_global --samout RNEXT is * (paired-end not supported)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($7 == "*") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## field 8 (PNEXT) is always 0
+DESCRIPTION="--usearch_global --samout PNEXT is 0 (paired-end not supported)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($8 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## field 9 (TLEN) is always 0
+DESCRIPTION="--usearch_global --samout TLEN is 0 (paired-end not supported)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($9 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## field 10 (SEQ) holds the original query for a forward-strand hit
+## (compared case-insensitively: dust masking can lowercase residues)
+DESCRIPTION="--usearch_global --samout SEQ is the original query for a forward-strand hit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' -v s="${SEQ}" '{exit (toupper($10) == toupper(s)) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## field 11 (QUAL) is always *
+DESCRIPTION="--usearch_global --samout QUAL is * (not available)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($11 == "*") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------ CIGAR operations ------
+
+## CIGAR uses I when the query has a base not present in the reference
+DESCRIPTION="--usearch_global --samout CIGAR uses I for an insertion in the query"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTAACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($6 ~ /I/) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## CIGAR uses D when the query is missing a base present in the reference
+DESCRIPTION="--usearch_global --samout CIGAR uses D for a deletion in the query"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($6 ~ /D/) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------ optional tags (perfect hit: AS, XN, XM, XO, XG, NM, MD, YT) ------
+
+DESCRIPTION="--usearch_global --samout appends AS:i:100 for a perfect match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tAS:i:100(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## AS stores percent identity rounded to the nearest integer (not an
+## aligner-specific score); 39 matches in 40 positions give AS:i:98
+DESCRIPTION="--usearch_global --samout AS is the percent identity rounded (98 for 39/40)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tAS:i:98(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout appends XN:i:0 (not computed by vsearch)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tXN:i:0(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout XM is 0 for a gapless perfect match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tXM:i:0(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout XM counts mismatches (1 for a single substitution)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tXM:i:1(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout XO is 0 for a gapless match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tXO:i:0(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout XO counts gap opens (1 for a single insertion)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTAACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tXO:i:1(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout XG is 0 for a gapless match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tXG:i:0(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout XG counts total internal gap length (1 for a single inserted base)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTAACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tXG:i:1(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout NM is 0 for a perfect match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tNM:i:0(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## NM is the edit distance (sum of XM and XG); a single mismatch gives
+## NM:i:1 (XM:i:1 + XG:i:0)
+DESCRIPTION="--usearch_global --samout NM equals XM + XG (single mismatch gives NM:i:1)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tNM:i:1(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout MD is Z:40 for a 40-nt gapless perfect match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tMD:Z:40(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## MD encodes a mismatch as <count><ref-base><count>; vsearch emits the
+## reference base in lowercase when dust-masked (SAM manpage documents
+## uppercase), so match case-insensitively
+DESCRIPTION="--usearch_global --samout MD encodes a mismatch with the reference base"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    grep -iqE $'\tMD:Z:20A19(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## MD prefixes reference bases deleted from the query with a caret
+DESCRIPTION="--usearch_global --samout MD prefixes deletions with a caret"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    grep -iqE $'\tMD:Z:20\\^A19(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## YT:Z:UU (bowtie2 alignment type) is the last tag of a mapped record
+DESCRIPTION="--usearch_global --samout ends each mapped record with YT:Z:UU"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -qE "YT:Z:UU$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## optional tags appear in the documented order: AS XN XM XO XG NM MD YT
+DESCRIPTION="--usearch_global --samout optional tags appear in the documented order"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($12 ~ /^AS:/ && $13 ~ /^XN:/ && $14 ~ /^XM:/ && $15 ~ /^XO:/ && $16 ~ /^XG:/ && $17 ~ /^NM:/ && $18 ~ /^MD:/ && $19 ~ /^YT:/) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------ FLAG bits (0x010 for reverse strand, 0x100 for secondary) ------
+
+## --strand both with a forward-strand hit keeps FLAG 0
+DESCRIPTION="--usearch_global --samout --strand both forward-strand hit has FLAG 0"
+DB=$(mktemp)
+printf ">d\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" > "${DB}"
+printf ">q\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --strand both \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($2 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --strand both with a reverse-complement hit sets flag bit 0x010
+## (decimal 16)
+DESCRIPTION="--usearch_global --samout --strand both reverse-strand hit has FLAG 16"
+DB=$(mktemp)
+printf ">d\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" > "${DB}"
+printf ">q\nAAATTTTAAAAACCCCCGGGGGTTTTTGATCGATCGATCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.97 \
+        --strand both \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($2 == "16") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## on a reverse-strand hit, SEQ holds the reverse complement of the
+## original query (compared case-insensitively)
+DESCRIPTION="--usearch_global --samout --strand both reverse-strand SEQ is the reverse complement of the original query"
+DB=$(mktemp)
+printf ">d\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" > "${DB}"
+printf ">q\nAAATTTTAAAAACCCCCGGGGGTTTTTGATCGATCGATCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.97 \
+        --strand both \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit (toupper($10) == "GGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the first hit of a query is the primary alignment (flag bit 0x100
+## cleared): FLAG is 0 with two equally-good forward-strand matches
+DESCRIPTION="--usearch_global --samout primary alignment has flag bit 0x100 cleared"
+DB=$(mktemp)
+printf ">d1\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n>d2\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" > "${DB}"
+printf ">q\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxaccepts 2 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' 'NR==1 {exit ($2 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## subsequent hits are secondary alignments (flag bit 0x100 set): FLAG
+## is 256 when the secondary is on the forward strand
+DESCRIPTION="--usearch_global --samout secondary alignment has flag bit 0x100 set"
+DB=$(mktemp)
+printf ">d1\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n>d2\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" > "${DB}"
+printf ">q\nGGATCGATCGATCAAAAACCCCCGGGGGTTTTTAAAATTT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxaccepts 2 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' 'NR==2 {exit ($2 == "256") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------ unmapped queries (--output_no_hits) ------
+
+## --output_no_hits emits a single record for a query with no hit
+DESCRIPTION="--usearch_global --samout --output_no_hits emits a record for an unmapped query"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --output_no_hits \
+        --samout - \
+        --quiet 2> /dev/null | \
+    awk -F'\t' '{exit ($1 == "q") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --output_no_hits unmapped record: FLAG is 4 (0x004 unmapped bit)
+DESCRIPTION="--usearch_global --samout --output_no_hits sets FLAG to 4 for an unmapped query"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --output_no_hits \
+        --samout - \
+        --quiet 2> /dev/null | \
+    awk -F'\t' '{exit ($2 == "4") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --output_no_hits unmapped record: RNAME is *
+DESCRIPTION="--usearch_global --samout --output_no_hits sets RNAME to * for an unmapped query"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --output_no_hits \
+        --samout - \
+        --quiet 2> /dev/null | \
+    awk -F'\t' '{exit ($3 == "*") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --output_no_hits unmapped record: POS is 0
+DESCRIPTION="--usearch_global --samout --output_no_hits sets POS to 0 for an unmapped query"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --output_no_hits \
+        --samout - \
+        --quiet 2> /dev/null | \
+    awk -F'\t' '{exit ($4 == "0") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --output_no_hits unmapped record: CIGAR is *
+DESCRIPTION="--usearch_global --samout --output_no_hits sets CIGAR to * for an unmapped query"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --output_no_hits \
+        --samout - \
+        --quiet 2> /dev/null | \
+    awk -F'\t' '{exit ($6 == "*") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --output_no_hits unmapped record: no optional tags (exactly 11 fields)
+DESCRIPTION="--usearch_global --samout --output_no_hits emits no optional tags for an unmapped query"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --output_no_hits \
+        --samout - \
+        --quiet 2> /dev/null | \
+    awk -F'\t' '{exit (NF == 11) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --output_no_hits unmapped record: SEQ holds the original query
+DESCRIPTION="--usearch_global --samout --output_no_hits preserves the original query in SEQ"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --output_no_hits \
+        --samout - \
+        --quiet 2> /dev/null | \
+    awk -F'\t' '{exit (toupper($10) == "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
