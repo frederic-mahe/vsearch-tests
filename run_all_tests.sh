@@ -4,6 +4,7 @@
 
 ## command-specific tests
 for test_script in vsearch.sh \
+                       chimeras_denovo.sh \
                        cut.sh \
                        derep_fulllength.sh \
                        derep_id.sh \
@@ -13,6 +14,7 @@ for test_script in vsearch.sh \
                        fastq_chars.sh \
                        fastq_convert.sh \
                        fastq_join.sh \
+                       fastq_mergepairs.sh \
                        fastq_stats.sh \
                        fastx_mask.sh \
                        fastx_revcomp.sh \
@@ -67,11 +69,7 @@ for test_script in allpairs_global.sh \
     echo
 done
 
-## unfinished commands (with errors)
-# - chimeras_denovo.sh
-# - fastq_mergepairs.sh
-
-## missing commands
-# - orient.sh: valgrind very slow, lots of memory allocation, no error or leak [2025-07-19 sam.]
+## slow tests
+# bash ./scripts/orient.sh "${1}" || exit 1
 
 exit 0
