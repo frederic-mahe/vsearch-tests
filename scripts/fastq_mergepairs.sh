@@ -15,7 +15,7 @@ NO_COLOR="\033[0m"
 
 failure () {
     printf "%bFAIL%b: %s\n" "${RED}" "${NO_COLOR}" "${1}"
-    # exit 1
+    exit 1
 }
 
 success () {
