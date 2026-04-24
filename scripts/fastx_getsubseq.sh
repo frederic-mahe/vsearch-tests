@@ -437,6 +437,99 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --subseq_start at the last position yields the last base
+DESCRIPTION="--subseq_start at the last position yields the last base"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_start 4 \
+        --subseq_end 4 \
+        --fastaout - \
+        --fasta_width 0 \
+        --quiet 2> /dev/null | \
+    awk 'NR==2' | \
+    grep -qx "T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## explicit bounds spanning the full sequence yield the full sequence
+DESCRIPTION="--subseq_start 1 and --subseq_end equal to the length yield the full sequence"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_start 1 \
+        --subseq_end 4 \
+        --fastaout - \
+        --fasta_width 0 \
+        --quiet 2> /dev/null | \
+    awk 'NR==2' | \
+    grep -qx "ACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the trimmed subsequence has the expected length (end - start + 1)
+DESCRIPTION="--fastx_getsubseq: trimmed subsequence length is (end - start + 1)"
+printf ">s1\nACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_start 4 \
+        --subseq_end 9 \
+        --fastaout - \
+        --fasta_width 0 \
+        --quiet 2> /dev/null | \
+    awk 'NR==2 {print length($0)}' | \
+    grep -qx "6" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## fastq trimming: the quality prefix before --subseq_start is removed,
+## the suffix after --subseq_end is removed
+DESCRIPTION="--fastx_getsubseq: fastq quality is trimmed from the left (prefix removed)"
+printf "@s1\nACGTACGT\n+\nABCDEFGH\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_start 3 \
+        --fastqout - \
+        --quiet 2> /dev/null | \
+    awk 'NR==4' | \
+    grep -qx "CDEFGH" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_getsubseq: fastq quality is trimmed from the right (suffix removed)"
+printf "@s1\nACGTACGT\n+\nABCDEFGH\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_end 4 \
+        --fastqout - \
+        --quiet 2> /dev/null | \
+    awk 'NR==4' | \
+    grep -qx "ABCD" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## fastq trimming: the trimmed sequence and quality strings have matching lengths
+DESCRIPTION="--fastx_getsubseq: fastq trimmed sequence and quality have the same length"
+printf "@s1\nACGTACGT\n+\nABCDEFGH\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_start 2 \
+        --subseq_end 5 \
+        --fastqout - \
+        --quiet 2> /dev/null | \
+    awk 'NR==2 || NR==4 {print length($0)}' | \
+    sort -u | \
+    wc -l | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --fastaout
 DESCRIPTION="--fastaout writes to stdout with -"
 printf ">s1\nACGT\n" | \
@@ -497,12 +590,10 @@ printf ">s1\nACGTACGT\n>s2\nTTTTTTTT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## Actual behaviour (vsearch 2.30.6, Jan 2026): --notmatched entries are
-## trimmed to the subseq range, contradicting the manpage which says
-## "Non-matching sequences are written in full". See 'notes' at the end of
-## this script. The test below captures the current behaviour so that any
-## future change to match the manpage will be detected.
-DESCRIPTION="--fastx_getsubseq: --notmatched entries are trimmed to the subseq range (behaviour differs from manpage)"
+## --notmatched entries are written in full, not trimmed to the subseq
+## range. This matches the manpage: "Non-matching sequences are written
+## in full to --notmatched and/or --notmatchedfq".
+DESCRIPTION="--fastx_getsubseq: --notmatched entries are written in full (not trimmed)"
 printf ">s1\nACGTACGT\n>s2\nTTTTTTTTTT\n" | \
     "${VSEARCH}" \
         --fastx_getsubseq - \
@@ -514,7 +605,95 @@ printf ">s1\nACGTACGT\n>s2\nTTTTTTTTTT\n" | \
         --fasta_width 0 \
         --quiet 2> /dev/null | \
     awk '/^>s2/ {getline; print}' | \
-    grep -qx "TTTT" && \
+    grep -qx "TTTTTTTTTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --notmatched preserves the header of non-matching entries
+DESCRIPTION="--notmatched preserves the header of non-matching entries"
+printf ">s1\nACGTACGT\n>s2\nTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_start 3 \
+        --subseq_end 6 \
+        --fastaout /dev/null \
+        --notmatched - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --notmatched preserves the relative order of non-matching entries
+DESCRIPTION="--notmatched preserves the order of non-matching entries"
+printf ">s1\nACGT\n>s2\nTTTT\n>s3\nGGGG\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --fastaout /dev/null \
+        --notmatched - \
+        --fasta_width 0 \
+        --quiet 2> /dev/null | \
+    awk '/^>/' | \
+    tr '\n' ',' | \
+    grep -qx ">s2,>s3," && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## when the --label is not found, all entries are sent to --notmatched
+DESCRIPTION="--notmatched captures every entry when no header matches --label"
+printf ">s1\nACGT\n>s2\nTTTT\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "no_such_label" \
+        --fastaout /dev/null \
+        --notmatched - \
+        --quiet 2> /dev/null | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## headers written to --notmatched are truncated at the first space by default
+DESCRIPTION="--notmatched truncates headers at the first space by default"
+printf ">s1 description\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "other" \
+        --notmatched - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --notrunclabels retains the full header in --notmatched
+DESCRIPTION="--notrunclabels preserves full headers in --notmatched"
+printf ">s1 description\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "other" \
+        --notrunclabels \
+        --notmatched - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1 description" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --fastaout and --notmatched work together: matching entries are trimmed,
+## non-matching entries are written in full
+DESCRIPTION="--fastaout and --notmatched together partition the input correctly"
+printf ">s1\nACGTACGT\n>s2\nTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_start 3 \
+        --subseq_end 6 \
+        --fastaout - \
+        --notmatched - \
+        --fasta_width 0 \
+        --quiet 2> /dev/null | \
+    tr '\n' ',' | \
+    grep -qx ">s1,GTAC,>s2,TTTTTTTT," && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -542,6 +721,38 @@ printf "@s1\nACGTACGT\n+\nIIIIIIII\n@s2\nTTTTTTTT\n+\nJJJJJJJJ\n" | \
         --notmatchedfq - \
         --quiet 2> /dev/null | \
     grep -qx "@s2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --notmatchedfq entries are written in full: the sequence is not trimmed
+DESCRIPTION="--notmatchedfq sequence is written in full (not trimmed)"
+printf "@s1\nACGTACGT\n+\nIIIIIIII\n@s2\nTTTTTTTTTT\n+\n1234567890\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_start 3 \
+        --subseq_end 6 \
+        --fastqout /dev/null \
+        --notmatchedfq - \
+        --quiet 2> /dev/null | \
+    awk '/^@s2/ {getline; print}' | \
+    grep -qx "TTTTTTTTTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --notmatchedfq entries are written in full: the quality string is not trimmed
+DESCRIPTION="--notmatchedfq quality string is written in full (not trimmed)"
+printf "@s1\nACGTACGT\n+\nIIIIIIII\n@s2\nTTTTTTTTTT\n+\n1234567890\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_start 3 \
+        --subseq_end 6 \
+        --fastqout /dev/null \
+        --notmatchedfq - \
+        --quiet 2> /dev/null | \
+    awk '/^@s2/ {getline; getline; getline; print}' | \
+    grep -qx "1234567890" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -973,20 +1184,6 @@ if which valgrind > /dev/null 2>&1 ; then
             failure "${DESCRIPTION}"
     rm -f "${LOG}" "${FASTQ}"
 fi
-
-
-#*****************************************************************************#
-#                                                                             #
-#                                    notes                                    #
-#                                                                             #
-#*****************************************************************************#
-
-## vsearch 2.30.6 (Jan 2026) trims the sequences written to --notmatched /
-## --notmatchedfq to the subseq range, while the manpage for
-## vsearch-fastx_getsubseq(1) states that "Non-matching sequences are
-## written in full to --notmatched and/or --notmatchedfq". The test above
-## ("--notmatched entries are trimmed to the subseq range") captures the
-## current behaviour; the discrepancy should be flagged for human review.
 
 
 exit 0
