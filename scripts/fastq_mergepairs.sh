@@ -4420,13 +4420,25 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## sample names are parsed until the first blank characters
 DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (space)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sample=" " \
     --fastaout - 2> /dev/null | \
-    grep -qx ">s;sample= " && \
+    grep -qx ">s;sample=" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## sample names are parsed until the first blank characters
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (space)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample=";" \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s;sample=" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4497,20 +4509,14 @@ DESCRIPTION="fastq_mergepairs option sizeout is accepted"
 
 ## ------------------------------------------------------------ --sizeout effect ---
 
-# Note (2026-04-23, for human review): the manpage for --sizeout states
-# "If option --sizein is not used, abundance values are set to 1 for
-# all entries". In practice, with fastq_mergepairs, --sizeout alone
-# does NOT add ;size=1 to merged headers (unlike fastq_join, where it
-# does). The test below documents the observed behaviour rather than
-# the manpage-specified one.
-DESCRIPTION="fastq_mergepairs --sizeout alone leaves merged headers untouched (observed; manpage says ;size=1 should be added)"
+DESCRIPTION="fastq_mergepairs --sizeout alone adds ;size=1"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
     --sizeout \
     --quiet \
     --fastaout - 2> /dev/null | \
-    grep -qx ">s" && \
+    grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
