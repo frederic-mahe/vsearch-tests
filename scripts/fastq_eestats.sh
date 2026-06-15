@@ -781,6 +781,71 @@ fi
 
 #*****************************************************************************#
 #                                                                             #
+#                          additional coverage                                #
+#                                                                             #
+#*****************************************************************************#
+
+## --output fails if the target file cannot be opened for writing
+DESCRIPTION="--fastq_eestats --output fails if unable to open output file for writing"
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+printf "@s\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats - \
+        --output "${TMP}" \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+## the per-position tables grow to accommodate the longest read, so
+## reads of increasing length are all reported (here up to position 8)
+DESCRIPTION="--fastq_eestats reports statistics up to the length of the longest read"
+printf "@a\nAC\n+\nII\n@b\nACGTACGT\n+\nIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats - \
+        --output - \
+        --quiet 2> /dev/null | \
+    awk 'NR > 1 {print $1}' | \
+    grep -qx "8" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a quality value above qmax is a fatal error; with --log set the
+## message is also written to the log file
+DESCRIPTION="--fastq_eestats fatal above-qmax error is recorded in the log file"
+LOG=$(mktemp)
+printf "@s\nACGT\n+\nzzzz\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats - \
+        --output /dev/null \
+        --log "${LOG}" \
+        --quiet 2> /dev/null
+grep -q "above qmax" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LOG}"
+unset LOG
+
+## a quality value below qmin is a fatal error reported on stderr, also
+## when --log is set
+DESCRIPTION="--fastq_eestats fatal below-qmin error is reported on stderr with --log set"
+LOG=$(mktemp)
+printf "@s\nACGT\n+\n####\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats - \
+        --fastq_qmin 10 \
+        --output /dev/null \
+        --log "${LOG}" 2>&1 > /dev/null | \
+    grep -q "below qmin" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LOG}"
+unset LOG
+
+
+#*****************************************************************************#
+#                                                                             #
 #                                    notes                                    #
 #                                                                             #
 #*****************************************************************************#

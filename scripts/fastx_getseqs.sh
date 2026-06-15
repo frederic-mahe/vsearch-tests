@@ -1126,6 +1126,87 @@ fi
 
 #*****************************************************************************#
 #                                                                             #
+#                          labels file edge cases                             #
+#                                                                             #
+#*****************************************************************************#
+
+## --labels fails when the labels file cannot be opened
+DESCRIPTION="--fastx_getseqs --labels fails when the labels file does not exist"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --labels /no/such/file \
+        --fastaout /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## the corresponding fatal error is also written to the log file
+DESCRIPTION="--fastx_getseqs --labels failure is recorded in the log file"
+LOG=$(mktemp)
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --labels /no/such/file \
+        --fastaout /dev/null \
+        --log "${LOG}" \
+        --quiet 2> /dev/null
+grep -q "Unable to open labels file" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LOG}"
+unset LOG
+
+## labels longer than 1023 characters are not supported; a warning is
+## issued on stderr
+DESCRIPTION="--fastx_getseqs warns on stderr about labels longer than 1023 characters"
+LABELS=$(mktemp)
+printf '%01024d\n' 0 | tr '0' 'a' > "${LABELS}"  # a 1024-character label
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --labels "${LABELS}" \
+        --fastaout /dev/null 2>&1 > /dev/null | \
+    grep -q "Labels longer than 1023 characters are not supported" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LABELS}"
+unset LABELS
+
+## the same warning is written to the log file
+DESCRIPTION="--fastx_getseqs warns in the log about labels longer than 1023 characters"
+LABELS=$(mktemp)
+LOG=$(mktemp)
+printf '%01024d\n' 0 | tr '0' 'a' > "${LABELS}"  # a 1024-character label
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --labels "${LABELS}" \
+        --fastaout /dev/null \
+        --log "${LOG}" \
+        --quiet 2> /dev/null
+grep -q "Labels longer than 1023 characters are not supported" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LABELS}" "${LOG}"
+unset LABELS LOG
+
+## a --label that does not have the same length as the header is not a
+## match (case-insensitive whole-string comparison)
+DESCRIPTION="--fastx_getseqs --label does not match a header of a different length"
+printf ">s1234\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label "s1" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                                    notes                                    #
 #                                                                             #
 #*****************************************************************************#

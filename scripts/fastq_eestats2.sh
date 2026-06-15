@@ -952,6 +952,26 @@ fi
 
 #*****************************************************************************#
 #                                                                             #
+#                          additional coverage                                #
+#                                                                             #
+#*****************************************************************************#
+
+## --output fails if the target file cannot be opened for writing
+DESCRIPTION="--fastq_eestats2 --output fails if unable to open output file for writing"
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+printf "@s\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --output "${TMP}" \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+
+#*****************************************************************************#
+#                                                                             #
 #                                    notes                                    #
 #                                                                             #
 #*****************************************************************************#

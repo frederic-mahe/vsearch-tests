@@ -164,8 +164,23 @@ for i in {1..8} 11 12 {14..31} 127 ; do
             --fastaout /dev/null 2> /dev/null && \
         failure "${DESCRIPTION}" || \
             success "${DESCRIPTION}"
-done 
+done
 unset OCTAL
+
+## when --log is set, the fatal error caused by an unprintable header
+## character is also written to the log file
+DESCRIPTION="unprintable fasta header character fatal error is recorded in the log file"
+LOG=$(mktemp)
+printf ">s\001x\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastaout /dev/null \
+        --log "${LOG}" 2> /dev/null
+grep -q "Unprintable ASCII character" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LOG}"
+unset LOG
 
 ## non-ASCII characters accepted in fasta identifiers
 DESCRIPTION="non-ASCII characters accepted in fasta identifiers"
