@@ -266,6 +266,49 @@ for OPT in --qsegout --tsegout ; do
 done
 unset OPT
 
+## each output option fails if its target file cannot be opened for
+## writing (write-protected file)
+for OPT in --alnout --biomout --blast6out --fastapairs --matched \
+           --mothur_shared_out --notmatched --otutabout \
+           --samout --uc --userout --dbmatched --dbnotmatched ; do
+    DESCRIPTION="--search_exact ${OPT} fails if unable to open output file for writing"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --search_exact - \
+            --db "${DB}" \
+            "${OPT}" "${TMP}" \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${TMP}" "${DB}"
+    unset TMP DB
+done
+unset OPT
+
+## --qsegout and --tsegout cannot be used alone, so they are paired
+## with a writable --alnout
+for OPT in --qsegout --tsegout ; do
+    DESCRIPTION="--search_exact ${OPT} fails if unable to open output file for writing"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --search_exact - \
+            --db "${DB}" \
+            --alnout /dev/null \
+            "${OPT}" "${TMP}" \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${TMP}" "${DB}"
+    unset TMP DB
+done
+unset OPT
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -1555,6 +1598,43 @@ printf ">q;size=5\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## with --sizein, the stderr summary reports the total number of
+## matching query sequences (sum of abundances), in addition to the
+## number of unique matching query sequences
+DESCRIPTION="--search_exact --sizein reports matching total query sequences (stderr)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=3\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --sizein \
+        --blast6out /dev/null 2>&1 > /dev/null | \
+    grep -q "Matching total query sequences: 3 of 3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the same summary line is written to the log file
+DESCRIPTION="--search_exact --sizein reports matching total query sequences (log)"
+DB=$(mktemp)
+LOG=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=3\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --sizein \
+        --blast6out /dev/null \
+        --log "${LOG}" \
+        --quiet 2> /dev/null
+grep -q "Matching total query sequences: 3 of 3" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${LOG}"
+unset DB LOG
+
 ## ----------------------------------------------------------------- sizeout
 
 DESCRIPTION="--search_exact --sizeout adds ;size=1 to unannotated headers"
@@ -1793,6 +1873,24 @@ SEQ="A"
     awk 'BEGIN {FS = "\t"} {exit $6 == "1M" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+## database sequences that are not matched by any query are still
+## reported in the OTU table, with a count of zero
+DESCRIPTION="--search_exact --otutabout reports unmatched database sequences with a zero count"
+DB=$(mktemp)
+printf ">d1\nAAAAAAAAAA\n>d2\nCCCCCCCCCC\n" > "${DB}"
+printf ">q\nAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    grep -qx "d2	0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
 
 
 DESCRIPTION="search_exact: --samout reports CIGAR string (10M)"
