@@ -180,6 +180,20 @@ printf ">s1\nAA\n>s2\nAAAAAAAAAAAA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## same check in the single-threaded code path (--threads 1 selects the
+## serial clusterer)
+DESCRIPTION="--cluster_smallmem fails on unsorted input with --threads 1"
+printf ">s1\nAA\n>s2\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --id 1.0 \
+        --minseqlength 1 \
+        --threads 1 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_smallmem --usersort allows any input order"
 printf ">s1\nAA\n>s2\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
