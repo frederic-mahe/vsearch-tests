@@ -394,6 +394,51 @@ for OPT in --qsegout --tsegout ; do
 done
 unset OPT
 
+## each output option fails if its target file cannot be opened for
+## writing (write-protected file)
+for OPT in --alnout --biomout --blast6out --fastapairs --lcaout --matched \
+           --mothur_shared_out --notmatched --otutabout \
+           --samout --uc --userout --dbmatched --dbnotmatched ; do
+    DESCRIPTION="--usearch_global ${OPT} fails if unable to open output file for writing"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            "${OPT}" "${TMP}" \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${TMP}" "${DB}"
+    unset TMP DB
+done
+unset OPT
+
+## --qsegout and --tsegout cannot be used alone, so they are paired
+## with a writable --alnout
+for OPT in --qsegout --tsegout ; do
+    DESCRIPTION="--usearch_global ${OPT} fails if unable to open output file for writing"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${SEQ}" > "${DB}"
+    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --usearch_global - \
+            --db "${DB}" \
+            --id 1.0 \
+            --alnout /dev/null \
+            "${OPT}" "${TMP}" \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${TMP}" "${DB}"
+    unset TMP DB
+done
+unset OPT
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -1145,6 +1190,27 @@ printf ">q\n%s\n" "${SEQ}" | \
         --usearch_global - \
         --db "${DB}" \
         --id 1.0 \
+        --hardmask \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --hardmask only acts on soft-masked (lowercase) regions, so it
+## interacts with --qmask soft; the combination must be accepted
+## (exercises the soft-mask + hardmask code path for both the query and
+## the database)
+DESCRIPTION="--usearch_global --qmask soft combined with --hardmask is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --qmask soft \
         --hardmask \
         --blast6out /dev/null \
         --quiet && \
@@ -3150,6 +3216,45 @@ printf ">q;size=5\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
 unset DB
+
+## with --sizein, the stderr summary reports the total number of
+## matching query sequences (sum of abundances), in addition to the
+## number of unique matching query sequences
+DESCRIPTION="--usearch_global --sizein reports matching total query sequences (stderr)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=3\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizein \
+        --blast6out /dev/null 2>&1 > /dev/null | \
+    grep -q "Matching total query sequences: 3 of 3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the same summary line is written to the log file
+DESCRIPTION="--usearch_global --sizein reports matching total query sequences (log)"
+DB=$(mktemp)
+LOG=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=3\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizein \
+        --blast6out /dev/null \
+        --log "${LOG}" \
+        --quiet 2> /dev/null
+grep -q "Matching total query sequences: 3 of 3" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${LOG}"
+unset DB LOG
 
 ## ------------------------------------------------------------------ sizeout
 
