@@ -208,6 +208,41 @@ for OPT in --qsegout --tsegout ; do
 done
 unset OPT
 
+## each output option fails if its target file cannot be opened for
+## writing (write-protected file). --qsegout and --tsegout cannot be
+## used alone, so they are paired with a writable --alnout.
+for OPT in --alnout --blast6out --fastapairs --matched --notmatched \
+           --samout --uc --userout ; do
+    DESCRIPTION="--allpairs_global ${OPT} fails if unable to open output file for writing"
+    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+    printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+        "${VSEARCH}" \
+            --allpairs_global - \
+            --acceptall \
+            "${OPT}" "${TMP}" \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${TMP}"
+done
+unset OPT
+
+for OPT in --qsegout --tsegout ; do
+    DESCRIPTION="--allpairs_global ${OPT} fails if unable to open output file for writing"
+    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+    printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+        "${VSEARCH}" \
+            --allpairs_global - \
+            --acceptall \
+            --alnout /dev/null \
+            "${OPT}" "${TMP}" \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${TMP}"
+done
+unset OPT
+
 ## ---------------------------------------------------------------- acceptall
 
 DESCRIPTION="--allpairs_global --acceptall is accepted"
@@ -1557,6 +1592,26 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         --top_hits_only \
         --blast6out /dev/null \
         --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --top_hits_only keeps only the hits with the highest identity for a
+## given query: s1 matches s2 (100%) and s3 (90%), so the s1-s3 pair is
+## dropped while the lower-identity s2-s3 pair (top hit for query s2) is
+## kept
+DESCRIPTION="--allpairs_global --top_hits_only drops hits below the top identity"
+printf ">s1\nACGTACGTAC\n>s2\nACGTACGTAC\n>s3\nACGTACGTAA\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --top_hits_only \
+        --userfields query+target \
+        --userout - \
+        --quiet 2> /dev/null | \
+    tr '\t' '_' | \
+    sort | \
+    tr '\n' ' ' | \
+    grep -qw "s1_s2 s2_s3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
