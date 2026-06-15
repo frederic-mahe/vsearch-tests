@@ -142,6 +142,43 @@ for OPT in --fastaout --fastaout_discarded --fastqout --fastqout_discarded ; do
 done
 unset OPT
 
+## each output option fails if its target file cannot be opened for
+## writing (write-protected file)
+for OPT in --fastaout --fastaout_discarded --fastqout --fastqout_discarded ; do
+    DESCRIPTION="--fastq_filter ${OPT} fails if unable to open output file for writing"
+    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+    printf "@s1\nA\n+\nI\n" | \
+        "${VSEARCH}" \
+            --fastq_filter - \
+            "${OPT}" "${TMP}" \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${TMP}"
+    unset TMP
+done
+unset OPT
+
+## out-of-range arguments to the numeric filtering/trimming options are
+## rejected (each entry is "option invalid_value")
+for PAIR in "--fastq_maxee 0" "--fastq_maxee_rate -1" "--fastq_truncee -1" \
+            "--fastq_maxlen 0" "--fastq_maxns -1" "--fastq_minlen -1" \
+            "--fastq_trunclen 0" "--fastq_trunclen_keep 0" \
+            "--fastq_truncqual 94" "--fastq_stripright -1" ; do
+    # shellcheck disable=SC2086
+    set -- ${PAIR}
+    DESCRIPTION="--fastq_filter rejects ${1} ${2}"
+    printf "@s1\nACGT\n+\nIIII\n" | \
+        "${VSEARCH}" \
+            --fastq_filter - \
+            "${1}" "${2}" \
+            --fastqout /dev/null \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+done
+unset PAIR
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -986,6 +1023,23 @@ printf "@s1\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## when --log is set, the above-qmax fatal error is also written to the
+## log file
+DESCRIPTION="--fastq_filter --fastq_qmax failure is recorded in the log file"
+LOG=$(mktemp)
+printf "@s1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmax 0 \
+        --fastqout /dev/null \
+        --log "${LOG}" \
+        --quiet 2> /dev/null
+grep -q "above qmax" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LOG}"
+unset LOG
+
 ## --fastq_qmin
 DESCRIPTION="--fastq_filter --fastq_qmin is accepted"
 printf "@s1\nA\n+\nI\n" | \
@@ -1006,6 +1060,23 @@ printf "@s1\nA\n+\n!\n" | \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+## the below-qmin fatal is reported on stderr, including when --log is
+## set (note: unlike the above-qmax fatal, the message is not written to
+## the log file itself)
+DESCRIPTION="--fastq_filter --fastq_qmin failure is reported on stderr with --log set"
+LOG=$(mktemp)
+printf "@s1\nA\n+\n!\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmin 1 \
+        --fastqout /dev/null \
+        --log "${LOG}" 2>&1 > /dev/null | \
+    grep -q "below qmin" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LOG}"
+unset LOG
 
 ## --label_suffix
 DESCRIPTION="--fastq_filter --label_suffix appends a suffix to the header"

@@ -684,6 +684,117 @@ printf ">s1\nT\n" > "${REVERSE}"
 rm -f "${FORWARD}" "${REVERSE}"
 unset FORWARD REVERSE
 
+## each reverse output option fails if its target file cannot be opened
+## for writing (write-protected file); a writable forward --fastqout is
+## given alongside
+for OPT in --fastaout_rev --fastqout_rev \
+           --fastaout_discarded_rev --fastqout_discarded_rev ; do
+    DESCRIPTION="--fastx_filter ${OPT} fails if unable to open output file for writing"
+    FORWARD=$(mktemp)
+    REVERSE=$(mktemp)
+    printf "@s1\nACGT\n+\nIIII\n" > "${FORWARD}"
+    printf "@s1\nTTTT\n+\nIIII\n" > "${REVERSE}"
+    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+    "${VSEARCH}" \
+        --fastx_filter "${FORWARD}" \
+        --reverse "${REVERSE}" \
+        --fastqout /dev/null \
+        "${OPT}" "${TMP}" \
+        --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${TMP}" "${FORWARD}" "${REVERSE}"
+    unset TMP FORWARD REVERSE
+done
+unset OPT
+
+## the forward and reverse inputs must be in the same format
+DESCRIPTION="--fastx_filter fails if forward and reverse files are in different formats"
+FORWARD=$(mktemp)
+REVERSE=$(mktemp)
+printf "@s1\nACGT\n+\nIIII\n" > "${FORWARD}"
+printf ">s1\nTTTT\n" > "${REVERSE}"
+"${VSEARCH}" \
+    --fastx_filter "${FORWARD}" \
+    --reverse "${REVERSE}" \
+    --fastqout /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
+unset FORWARD REVERSE
+
+## the forward file must not contain more reads than the reverse file
+DESCRIPTION="--fastx_filter fails when there are more forward reads than reverse reads"
+FORWARD=$(mktemp)
+REVERSE=$(mktemp)
+printf "@s1\nACGT\n+\nIIII\n@s2\nACGT\n+\nIIII\n" > "${FORWARD}"
+printf "@s1\nTTTT\n+\nIIII\n" > "${REVERSE}"
+"${VSEARCH}" \
+    --fastx_filter "${FORWARD}" \
+    --reverse "${REVERSE}" \
+    --fastqout /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
+unset FORWARD REVERSE
+
+## the reverse file must not contain more reads than the forward file
+DESCRIPTION="--fastx_filter fails when there are more reverse reads than forward reads"
+FORWARD=$(mktemp)
+REVERSE=$(mktemp)
+printf "@s1\nACGT\n+\nIIII\n" > "${FORWARD}"
+printf "@s1\nTTTT\n+\nIIII\n@s2\nTTTT\n+\nIIII\n" > "${REVERSE}"
+"${VSEARCH}" \
+    --fastx_filter "${FORWARD}" \
+    --reverse "${REVERSE}" \
+    --fastqout /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
+unset FORWARD REVERSE
+
+## when a pair is discarded, the reverse read is written to
+## --fastqout_discarded_rev (fastq)
+DESCRIPTION="--fastx_filter writes the reverse mate of a discarded pair to --fastqout_discarded_rev"
+FORWARD=$(mktemp)
+REVERSE=$(mktemp)
+printf "@s1\nACGT\n+\nIIII\n" > "${FORWARD}"
+printf "@s1\nTTTT\n+\nIIII\n" > "${REVERSE}"
+"${VSEARCH}" \
+    --fastx_filter "${FORWARD}" \
+    --reverse "${REVERSE}" \
+    --fastq_minlen 10 \
+    --fastqout /dev/null \
+    --fastqout_discarded_rev - \
+    --quiet 2> /dev/null | \
+    grep -qx "TTTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
+unset FORWARD REVERSE
+
+## the same, in fasta format with --fastaout_discarded_rev
+DESCRIPTION="--fastx_filter writes the reverse mate of a discarded pair to --fastaout_discarded_rev"
+FORWARD=$(mktemp)
+REVERSE=$(mktemp)
+printf "@s1\nACGT\n+\nIIII\n" > "${FORWARD}"
+printf "@s1\nTTTT\n+\nIIII\n" > "${REVERSE}"
+"${VSEARCH}" \
+    --fastx_filter "${FORWARD}" \
+    --reverse "${REVERSE}" \
+    --fastq_minlen 10 \
+    --fastaout /dev/null \
+    --fastaout_discarded_rev - \
+    --quiet 2> /dev/null | \
+    grep -qx "TTTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
+unset FORWARD REVERSE
+
 ## --eeout / --fastq_eeout (synonyms; require quality)
 DESCRIPTION="--fastx_filter --eeout adds ;ee= annotation to fastq output"
 printf "@s1\nA\n+\nI\n" | \
