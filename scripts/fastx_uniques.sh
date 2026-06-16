@@ -180,6 +180,80 @@ printf "\n>s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# a fasta header that is not terminated by a newline (truncated input)
+# is a fatal error (fasta.cc)
+DESCRIPTION="--fastx_uniques rejects a fasta header not terminated by a newline"
+printf ">s1" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastaout /dev/null 2>&1 > /dev/null | \
+    grep -q "header must be terminated with newline" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# a non-ASCII byte (> 127) in a header triggers a non-fatal warning on
+# stderr (fastx.cc warn())
+DESCRIPTION="--fastx_uniques warns about a non-ASCII character in a header (stderr)"
+printf '>s\xc3\nACGT\n' | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastaout /dev/null 2>&1 > /dev/null | \
+    grep -q "Non-ASCII character encountered" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the same non-ASCII header warning is also written to the log file
+# (fastx.cc warn(), fp_log branch)
+DESCRIPTION="--fastx_uniques writes the non-ASCII header warning to the log"
+printf '>s\xc3\nACGT\n' | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastaout /dev/null \
+        --log /dev/stdout 2> /dev/null | \
+    grep -q "Non-ASCII character encountered" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# an unprintable control character in a header is a fatal error
+# (fastx.cc)
+DESCRIPTION="--fastx_uniques rejects an unprintable control character in a header"
+printf '>s\x01x\nACGT\n' | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastaout /dev/null 2>&1 > /dev/null | \
+    grep -q "Illegal character encountered" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# invalid (non-IUPAC) sequence letters are stripped with a warning; the
+# warning and the amino-acid reminder are also written to the log file
+# (fastx.cc, fp_log branch)
+DESCRIPTION="--fastx_uniques writes the stripped-character warning to the log"
+printf ">s\nACGTEEE\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastaout /dev/null \
+        --log /dev/stdout 2> /dev/null | \
+    grep -q "invalid characters stripped from FASTA file" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques writes the amino-acid reminder to the log"
+printf ">s\nACGTEEE\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastaout /dev/null \
+        --log /dev/stdout 2> /dev/null | \
+    grep -q "REMINDER: vsearch does not support amino acid sequences" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_uniques accepts a single fasta entry"
 printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
