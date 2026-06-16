@@ -5538,6 +5538,22 @@ printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/150
 
+## the --relabel counter did not increase during --derep_fulllength (every
+## unique sequence got the same new label); fixed in 1.9.4
+DESCRIPTION="issue 150: --derep_fulllength --relabel increments the counter"
+printf ">a\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n>b\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n>c\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --relabel denovo \
+        --quiet \
+        --output - | \
+    grep "^>" | \
+    tr "\n" " " | \
+    grep -qx ">denovo1 >denovo2 >denovo3 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5546,6 +5562,10 @@ printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/151
+
+# the --rereplicate command was added (in 1.10.0) to restore multiple copies
+# of dereplicated sequences according to their abundance; already covered in
+# rereplicate.sh
 
 
 #******************************************************************************#
@@ -5556,6 +5576,9 @@ printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/152
 
+# not testable (vsearch does not implement local alignment / usearch_local;
+# only global alignment is supported)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5564,6 +5587,24 @@ printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/153
+
+## --fastapairs and --userout (qrow, trow) returned wrong alignments while
+## --alnout was correct; fixed. Here the query has a 2 nt insertion relative
+## to the target, so the aligned target row (trow) must contain a 2 nt gap at
+## the corresponding position.
+DESCRIPTION="issue 153: --userout trow shows the correct (gapped) target alignment"
+printf ">q\nACGTAGCTAGCTGACCTCGATCGTAGCTAGCTGA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n") \
+        --id 0.8 \
+        --minseqlength 1 \
+        --userfields trow \
+        --userout - \
+        --quiet | \
+    grep -qx "ACGTAGCTAGCTGA--TCGATCGTAGCTAGCTGA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -5574,6 +5615,8 @@ printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/154
 
+# not testable (build: the autoconf version required a recent automake)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5582,6 +5625,19 @@ printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/155
+
+## the --fasta_score option (added in 1.10.0) appends the chimera score to
+## the FASTA headers of the chimera-detection output (uchime_denovo here)
+DESCRIPTION="issue 155: --fasta_score appends the chimera score to the FASTA header"
+printf ">a;size=20\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n>b;size=20\nGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTT\n>c;size=1\nAAAAAAAAAAAAAAAATTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --fasta_score \
+        --nonchimeras - \
+        --quiet | \
+    grep -q ";uchime_denovo=" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -5692,6 +5748,19 @@ rm "${PROGRESS}"
 ##
 ## https://github.com/torognes/vsearch/issues/157
 
+## a very short (3 nt) sequence caused a segmentation fault in --uchime_ref;
+## fixed in 1.9.8
+DESCRIPTION="issue 157: --uchime_ref does not crash on a very short query sequence"
+printf ">q\nACG\n" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db <(printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --minseqlength 1 \
+        --quiet \
+        --chimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5700,6 +5769,24 @@ rm "${PROGRESS}"
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/158
+
+## a regression in 1.9.7 caused lower-case database sequences to be fully
+## (hard) masked by default; the case should instead be ignored (and the
+## sequence dust-masked), so a lower-case database sequence must still match
+## an upper-case query. Fixed in 1.9.10.
+DESCRIPTION="issue 158: a lower-case database sequence still matches (case is ignored, not hard-masked)"
+printf ">q\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nacgtagctagctgatcgatcgtagctagctga\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --userfields target \
+        --userout - \
+        --quiet | \
+    grep -qx "t" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -5719,6 +5806,23 @@ rm "${PROGRESS}"
 ##
 ## https://github.com/torognes/vsearch/issues/160
 
+## --relabel was not applied to the consensus sequences produced by
+## --consout; fixed in 1.10.0 (the consensus headers are now relabelled)
+DESCRIPTION="issue 160: --relabel is applied to --consout consensus sequences"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --relabel OTU_ \
+        --quiet \
+        --consout - | \
+    grep "^>" | \
+    tr "\n" " " | \
+    grep -qx ">centroid=OTU_1;seqs=1 >centroid=OTU_2;seqs=1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5727,6 +5831,11 @@ rm "${PROGRESS}"
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/161
+
+# closed as a discussion: filtering sequences on length and number of Ns is
+# available through the --fastx_filter command, and finer control over the
+# consensus can be obtained from the --profile output. Multi-pass clustering
+# will not be implemented.
 
 
 #******************************************************************************#
@@ -5737,6 +5846,9 @@ rm "${PROGRESS}"
 ##
 ## https://github.com/torognes/vsearch/issues/162
 
+# not testable (user error, not a bug: the reverse reads were not reverse-
+# complemented as --fastq_mergepairs expects)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5746,6 +5858,39 @@ rm "${PROGRESS}"
 ##
 ## https://github.com/torognes/vsearch/issues/163
 
+## not a bug (documentation question): --self rejects a hit when the query
+## and target labels are identical, while --selfid rejects a hit when the
+## query and target sequences are identical ("id" = identity)
+DESCRIPTION="issue 163: --self rejects a hit when the labels are identical"
+printf ">s1\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --self \
+        --userfields target \
+        --userout - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 163: --selfid rejects a hit when the sequences are identical"
+printf ">q1\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t1\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --selfid \
+        --userfields target \
+        --userout - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5754,6 +5899,24 @@ rm "${PROGRESS}"
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/164
+
+## fastq_mergepairs must not truncate the FASTQ labels at the first space by
+## default (no need to specify --notrunclabels); fixed in 1.10.1
+DESCRIPTION="issue 164: --fastq_mergepairs keeps the full label (no truncation at space)"
+FWD=$(mktemp)
+REV=$(mktemp)
+printf "@read1 somedescription\nGCTAAAGACAATTACATAACATACACGTCAGCACGAAACT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${FWD}"
+printf "@read1 somedescription\nCGATTCACACTGGGCCAACAAGTTTCGTGCTGACGTGTAT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${REV}"
+"${VSEARCH}" \
+    --fastq_mergepairs "${FWD}" \
+    --reverse "${REV}" \
+    --fastqout - \
+    --quiet 2>/dev/null | \
+    head -1 | \
+    grep -qx "@read1 somedescription" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${FWD}" "${REV}"
 
 
 #******************************************************************************#
@@ -5977,6 +6140,10 @@ printf "@s;length=2\nA\n+\nI\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/166
 
+# OTU tables can be created directly with the --otutabout and --biomout
+# options of usearch_global / the clustering commands; already covered in
+# usearch_global.sh and cluster_size.sh
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5985,6 +6152,9 @@ printf "@s;length=2\nA\n+\nI\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/pull/167
+
+# not testable (pull request proposing an --idoffset argument for clustering
+# non-overlapped paired-end reads; the option is not present in vsearch)
 
 
 #******************************************************************************#
@@ -5995,6 +6165,19 @@ printf "@s;length=2\nA\n+\nI\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/168
 
+## --eeout (expected errors in the header) used to work only with --fastqout;
+## it must also work with --fastaout. Fixed in 1.11.1.
+DESCRIPTION="issue 168: --fastq_filter --eeout adds expected errors to FASTA output"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --eeout \
+        --fastaout - \
+        --quiet | \
+    grep -q ";ee=" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6004,6 +6187,9 @@ printf "@s;length=2\nA\n+\nI\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/169
 
+# not testable (compilation error caused by a typo in a BZLIB check in
+# fasta.cc)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6012,6 +6198,8 @@ printf "@s;length=2\nA\n+\nI\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/170
+
+# not testable (request for a Windows executable)
 
 
 #*****************************************************************************#
@@ -6040,6 +6228,9 @@ printf ">seq1\n\n" | \
 ##
 ## https://github.com/torognes/vsearch/pull/172
 
+# not testable (pull request with Windows / Visual Studio 2015 build
+# modifications)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6048,6 +6239,22 @@ printf ">seq1\n\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/173
+
+## the fifth column of the H lines in the --uc file must contain the matching
+## strand (+ or -) when dereplicating with --strand both; fixed in 1.11.1.
+## Here the second sequence is the reverse complement of the first, so it
+## matches on the minus strand.
+DESCRIPTION="issue 173: --derep_fulllength --uc reports the matching strand on H lines"
+printf ">a\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n>b\nGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --strand both \
+        --uc - \
+        --quiet | \
+    awk '$1 == "H" && $5 == "-" {found = 1} END {exit found ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -6058,6 +6265,19 @@ printf ">seq1\n\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/174
 
+## the error message for out-of-range FASTQ quality values was improved to
+## indicate the offending value and the accepted range (fixed in 2.0.4),
+## pointing users towards the --fastq_qmax and related options
+DESCRIPTION="issue 174: out-of-range FASTQ quality gives an informative error (value and range)"
+printf "@s1\nACGT\n+\n~~~~\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --fastq_ascii 64 \
+        --log /dev/null 2>&1 | \
+    grep -q "out of range (0-41)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6066,6 +6286,17 @@ printf ">seq1\n\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/175
+
+## FASTQ entries with an empty sequence used to trigger a fatal error
+## ("Empty sequence line"); they are now accepted. Here both the empty entry
+## and the normal one are read.
+DESCRIPTION="issue 175: an empty FASTQ sequence is accepted (no fatal error)"
+printf "@s1\n\n+\n\n@s2\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -q "Read 2 sequences" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -6076,6 +6307,11 @@ printf ">seq1\n\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/176
 
+# e-values and bit scores (Karlin-Altschul statistics) are only defined for
+# local alignments, while vsearch only performs global alignments. They are
+# therefore not computed: the blast6out evalue is always -1 and the bit score
+# always 0 (see the test under issue 179).
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6084,6 +6320,10 @@ printf ">seq1\n\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/177
+
+# not testable (a question about chimera detection on very long reads: the
+# query is split into 4 parts, with no option to change this number; no bug
+# or reproducer)
 
 
 #******************************************************************************#
@@ -6095,6 +6335,9 @@ printf ">seq1\n\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/178
 
+# not testable (memory exhaustion when clustering a very large dataset
+# (~37 GB, 64 million sequences); cannot be reproduced with a small input)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6104,6 +6347,23 @@ printf ">seq1\n\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/179
 
+## not a bug (usearch compatibility): in the --blast6out output the query and
+## target start/end columns are not the alignment coordinates. qlo and tlo are
+## always 1 (for an alignment), qhi and thi are the alignment length, the
+## e-value is always -1 and the bit score always 0 (see issue 176).
+DESCRIPTION="issue 179: --blast6out reports fixed start/end coordinates and -1/0 for evalue/bits"
+printf ">q\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --blast6out - \
+        --quiet | \
+    awk -F "\t" '$7 == 1 && $8 == 32 && $9 == 1 && $10 == 32 && $11 == "-1" && $12 == 0 {ok = 1} END {exit ok ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6112,6 +6372,21 @@ printf ">seq1\n\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/180
+
+## the request to trim a read based on its expected error was implemented as
+## the --fastq_truncee option, which truncates the read where the cumulative
+## expected error would exceed the given value
+DESCRIPTION="issue 180: --fastq_truncee truncates the read at the expected-error threshold"
+printf "@s1\nACGTACGTACGT\n+\nIIII++++++++\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_truncee 0.5 \
+        --fastaout - \
+        --quiet | \
+    grep -A 1 "^>s1" | \
+    grep -qx "ACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
@@ -6191,6 +6466,40 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 # ## Clean
 # rm "${QUERY}" "${ALN}" "${NOTMATCHED}" "${USEROUT}" "${DATABASE}"
 
+## hits with a query coverage below --query_cov were wrongly kept in the
+## --userout results; fixed. Here the query matches the target over only half
+## of its length (qcov = 50%), so it must be excluded at --query_cov 0.95...
+DESCRIPTION="issue 182: a hit below --query_cov is excluded from --userout"
+printf ">q\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n") \
+        --id 0.5 \
+        --minseqlength 1 \
+        --query_cov 0.95 \
+        --userfields query \
+        --userout - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ...but kept when the threshold is low enough
+DESCRIPTION="issue 182: the same hit is kept when --query_cov is low enough"
+printf ">q\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n") \
+        --id 0.5 \
+        --minseqlength 1 \
+        --query_cov 0.4 \
+        --userfields qcov \
+        --userout - \
+        --quiet | \
+    grep -qx "50.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6200,6 +6509,11 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/183
 
+# not testable (user error, not a bug: the input used the UCHIME defline
+# format ">name/ab=100.0/" instead of the usearch/vsearch ">name;size=100;"
+# format, so abundances were not read; with the correct format chimeras are
+# detected as expected)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6208,6 +6522,19 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/184
+
+## masking very long sequences caused a segmentation fault (due to the use of
+## alloca); fixed in 2.0.1
+DESCRIPTION="issue 184: --fastx_mask does not crash on a very long sequence"
+LONG=$(head -c 50000 /dev/zero | tr '\0' 'A')
+printf ">s1\n%s\n" "${LONG}" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG
 
 
 #******************************************************************************#
@@ -6226,6 +6553,23 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/186
+
+## the general --minseqlength / --maxseqlength options do not apply to
+## fastq_filter; the --fastq_minlen and --fastq_maxlen options were added to
+## fastx_filter and fastq_filter in 2.1.0 to filter on length
+DESCRIPTION="issue 186: --fastq_filter --fastq_minlen and --fastq_maxlen filter on length"
+printf "@short\nACGT\n+\nIIII\n@mid\nACGTACGTACGT\n+\nIIIIIIIIIIII\n@long\nACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minlen 5 \
+        --fastq_maxlen 20 \
+        --fastaout - \
+        --quiet | \
+    grep "^>" | \
+    tr "\n" " " | \
+    grep -qx ">mid " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -6247,6 +6591,9 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/188
 
+# not testable (internal: the time spent hashing is negligible, so a rolling
+# hash function will not be used)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6255,6 +6602,23 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/189
+
+## the --wordlength option was restricted to 7-12; shorter word lengths (down
+## to 3) are allowed since version 2.1.0, which helps with very short sequences
+DESCRIPTION="issue 189: --wordlength accepts a value as low as 3"
+printf ">q\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --wordlength 3 \
+        --userfields target \
+        --userout - \
+        --quiet | \
+    grep -qx "t" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -6265,6 +6629,22 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/190
 
+## filtering options previously limited to FASTQ (e.g. --fastq_maxns) became
+## available for FASTA input through the --fastx_filter command in 2.1.0
+## (also covered in fastx_filter.sh)
+DESCRIPTION="issue 190: --fastx_filter applies --fastq_maxns to FASTA input"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTNNNN\n>b\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_maxns 0 \
+        --fastaout - \
+        --quiet | \
+    grep "^>" | \
+    tr "\n" " " | \
+    grep -qx ">b " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6273,6 +6653,9 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/191
+
+# not testable (manual typo: the --quiet description said "stdout and stdout"
+# instead of "stdout and stderr"; fixed in 2.0.4)
 
 
 #******************************************************************************#
@@ -6283,6 +6666,9 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/192
 
+# not testable (documentation: the output of --fastq_stats and
+# --fastq_eestats is now documented in the manual)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6291,6 +6677,23 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/193
+
+## the reads not chosen by --fastx_subsample can be written to a separate file
+## with --fastaout_discarded (e.g. to split a dataset into two subsets). Here
+## one of two sequences is sampled and the other goes to the discarded file.
+DESCRIPTION="issue 193: --fastx_subsample writes non-chosen reads to --fastaout_discarded"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --randseed 1 \
+        --fastaout /dev/null \
+        --fastaout_discarded - \
+        --quiet | \
+    grep -c "^>" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -6301,6 +6704,30 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/194
 
+## not a bug: with phred+64 full-range FASTQ files the quality values can
+## exceed the default maximum (41), so --fastq_qmax must be raised. Without
+## it the command fails; with --fastq_qmax 62 it succeeds.
+DESCRIPTION="issue 194: --fastq_stats fails on out-of-range quality without --fastq_qmax"
+printf "@s1\nACGT\n+\n~~~~\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --fastq_ascii 64 \
+        --log /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 194: --fastq_stats succeeds on the same file with --fastq_qmax 62"
+printf "@s1\nACGT\n+\n~~~~\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --fastq_ascii 64 \
+        --fastq_qmax 62 \
+        --log /dev/null \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6309,6 +6736,10 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/195
+
+# not testable (a pipeline question, not a bug: searching the original reads
+# against the OTUs is needed to recover per-sample abundances lost during
+# dereplication)
 
 
 #******************************************************************************#
@@ -6319,6 +6750,9 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/196
 
+# not testable (documentation: the UC format is now documented in the manpage
+# for clustering, dereplication and searching)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6327,6 +6761,10 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/197
+
+# --fastx_subsample already accepts FASTQ files (with --fastqout, --fastq_qmin,
+# --fastq_qmax, --fastq_ascii); only the manual needed updating. Already
+# covered in fastx_subsample.sh (see also issue 120)
 
 
 #******************************************************************************#
@@ -6337,6 +6775,9 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/198
 
+# not testable (documentation: the manpage was updated to describe the
+# relabelling options added to --shuffle and the --xsize option)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -6345,6 +6786,29 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/199
+
+## --top_hits_only keeps only the hit(s) with the highest identity in the
+## --userout (and related) output; it requires --maxaccepts > 1. Here the
+## query matches db1 perfectly and db2 with one mismatch: only db1 (the top
+## hit) is reported. (For usearch compatibility it does not apply to
+## --dbmatched.)
+DESCRIPTION="issue 199: --top_hits_only keeps only the best-identity hit in --userout"
+printf ">q\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">db1\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n>db2\nTCGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --maxaccepts 2 \
+        --maxrejects 0 \
+        --top_hits_only \
+        --userfields target \
+        --userout - \
+        --quiet | \
+    tr "\n" " " | \
+    grep -qx "db1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -16645,7 +17109,7 @@ unset SEQ1 SEQ2
 exit 0
 
 
-# DONE: issues 1-149 and 549 to 561 (issues 86, 118, 132 still open)
+# DONE: issues 1-199 and 549 to 561 (issues 86, 118, 132, 159, 185 still open)
 # TODO: issue 506 read --db from stream fails in CI runs (works on my machine)
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
