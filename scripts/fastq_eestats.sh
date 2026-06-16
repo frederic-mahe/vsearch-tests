@@ -827,17 +827,18 @@ grep -q "above qmax" "${LOG}" && \
 rm -f "${LOG}"
 unset LOG
 
-## a quality value below qmin is a fatal error reported on stderr, also
-## when --log is set
-DESCRIPTION="--fastq_eestats fatal below-qmin error is reported on stderr with --log set"
+## a quality value below qmin is a fatal error; with --log set the
+## message is also written to the log file
+DESCRIPTION="--fastq_eestats fatal below-qmin error is recorded in the log file"
 LOG=$(mktemp)
 printf "@s\nACGT\n+\n####\n" | \
     "${VSEARCH}" \
         --fastq_eestats - \
         --fastq_qmin 10 \
         --output /dev/null \
-        --log "${LOG}" 2>&1 > /dev/null | \
-    grep -q "below qmin" && \
+        --log "${LOG}" \
+        --quiet 2> /dev/null
+grep -q "below qmin" "${LOG}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${LOG}"

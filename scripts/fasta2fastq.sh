@@ -47,6 +47,23 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --fastqout is mandatory
+DESCRIPTION="--fasta2fastq fails without --fastqout"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fasta2fastq - \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fasta2fastq reports a message when --fastqout is missing"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fasta2fastq - 2>&1 > /dev/null | \
+    grep -q "output file must be specified with --fastqout" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fasta2fastq fails if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \

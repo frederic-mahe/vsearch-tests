@@ -1061,18 +1061,18 @@ printf "@s1\nA\n+\n!\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-## the below-qmin fatal is reported on stderr, including when --log is
-## set (note: unlike the above-qmax fatal, the message is not written to
-## the log file itself)
-DESCRIPTION="--fastq_filter --fastq_qmin failure is reported on stderr with --log set"
+## when --log is set, the below-qmin fatal error is also written to the
+## log file
+DESCRIPTION="--fastq_filter --fastq_qmin failure is recorded in the log file"
 LOG=$(mktemp)
 printf "@s1\nA\n+\n!\n" | \
     "${VSEARCH}" \
         --fastq_filter - \
         --fastq_qmin 1 \
         --fastqout /dev/null \
-        --log "${LOG}" 2>&1 > /dev/null | \
-    grep -q "below qmin" && \
+        --log "${LOG}" \
+        --quiet 2> /dev/null
+grep -q "below qmin" "${LOG}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${LOG}"
