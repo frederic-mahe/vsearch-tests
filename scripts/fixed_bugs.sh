@@ -4618,6 +4618,10 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/100
 
+# not testable. The ";" separator is kept for usearch compatibility; a
+# different separator can be obtained by piping the output through sed, e.g.
+# vsearch --derep_fulllength input.fasta --output - | sed -e "s/;/|/g"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4627,6 +4631,10 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/101
 
+# the subsampling command was reorganized as --fastx_subsample with the
+# options --sample_pct, --sample_size, --fastaout, --randseed, --sizein,
+# --sizeout and --xsize; already covered in fastx_subsample.sh
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4635,6 +4643,24 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/102
+
+## the --clusterout_sort option orders the consout, profile and msaout
+## files by decreasing cluster abundance (also covered in cluster_*.sh)
+DESCRIPTION="issue 102: --clusterout_sort orders --consout by decreasing abundance"
+printf ">a;size=1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=9\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --clusterout_sort \
+        --quiet \
+        --consout - | \
+    awk '/^>/ {print; exit}' | \
+    grep -q "centroid=b" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -4646,6 +4672,21 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/103
 
+## the --clusterout_id option adds the cluster id to the consout and
+## profile header lines (also covered in cluster_*.sh)
+DESCRIPTION="issue 103: --clusterout_id adds the cluster id to --consout headers"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --clusterout_id \
+        --quiet \
+        --consout - | \
+    grep -q "clusterid=0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4654,6 +4695,20 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/104
+
+## borderline sequences are excluded from both the --chimeras and
+## --nonchimeras output files; the --borderline option was added to capture
+## them and the screen/log summary reports their count separately (also
+## covered in uchime_denovo.sh)
+DESCRIPTION="issue 104: --uchime_denovo reports borderline sequences separately"
+printf ">a;size=20\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n>b;size=20\nGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTT\n>c;size=1\nAAAAAAAAAAAAAAAATTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --borderline /dev/null \
+        --nonchimeras /dev/null 2>&1 | \
+    grep -q "borderline sequences" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -4664,6 +4719,8 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/105
 
+# not testable (the license was changed to a dual AGPL + 3-clause BSD)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4672,6 +4729,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/106
+
+# not testable (internal choice of hash function; the time spent hashing is
+# negligible, so CityHash was kept)
 
 
 #******************************************************************************#
@@ -4682,6 +4742,23 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/107
 
+## the --samheader option adds @HD, @SQ and @PG header lines to the SAM
+## output, to ease post-processing with samtools etc. (also covered in
+## samout.sh and the search/clustering scripts)
+DESCRIPTION="issue 107: --samheader adds header lines to the SAM output"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -q "^@HD" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4690,6 +4767,8 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/108
+
+# not testable (source-code warnings reported by cppcheck)
 
 
 #******************************************************************************#
@@ -4700,6 +4779,23 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/109
 
+## the consensus output (consout) must include the size= annotation when
+## --sizeout is used, for compatibility with usearch and QIIME parsers
+## (here two identical size=3 and size=2 sequences give a size=5 cluster)
+DESCRIPTION="issue 109: --cluster_size --consout --sizeout adds the size annotation"
+printf ">a;size=3\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --consout - | \
+    grep -q ";size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4708,6 +4804,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/110
+
+# not testable (a question: the msa output is a simple alignment of each
+# sequence against the centroid/seed, not an all-by-all alignment)
 
 
 #******************************************************************************#
@@ -4718,6 +4817,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/111
 
+# not testable here (memory leak in --fastx_revcomp, fixed in 1.3.2;
+# memory consumption is exercised by the valgrind tests)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4726,6 +4828,15 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/112
+
+## the version banner contained a typo ("vv1.3.1") in the summer branch;
+## it must show a single "v" before the version number
+DESCRIPTION="issue 112: the version banner shows a single 'v' (no 'vv' typo)"
+"${VSEARCH}" \
+    --version 2>&1 | \
+    grep -qE "^vsearch v[0-9]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -4736,6 +4847,14 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/113
 
+## the short option -h must be accepted as an alias for --help
+DESCRIPTION="issue 113: -h is accepted as a short option for --help"
+"${VSEARCH}" \
+    -h 2>&1 | \
+    grep -q "usearch_global" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4744,6 +4863,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/pull/114
+
+# not testable (pull request fixing a stray backtick in the installation
+# instructions)
 
 
 #******************************************************************************#
@@ -4754,6 +4876,10 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/115
 
+# not testable as a dedicated vsearch feature. xz-compressed files are
+# handled indirectly through pipes (see issue 39), e.g.
+# vsearch --fastq_chars <(xzcat file.fastq.xz)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4763,6 +4889,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/116
 
+# FASTQ version conversion (between phred+33 and phred+64) was added as the
+# --fastq_convert command; already covered in fastq_convert.sh
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4771,6 +4900,14 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/117
+
+## the short option -v must report the version (added in 1.5.0)
+DESCRIPTION="issue 117: -v is accepted as a short option for the version"
+"${VSEARCH}" \
+    -v 2>&1 | \
+    grep -qE "^vsearch v[0-9]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -4790,6 +4927,8 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/119
 
+# not testable (internal SIMD/alignment library choice, e.g. AVX2/parasail)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4798,6 +4937,20 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/120
+
+## --fastx_subsample must work with FASTQ files, not only FASTA (added in
+## 1.8.0; also covered in fastx_subsample.sh)
+DESCRIPTION="issue 120: --fastx_subsample works on a FASTQ file with --fastqout"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct 100 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s1@ACGT@+@IIII@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -4808,6 +4961,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/121
 
+# relabelling options were added to --shuffle (in 1.6.0); already covered
+# in shuffle.sh
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4816,6 +4972,23 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/122
+
+## the --sizeorder option (abundance-based greedy clustering, AGC) ranks
+## accepted centroids by decreasing abundance instead of by identity; it
+## takes effect with --maxaccepts > 1 (also covered in cluster_*.sh)
+DESCRIPTION="issue 122: --sizeorder is accepted by the clustering commands"
+printf ">a;size=1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.9 \
+        --minseqlength 1 \
+        --sizein \
+        --sizeorder \
+        --maxaccepts 4 \
+        --quiet \
+        --centroids /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -4826,6 +4999,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/123
 
+# not testable (runtime zlib version requirement: zlib 1.2.4 or later is
+# needed for gzip support, because of the gzoffset function)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4834,6 +5010,40 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/124
+
+## the dependency on crypto libraries was removed by embedding public-domain
+## md5 and sha1 implementations; the digests must still be correct. They are
+## computed on the upper-cased, unwrapped sequence and checked here against
+## md5sum and sha1sum.
+DESCRIPTION="issue 124: --relabel_md5 produces the correct md5 digest"
+SEQ="ACGTACGTACGTACGTACGTACGTACGTACGT"
+MD5=$(printf "%s" "${SEQ}" | md5sum | cut -d " " -f 1)
+printf ">a\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --relabel_md5 \
+        --quiet \
+        --output - | \
+    grep -qx ">${MD5}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ MD5
+
+DESCRIPTION="issue 124: --relabel_sha1 produces the correct sha1 digest"
+SEQ="ACGTACGTACGTACGTACGTACGTACGTACGT"
+SHA1=$(printf "%s" "${SEQ}" | sha1sum | cut -d " " -f 1)
+printf ">a\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --relabel_sha1 \
+        --quiet \
+        --output - | \
+    grep -qx ">${SHA1}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ SHA1
 
 
 #******************************************************************************#
@@ -4844,6 +5054,8 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/pull/125
 
+# not testable (pull request fixing an example in the man page)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4852,6 +5064,25 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/126
+
+## clustering a file mixing very long sequences (here 15,000 nt) with short
+## ones triggered a realloc() error on Linux; it must now run without
+## crashing (see also issue 63 for large sequences)
+DESCRIPTION="issue 126: --cluster_fast handles very long sequences without crashing"
+LONG=$(head -c 15000 /dev/zero | tr '\0' 'A')
+printf ">long\n%s\n>s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" "${LONG}" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.95 \
+        --iddef 0 \
+        --strand both \
+        --minseqlength 1 \
+        --quiet \
+        --centroids /dev/null \
+        --uc /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG
 
 
 #******************************************************************************#
@@ -4862,6 +5093,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/127
 
+# not testable (platform-specific: "Cannot determine amount of RAM" on
+# OS X 10.8.5, fixed in 1.4.4)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4870,6 +5104,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/128
+
+# not testable (an alignment regression introduced in 1.2.17 and fixed in
+# 1.4.6; no minimal reproducer was provided in the issue)
 
 
 #******************************************************************************#
@@ -4880,6 +5117,26 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/129
 
+## a user wanted the relabelled (sha1) identifier together with the original
+## label. Rather than changing the .uc file (where identical sequences would
+## get identical hashes), this was solved with the --relabel_keep option,
+## which appends the old label after the new one in the output.
+DESCRIPTION="issue 129: --relabel_keep appends the old label after the new sha1 label"
+SEQ="ACGTACGTACGTACGTACGTACGTACGTACGT"
+SHA1=$(printf "%s" "${SEQ}" | sha1sum | cut -d " " -f 1)
+printf ">a\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --relabel_sha1 \
+        --relabel_keep \
+        --quiet \
+        --output - | \
+    grep -qx ">${SHA1} a" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ SHA1
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4889,6 +5146,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/130
 
+# the --search_exact command was added (in 1.8.0); already covered in
+# search_exact.sh
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4897,6 +5157,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/pull/131
+
+# pull request adding the --relabel option to --shuffle (issue 121);
+# already covered in shuffle.sh
 
 
 #******************************************************************************#
@@ -4916,6 +5179,8 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/pull/133
 
+# not testable (pull request adding a test for --search_exact)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4924,6 +5189,8 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/134
+
+# not testable (external packaging on conda/anaconda)
 
 
 #******************************************************************************#
@@ -4934,6 +5201,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/135
 
+# not testable (platform-specific: missing ___exp10 symbol in --fastq_stats
+# on OS X 10.8.5)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4942,6 +5212,19 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/136
+
+## a floating point argument to --threads must be accepted, for
+## compatibility with usearch and QIIME (fixed in 1.8.1)
+DESCRIPTION="issue 136: --threads accepts a floating point argument"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --threads 1.0 \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -4952,6 +5235,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/pull/137
 
+# not testable (build configuration: pull request disabling the default
+# CXXFLAGS)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4961,6 +5247,27 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/138
 
+## --fastq_convert only converts between FASTQ variants; it does not accept
+## --fastaout. The FASTQ to FASTA conversion is done with --fastq_filter.
+DESCRIPTION="issue 138: --fastq_convert rejects --fastaout"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastaout /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 138: FASTQ to FASTA conversion is done with --fastq_filter"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastaout - \
+        --quiet | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4969,6 +5276,9 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/139
+
+# not testable (distribution tarball: inclusion of autoconf-generated files
+# so that compilation does not require autoconf)
 
 
 #******************************************************************************#
@@ -5042,6 +5352,10 @@ DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
 ##
 ## https://github.com/torognes/vsearch/pull/141
 
+# pull request about quoting/escaping tabs in fasta record names in the --uc
+# output; the adopted resolution (truncate labels at the first space or tab
+# by default) is tested under issue 140 above
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5050,6 +5364,34 @@ DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/142
+
+## fastx_mask, fastx_subsample and fastx_revcomp segfaulted or aborted on
+## gzip-compressed input; fixed in 1.9.0
+DESCRIPTION="issue 142: --fastx_revcomp reads gzip-compressed input (pipe)"
+printf ">s1\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --gzip_decompress \
+        --quiet \
+        --fastaout - | \
+    grep -A 1 "^>s1" | \
+    grep -qx "GGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 142: --fastx_subsample reads gzip-compressed input (pipe)"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --gzip_decompress \
+        --sample_pct 100 \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -5060,6 +5402,18 @@ DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
 ##
 ## https://github.com/torognes/vsearch/issues/143
 
+## chimera reporting was improved to also report the number and percentage
+## of sequences including their abundances ("total sequences"), not only the
+## unique sequences (fixed in 1.10.0)
+DESCRIPTION="issue 143: --uchime_denovo reports counts for total sequences (with abundances)"
+printf ">a;size=20\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n>b;size=20\nGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTT\n>c;size=1\nAAAAAAAAAAAAAAAATTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --nonchimeras /dev/null 2>&1 | \
+    grep -q "total sequences" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5068,6 +5422,14 @@ DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/144
+
+# vsearch v2.31.0 does not appear to compress output FASTA/FASTQ files by
+# itself: writing to a file whose name ends in ".gz" or ".bz2" produces
+# plain text, and the source contains no gzip/bzip2 write code. Compressed
+# output is obtained by piping through gzip or bzip2, e.g.
+# vsearch ... --output - | gzip > output.fasta.gz
+# Reading gzip/bzip2-compressed input is supported (see issues 39 and 142).
+# NOTE: this differs from the feature request; flagged for human review.
 
 
 #******************************************************************************#
@@ -5078,6 +5440,23 @@ DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
 ##
 ## https://github.com/torognes/vsearch/issues/145
 
+## --fastq_stats reported incorrect AvgEE, Rate and RatePct. For a 50 nt
+## read with 40 positions at Q40 and 10 at Q10, the expected error is
+## 10^-4 x 40 + 10^-1 x 10 = 1.004, so Rate = 1.004 / 50 = 0.020080 (the
+## buggy version reported 0.011200).
+DESCRIPTION="issue 145: --fastq_stats computes AvgEE / Rate correctly"
+SEQ=$(head -c 50 /dev/zero | tr '\0' 'A')
+QUAL="$(head -c 40 /dev/zero | tr '\0' 'I')$(head -c 10 /dev/zero | tr '\0' '+')"
+printf "@r1\n%s\n+\n%s\n" "${SEQ}" "${QUAL}" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log - \
+        --quiet 2>/dev/null | \
+    awk '$1 == 50 && $7 == "0.020080" {found = 1} END {exit found ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ QUAL
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5086,6 +5465,9 @@ DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/146
+
+# not testable (build error: missing x86intrin.h header when compiling on
+# OS X 10.8.5)
 
 
 #******************************************************************************#
@@ -5096,6 +5478,20 @@ DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
 ##
 ## https://github.com/torognes/vsearch/issues/147
 
+## the letter case of the sequences must be preserved in the output (it was
+## not, when mixed-case input was used)
+DESCRIPTION="issue 147: letter case is preserved in the output"
+printf ">s1\nacgtACGTacgtACGTacgtACGTacgtACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minseqlength 1 \
+        --quiet \
+        --fastaout - | \
+    grep -A 1 "^>s1" | \
+    grep -qx "acgtACGTacgtACGTacgtACGTacgtACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5105,6 +5501,9 @@ DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
 ##
 ## https://github.com/torognes/vsearch/issues/148
 
+# the --fastq_eestats command was added (in 1.10.0); already covered in
+# fastq_eestats.sh
+
 
 #******************************************************************************#
 #                                                                              #
@@ -5113,6 +5512,22 @@ DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/149
+
+## a user suspected the abundances were wrong in the --fastx_subsample
+## output; they are in fact correct: with --sizein and --sizeout the
+## abundance annotation is preserved (the reporter retracted the bug)
+DESCRIPTION="issue 149: --fastx_subsample preserves abundances with --sizein/--sizeout"
+printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct 100 \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">a;size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -16230,7 +16645,7 @@ unset SEQ1 SEQ2
 exit 0
 
 
-# DONE: issues 1-99 and 549 to 561 (issue 86 still open)
+# DONE: issues 1-149 and 549 to 561 (issues 86, 118, 132 still open)
 # TODO: issue 506 read --db from stream fails in CI runs (works on my machine)
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
