@@ -11325,6 +11325,563 @@ printf "@a\nAA\n+\nI\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#         sintax: should the command accept the --minseqlength option?         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/494
+
+## the --sintax command must accept the --minseqlength (and --maxseqlength)
+## option; it previously rejected it and silently filtered sequences shorter
+## than 32 nucleotides. Fixed.
+DESCRIPTION="issue 494: --sintax accepts the --minseqlength option"
+SEQ="TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">x;tax=d:Bacteria\n%s\n" "${SEQ}") \
+        --minseqlength 1 \
+        --sintax_cutoff 0 \
+        --tabbedout /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                    vsearch search_global time complexity                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/495
+
+# not testable (a question about the time complexity of the search heuristic)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                 Allow FASTQ files as input to more commands                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/496
+
+# open issue (not covered): request to let more commands (e.g. usearch_global)
+# accept FASTQ input
+
+
+
+#******************************************************************************#
+#                                                                              #
+#              Check for SSSE3 should be build time, not run time              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/497
+
+# not testable (build-configuration pull request about SSSE3 detection)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#           Large number of clusters with small number of sequences            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/490
+
+# not testable (a usage question: the number and size of clusters depend
+# mostly on the --id threshold and the data quality)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                 Perfect overlaps not getting merged together                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/491
+
+# not a bug: the ends of the reads must match to be merged; here a non-matching
+# tail of T's that would need clipping prevents merging
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                  global alignment and semi-global alignment                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/482
+
+# not testable (a question: vsearch performs global alignment, but the very
+# low default terminal gap penalties make it behave like semi-global)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                          Definition of a read pair                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/483
+
+# not a bug: --fastq_mergepairs pairs reads by their position/index in the two
+# files, not by their name (it only checks that both files have the same
+# number of reads)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       drop in replacement for usearch                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/484
+
+# not testable (a question: vsearch is not a literal drop-in replacement for
+# usearch, as not all later usearch commands are implemented)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                  How is the expected error rate calculated?                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/485
+
+# not a bug: the expected error (EE) is the sum of the per-position error
+# probabilities (sum of 10^(-Q/10)), so it can be greater than one
+
+
+
+#******************************************************************************#
+#                                                                              #
+#       Could I only output the names of query and target sequences with       #
+#                               usearch_global?                                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/486
+
+# not a bug: use --userout with --userfields query+target to output only the
+# query and target names
+
+
+
+#******************************************************************************#
+#                                                                              #
+#   Could vsearch standardize the otu table and compute relative abundances    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/487
+
+# open issue (not covered): request for OTU-table normalization and taxonomic
+# summaries (otutab_norm / sintax_summary)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#               Optional low memory mode for --derep_fulllength                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/475
+
+# not testable (a feature request for a lower-memory dereplication mode)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                  derep_fulllength: empty output fasta file                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/476
+
+# not testable (dereplication was killed (out of memory) before writing any
+# output; an environment/resource limitation)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#   usearch_global shows different results for the same seq in different db    #
+#                                    files                                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/477
+
+# not testable (the kmer-based heuristic can give different results depending
+# on the database content and order; not a bug)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                        error in swarm when clustering                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/478
+
+# not testable (a swarm usage question: abundance annotations require swarm's
+# -z option; not a vsearch issue)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       fix two GCC 10.2 format warnings                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/471
+
+# not testable (pull request fixing two GCC 10.2 format warnings)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#         derep_fulllength: handling of empty input files and streams          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/472
+
+## --derep_fulllength must handle an empty input gracefully (an empty input was
+## wrongly detected as a FASTQ file, causing an error); fixed in 2.21.1
+DESCRIPTION="issue 472: --derep_fulllength handles empty input without error"
+printf "" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --output /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       compute runtime value only once                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/450
+
+# not testable (source-optimization pull request)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                              Error during make                               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/451
+
+# not testable (compilation error when the zlib.h header was unavailable)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                 Fatal error: Unable to open file for writing                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/452
+
+# not testable (the target directory was not writable by the user; a file-
+# permission problem, not a vsearch bug)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#     Abundance information not stripped from headers in --uc output with      #
+#                                   --xsize                                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/453
+
+## --xsize must also strip the abundance annotation from the labels written to
+## the --uc file (it previously kept e.g. "s1;size=5;"); fixed
+DESCRIPTION="issue 453: --cluster_size --xsize strips the abundance from the --uc labels"
+printf ">s1;size=5;\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 1.0 \
+        --minseqlength 1 \
+        --xsize \
+        --uc - \
+        --quiet | \
+    awk '$1 == "S" {print $9}' | \
+    grep -qx "s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#    Installation - error in sudo make: recipe for target 'fastx.o' failed     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/454
+
+# not testable (compilation error when the zlib.h header was unavailable, see
+# issue 451)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                            Documentation missing                             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/455
+
+# not testable (a broken documentation link)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#         Potentially incorrect results on ppc64le with usearch_global         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/456
+
+# not testable (a compiler-optimization bug on the ppc64le architecture,
+# caused by an illegal pointer conversion in cpu.cc)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                              Hints from Lintian                              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/457
+
+# not testable (Lintian hints, mostly manual typos)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                Compilation error with Autoconf 2.70 on Debian                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/458
+
+# not testable (build issue with Autoconf 2.70)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#               Disable maxseqlength and minseqlength by default               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/459
+
+# not a bug (kept as is): vsearch is designed for short sequences and becomes
+# slow with long ones, so the default length limits are retained; sequences
+# excluded by the limits are reported
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                      About converting read2 FASTQ only                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/460
+
+# not testable (a usage question: non-overlapping pairs cannot be merged; the
+# --fastq_join command can join them with a gap of Ns)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#        Feature request --selfmap filename or --self optional filename        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/461
+
+# open issue (not covered): request for a --selfmap option to prevent matches
+# between sequences from the same genome/accession
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                Feature request - UDB support with uchime_ref                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/462
+
+## --uchime_ref must accept a UDB database (the file type is detected
+## automatically); it previously failed with "File type not recognized."
+DESCRIPTION="issue 462: --uchime_ref accepts a UDB database"
+UDB=$(mktemp)
+printf ">t\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --minseqlength 1 \
+        --dbmask dust \
+        --output "${UDB}" \
+        --quiet
+printf ">a;size=9\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${UDB}" \
+        --nonchimeras /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${UDB}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#         Version of the make utility to compile the vsearch software          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/463
+
+# not testable (a question about the required make version; the build process
+# is not exercised by these tests)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                   Allow randseed option to sintax command                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/464
+
+## the --randseed option is accepted by the --sintax command (whose algorithm
+## has a random element); added in version 2.19.0
+DESCRIPTION="issue 464: --sintax accepts the --randseed option"
+SEQ="TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">x;tax=d:Bacteria\n%s\n" "${SEQ}") \
+        --randseed 1 \
+        --threads 1 \
+        --sintax_cutoff 0 \
+        --tabbedout /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+
+
+#******************************************************************************#
+#                                                                              #
+#    Feature request - normalize samples to the same number of reads in otu    #
+#                                    table                                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/465
+
+# open issue (not covered): request for an otutab_rare/otutab_norm-like
+# normalization of OTU tables
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                Multithreading support on fastq_filter command                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/466
+
+# not testable (the bottleneck is reading and writing files, not the
+# filtering itself, so multithreading would help little)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#     It seemed that vsearch don't have -otutab_stats function in usearch      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/467
+
+# not testable (the usearch --otutab_stats command is not implemented in
+# vsearch)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       cite Edgar and Flyvbjerg (2015)                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/468
+
+# not testable (documentation pull request adding a citation)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#      fastq_mergepairs randomly fails to finish when called in parallel       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/469
+
+# not testable (a rare multi-threading hang during --fastq_mergepairs)
+
+
+
+#******************************************************************************#
+#                                                                              #
 #                      Fasta Header problem (issue 398)                        #
 #                                                                              #
 #******************************************************************************#
@@ -20216,7 +20773,7 @@ unset SEQ1 SEQ2
 exit 0
 
 
-# DONE: issues 1-449 and 549 to 561 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423 still open)
+# DONE: issues 1-499 and 549 to 561 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496 still open)
 # TODO: issue 506 read --db from stream fails in CI runs (works on my machine)
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
