@@ -114,6 +114,30 @@ printf "" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## without --quiet, empty input still prints the zero-count summary to
+## stderr (chimera.cc total_count == 0 / total_abundance == 0 branches)
+DESCRIPTION="--uchime_denovo empty input writes a zero-count summary to stderr"
+printf "" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --chimeras /dev/null 2>&1 > /dev/null | \
+    grep -q "Found 0 chimeras, 0 non-chimeras" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## with empty input the --log footer reports "0/0 chimeras" with no
+## percentage, because the sequence count is zero (chimera.cc seqno == 0)
+DESCRIPTION="--uchime_denovo empty input writes a 0/0 chimeras line to the log"
+printf "" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --chimeras /dev/null \
+        --log /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx -- "-: 0/0 chimeras" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--uchime_denovo accepts fasta input"
 printf ">s;size=1\n%s\n" "${PARENT_A}" | \
     "${VSEARCH}" \
@@ -173,6 +197,53 @@ printf ">s;size=1\n%s\n" "${PARENT_A}" | \
         --quiet && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+## a real chimera with a very high --mindiffs passes the score test but
+## fails the diff-count gate, so it is reported as "borderline"
+## (suspicious) and written to the --borderline file (chimera.cc)
+DESCRIPTION="--uchime_denovo --borderline receives a suspicious sequence"
+BORDERLINE=$(mktemp)
+A_THIRD="ACGTACGTACGTACGTACGTACGTACGTACGT"
+B_MID="TGCATGCATGCATGCATGCATGCATGCATGCA"
+B_LAST="GGTTGGTTGGTTGGTTGGTTGGTTGGTTGGTT"
+B_FIRST="GGCCGGCCGGCCGGCCGGCCGGCCGGCCGGCC"
+printf ">pA;size=100\n%s%s%s\n>pB;size=100\n%s%s%s\n>chim;size=1\n%s%s%s\n" \
+    "${A_THIRD}" "${A_THIRD}" "${A_THIRD}" \
+    "${B_FIRST}" "${B_MID}" "${B_LAST}" \
+    "${A_THIRD}" "${B_MID}" "${B_LAST}" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --mindiffs 1000 \
+        --borderline "${BORDERLINE}" \
+        --chimeras /dev/null \
+        --quiet 2> /dev/null
+grep -q "^>chim" "${BORDERLINE}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${BORDERLINE}"
+unset BORDERLINE A_THIRD B_MID B_LAST B_FIRST
+
+## with an asymmetric chimera (mostly parent B) the closest parent
+## reported in --uchimeout is parent B, and QB exceeds QA (chimera.cc
+## QB > QA branch)
+DESCRIPTION="--uchime_denovo --uchimeout reports parent B as the closest parent when QB > QA"
+A_THIRD="ACGTACGTACGTACGTACGTACGTACGTACGT"
+B_MID="TGCATGCATGCATGCATGCATGCATGCATGCA"
+B_LAST="GGTTGGTTGGTTGGTTGGTTGGTTGGTTGGTT"
+B_FIRST="GGCCGGCCGGCCGGCCGGCCGGCCGGCCGGCC"
+printf ">pA;size=100\n%s%s%s\n>pB;size=100\n%s%s%s\n>chim;size=1\n%s%s%s\n" \
+    "${A_THIRD}" "${A_THIRD}" "${A_THIRD}" \
+    "${B_FIRST}" "${B_MID}" "${B_LAST}" \
+    "${A_THIRD}" "${B_MID}" "${B_LAST}" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --uchimeout - \
+        --quiet 2> /dev/null | \
+    awk -F '\t' '$NF == "Y" && $5 ~ /^pB;/ && ($8 + 0) > ($7 + 0)' | \
+    grep -q . && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset A_THIRD B_MID B_LAST B_FIRST
 
 
 #*****************************************************************************#
@@ -721,6 +792,21 @@ printf ">s;size=1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
         --nonchimeras - \
         --quiet | \
     grep -qx "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --hardmask combined with --qmask soft hard-masks the soft (lowercase)
+## regions to N (chimera.cc qmask == soft && hardmask branch), distinct
+## from the default dust-based masking above
+DESCRIPTION="--uchime_denovo --qmask soft --hardmask masks lowercase regions to N"
+printf ">s;size=1\nACGTacgtACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --qmask soft \
+        --hardmask \
+        --nonchimeras - \
+        --quiet 2> /dev/null | \
+    grep -qx "ACGTNNNNACGTACGTACGTACGTACGTACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

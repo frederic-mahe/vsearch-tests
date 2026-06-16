@@ -442,6 +442,46 @@ for METHOD in none dust soft ; do
 done
 unset METHOD
 
+## --dbmask soft combined with --hardmask hard-masks the soft (lowercase)
+## regions of the reference database to N (chimera.cc dbmask == soft &&
+## hardmask branch); the run is accepted
+DESCRIPTION="--uchime_ref --dbmask soft --hardmask is accepted"
+DB=$(mktemp)
+printf ">d\nACGTacgtACGTACGTACGTACGTACGTACGTACGTACGT\n" > "${DB}"
+printf ">s\n%s\n" "${PARENT_A}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --dbmask soft \
+        --hardmask \
+        --chimeras /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --uchime_ref accepts a UDB-format reference database (chimera.cc
+## udb_read path), built here with --makeudb_usearch
+DESCRIPTION="--uchime_ref accepts a UDB reference database"
+REF=$(mktemp)
+UDB=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${REF}"
+"${VSEARCH}" \
+    --makeudb_usearch "${REF}" \
+    --output "${UDB}" \
+    --quiet 2> /dev/null
+printf ">s\n%s\n" "${PARENT_A}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${UDB}" \
+        --chimeras /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${REF}" "${UDB}"
+unset REF UDB
+
 DESCRIPTION="--uchime_ref --dbmask invalid is rejected"
 DB=$(mktemp)
 printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
@@ -999,6 +1039,25 @@ printf ">chimeraAB\n%s\n" "${CHIMERA_AB}" | \
         --chimeras - \
         --quiet | \
     grep -qE "^>chimeraAB;uchime_ref=[0-9.]+$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --fasta_score also annotates the --nonchimeras output (chimera.cc
+## nonchimeras score-label branch); a query matching the reference is
+## non-chimeric and gets a uchime_ref=0.0000 score
+DESCRIPTION="--uchime_ref --fasta_score adds uchime_ref=float to nonchimera headers"
+DB=$(mktemp)
+printf ">parentA\n%s\n" "${PARENT_A}" > "${DB}"
+printf ">s\n%s\n" "${PARENT_A}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --fasta_score \
+        --nonchimeras - \
+        --quiet 2> /dev/null | \
+    grep -qE "^>s;uchime_ref=[0-9.]+$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
