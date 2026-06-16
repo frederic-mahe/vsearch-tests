@@ -1028,6 +1028,42 @@ printf ">q1;sample=s1\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## --biomout records the tax= annotation as OTU metadata (otutable.cc)
+DESCRIPTION="--usearch_global --biomout records tax= as taxonomy metadata"
+DB=$(mktemp)
+printf ">otu1;tax=d:Bacteria\n%s\n" "${SEQ}" > "${DB}"
+printf ">q1;sample=s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --biomout - \
+        --quiet 2> /dev/null | \
+    grep -q '"metadata":{"taxonomy":"d:Bacteria"}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a biom document with two OTUs and two samples exercises the row,
+## column and data separators (otutable.cc)
+DESCRIPTION="--usearch_global --biomout builds a 2x2 sparse matrix"
+DB=$(mktemp)
+SEQ2="TGCATGCATGCATGCATGCATGCATGCATGCATGCATGCA"
+printf ">otu1\n%s\n>otu2\n%s\n" "${SEQ}" "${SEQ2}" > "${DB}"
+printf ">q1;sample=s1\n%s\n>q2;sample=s2\n%s\n" "${SEQ}" "${SEQ2}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --biomout - \
+        --quiet 2> /dev/null | \
+    grep -q '"shape": \[2,2\]' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ2
+
 ## ---------------------------------------------------------- bzip2_decompress
 
 DESCRIPTION="--usearch_global --bzip2_decompress reads bzip2-compressed stdin"
@@ -2048,6 +2084,60 @@ printf ">q1;sample=s1\n%s\n" "${SEQ}" | \
         --quiet | \
     head -n 1 | \
     grep -q "^#OTU ID" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## when target headers carry a tax= annotation, --otutabout appends a
+## "taxonomy" column (otutable.cc)
+DESCRIPTION="--usearch_global --otutabout adds a taxonomy column for tax= targets"
+DB=$(mktemp)
+printf ">otu1;tax=d:Bacteria\n%s\n" "${SEQ}" > "${DB}"
+printf ">q1;sample=s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    head -n 1 | \
+    grep -q "taxonomy$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --otutabout reports the taxonomy string from tax="
+DB=$(mktemp)
+printf ">otu1;tax=d:Bacteria,p:Firmicutes\n%s\n" "${SEQ}" > "${DB}"
+printf ">q1;sample=s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    grep -q "d:Bacteria,p:Firmicutes" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the OTU name is taken from an otu= field in the target header when
+## present (otutable.cc otu regex)
+DESCRIPTION="--usearch_global --otutabout uses the otu= field as OTU name"
+DB=$(mktemp)
+printf ">seq1;otu=OTU1;tax=d:Bacteria\n%s\n" "${SEQ}" > "${DB}"
+printf ">q1;sample=s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    awk 'NR == 2 {print $1}' | \
+    grep -qx "OTU1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
