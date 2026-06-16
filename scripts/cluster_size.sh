@@ -725,6 +725,50 @@ printf ">s1;sample=A\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## the --relabel_* variants also rename the OTU in --otutabout
+## (cluster.cc relabel_otu); the OTU id becomes the relabelled value
+DESCRIPTION="--cluster_size --relabel_self renames the OTU to the centroid sequence"
+printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 1.0 \
+        --minseqlength 1 \
+        --relabel_self \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    awk 'NR == 2 {print $1}' | \
+    grep -qx "aaaaaaaaaaaa" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_size --relabel_sha1 renames the OTU to the SHA1 digest"
+printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 1.0 \
+        --minseqlength 1 \
+        --relabel_sha1 \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    awk 'NR == 2 {print $1}' | \
+    grep -qx "2b52d47ab698ccce79ab6d0552e98f87f8a3aebc" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_size --relabel_md5 renames the OTU to the MD5 digest"
+printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 1.0 \
+        --minseqlength 1 \
+        --relabel_md5 \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    awk 'NR == 2 {print $1}' | \
+    grep -qx "02737e4e8c87d7466b623c1f844fdd71" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_size --output_no_hits is accepted"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
@@ -734,6 +778,24 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
         --output_no_hits \
         --blast6out /dev/null \
         --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --output_no_hits makes centroids (which never match a prior centroid)
+## emit a userout row with target '*' (cluster.cc nohit path)
+DESCRIPTION="--cluster_size --output_no_hits writes no-hit centroids to --userout"
+printf ">s1\nAAAAAAAAAAAA\n>s2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.99 \
+        --minseqlength 1 \
+        --output_no_hits \
+        --userout - \
+        --userfields query+target \
+        --quiet 2> /dev/null | \
+    awk -F "\t" '$2 == "*"' | \
+    wc -l | \
+    grep -qxE "[[:space:]]*2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

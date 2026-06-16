@@ -604,6 +604,39 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## the UNOISE model only absorbs a minor variant into a more abundant
+## centroid when its abundance skew is below the alpha-derived threshold
+## (searchcore.cc). A 1-mismatch variant whose skew is too high is
+## rejected and kept as its own centroid.
+DESCRIPTION="--cluster_unoise keeps a high-skew 1-mismatch variant as its own centroid"
+printf ">big;size=8\nAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n>minor;size=4\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --sizein \
+        --minsize 1 \
+        --uc - \
+        --quiet 2> /dev/null | \
+    awk '$1 == "S" && $9 ~ /^minor/' | \
+    grep -q . && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## contrast: the same 1-mismatch variant with a low skew (much rarer than
+## the centroid) is absorbed (an H record), confirming the threshold is
+## what decides
+DESCRIPTION="--cluster_unoise absorbs a low-skew 1-mismatch variant into the centroid"
+printf ">big;size=16\nAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n>minor;size=1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --sizein \
+        --minsize 1 \
+        --uc - \
+        --quiet 2> /dev/null | \
+    awk '$1 == "H" && $9 ~ /^minor/' | \
+    grep -q . && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #

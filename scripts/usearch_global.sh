@@ -1100,6 +1100,27 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## --dbmask soft combined with --hardmask hard-masks the soft (lowercase)
+## regions of the database to N (search.cc hardmask_all on the db path);
+## the masked target appears with NNNN in --dbmatched output
+DESCRIPTION="--usearch_global --dbmask soft --hardmask hard-masks the database to N"
+DB=$(mktemp)
+printf ">t\nACGTacgtACGTACGTACGTACGTACGTACGTACGT\n" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --dbmask soft \
+        --hardmask \
+        --dbmatched - \
+        --quiet 2> /dev/null | \
+    grep -qx "ACGTNNNNACGTACGTACGTACGTACGTACGTACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ----------------------------------------------------------------- dbmatched
 
 DESCRIPTION="--usearch_global --dbmatched writes matched target sequences"
