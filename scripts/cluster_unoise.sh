@@ -808,6 +808,108 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n>s2;size=16\nAAAAAAAAAAAA\n" | \
 
 ## ---------- header manipulation ----------
 
+DESCRIPTION="--cluster_unoise --centroid_sizeout is accepted"
+printf ">s1\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --minseqlength 1 \
+        --centroid_sizeout \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_unoise --centroid_sizeout adds ;centroid_size= to centroid headers"
+printf ">s1;size=5\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --sizein \
+        --minseqlength 1 \
+        --centroid_sizeout \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;size=5;centroid_size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## centroid_size is the abundance of the centroid sequence itself, not the
+## cluster total reported by --sizeout (here centroid a=5, cluster a+b=8)
+DESCRIPTION="--cluster_unoise --centroid_sizeout records centroid abundance, not cluster total"
+printf ">a;size=5\nAAAAAAAAAAAA\n>b;size=3\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --sizein \
+        --sizeout \
+        --minseqlength 1 \
+        --centroid_sizeout \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -qx ">a;size=8;centroid_size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## without --sizein all abundances default to 1
+DESCRIPTION="--cluster_unoise --centroid_sizeout defaults centroid_size to 1 without --sizein"
+printf ">s1\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --minseqlength 1 \
+        --centroid_sizeout \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;centroid_size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_unoise without --centroid_sizeout adds no ;centroid_size="
+printf ">s1;size=5\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --sizein \
+        --minseqlength 1 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --matched receives no centroid_size (centroid_size is zero for hits)
+DESCRIPTION="--cluster_unoise --centroid_sizeout has no effect on --matched output"
+printf ">a;size=5\nAAAAAAAAAAAA\n>b;size=3\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --sizein \
+        --sizeout \
+        --minseqlength 1 \
+        --centroid_sizeout \
+        --matched - \
+        --quiet 2> /dev/null | \
+    grep -qx ">b;size=3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --notmatched receives no centroid_size (centroid_size is zero for nohits)
+DESCRIPTION="--cluster_unoise --centroid_sizeout has no effect on --notmatched output"
+printf ">a;size=5\nAAAAAAAAAAAA\n>b;size=3\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --sizein \
+        --sizeout \
+        --minseqlength 1 \
+        --centroid_sizeout \
+        --notmatched - \
+        --quiet 2> /dev/null | \
+    grep -qx ">a;size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_unoise --label_suffix appends to headers"
 printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
