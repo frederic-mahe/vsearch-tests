@@ -8531,6 +8531,55 @@ printf ">read1\nACGTAGTCATTTACTGTACTGTACGTTATACGATATGTCTATGCT\n>read2\nACGTAGTCA
 
 #******************************************************************************#
 #                                                                              #
+#                           Cleaning up whitespaces                            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/300
+
+# not testable (source-formatting pull request)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#         vsearch 2.7.0 breaks identify_chimeric_seqs.py (qiime 1.9.1)         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/301
+
+# not testable (could not be reproduced: uchime_denovo and uchime_ref give
+# identical results in 2.6.0 and 2.7.0)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#          Minor issue: link to pdf manual on repo splash page broken          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/302
+
+# not testable (a release tag was misnamed, breaking the manual link)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                        Add the fastx_getseqs command                         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/303
+
+# the --fastx_getseqs command was added; already covered in fastx_getseqs.sh
+
+
+
+#******************************************************************************#
+#                                                                              #
 #                    Compilation warnings with GCC 8.0                         #
 #                                                                              #
 #******************************************************************************#
@@ -8538,6 +8587,261 @@ printf ">read1\nACGTAGTCATTTACTGTACTGTACGTTATACGATATGTCTATGCT\n>read2\nACGTAGTCA
 ## https://github.com/torognes/vsearch/issues/304
 
 ## no test
+
+
+#******************************************************************************#
+#                                                                              #
+#                     should vsearch support fast5 files?                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/305
+
+# not testable (request to read Oxford Nanopore FAST5/HDF5 files; not
+# implemented)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                Unable to install vsearch on MacOS High Sierra                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/306
+
+# not testable (a user installation/PATH question)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#             Found 2 identical consensus sequences with --id 0.9              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/307
+
+# not testable (not a bug: two input sequences differing by more than the
+# threshold start two clusters whose consensus sequences may end up identical)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                    Unable to sort centroids by abundance                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/308
+
+# not a bug: --clusterout_sort orders the consout, msaout and profile files
+# but not --centroids; sort the centroids afterwards with --sortbysize
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                   fastq_pctid option for fastq_mergepairs                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/309
+
+# open issue (not covered): request for a --fastq_pctid option (the inverse
+# of --fastq_maxdiffpct)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                              General formatting                              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/310
+
+# not testable (source-formatting pull request)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                      Missing progress during clustering                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/311
+
+# not testable (not a bug: when reading from a pipe the input size is unknown
+# so the progress indicator stays at 0% until finished)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#  Is vsearch suitable to extracting consensus sequence from 700bp ONT MinION  #
+#                                    reads?                                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/312
+
+# not testable (the center-star multiple alignment is simple and handles
+# indels relative to the centroid poorly; a question, not a bug)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#     Feature request: Option to output cluster id on centroid header line     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/313
+
+## the --clusterout_id option also adds the cluster id to the header lines of
+## the --centroids output (not only to consout/profile)
+DESCRIPTION="issue 313: --clusterout_id adds the cluster id to --centroids headers"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --clusterout_id \
+        --centroids - \
+        --quiet | \
+    grep "^>" | \
+    tr "\n" " " | \
+    grep -qx ">a;clusterid=0 >b;clusterid=1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#      Feature request: Option to sort OTU tables by decreasing abundance      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/314
+
+# open issue (not covered): request to sort OTU tables by decreasing
+# abundance
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                  Improve wording of fastq_mergepairs report                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/315
+
+# not testable (the merging-report category "potential tandem repeat" was
+# reworded to "multiple potential alignments")
+
+
+
+#******************************************************************************#
+#                                                                              #
+#     Feature request: option to exclude terminal gaps with maxdiffs when      #
+#                                  searching                                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/316
+
+# open issue (not covered): request to exclude terminal gaps from the
+# --maxdiffs count when searching
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                      Add an option to output to stdout?                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/317
+
+# not a bug: output is written to stdout by using "-" (or "/dev/stdout", or a
+# process substitution) as the filename; combine with --quiet to keep stderr
+# clean
+
+
+
+#******************************************************************************#
+#                                                                              #
+#              Potential vulnerabilities identified by Flawfinder              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/318
+
+# not testable (static-analysis warnings, a subset of the clang-tidy
+# warnings)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                   Pass two arguments to --fastq_mergepairs                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/319
+
+# not testable (a shell question: two stdin streams require named pipes or
+# process substitutions)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                   derep_fulllength (default minseqlength)                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/320
+
+## not a bug: the default --minseqlength is 32 for some commands (including
+## --derep_fulllength) and 1 for others, for compatibility with usearch 7
+DESCRIPTION="issue 320: --derep_fulllength discards sequences shorter than 32 nt by default"
+printf ">s\nACGTACGTAC\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output /dev/null 2>&1 | \
+    grep -q "minseqlength 32: 1 sequence discarded" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                          Warning during compilation                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/321
+
+# not testable (compilation warning, similar to issue 304; fixed in 2.8.1)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       Remove chimeras from count_table                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/322
+
+# not testable (a mothur usage question, solved by the user)
+
 
 
 #******************************************************************************#
@@ -8617,6 +8921,85 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#     derep_fulllength cluster size does not sum up to the original input      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/324
+
+## not a bug: without --sizein and --sizeout the abundances are ignored and the
+## header of the first sequence in each cluster is copied unchanged (sizes are
+## not summed). Here the size=5 header is kept as-is, ignoring the size=3 one.
+DESCRIPTION="issue 324: --derep_fulllength ignores abundances without --sizein/--sizeout"
+printf ">s1;size=5\nA\n>s2;size=3\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --output - \
+        --quiet | \
+    grep -qx ">s1;size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#              sintax classifier and multiple identical best hits              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/325
+
+# not testable (the sintax algorithm reports only the first of several
+# identical best hits; improving it to report the LCA was deferred)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                  --fastq_mergepairs produces q-scores of 40                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/326
+
+## not a bug: in the overlap region the merged quality scores increase (more
+## certainty from two reads), as described by Edgar & Flyvbjerg (2015). Here
+## two Q40 ('I') reads merge to Q41 ('J') in the overlap (clipped at the
+## default --fastq_qmax of 41).
+DESCRIPTION="issue 326: --fastq_mergepairs increases quality scores in the overlap"
+FWD=$(mktemp)
+REV=$(mktemp)
+printf "@r\nGCTAAAGACAATTACATAACATACACGTCAGCACGAAACT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${FWD}"
+printf "@r\nCGATTCACACTGGGCCAACAAGTTTCGTGCTGACGTGTAT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${REV}"
+"${VSEARCH}" \
+    --fastq_mergepairs "${FWD}" \
+    --reverse "${REV}" \
+    --fastqout - \
+    --quiet 2>/dev/null | \
+    sed -n "4p" | \
+    grep -q "J" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${FWD}" "${REV}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                               Updating CFLAGS                                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/327
+
+# not testable (build-configuration pull request)
+
+
+
+#******************************************************************************#
+#                                                                              #
 #        Hits missed when clustering or searching with short sequences         #
 #                                                                              #
 #******************************************************************************#
@@ -8675,6 +9058,135 @@ printf ">s1\nTCAAGATATTTGCTCGGTAA\n" | \
     awk '{if ($1 == "q1") {hits++} } END {exit hits == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#                 Reduce memory requirements for dereplication                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/329
+
+# not testable (memory-footprint optimization for --derep_fulllength)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                   Collecting CFLAGS to a central location                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/330
+
+# not testable (build-configuration pull request)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#          --cluster_fast is stuck at clustering step for over 5 days          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/331
+
+# not testable (a very large, non-dereplicated dataset that is too big for the
+# clustering algorithm to handle in reasonable time)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                                 Octave plots                                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/332
+
+# open issue (not covered): request for an otutab_octave plotting command
+
+
+
+#******************************************************************************#
+#                                                                              #
+#          Segmentation Fault in --derep_fulllength when --uc is used          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/333
+
+## a segmentation fault occurred with --derep_fulllength when --uc was combined
+## with --relabel and --sizeout; fixed in 2.8.3
+DESCRIPTION="issue 333: --derep_fulllength with --uc, --relabel and --sizeout does not crash"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --strand plus \
+        --sizeout \
+        --relabel sample. \
+        --uc /dev/null \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#             Further reduce memory requirements for dereplication             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/334
+
+# not testable (further memory-footprint optimization for dereplication)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#            sample IDs containing a - are collapsed for OTU table             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/335
+
+## a sample identifier derived from the header prefix may only contain letters,
+## digits and underscores, so it is truncated at the first dash. An explicit
+## ";sample=" annotation may contain any printable character except a semicolon
+## (dashes are kept).
+DESCRIPTION="issue 335: a prefix-derived sample id is truncated at the first dash"
+printf ">1-1234.1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">otu1\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 0.97 \
+        --minseqlength 1 \
+        --otutabout - \
+        --quiet | \
+    head -1 | \
+    grep -qx "#OTU ID	1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 335: an explicit ;sample= identifier keeps the dash"
+printf ">q;sample=1-1234\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">otu1\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 0.97 \
+        --minseqlength 1 \
+        --otutabout - \
+        --quiet | \
+    head -1 | \
+    grep -qx "#OTU ID	1-1234" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 
 #******************************************************************************#
@@ -8740,6 +9252,19 @@ printf "@1\nAA\n+\nAA\n@2\nAA\n+\nAA\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#                          Add the fastq_join Command                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/337
+
+# the --fastq_join command was added in version 2.9.0; already covered in
+# fastq_join.sh
+
+
+
+#******************************************************************************#
+#                                                                              #
 #    derep_fulllength fails to remove the part of the header after the space   #
 #                                 (issue 338)                                  #
 #                                                                              #
@@ -8774,6 +9299,169 @@ printf ">header meta data\nA\n" | \
     grep -q ">header meta data;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#    rereplicate should print a warning if abundance information is missing    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/339
+
+## --rereplicate always assumes abundance information (--sizein is implied);
+## when it is missing for some sequences a warning is printed (fixed in 2.12.0)
+DESCRIPTION="issue 339: --rereplicate warns when abundance information is missing"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --output /dev/null 2>&1 | \
+    grep -qi "Missing abundance information" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                 individual manpages for each vsearch command                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/340
+
+# not testable (documentation: per-command manpages, e.g. man
+# vsearch-rereplicate, were later added)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#             Illegal instruction error for dereplication command              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/341
+
+# not testable (the pre-compiled binary used -march=native; recompiling on the
+# target machine fixes it)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#           detect CPU features at run time, not during compilation            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/342
+
+# not testable (internal: on x86_64 the SSSE3 and SSE2 code paths are both
+# compiled and selected at run time)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                 sha1 hash differs from the one obtained in R                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/343
+
+## not a bug: vsearch computes the standard SHA-1 of the upper-cased sequence
+## string (as sha1sum does). The R digest() function gave a different value
+## because it hashed a serialized object; use serialize=FALSE in R to match.
+DESCRIPTION="issue 343: --relabel_sha1 matches the standard sha1 of the sequence"
+SEQ="CAACCCTCAAGCTCTCTTGCTTGGTGTTGGGGCTTCTGCGGCTTCGGCCGCAGGCCCTGAAAAACAGTGGCGGGCTCGCTATAACTCCGAGCGTAGTAATCTCTCTCGCTTTGGAAGTGTAGCGGTTCCCGGCCGTTAAACCCCCCAATTTCTGAAA"
+SHA1=$(printf "%s" "${SEQ}" | sha1sum | cut -d " " -f 1)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --relabel_sha1 \
+        --output - \
+        --quiet | \
+    grep -qx ">${SHA1}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ SHA1
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                            dereplication question                            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/344
+
+# not testable (a question: dereplication ignores taxonomic information and
+# keeps the first header among identical sequences)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                               gist for map.pl                                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/345
+
+# not testable (a user shared a gist of a helper script)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                      Support for the legacy sff format?                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/346
+
+# reading the legacy SFF format was later added as the --sff_convert command;
+# already covered in sff_convert.sh
+
+
+
+#******************************************************************************#
+#                                                                              #
+#      which commands could benefit from a 2-bit encoding of nucleotides?      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/347
+
+# not testable (personal notes on a potential 2-bit nucleotide encoding)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                    implement the command --fastx_uniques?                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/348
+
+# the --fastx_uniques command (dereplication of fasta and fastq files) was
+# added; already covered in fastx_uniques.sh
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                Fix sintax.cc: domain should be before kingdom                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/349
+
+# not testable (pull request fixing the taxonomic-rank order in sintax.cc)
+
 
 
 #******************************************************************************#
@@ -18205,7 +18893,7 @@ unset SEQ1 SEQ2
 exit 0
 
 
-# DONE: issues 1-299 and 549 to 561 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282 still open)
+# DONE: issues 1-349 and 549 to 561 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332 still open)
 # TODO: issue 506 read --db from stream fails in CI runs (works on my machine)
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
