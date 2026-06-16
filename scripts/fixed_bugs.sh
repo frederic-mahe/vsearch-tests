@@ -13055,6 +13055,35 @@ printf "@s1\nA\n+\n~\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#                         Missing options in --orient                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/502
+
+# not a bug: --orient and --usearch_global are different commands; options
+# such as --id, --maxaccepts, --strand, --query_cov, --userfields and
+# --leftjust do not apply to --orient (usearch does not offer them either)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                    UNOISE not using Levenshtein distance?                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/503
+
+# not testable (analysis): for --cluster_unoise vsearch uses the
+# Needleman-Wunsch aligner and counts the number of mismatches (substitutions
+# and indels) as the distance d, behaving like usearch rather than using a
+# strict Levenshtein distance
+
+
+
+#******************************************************************************#
+#                                                                              #
 #       Chimera detection --uchime_ref unexpected behaviour (issue 504)        #
 #                                                                              #
 #******************************************************************************#
@@ -13374,6 +13403,40 @@ DESCRIPTION="issue 512: fastq_mergepairs more reverse reads (error message)"
 
 #******************************************************************************#
 #                                                                              #
+#                usearch_global - maxhits only returns one hit                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/513
+
+## not a bug: --usearch_global reports at most one hit per database sequence
+## for each query, even when the query motif occurs several times within the
+## same target sequence (and even with --maxaccepts 0 --maxrejects 0). A local
+## aligner would be needed to report every occurrence (see also issue 328).
+DESCRIPTION="issue 513: --usearch_global reports a single hit per target with repeated occurrences"
+MOTIF="CATGAGGCTGGTGTAAAGCGG"
+printf ">q\n%s\n" "${MOTIF}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nTTTT%sAAAA%sCCCC\n" "${MOTIF}" "${MOTIF}") \
+        --id 0.7 \
+        --minseqlength 1 \
+        --maxaccepts 0 \
+        --maxrejects 0 \
+        --userfields query+target \
+        --userout - \
+        --quiet | \
+    wc -l | \
+    tr -d " " | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset MOTIF
+
+
+
+#******************************************************************************#
+#                                                                              #
 #         combining datasets changes clustering results (issue 514)            #
 #                                                                              #
 #******************************************************************************#
@@ -13414,6 +13477,22 @@ DESCRIPTION="issue 514: combining datasets changes clustering results"
 
 #******************************************************************************#
 #                                                                              #
+#    Include new labels in uc output for dereplication if --relabel option     #
+#                                   provided                                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/515
+
+# pull request proposing to write the relabelled identifiers to the --uc
+# output; it was not merged: the --uc output keeps the original labels. The
+# old label can be preserved next to the new one with --relabel_keep (see
+# issue 129)
+
+
+
+#******************************************************************************#
+#                                                                              #
 #            vsearch tool detailed option in command line ? (issue 516)        #
 #                                                                              #
 #******************************************************************************#
@@ -13421,6 +13500,60 @@ DESCRIPTION="issue 514: combining datasets changes clustering results"
 ## https://github.com/torognes/vsearch/issues/516
 
 ## not testable (yet)
+
+
+#******************************************************************************#
+#                                                                              #
+#           Include rows of OTUs with no mapped reads in OTU tables            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/517
+
+## OTUs (database sequences) with no mapped reads are now included in the OTU
+## table as all-zero rows, for --otutabout, --biomout and --mothur_shared_out
+## (fixed in 2.26.0). Here otu2 has no match and appears with a count of 0.
+DESCRIPTION="issue 517: --otutabout includes OTUs with no mapped reads (zero rows)"
+printf ">q;sample=A\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">otu1\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n>otu2\nGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTT\n") \
+        --id 0.97 \
+        --minseqlength 1 \
+        --otutabout - \
+        --quiet | \
+    grep -qx "otu2	0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#              EE: document the meaning of expected error values               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/518
+
+# not testable (documentation: the manpage was extended to explain how to
+# interpret expected error (EE) values)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#       OTU table with columns for each fasta header instead of samples        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/519
+
+# not a bug: --sample adds a ";sample=name" annotation (without a trailing
+# semicolon); when the sample identifier cannot be parsed (e.g. because of
+# spaces or extra semicolons in the header) the otutabout columns fall back to
+# per-sequence names (see issue 335 for how sample identifiers are derived)
+
 
 
 #******************************************************************************#
@@ -14144,6 +14277,19 @@ printf ">s1\n%40s\n" " " | \
         failure "${DESCRIPTION}"
 rm "${TMP_UDB}"
 unset TMP_UDB
+
+
+#******************************************************************************#
+#                                                                              #
+#                Option to output the reason why merging failed                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/524
+
+# open issue (not covered): request for a per-pair report of the reason why
+# --fastq_mergepairs failed to merge a read pair (see also issue 282)
+
 
 
 #******************************************************************************#
@@ -20773,10 +20919,9 @@ unset SEQ1 SEQ2
 exit 0
 
 
-# DONE: issues 1-499 and 549 to 561 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496 still open)
+# DONE: issues 1-561 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496, 504, 522, 524, 548 still open)
 # TODO: issue 506 read --db from stream fails in CI runs (works on my machine)
 # TODO: issue 529
-# TODO: issue 513: make a test with two occurrences of the query in the target sequence
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
