@@ -1423,6 +1423,47 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## with two equally-good hits that agree on the higher levels but
+## diverge at the genus, the LCA drops the genus (results.cc voting and
+## cutoff logic)
+DESCRIPTION="--usearch_global --lcaout returns the common lineage of divergent hits"
+DB=$(mktemp)
+printf ">t1;tax=d:Bacteria,p:Firmicutes,g:Bacillus\nAAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGGAT\n>t2;tax=d:Bacteria,p:Firmicutes,g:Listeria\nAAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGGAT\n" > "${DB}"
+printf ">q\nAAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGGAT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --maxaccepts 4 \
+        --lcaout - \
+        --quiet 2> /dev/null | \
+    grep -qxE "q$(printf '\t')d:Bacteria,p:Firmicutes" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --top_hits_only restricts the LCA to the best-identity hits; a lower
+## identity divergent hit (t2, one mismatch) is excluded, so the full
+## lineage is kept (results.cc top_hits_only break inside the LCA loop)
+DESCRIPTION="--usearch_global --lcaout --top_hits_only keeps the lineage of the best hit only"
+DB=$(mktemp)
+printf ">t1;tax=d:Bacteria,p:Firmicutes,g:Bacillus\nAAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGGAT\n>t2;tax=d:Bacteria,p:Firmicutes,g:Listeria\nAAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGTTT\n" > "${DB}"
+printf ">q\nAAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGGAT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --maxaccepts 4 \
+        --top_hits_only \
+        --lcaout - \
+        --quiet 2> /dev/null | \
+    grep -qxE "q$(printf '\t')d:Bacteria,p:Firmicutes,g:Bacillus" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ------------------------------------------------------------------ leftjust
 
 DESCRIPTION="--usearch_global --leftjust accepts a flush-left alignment"
@@ -3419,6 +3460,49 @@ printf ">q\n%s\n" "${SEQ}" | \
         --blast6out - \
         --quiet | \
     wc -l | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --top_hits_only also restricts the human-readable alignment output: a
+## lower-identity hit is dropped, so only the best target is shown
+## (results.cc top_hits_only break in results_show_alnout)
+DESCRIPTION="--usearch_global --top_hits_only shows only the best hit in --alnout"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGC\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxaccepts 10 \
+        --top_hits_only \
+        --alnout - \
+        --quiet 2> /dev/null | \
+    grep -c "^Target" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --top_hits_only likewise restricts the SAM output to the best target
+## (results.cc top_hits_only break in results_show_samout)
+DESCRIPTION="--usearch_global --top_hits_only shows only the best hit in --samout"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGC\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxaccepts 10 \
+        --top_hits_only \
+        --samout - \
+        --quiet 2> /dev/null | \
+    grep -vc "^@" | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"

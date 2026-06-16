@@ -437,6 +437,52 @@ printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## a member that matches the centroid only on the reverse strand is
+## reverse-complemented before being placed in the MSA (msa.cc reverse
+## strand handling); the member row then reads as the plus strand
+DESCRIPTION="--cluster_size --msaout reverse-complements a minus-strand member"
+printf ">c;size=5\nAAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGGAT\n>m;size=1\nATCCTCTAGAGTCGACCTGCAGGAATTCGGATCCAAGCTT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.9 \
+        --strand both \
+        --sizein \
+        --msaout - \
+        --quiet 2> /dev/null | \
+    awk '/^>m;size=1/ {getline; print}' | \
+    grep -qx "AAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGGAT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a member carrying an insertion relative to the centroid forces a gap
+## ('-') into the centroid row of the MSA (msa.cc gap insertion)
+DESCRIPTION="--cluster_size --msaout inserts a gap in the centroid for a member insertion"
+printf ">c;size=10\nAAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGGAT\n>m;size=2\nAAGCTTGGATCCGAATTGCCTGCAGGTCGACTCTAGAGGAT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.85 \
+        --sizein \
+        --msaout - \
+        --quiet 2> /dev/null | \
+    grep -qx "AAGCTTGGATCCGAATT-CCTGCAGGTCGACTCTAGAGGAT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## an insertion before the first centroid position is censored in the
+## consensus with leading '+' characters (msa.cc left-censoring)
+DESCRIPTION="--cluster_size --msaout censors a 5-prime insertion in the consensus"
+printf ">c;size=10\nAAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGGAT\n>m;size=1\nGGAAGCTTGGATCCGAATTCCTGCAGGTCGACTCTAGAGGAT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.85 \
+        --sizein \
+        --msaout - \
+        --quiet 2> /dev/null | \
+    awk '/^>consensus/ {getline; print}' | \
+    grep -qE "^\+\+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_size --profile outputs a profile header per cluster"
 printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \

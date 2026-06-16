@@ -167,6 +167,29 @@ printf ">q\nGACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT\n" | \
 rm -f "${TMPUDB}"
 unset TMPUDB
 
+## a UDB built from headers carrying abundance annotations is read back
+## with its sizes parsed (udb.cc size-parsing branch); orientation still
+## succeeds and reports the plus strand
+DESCRIPTION="--db accepts a UDB file built from size-annotated headers"
+TMPUDB=$(mktemp --suffix=.udb)
+printf ">s;size=5\nGACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT\n" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --output "${TMPUDB}" \
+        --wordlength 12 \
+        --quiet 2>/dev/null
+printf ">q\nGACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db "${TMPUDB}" \
+        --tabbedout - \
+        --quiet 2>/dev/null | \
+    awk -F "\t" '{exit ($1 == "q" && $2 == "+") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
 DESCRIPTION="--db fails if database file does not exist"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
