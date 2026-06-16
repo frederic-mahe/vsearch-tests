@@ -9477,6 +9477,43 @@ unset SEQ SHA1
 
 #******************************************************************************#
 #                                                                              #
+#                       Add link to the BioConda package                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/351
+
+# not testable (pull request adding a BioConda link to the README)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#               Minimal valid SFF files and where to find them?                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/352
+
+# not testable (a request for a minimal SFF file to use for fuzzing the
+# --sff_convert command)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       Pumping MACOSX_DEPLOYMENT_TARGET                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/353
+
+# not testable (macOS build-configuration pull request)
+
+
+
+#******************************************************************************#
+#                                                                              #
 #            Handling of sequences with ambiguous nucleotide symbols           #
 #                                                                              #
 #******************************************************************************#
@@ -9571,6 +9608,115 @@ printf "@s\nA\n+\nG\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#            VSEARCH 2.10.3 produces wrong alignments - Do not use             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/356
+
+# not testable (version 2.10.3 produced wrong alignments and was withdrawn;
+# no minimal reproducer was provided)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                does derep_fulllength support multithreading?                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/357
+
+# not a bug: the dereplication commands (--derep_fulllength and
+# --derep_prefix) are single-threaded by design
+
+
+
+#******************************************************************************#
+#                                                                              #
+#      compilation error when preping for afl-fuzz with address sanitizer      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/358
+
+# not testable (build with afl-fuzz and the address sanitizer)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#              Make fastq_filter operate on pairs of fastq files               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/359
+
+## --fastx_filter (and --fastq_filter) can filter paired FASTQ files: the
+## reverse file is given with --reverse and written with --fastqout_rev. A
+## pair is discarded if either read fails the filter. Here the p1 pair is
+## removed because its reverse read has too many expected errors.
+DESCRIPTION="issue 359: --fastx_filter discards a pair when its reverse read fails"
+FWD=$(mktemp)
+REV=$(mktemp)
+printf "@p1\nACGTACGT\n+\nIIIIIIII\n@p2\nACGTACGT\n+\nIIIIIIII\n" > "${FWD}"
+printf "@p1\nACGTACGT\n+\n########\n@p2\nACGTACGT\n+\nIIIIIIII\n" > "${REV}"
+"${VSEARCH}" \
+    --fastx_filter "${FWD}" \
+    --reverse "${REV}" \
+    --fastq_maxee 0.5 \
+    --fastqout - \
+    --fastqout_rev /dev/null \
+    --quiet | \
+    grep "^@p" | \
+    tr "\n" " " | \
+    grep -qx "@p2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${FWD}" "${REV}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                Is there a way of outputting % id to centroid?                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/360
+
+# not a bug: the percentage identity of each member to its centroid is
+# available in the fourth column of the H lines of the --uc output
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                               Adapt to FreeBSD                               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/361
+
+# not testable (FreeBSD build adaptation)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#       Force weak_id to be a reasonable value when cluster_unoise (0.9)       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/362
+
+# not testable (pull request constraining an internal default for
+# --cluster_unoise)
+
+
+
+#******************************************************************************#
+#                                                                              #
 #     Could cluster_fast build consensus based on abundances? (issue 363)      #
 #                                                                              #
 #******************************************************************************#
@@ -9605,6 +9751,22 @@ printf ">s1;size=1\nAT\n>s2;size=9\nAA\n>s3;size=1\nAT\n" | \
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/364
+
+# not testable (user error: the failing command was run with usearch, not
+# vsearch, and the input was a FASTQ file used where FASTA was expected)
+
+
+#******************************************************************************#
+#                                                                              #
+#                  how to compile vsearch for ARM processors?                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/365
+
+# not testable (compiling on the ARM architecture; -march=armv8-a is selected
+# instead of -msse2)
+
 
 
 #******************************************************************************#
@@ -9654,6 +9816,93 @@ DESCRIPTION="issue 366: --fastq_mergepairs handles empty input (empty input, emp
 
 #******************************************************************************#
 #                                                                              #
+#                Report total reads, not just unique sequences                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/367
+
+## several commands reported only the number of unique (dereplicated)
+## sequences; --usearch_global now also reports the total number of query
+## sequences when --sizein is used (fixed in 2.13.0)
+DESCRIPTION="issue 367: --usearch_global reports the total number of query sequences with --sizein"
+printf ">q;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --sizein \
+        --matched /dev/null 2>&1 | \
+    grep -q "Matching total query sequences" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#         better error message when fastq quality value above qmax 41          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/368
+
+## a quality value above the default --fastq_qmax (41) now produces an
+## informative error suggesting the --fastq_qmax option (fixed in 2.13.0).
+## Here 'K' encodes a quality of 42.
+DESCRIPTION="issue 368: an informative error is given when a quality value exceeds qmax"
+printf "@s\nA\n+\nK\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastqout /dev/null 2>&1 | \
+    grep -q "above qmax" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                   vsearch --uchime_ref gzip not supported                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/369
+
+## --uchime_ref must read a gzip-compressed input file (the compression is
+## detected automatically from the file content); it failed before with
+## "Files compressed with gzip are not supported."
+DESCRIPTION="issue 369: --uchime_ref reads a gzip-compressed input file"
+GZ=$(mktemp)
+printf ">a;size=9\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n" | gzip > "${GZ}"
+"${VSEARCH}" \
+    --uchime_ref "${GZ}" \
+    --db <(printf ">t\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n") \
+    --nonchimeras /dev/null \
+    --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${GZ}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                FASTA headers not properly handled on Windows                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/370
+
+# the carriage return of Windows CR LF line endings was not stripped when
+# rewriting FASTA/FASTQ headers, producing illegal headers; fixed in 2.13.3.
+# This is tested under issue 371.
+
+
+
+#******************************************************************************#
+#                                                                              #
 #          Different outputs for Windows and Mac / Linux (issue 371)           #
 #                                                                              #
 #******************************************************************************#
@@ -9687,6 +9936,42 @@ printf "@s;size=1;\r\nA\n+\nI\n" | \
     grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#                            FreeBSD port committed                            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/372
+
+# not testable (announcement that a FreeBSD ports package is available)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                               Big endian PPC?                                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/373
+
+# not testable (making the code endian-agnostic for big-endian PowerPC)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       Unable to open file for reading                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/374
+
+# not testable (a user file-path problem, not a vsearch bug)
+
 
 
 #******************************************************************************#
@@ -9732,6 +10017,204 @@ printf ">s1;size=1\nGGGG%s\n>s2;size=1\n%sAAAA" ${SAME} ${SAME} | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#                  unrecognized function '--cluster_smallmen'                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/376
+
+# not testable (user typo: the command is --cluster_smallmem, with a final m)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#             How to trim paired fastq files that got out-of-sync?             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/377
+
+# not testable (re-synchronising out-of-order paired FASTQ files is not
+# implemented; external tools such as repair.sh can be used)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                    FIX: silence fastq_stats() if --quiet                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/378
+
+# pull request making --fastq_stats respect --quiet; the related behaviour is
+# tested under issue 237
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                Reverse complement sequences during clustering                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/379
+
+## clustering on both strands is enabled with --strand both, so a sequence and
+## its reverse complement are placed in the same cluster. With the default
+## --strand plus they form two clusters.
+DESCRIPTION="issue 379: --cluster_size --strand plus keeps a sequence and its revcomp separate"
+SEQ="ACGTAGCTAGCTGATCGATCGTAGCTAGCTGA"
+RC="TCAGCTAGCTACGATCGATCAGCTAGCTACGT"
+printf ">a\n%s\n>b\n%s\n" "${SEQ}" "${RC}" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --strand plus \
+        --centroids - \
+        --quiet | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ RC
+
+DESCRIPTION="issue 379: --cluster_size --strand both clusters a sequence with its reverse complement"
+SEQ="ACGTAGCTAGCTGATCGATCGTAGCTAGCTGA"
+RC="TCAGCTAGCTACGATCGATCAGCTAGCTACGT"
+printf ">a\n%s\n>b\n%s\n" "${SEQ}" "${RC}" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --strand both \
+        --centroids - \
+        --quiet | \
+    grep -c "^>" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ RC
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                  Having difficulty using evalue in vsearch                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/380
+
+# not a bug: e-values are not computed for nucleotide (global) alignments and
+# are always set to -1; use --id and --query_cov instead (see issues 176, 179)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#            Dereplicate entries with identical sequence and label             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/381
+
+# the --derep_id command was added: it dereplicates only when both the label
+# and the sequence are identical; already covered in derep_id.sh
+
+
+
+#******************************************************************************#
+#                                                                              #
+#               Garbage consensus sequence in all 2.13 versions                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/382
+
+# not testable (a consensus-sequence bug in the 2.13 series, fixed shortly
+# after; no minimal reproducer was provided)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                           Make OTU table directly?                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/383
+
+# not a bug: OTU tables are produced directly from the clustering and search
+# commands with --otutabout, --biomout or --mothur_shared_out (see issue 166)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#   Add option relabel_self to use sequence itself as a label in FASTA/FASTQ   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/384
+
+## the --relabel_self option uses the sequence itself as the new label
+DESCRIPTION="issue 384: --relabel_self uses the sequence as the label"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --relabel_self \
+        --output - \
+        --quiet | \
+    grep -qx ">ACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#         command sortbysize does not accept the sizein option anymore         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/385
+
+## a regression made --sortbysize reject the --sizein option; fixed
+DESCRIPTION="issue 385: --sortbysize accepts the --sizein option"
+printf ">s;size=1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --sizein \
+        --sizeout \
+        --minseqlength 1 \
+        --output - \
+        --quiet | \
+    grep -qx ">s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                        chimera removal without map.pl                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/386
+
+# not a bug: non-chimeric sequences are written directly with the
+# --nonchimeras option of --uchime_denovo / --uchime_ref; map.pl is only used
+# in the example pipeline to filter the original (non-dereplicated) reads
+
 
 
 #******************************************************************************#
@@ -9783,6 +10266,77 @@ DESCRIPTION="issue 388: blast6out returns 12 tab-separated columns"
     awk 'BEGIN {FS = "\t"} {exit NF == 12 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#                  advice on --maxrejects when --maxaccept=1                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/389
+
+# not testable (the question was reposted on the VSEARCH Forum)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#         merging stats for very small number of reads (low priority)          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/390
+
+## the "Statistics of merged reads" block is now printed only when at least
+## one pair is merged. Here no pair merges, so the block must be absent.
+DESCRIPTION="issue 390: no merge-statistics block is printed when no pair is merged"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "Statistics of merged reads" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#             fastx_revcomp: relabel strips abundance annotations              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/391
+
+## --fastx_revcomp used to drop the abundance annotation when relabelling;
+## it now keeps it when both a relabel option and --sizeout are used
+DESCRIPTION="issue 391: --fastx_revcomp keeps the abundance with --relabel_sha1 and --sizeout"
+printf ">s;size=3;\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastaout - \
+        --relabel_sha1 \
+        --sizeout \
+        --quiet | \
+    grep -q ";size=3$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                               vsearch --search                               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/392
+
+# not a bug: there is no --search command; vsearch interprets it as
+# --search_exact (abbreviation). To build an OTU table, use --usearch_global
+# with --otutabout
+
 
 
 #******************************************************************************#
@@ -9978,6 +10532,43 @@ printf ">q;size=32;\nAAA\n>s;size=8;\nNNN\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#          OTU table truncated at OTU_999999 out of ca 5,800,000 OTUs          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/394
+
+# not testable (OTU-table issue reported with ~5.8 million OTUs; cannot be
+# reproduced with a small input)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#            Missing minseqlength option to makeudb_usearch command            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/395
+
+## the --minseqlength option was not accepted by --makeudb_usearch, making it
+## impossible to include sequences shorter than 32 bp in a UDB file; fixed
+DESCRIPTION="issue 395: --makeudb_usearch accepts --minseqlength"
+OUT=$(mktemp)
+printf ">s\nACGTACGTAC\n" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --minseqlength 1 \
+        --output "${OUT}" \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${OUT}"
+
+
+
+#******************************************************************************#
+#                                                                              #
 #                           vsearch error (issue 396)                          #
 #                                                                              #
 #******************************************************************************#
@@ -9998,6 +10589,21 @@ printf ">q;size=32;\nAAA\n>s;size=8;\nNNN\n" | \
 ## https://github.com/torognes/vsearch/issues/397
 
 # empty issue
+
+
+#******************************************************************************#
+#                                                                              #
+#               Bad alignments across gaps in the seed sequence                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/399
+
+# not a bug: --msaout uses a center-star multiple alignment (each sequence is
+# aligned to the cluster seed), whose accuracy decreases for low identity
+# thresholds or gappy seeds; the pairwise alignments in --alnout are correct
+# (see issues 213 and 312)
+
 
 
 #******************************************************************************#
@@ -18893,7 +19499,7 @@ unset SEQ1 SEQ2
 exit 0
 
 
-# DONE: issues 1-349 and 549 to 561 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332 still open)
+# DONE: issues 1-399 and 549 to 561 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332 still open)
 # TODO: issue 506 read --db from stream fails in CI runs (works on my machine)
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
