@@ -10608,6 +10608,723 @@ rm -f "${OUT}"
 
 #******************************************************************************#
 #                                                                              #
+#                  closed_ref workflow as usearch -closed_ref                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/443
+
+# not testable (a closed-reference workflow question; use --usearch_global
+# with --otutabout / --blast6out)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                              Chimera detection                               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/444
+
+# not testable (a question about running chimera detection on representative
+# sequences from another clustering tool)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                     -sample_delim in building OTU Table                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/445
+
+# not a bug: vsearch has no --sample_delim option; the sample name is taken
+# from the leading letters, digits and underscores of the header, or from an
+# explicit ;sample= term (see issue 335)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                            static compile vsearch                            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/446
+
+# not testable (statically linked Linux binaries are provided in the releases
+# since version 2.17.1)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                              qsegout / tsegout                               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/447
+
+## the --qsegout and --tsegout options write the aligned part of the query and
+## target sequences (the non-aligned flanks are removed). They do not count as
+## output options, so another output (here --userout) must be given. The query
+## below has 5 nt and 4 nt flanks around the 32 nt aligned region.
+DESCRIPTION="issue 447: --qsegout writes only the aligned part of the query"
+printf ">q\nAAAAACGTAGCTAGCTGATCGATCGTAGCTAGCTGATTTT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n") \
+        --id 0.5 \
+        --minseqlength 1 \
+        --qsegout - \
+        --userout /dev/null \
+        --quiet | \
+    grep -A 1 "^>q" | \
+    grep -qx "ACGTAGCTAGCTGATCGATCGTAGCTAGCTGA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                          vsearch compilation issue                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/448
+
+# not testable (build failure caused by a missing automake installation)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                             set pointer to null                              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/449
+
+# not testable (source-maintenance pull request)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#             Output merged fasta sequences from allpairs_global?              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/433
+
+# not a bug: merging overlapping sequences is the job of --fastq_mergepairs;
+# FASTA sequences can be converted to fake-quality FASTQ first
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                         Orient seqs by mapping to db                         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/434
+
+# the --orient command (orient sequences against a reference database) was
+# added; already covered in orient.sh
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       Speeding up writing of clusters                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/435
+
+# not testable (feature request: multithread the writing of cluster files)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                 Unmerged reads with short identical overlap                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/436
+
+# not a bug: like issue 430, a short overlap with a possible alternative
+# alignment is not merged by the heuristic
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                         permission issue on BigSur?                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/437
+
+# not testable (a macOS environment/permission problem, not a vsearch bug)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                     Formatting SILVA to use with VSEARCH                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/438
+
+# not testable (a question about reformatting SILVA taxonomy headers with sed)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#          Rare hang when merging fastq files using multiple threads           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/439
+
+# not testable (a rare multi-threading race condition during --fastq_mergepairs)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#        Update documentation to describe behaviour of allpairs_global         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/440
+
+## not a bug (documentation): --allpairs_global compares each sequence only to
+## the sequences that come *after* it in the input, not all-against-all. With
+## three sequences this yields the pairs a-b, a-c and b-c.
+DESCRIPTION="issue 440: --allpairs_global compares each sequence to the following ones"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTACGT\n>c\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --userfields query+target \
+        --userout - \
+        --quiet | \
+    tr "\t" "_" | \
+    tr "\n" " " | \
+    grep -qx "a_b a_c b_c " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                    Implementation of usearch_global LCA?                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/441
+
+# an LCA option for --usearch_global was added as --lcaout; tested under
+# issue 622
+
+
+
+#******************************************************************************#
+#                                                                              #
+#             Warn (and stop) if amino acid sequences are detected             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/414
+
+# vsearch is nucleotide-only: non-ACGTU IUPAC and protein characters are
+# stripped from sequences with a warning (see the test under issue 87); there
+# are no plans to support amino acid sequences
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                 Add restriction enzyme site cutting options                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/415
+
+# open issue (not covered): request for --cut_left / --cut_right options to
+# extract the region between restriction sites
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       cluster-features-open-reference                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/416
+
+# not a bug: open-reference clustering is closed-reference clustering
+# (--usearch_global with --dbmatched/--notmatched) followed by de novo
+# clustering of the unmatched reads
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                      add a shell auto-completion script                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/417
+
+# open issue (not covered): request for shell auto-completion scripts
+
+
+
+#******************************************************************************#
+#                                                                              #
+#            fix reverse complement sequence hash when header used             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/418
+
+# not testable (pull request fixing a reverse-complement hashing detail)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#  OTUs with sequences having larger than 97% similarity after clustering at   #
+#                                     97%                                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/419
+
+# not a bug: with greedy clustering, two centroids are never >= the threshold
+# similar, but non-centroid members of different clusters can be, when they
+# lie on the border between clusters
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       Fix: small typo in the man pages                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/420
+
+# not testable (pull request fixing a man-page typo)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                   How to save singletons in cluster_fast?                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/421
+
+## not a bug: --cluster_fast does not filter out low-abundance sequences, so
+## singletons are kept by default
+DESCRIPTION="issue 421: --cluster_fast keeps singletons"
+printf ">s1;size=10;\nAAAA\n>s2;size=1;\nTTTT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --centroids - \
+        --quiet | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#      fastq_maxee argument not applying for fastx_filter on a FASTA file      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/422
+
+## a quality-based filter such as --fastq_maxee cannot be applied to a FASTA
+## file (no quality scores); vsearch now reports a fatal error instead of
+## silently ignoring it
+DESCRIPTION="issue 422: --fastx_filter --fastq_maxee on a FASTA file is rejected"
+printf ">s\nACGTACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_maxee 1.0 \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "not accepted with the fastx_filter command when the input is a FASTA file" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                           Add search_pcr function                            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/423
+
+# open issue (not covered): request for --search_pcr and --search_oligodb
+
+
+
+#******************************************************************************#
+#                                                                              #
+#             --allpairs_global problem with identity calculation              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/424
+
+# not a bug: --allpairs_global computes global alignments but does not show
+# (and sometimes does not count) the terminal gaps; adjusting the terminal gap
+# penalties changes the reported identity
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                              translated search                               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/425
+
+# not testable (translated / amino-acid searches are not supported)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                      Add option Sample like in Usearch                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/426
+
+## the --sample option adds a ";sample=" identifier to the sequence headers
+DESCRIPTION="issue 426: --sample adds a sample identifier to the headers"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sample ABC \
+        --fastaout - \
+        --quiet | \
+    grep -qx ">s1;sample=ABC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                  Vsearch for clustering protein sequences?                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/427
+
+# not testable (protein sequences are not supported)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                         cluster id in consensus file                         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/428
+
+# the --clusterout_id option adds the cluster id to the consout headers;
+# tested under issue 103 (and issue 313 for centroids)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                  incorrect alignment output in --userfields                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/429
+
+## not a bug: in the alignment string reported by --userfields caln (and aln),
+## "M" denotes a column that is either a match or a mismatch (only "I" and "D"
+## denote gaps), as in usearch. The query and target below differ at their
+## first and last 3 bases, giving an identity of 91.0% but an all-"M" caln.
+DESCRIPTION="issue 429: caln reports M for both matches and mismatches"
+Q="GACTTAATTGGATTGAGCCTTGGTATGGAAACCTACTAAGTGGTAACTTTCAAATTCAGAGAAACCC"
+T="CTTTTAATTGGATTGAGCCTTGGTATGGAAACCTACTAAGTGGTAACTTTCAAATTCAGAGAAAGGG"
+printf ">query\n%s\n" "${Q}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">target\n%s\n" "${T}") \
+        --id 0.5 \
+        --minseqlength 1 \
+        --userfields caln+id \
+        --userout - \
+        --quiet | \
+    grep -qx "67M	91.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset Q T
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                          Unexpected unmerged reads                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/430
+
+# not a bug: vsearch refuses to merge a pair when it finds a potential
+# alternative alignment (based on shared 5-mers), to avoid a wrong merge
+
+
+
+#******************************************************************************#
+#                                                                              #
+#         big difference for clustering otus using vsearch and usearch         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/431
+
+# not testable (usearch --cluster_otus has no direct equivalent in vsearch; a
+# methodological question)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                     Banded Alignments and long sequences                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/400
+
+# open issue (not covered): request for banded pairwise alignment to speed up
+# the comparison of longer sequences
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                        Extracting the sequences reads                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/401
+
+# not testable (a usage question: matching sequences can be written with
+# --matched / --dbmatched, or extracted with --fastx_getseqs)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                   groff warnings when creating pdf manual                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/402
+
+# not testable (groff warnings while building the PDF manual)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       compilation warning with gcc 10                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/403
+
+# not testable (a maybe-uninitialized warning in sintax.cc with gcc 10)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#             Vsearch crash when input have a non-ASCII character              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/404
+
+## a non-ASCII character in a FASTA/FASTQ header used to crash vsearch; it now
+## emits a warning and continues (here U+00EB, octal 303 253)
+DESCRIPTION="issue 404: a non-ASCII character in a header gives a warning, not a crash"
+printf ">12345;Epichlo\303\253_amarillans\nAAATTTCCCGGGAAAAAATTTCCCGGG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nAAATTTCCCGGGAAAAAATTTCCCGGG\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --blast6out /dev/null 2>&1 | \
+    grep -q "Non-ASCII character" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                  Vsearch SINTAX lose taxonomy in whitespace                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/405
+
+## --sintax must recover the complete taxonomy even when a taxonomic value
+## contains a space (here the genus "Clostridium sensu stricto"); the
+## taxonomy must be part of the header identifier (before the first space)
+DESCRIPTION="issue 405: --sintax recovers a taxonomy value that contains spaces"
+SEQ="TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">12345;tax=d:Bacteria,g:Clostridium sensu stricto\n%s\n" "${SEQ}") \
+        --sintax_cutoff 0 \
+        --tabbedout - \
+        --quiet | \
+    grep -q "g:Clostridium sensu stricto" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+
+
+#******************************************************************************#
+#                                                                              #
+#              different OTU tables following different pipelines              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/406
+
+# not a bug: results from clustering may deviate slightly from a subsequent
+# search against the centroids, because of processing order and ties between
+# candidate centroids (see issue 419)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                         --usearch_global and sorting                         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/407
+
+# not a bug: output order is only guaranteed with --threads 1; multithreading
+# writes results in a variable order
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                       --maxhits 0 differs from USEARCH                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/408
+
+## --maxhits 0 used to return zero hits; it now means unlimited hits (like the
+## default and like usearch)
+DESCRIPTION="issue 408: --maxhits 0 means unlimited hits"
+"${VSEARCH}" \
+    --usearch_global <(printf ">q1\nAA\n>q2\nAA\n") \
+    --db <(printf ">s1\nAA\n") \
+    --minseqlength 0 \
+    --id 1.0 \
+    --maxhits 0 \
+    --userfields query+target \
+    --userout - \
+    --quiet | \
+    awk 'END {exit (NR > 0) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                        -minsize flag in -cluster_fast                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/409
+
+# not a bug: --cluster_fast has no --minsize option (it never filtered on
+# abundance); use --sortbysize or --fastx_filter with --minsize after
+# clustering (see also issue 421)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#                   struct sortinfo_s defined inconsistently                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/410
+
+# not testable (a source-code consistency warning)
+
+
+
+#******************************************************************************#
+#                                                                              #
+#               Improve error messages for malformed FASTQ files               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/411
+
+## the error message for a FASTQ entry whose sequence and quality lines differ
+## in length is now explicit
+DESCRIPTION="issue 411: clear error when FASTQ sequence and quality lines differ in length"
+printf "@a\nAA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastqout /dev/null 2>&1 | \
+    grep -q "Sequence and quality lines must be equally long" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+
+#******************************************************************************#
+#                                                                              #
 #                      Fasta Header problem (issue 398)                        #
 #                                                                              #
 #******************************************************************************#
@@ -19499,7 +20216,7 @@ unset SEQ1 SEQ2
 exit 0
 
 
-# DONE: issues 1-399 and 549 to 561 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332 still open)
+# DONE: issues 1-449 and 549 to 561 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423 still open)
 # TODO: issue 506 read --db from stream fails in CI runs (works on my machine)
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
