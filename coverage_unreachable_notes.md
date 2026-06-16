@@ -167,3 +167,27 @@ unreachable through black-box tests:
 - **134-135, 394-395** — `default: break` in the profile-update and
   cigar-operation switches; DB sequences are normalised to
   A/C/G/T/U/ambiguity/gap and cigars contain only M/D/I.
+- **364-365** — gap padding inside `case 'D'` when the deletion run is
+  shorter than the max insertion at the same query position; not
+  produced by simple clusters (no minimal robust input found).
+
+## results.cc
+- **107, 159, 186** — `if (hits == nullptr) return;` guards in
+  `results_show_{fastapairs,qsegout,tsegout}_one`. A no-hit query is not
+  routed to these fasta-pairs/segment writers (even with
+  `--output_no_hits`), so the guard is not reachable in practice.
+- **630-631** — `if (tophitcount == 0) { fprintf("\n"); return; }` in
+  the LCA writer; `--lcaout` is not invoked for a query with zero hits.
+
+## Coverage-snapshot staleness (NOT unreachable — already covered)
+The gcov snapshot under `/tmp/vsearch/src/` predates some current tests,
+so a few lines it marks `#####` are in fact already covered by existing
+tests. No new test was added for these:
+- **derep.cc 226-235** (`derep_compare_full` `seqno_first` tie-break) is
+  covered by `derep_fulllength.sh` "sort clusters by input order"
+  (line 236 there, `return 0`, is genuinely `// unreachable`).
+- **fastq_mergepairs.cc 436** (`%.10lf` EE branch, 1e-7 <= EE < 1e-6) is
+  covered by `fastq_mergepairs.sh` "EE = 0.0000001".
+When working from this snapshot, grep the test scripts before adding a
+test, and confirm the target line actually flips on the instrumented
+binary at `/tmp/vsearch/bin/vsearch`.
