@@ -3838,6 +3838,11 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/64
 
+# the requested feature was implemented as the --relabel_md5 and
+# --relabel_sha1 options (hash of the upper-cased, unwrapped sequence),
+# extended to both dereplication and sorting; already covered in
+# derep_fulllength.sh, sortbylength.sh and sortbysize.sh (see also issue 84)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -3858,6 +3863,23 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/66
 
+## the underlying problem was the length of FASTA header lines (not the
+## presence of special characters); vsearch must now read very long
+## header lines without aborting
+DESCRIPTION="issue 66: very long fasta header lines are accepted (100,000 characters)"
+LONG_HEADER=$(head -c 100000 /dev/zero | tr '\0' 'x')
+printf ">%s\nACGTACGTACGTACGTACGTACGTACGTACGT\n" "${LONG_HEADER}" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minseqlength 1 \
+        --notrunclabels \
+        --quiet \
+        --fastaout - | \
+    awk '/^>/ {ok = (length($0) == 100001)} END {exit ok ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG_HEADER
+
 
 #******************************************************************************#
 #                                                                              #
@@ -3866,6 +3888,45 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/67
+
+## a cluster member matching the centroid on the reverse strand must be
+## reverse-complemented in the multiple alignment, otherwise the consensus
+## is chimeric (fixed in v1.0.14). Here s2 is the reverse-complement of s1:
+## with --strand both they form one cluster and s2 must appear in the same
+## orientation as s1 in the alignment.
+DESCRIPTION="issue 67: reverse-strand member is reverse-complemented in --msaout"
+SEQ="ATGATCGTGTGATCGTGTAGCTGTGCTGTAGCTGTGTAGCT"
+RC="AGCTACACAGCTACAGCACAGCTACACGATCACACGATCAT"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${RC}" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.9 \
+        --minseqlength 1 \
+        --strand both \
+        --quiet \
+        --msaout - | \
+    grep -A 1 "^>s2" | \
+    grep -ixq "${SEQ}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ RC
+
+DESCRIPTION="issue 67: reverse-strand member yields a clean (non-chimeric) consensus"
+SEQ="ATGATCGTGTGATCGTGTAGCTGTGCTGTAGCTGTGTAGCT"
+RC="AGCTACACAGCTACAGCACAGCTACACGATCACACGATCAT"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${RC}" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.9 \
+        --minseqlength 1 \
+        --strand both \
+        --quiet \
+        --consout - | \
+    grep -iv "^>" | \
+    grep -ixq "${SEQ}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ RC
 
 
 #******************************************************************************#
@@ -3888,6 +3949,20 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/69
 
+## clustering with --msaout and/or --consout triggered an invalid free of
+## the cigar strings (msa.cc), causing a crash; fixed in v1.0.13
+DESCRIPTION="issue 69: --cluster_fast with --msaout and --consout does not crash"
+printf ">a\nATTTGTTTCAGGGTTATTTGAATATCTATAACAACTATTTTA\n>b\nTTGTTTCAGGGTTATTTGAATATCTATAACAACTATTTTAAA\n>c\nTTTGTTTCAGGGTTATTTGAATATCTATAACAACTATTTTAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.8 \
+        --minseqlength 1 \
+        --quiet \
+        --msaout /dev/null \
+        --consout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -3896,6 +3971,21 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/70
+
+## same root cause as issue 69 (corrupted double-linked list when freeing
+## the cigar strings); fixed in v1.0.13. Here the input yields singleton
+## clusters, which also exercised the buggy free loop.
+DESCRIPTION="issue 70: --cluster_fast --msaout --consout with singletons does not crash"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --quiet \
+        --msaout /dev/null \
+        --consout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -3906,6 +3996,27 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/71
 
+## the MBL identity (--iddef 3) is 1.0 - [(mismatches + gap openings) /
+## longest sequence length]. The denominator must be the longest sequence,
+## not the shortest (fixed in v1.0.15). Query (10 nt) aligned to target
+## (12 nt) gives 10M2I: 0 mismatches and 1 gap opening, so the identity is
+## 1 - (0 + 1)/12 = 0.9167 (91.7%). Using the shortest length (10) would
+## wrongly give 1 - 1/10 = 90.0%.
+DESCRIPTION="issue 71: --iddef 3 (MBL) uses the longest sequence as denominator"
+printf ">q\nAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nAAAAAAAAAATT\n") \
+        --id 0.1 \
+        --iddef 3 \
+        --minseqlength 1 \
+        --quiet \
+        --userfields id \
+        --userout - | \
+    grep -qx "91.7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -3914,6 +4025,8 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/72
+
+# not testable (packaging: integration of Debian patches)
 
 
 #******************************************************************************#
@@ -3924,6 +4037,9 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/73
 
+# not testable (a question about the status of taxonomy assignment;
+# taxonomic classification was later added as the --sintax command)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -3932,6 +4048,31 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/74
+
+## sequences shorter than 32 nt are discarded by default, but can be
+## clustered when --minseqlength is lowered
+DESCRIPTION="issue 74: short sequences are discarded with the default --minseqlength (32)"
+printf ">a\nACGTACGTAC\n>b\nACGTACGTAC\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --centroids /dev/null 2>&1 | \
+    grep -q "sequences discarded" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 74: --cluster_fast clusters sequences shorter than 32 nt with --minseqlength 1"
+printf ">a\nACGTACGTAC\n>b\nACGTACGTAC\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --quiet \
+        --centroids - | \
+    grep -c "^>" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -3942,6 +4083,22 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/75
 
+## clustering and per-cluster multiple alignment are obtained in a single
+## run with --msaout (each cluster's alignment is followed by a consensus
+## line); the --msaout option itself is also covered in cluster_fast.sh
+## and cluster_size.sh
+DESCRIPTION="issue 75: --cluster_size --msaout outputs a consensus line per cluster"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --quiet \
+        --msaout - | \
+    grep -qx ">consensus" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -3950,6 +4107,20 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/76
+
+## segfault with --cluster_fast and --msaout (duplicate of issue 69);
+## fixed in v1.0.13. The original input was a single cluster of short,
+## overlapping reads.
+DESCRIPTION="issue 76: --cluster_fast with --msaout only does not crash"
+printf ">a\nATTTGTTTCAGGGTTATTTGAATATCTATAACAACTATTTTA\n>b\nTTGTTTCAGGGTTATTTGAATATCTATAACAACTATTTTAAA\n>c\nTTTGTTTCAGGGTTATTTGAATATCTATAACAACTATTTTAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.8 \
+        --minseqlength 1 \
+        --quiet \
+        --msaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -3960,6 +4131,9 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/77
 
+# not testable (segmentation fault only triggered by a 9.3 GB input file
+# with ~23 million sequences; cannot be reproduced with a small input)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -3968,6 +4142,10 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/78
+
+# not testable (the chimera detection progress indicator exceeded 100%;
+# the percentage is printed on stderr and only misbehaved on a very large
+# multi-threaded run)
 
 
 #******************************************************************************#
@@ -3978,6 +4156,24 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/79
 
+## multiple databases are supported by concatenating them into a single
+## stream, thanks to pipe support (see issue 39), e.g.
+## --db <(cat db1.fasta db2.fasta). The query below only matches the
+## second database entry.
+DESCRIPTION="issue 79: multiple databases via a concatenated stream (process substitution)"
+printf ">q\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">d1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n>d2\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --quiet \
+        --userfields target \
+        --userout - | \
+    grep -qx "d2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -3986,6 +4182,24 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/80
+
+## rather than producing thousands of --clusters files, the --uc output
+## gives the sequence-to-cluster mapping in a single file: on the H and S
+## lines, field 9 is the sequence label and field 2 the cluster number
+## (see also the --uc tests in the cluster_*.sh scripts)
+DESCRIPTION="issue 80: --uc provides a sequence-to-cluster mapping"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --quiet \
+        --uc - | \
+    awk '$1 == "H" || $1 == "S" {print $9"@"$2}' | \
+    tr "\n" " " | \
+    grep -qx "a@0 b@1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -3996,6 +4210,32 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/81
 
+## sequence labels are truncated at the first space by default (so the .uc
+## and other outputs use only the part before the space); --notrunclabels
+## keeps the full header
+DESCRIPTION="issue 81: labels are truncated at the first space by default"
+printf ">seq1 description here\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --output - | \
+    grep -qx ">seq1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 81: --notrunclabels keeps the full header (including text after the space)"
+printf ">seq1 description here\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --notrunclabels \
+        --quiet \
+        --output - | \
+    grep -qx ">seq1 description here" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4004,6 +4244,20 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/82
+
+## providing only --samout used to fail with "Fatal error: No output files
+## specified"; it must now be accepted on its own (fixed in the "summer"
+## branch)
+DESCRIPTION="issue 82: --cluster_fast with only --samout is accepted"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --quiet \
+        --samout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -4014,6 +4268,23 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/83
 
+## --samout is supported with searching, not only with clustering (fixed
+## in the "summer" branch): a perfect hit produces a SAM record with the
+## query in field 1 and the target in field 3
+DESCRIPTION="issue 83: --usearch_global supports --samout"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --quiet \
+        --samout - | \
+    grep -v "^@" | \
+    awk -F "\t" '$1 == "q" && $3 == "t" {found = 1} END {exit found ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4023,6 +4294,48 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/84
 
+## --relabel was originally only available for sorting; it was extended so
+## that it works consistently across dereplication, clustering centroids
+## and chimera-detection outputs (see also issue 64). Basic --relabel
+## acceptance is also covered in the command-specific scripts.
+DESCRIPTION="issue 84: --relabel works with --derep_fulllength"
+printf ">r1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n>r2;size=1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --relabel OTU_ \
+        --quiet \
+        --output - | \
+    grep -qx ">OTU_1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 84: --relabel works with --cluster_size --centroids"
+printf ">r1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>r2\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --relabel OTU_ \
+        --quiet \
+        --centroids - | \
+    grep "^>" | \
+    tr "\n" " " | \
+    grep -qx ">OTU_1 >OTU_2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 84: --relabel works with --uchime_denovo --nonchimeras"
+printf ">r1;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --relabel SEQ_ \
+        --quiet \
+        --nonchimeras - | \
+    grep -qx ">SEQ_1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4031,6 +4344,9 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/85
+
+# duplicate of issue 95 (repeated k-mers within sequences prevent matches);
+# see the test under issue 95 below
 
 
 #******************************************************************************#
@@ -4050,6 +4366,18 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/87
 
+## vsearch does not support amino-acid sequences; feeding protein
+## characters to a command (here chimera detection) strips the invalid
+## characters and emits a warning
+DESCRIPTION="issue 87: --uchime_denovo strips invalid (protein) characters with a warning"
+printf ">s1;size=3\nEFILPQEFILPQEFILPQEFILPQEFILPQEFILPQ\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --nonchimeras /dev/null 2>&1 | \
+    grep -q "invalid characters stripped" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4058,6 +4386,8 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/88
+
+# not testable (request for a Galaxy wrapper, external to vsearch)
 
 
 #******************************************************************************#
@@ -4068,6 +4398,24 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/89
 
+## an empty consensus sequence (a header with no bases) is the correct
+## result for a gappy alignment: when at least half of the sequences have a
+## gap in a column, the consensus symbol is a gap, and a consensus made of
+## only gaps becomes empty after the gaps are removed. Here one long
+## centroid and four short, non-overlapping members make gaps the majority
+## at every column.
+DESCRIPTION="issue 89: a gappy cluster legitimately produces an empty consensus"
+printf ">cent\nAAAAAAAAAACCCCCCCCCCGGGGGGGGGGTTTTTTTTTT\n>m1\nAAAAAAAAAA\n>m2\nCCCCCCCCCC\n>m3\nGGGGGGGGGG\n>m4\nTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.1 \
+        --minseqlength 1 \
+        --quiet \
+        --consout - | \
+    awk '/^>/ {h++; next} {if (length($0) > 0) b++} END {exit (h == 1 && b == 0) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4076,6 +4424,9 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/90
+
+# the requested feature was implemented as the --derep_prefix command;
+# already covered in derep_prefix.sh
 
 
 #******************************************************************************#
@@ -4086,6 +4437,9 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/91
 
+# not testable (compilation failure on OS X; resolved by renaming string.h
+# to xstring.h, see issue 92)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4094,6 +4448,8 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/pull/92
+
+# not testable (source-tree maintenance: renaming string.h to xstring.h)
 
 
 #******************************************************************************#
@@ -4104,6 +4460,8 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/93
 
+# not testable (third-party Homebrew package, external to vsearch)
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4112,6 +4470,22 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/94
+
+## the requested per-cluster sequence profile was implemented as the
+## --profile option, which outputs a matrix with the base counts at each
+## alignment column. The --profile option is also covered in cluster_fast.sh
+## and cluster_size.sh; here we check the actual counts of the first column.
+DESCRIPTION="issue 94: --cluster_size --profile reports per-column base counts"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --quiet \
+        --profile - | \
+    awk 'NR == 2 {ok = ($1 == 0 && $2 == "A" && $3 == 2)} END {exit ok ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -4122,6 +4496,25 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/95
 
+## a query containing repeated k-mers (and therefore very few unique
+## 8-mers) could fail to match a very similar database sequence. The query
+## below differs from the database sequence by a single mismatch and must
+## be found at --id 0.9 (related to issue 85).
+DESCRIPTION="issue 95: usearch_global finds matches in sequences with repeated kmers"
+printf ">read1\nTAGGTATAGGTATAGGTATAGGTATAGGGA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">centroid1\nTAGGTATGGGTATAGGTATAGGTATAGGGA\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --strand plus \
+        --quiet \
+        --userfields target \
+        --userout - | \
+    grep -qx "centroid1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4130,6 +4523,8 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/96
+
+# not testable (build-time compiler optimisation flags in the Makefile)
 
 
 #******************************************************************************#
@@ -4140,6 +4535,34 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/97
 
+## "double free or corruption" when writing consensus sequences with
+## --cluster_fast --consout (duplicate of issue 69); fixed in v1.0.13
+DESCRIPTION="issue 97: --cluster_fast with --consout does not crash"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.99 \
+        --minseqlength 1 \
+        --quiet \
+        --consout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## in the original report --cons_truncate produced "WARNING: Option
+## --cons_truncate is ignored"; it is now an implemented option (controls
+## terminal gaps in the consensus, see also issue 86 and cluster_fast.sh)
+DESCRIPTION="issue 97: --cluster_fast --consout accepts --cons_truncate"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.99 \
+        --minseqlength 1 \
+        --cons_truncate \
+        --quiet \
+        --consout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4149,6 +4572,30 @@ unset TMP
 ##
 ## https://github.com/torognes/vsearch/issues/98
 
+## --minh values above 1.0 (or given as integers) used to be silently
+## ignored and reset to the default. They are now accepted (the manpage
+## states that values above 1.0 are accepted but uncommon). The effect of
+## a high --minh on chimera detection is covered in uchime_denovo.sh.
+DESCRIPTION="issue 98: --uchime_denovo accepts --minh above 1.0"
+printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --minh 2.0 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 98: --uchime_denovo accepts an integer --minh value"
+printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --minh 1 \
+        --quiet \
+        --nonchimeras /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #******************************************************************************#
 #                                                                              #
@@ -4157,6 +4604,9 @@ unset TMP
 #******************************************************************************#
 ##
 ## https://github.com/torognes/vsearch/issues/99
+
+# not testable (concerns the shebang lines of the bundled test scripts,
+# which were meant for bash, not dash)
 
 
 #******************************************************************************#
@@ -15780,7 +16230,7 @@ unset SEQ1 SEQ2
 exit 0
 
 
-# DONE: issues 1-63 and 549 to 561
+# DONE: issues 1-99 and 549 to 561 (issue 86 still open)
 # TODO: issue 506 read --db from stream fails in CI runs (works on my machine)
 # TODO: issue 529
 # TODO: issue 513: make a test with two occurrences of the query in the target sequence
