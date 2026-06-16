@@ -658,6 +658,71 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## the alignment annotation line marks a substitution with a space
+## between matching '|' columns (showalign.cc mismatch path)
+DESCRIPTION="--allpairs_global --alnout marks a substitution in the annotation line"
+printf ">s1\nACGTACGTACGT\n>s2\nACGTACCTACGT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --alnout - \
+        --quiet 2> /dev/null | \
+    grep -qE '\| \|' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## when the query is longer than the target, the alignment shows a gap
+## ('-') in the target line (showalign.cc deletion path)
+DESCRIPTION="--allpairs_global --alnout shows a gap in the target line"
+printf ">s1\nACGTACGTACGTACGT\n>s2\nACGTACGTGTACGT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --alnout - \
+        --quiet 2> /dev/null | \
+    grep -qE '^Tgt.*-' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## when the query is shorter than the target, the alignment shows a gap
+## ('-') in the query line (showalign.cc insertion path)
+DESCRIPTION="--allpairs_global --alnout shows a gap in the query line"
+printf ">s1\nACGTACGTGTACGT\n>s2\nACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --alnout - \
+        --quiet 2> /dev/null | \
+    grep -qE '^Qry.*-' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## with --n_mismatch a column with an N is counted as a mismatch, so an
+## otherwise identical pair drops below 100% identity (showalign.cc N
+## path); without --n_mismatch the same pair is 100% identical
+DESCRIPTION="--allpairs_global --n_mismatch counts an N column as a mismatch in --alnout"
+printf ">s1\nACGTACGTACGT\n>s2\nACGTACNTACGT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --n_mismatch \
+        --alnout - \
+        --quiet 2> /dev/null | \
+    grep -qE "11 ids \(91" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global without --n_mismatch treats an N column as a match in --alnout"
+printf ">s1\nACGTACGTACGT\n>s2\nACGTACNTACGT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --alnout - \
+        --quiet 2> /dev/null | \
+    grep -qE "12 ids \(100" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ----------------------------------------------------------------- blast6out
 
 DESCRIPTION="--allpairs_global --blast6out writes a tab-separated record"
