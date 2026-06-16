@@ -568,6 +568,113 @@ printf ">s1;abc=123\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# the named field can appear in the middle of the header (followed by a
+# ';' rather than the end of the header)
+DESCRIPTION="--label_field matches a named field located mid-header"
+printf ">s1;abc=123;def=456\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_field "abc" \
+        --label_word "123" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;abc=123;def=456" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# a word can match mid-header when delimited by a non-alphanumeric
+# character; here "target" is first seen as a substring of "cab" prefix
+# region and only matches at the delimited occurrence
+DESCRIPTION="--label_word matches a word delimited by a non-alphanumeric character"
+printf ">cab.target\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_word "target" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">cab.target" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# a word must not match when embedded inside a longer alphanumeric word
+DESCRIPTION="--label_word does not match a word embedded in a longer word"
+printf ">xtargetx\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_word "target" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --label_words combined with --label_field
+# (note: --label_words silently skips the first line of the file, so a
+# throwaway first line is used; see 'notes' at the end of this script)
+DESCRIPTION="--label_words matches a word inside a named field"
+TMP=$(mktemp)
+printf "ignored_first_line\n123\n" > "${TMP}"
+printf ">s1;abc=123\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --label_field "abc" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;abc=123" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--label_words matches a named field located mid-header"
+TMP=$(mktemp)
+printf "ignored_first_line\n123\n" > "${TMP}"
+printf ">s1;abc=123;z=9\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --label_field "abc" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;abc=123;z=9" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+# "target" first occurs embedded in "xtargetx" (no match), then as a
+# properly delimited word in "target_y" (match)
+DESCRIPTION="--label_words matches a delimited word after skipping an embedded occurrence"
+TMP=$(mktemp)
+printf "ignored_first_line\ntarget\n" > "${TMP}"
+printf ">xtargetx;target_y\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">xtargetx;target_y" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--label_words does not match a word embedded in a longer word"
+TMP=$(mktemp)
+printf "ignored_first_line\ntarget\n" > "${TMP}"
+printf ">xtargetx\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
 ## --label_substr_match
 DESCRIPTION="--label_substr_match is accepted"
 printf ">abc\nA\n" | \
