@@ -251,6 +251,32 @@ printf "@s\nAA\n+\nII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the per-position tables are initially allocated for 10 positions and
+# grow when a longer read is encountered (eestats.cc); a 16 nt read
+# exercises that reallocation path
+DESCRIPTION="--fastq_eestats grows tables for reads longer than the initial allocation"
+printf "@s\nACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats - \
+        --output - \
+        --quiet 2> /dev/null | \
+    awk 'NR>1' | \
+    wc -l | \
+    grep -qxE "[[:space:]]*16" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_eestats reports the correct last position for a long read"
+printf "@s\nACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats - \
+        --output - \
+        --quiet 2> /dev/null | \
+    awk -F "\t" 'END {print $1}' | \
+    grep -qx "16" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastq_eestats Pos starts at 1"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
