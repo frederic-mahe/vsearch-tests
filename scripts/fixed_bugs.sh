@@ -19955,69 +19955,72 @@ unset SEQ
 ##
 ## https://github.com/torognes/vsearch/issues/591
 
-# <2025-02-08 sam.> not yet fixed in v2.29.3
-# uncomment when a fix is available in dev
+# Resolved: from v2.30.0 onwards all three uchime*_denovo algorithms
+# implement the UCHIME algorithm correctly. Earlier versions had a
+# subtle bug that could wrongly retain a second parent (see issue 606).
+# For this input the three algorithms now agree: s3 is not flagged as a
+# chimera (score 0.0000, status N).
 
-# ## original test by Colin Brislawn (https://github.com/qiime2/q2-vsearch/pull/100)
-# FASTA_INPUT=$(
-#     printf ">s1;size=5\n"
-#     printf "AGCTCCAATAGCGTATATTAAAGTTGTTGTGGTTAAAAAGCTCGTAGTTGAACCTTGGGCCTGGCTGGCCGGTCCGCCTC\n"
-#     printf "ACCGCGTGCACTGGTCCGGCCGGGCCTTTCCCTCTGTGGAACCCCATACCCTTCACTGGGCGTGGCGGGGAAACAGGACA\n"
-#     printf "TTTACTTTGAAAAAATTAGAGTGCTCCAGGCAGGCCTATGCTCGAATACATTAGCATGGAATAATAAAATAGGACGCGCG\n"
-#     printf "GTTCTATTTTGTTGGTTTATAGGACCGCCGTAATGATTAATAGGGACAGTCGGGGGCATCAGTATTCAACTGTCAGAGGT\n"
-#     printf "GAAATTCTTGGATCAGTTGAAGACTAACTACTGCGAAAGCATTTGCCAAGGATGTTTTCA\n"
-#     printf ">s2;size=3\n"
-#     printf "AGCTCCAATAGCGTATATTAAAGTTGTTGTGGTTAAAAAGCTCGTAGTTGAACCTTGGGCCTGGCTGGCCGGTCCGCCTC\n"
-#     printf "ACCGCGTGTACTGGTCCGGCCGGTGAAATTCTTGGATTTATTGAAGACTAACTACTGCGAAAGCATTTGCCAAGGATGTT\n"
-#     printf "TTCA\n"
-#     printf ">s3;size=1\n"
-#     printf "AGCTCCAATAGCGTATATTAAAGTTGTTGTGGTTAAAAAGCTCGTAGTTGAACCTTGGGCCTGGCTGGCCGGTCCGCCTC\n"
-#     printf "ACCGCGTGCACTGGTCCGGCCGGTGAAATTCTTGGATTTATTGAAGACTAACTACTGCGAAAGCATTTGCCAAGGATGTT\n"
-#     printf "TTCA\n")
+## original test by Colin Brislawn (https://github.com/qiime2/q2-vsearch/pull/100)
+FASTA_INPUT=$(
+    printf ">s1;size=5\n"
+    printf "AGCTCCAATAGCGTATATTAAAGTTGTTGTGGTTAAAAAGCTCGTAGTTGAACCTTGGGCCTGGCTGGCCGGTCCGCCTC\n"
+    printf "ACCGCGTGCACTGGTCCGGCCGGGCCTTTCCCTCTGTGGAACCCCATACCCTTCACTGGGCGTGGCGGGGAAACAGGACA\n"
+    printf "TTTACTTTGAAAAAATTAGAGTGCTCCAGGCAGGCCTATGCTCGAATACATTAGCATGGAATAATAAAATAGGACGCGCG\n"
+    printf "GTTCTATTTTGTTGGTTTATAGGACCGCCGTAATGATTAATAGGGACAGTCGGGGGCATCAGTATTCAACTGTCAGAGGT\n"
+    printf "GAAATTCTTGGATCAGTTGAAGACTAACTACTGCGAAAGCATTTGCCAAGGATGTTTTCA\n"
+    printf ">s2;size=3\n"
+    printf "AGCTCCAATAGCGTATATTAAAGTTGTTGTGGTTAAAAAGCTCGTAGTTGAACCTTGGGCCTGGCTGGCCGGTCCGCCTC\n"
+    printf "ACCGCGTGTACTGGTCCGGCCGGTGAAATTCTTGGATTTATTGAAGACTAACTACTGCGAAAGCATTTGCCAAGGATGTT\n"
+    printf "TTCA\n"
+    printf ">s3;size=1\n"
+    printf "AGCTCCAATAGCGTATATTAAAGTTGTTGTGGTTAAAAAGCTCGTAGTTGAACCTTGGGCCTGGCTGGCCGGTCCGCCTC\n"
+    printf "ACCGCGTGCACTGGTCCGGCCGGTGAAATTCTTGGATTTATTGAAGACTAACTACTGCGAAAGCATTTGCCAAGGATGTT\n"
+    printf "TTCA\n")
 
-# # uchime_denovo: expected results
-# # 0.0000  s1;size=5        *       *       *       *       *       *       *       *       0       0       0       0       0    0*       N
-# # 0.0000  s2;size=3        *       *       *       *       *       *       *       *       0       0       0       0       0    0*       N
-# # 0.0239  s3;size=1       s1;size=5        s2;size=3        s2;size=3        100.0   98.1    99.4    97.5 99.4     1       0       0       3       0       0       0.6     N
-# DESCRIPTION="issue 591: --uchime_denovo produces expected results"
-# echo "${FASTA_INPUT}" | \
-#     "${VSEARCH}" \
-#         --uchime_denovo - \
-#         --quiet \
-#         --uchimeout - | \
-#     awk 'BEGIN {FS = "\t"} NR == 3 {exit ($1 == 0.0239 && $NF == "N") ? 0 : 1}' && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# uchime_denovo: expected results
+# 0.0000	s1;size=5	*	*	*	*	*	*	*	*	0	0	0	0	0	0	*	N
+# 0.0000	s2;size=3	*	*	*	*	*	*	*	*	0	0	0	0	0	0	*	N
+# 0.0000	s3;size=1	*	*	*	*	*	*	*	*	0	0	0	0	0	0	*	N
+DESCRIPTION="issue 591: --uchime_denovo produces expected results"
+echo "${FASTA_INPUT}" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --quiet \
+        --uchimeout - | \
+    awk 'BEGIN {FS = "\t"} NR == 3 {exit ($1 == 0.0000 && $NF == "N") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-# # uchime2_denovo: expected results
-# # 0.0000  s1;size=5        *       *       *       *       *       *       *       *       0       0       0       0       0    0*       N
-# # 0.0000  s2;size=3        *       *       *       *       *       *       *       *       0       0       0       0       0    0*       N
-# # 0.0239  s3;size=1       s1;size=5        s2;size=3        s2;size=3        100.0   98.1    99.4    97.5 99.4     1       0       0       3       0       0       0.6     Y
-# DESCRIPTION="issue 591: --uchime2_denovo produces expected results"
-# echo "${FASTA_INPUT}" | \
-#     "${VSEARCH}" \
-#         --uchime2_denovo - \
-#         --quiet \
-#         --uchimeout - | \
-#     awk 'BEGIN {FS = "\t"} NR == 3 {exit ($1 == 0.0239 && $NF == "Y") ? 0 : 1}' && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# uchime2_denovo: expected results
+# 0.0000	s1;size=5	*	*	*	*	*	*	*	*	0	0	0	0	0	0	*	N
+# 0.0000	s2;size=3	*	*	*	*	*	*	*	*	0	0	0	0	0	0	*	N
+# 0.0000	s3;size=1	*	*	*	*	*	*	*	*	0	0	0	0	0	0	*	N
+DESCRIPTION="issue 591: --uchime2_denovo produces expected results"
+echo "${FASTA_INPUT}" | \
+    "${VSEARCH}" \
+        --uchime2_denovo - \
+        --quiet \
+        --uchimeout - | \
+    awk 'BEGIN {FS = "\t"} NR == 3 {exit ($1 == 0.0000 && $NF == "N") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-# # uchime3_denovo: expected results
-# # 0.0000  s1;size=5        *       *       *       *       *       *       *       *       0       0       0       0       0    0*       N
-# # 0.0000  s2;size=3        *       *       *       *       *       *       *       *       0       0       0       0       0    0*       N
-# # 0.0000  s3;size=1       *       *       *       *       *       *       *       *       0       0       0       0       0    0*       N
-# DESCRIPTION="issue 591: --uchime3_denovo produces expected results"
-# echo "${FASTA_INPUT}" | \
-#     "${VSEARCH}" \
-#         --uchime3_denovo - \
-#         --quiet \
-#         --uchimeout - | \
-#     awk 'BEGIN {FS = "\t"} NR == 3 {exit ($1 == 0.0000 && $NF == "N") ? 0 : 1}' && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# uchime3_denovo: expected results
+# 0.0000	s1;size=5	*	*	*	*	*	*	*	*	0	0	0	0	0	0	*	N
+# 0.0000	s2;size=3	*	*	*	*	*	*	*	*	0	0	0	0	0	0	*	N
+# 0.0000	s3;size=1	*	*	*	*	*	*	*	*	0	0	0	0	0	0	*	N
+DESCRIPTION="issue 591: --uchime3_denovo produces expected results"
+echo "${FASTA_INPUT}" | \
+    "${VSEARCH}" \
+        --uchime3_denovo - \
+        --quiet \
+        --uchimeout - | \
+    awk 'BEGIN {FS = "\t"} NR == 3 {exit ($1 == 0.0000 && $NF == "N") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-# unset FASTA_INPUT
+unset FASTA_INPUT
 
 
 #******************************************************************************#
