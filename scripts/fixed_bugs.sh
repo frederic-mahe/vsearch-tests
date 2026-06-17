@@ -6922,7 +6922,7 @@ printf ">seq1;size=5;\nACGT\n" | \
         --sizeout \
         --quiet \
         --fastaout - 2> /dev/null | \
-    grep -qE ";size=5;?$" && \
+    grep -qE ";size=5$" && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -8862,7 +8862,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -Eqx ">s1;size=2;?" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -8876,7 +8876,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         --sizein \
         --sizeout \
         --output - | \
-    grep -Eqx ">s1;size=3;?" && \
+    grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -8901,7 +8901,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --quiet \
         --sizeout \
         --output - | \
-    grep -Eqx ">s1;size=2;?" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -8914,7 +8914,7 @@ printf ">s1;size=2;\nA\n>s2;size=1;\nA\n" | \
         --quiet \
         --sizein \
         --output - | \
-    grep -Eqx ">s1;size=2;?" && \
+    grep -qx ">s1;size=2;" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13623,7 +13623,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizeout, single match
     --quiet \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=1;?" && \
+    grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13638,7 +13638,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizeout, double match
     --quiet \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=2;?" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13683,7 +13683,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizein, sizeout, sing
     --sizein \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=1;?" && \
+    grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13698,7 +13698,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizein, sizeout, doub
     --sizein \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=2;?" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13712,7 +13712,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, single match)"
     --id 0.50 \
     --quiet \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=3;?" && \
+    grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13726,7 +13726,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, double match)"
     --id 0.50 \
     --quiet \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=3;?" && \
+    grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13741,7 +13741,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizeout, single 
     --quiet \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=1;?" && \
+    grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13756,7 +13756,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizeout, double 
     --quiet \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=2;?" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13771,7 +13771,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, single m
     --quiet \
     --sizein \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=3;?" && \
+    grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13786,7 +13786,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, double m
     --quiet \
     --sizein \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=3;?" && \
+    grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13802,7 +13802,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, sizeout,
     --sizein \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=1;?" && \
+    grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13818,7 +13818,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, sizeout,
     --sizein \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=2;?" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13858,7 +13858,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizeout, single ma
     --quiet \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=1;?" && \
+    grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13872,7 +13872,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizeout, double ma
     --quiet \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=2;?" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13915,7 +13915,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizein, sizeout, s
     --sizein \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=3;?" && \
+    grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13930,7 +13930,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizein, sizeout, d
     --sizein \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=5;?" && \
+    grep -qx ">s1;size=5" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13944,7 +13944,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, sing
     --id 0.50 \
     --quiet \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=6;?" && \
+    grep -qx ">s1;size=6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13958,7 +13958,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, doub
     --id 0.50 \
     --quiet \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=6;?" && \
+    grep -qx ">s1;size=6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13973,7 +13973,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --quiet \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=1;?" && \
+    grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13988,7 +13988,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --quiet \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=2;?" && \
+    grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14003,7 +14003,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --quiet \
     --sizein \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=6;?" && \
+    grep -qx ">s1;size=6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14018,7 +14018,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --quiet \
     --sizein \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=6;?" && \
+    grep -qx ">s1;size=6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14034,7 +14034,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --sizein \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=3;?" && \
+    grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -14050,7 +14050,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --sizein \
     --sizeout \
     --dbmatched /dev/stdout | \
-    grep -qEx ">s1;size=5;?" && \
+    grep -qx ">s1;size=5" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -21320,9 +21320,7 @@ exit 0
 
 
 # DONE: issues 1-622 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496, 504, 522, 524, 548, 564, 569, 570, 584, 607, 609, 614 still open)
-# TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
-# TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
-# TODO: fix issue 260 (SAM format)
+# TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.# TODO: fix issue 260 (SAM format)
 # TODO: otutabout remaining open-questions (check the actual C++ code):
 #       - in the absence of ';sample=abcd1234;' each cluster is assigned to its own sample (matrix diagonal)?
 #       - clusters are sorted by decreasing abundance?
