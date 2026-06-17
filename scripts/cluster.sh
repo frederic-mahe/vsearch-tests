@@ -201,7 +201,15 @@ printf ">q\n%s\n" "${SEQ}" | \
 
 unset SEQ
 
-# TODO:
-# - use the same prefix for warnings (mix of WARNING: or vsearch:)
+# note: vsearch uses two distinct message prefixes, which is expected
+# and not an inconsistency to fix here:
+# - "vsearch: ..." is emitted by the command-line parser (getopt) for
+#   argument-parsing errors (e.g. "vsearch: option '--clusters'
+#   requires an argument"), following the usual program-name
+#   convention.
+# - "WARNING: ..." is emitted by vsearch itself for non-fatal runtime
+#   warnings about the data (e.g. "WARNING: N invalid characters
+#   stripped from FASTA file").
+# Both prefixes are exercised by tests above.
 
 exit 0

@@ -2967,7 +2967,12 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-## TODO:
-# missing checks in vsearch code (min/max mismatches)
+# note: vsearch performs no validation when a minimum threshold is set
+# higher than its matching maximum (--minuniquesize > --maxuniquesize,
+# or --minseqlength > --maxseqlength). No warning or error is emitted;
+# the command silently produces an empty output. This current
+# behaviour is covered by the "swapped threshold" tests above. Adding
+# an explicit check (or warning) would be an upstream change in
+# vsearch.
 
 exit 0

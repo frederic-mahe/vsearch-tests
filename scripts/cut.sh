@@ -1967,5 +1967,7 @@ exit 0
 
 # status: complete (v2.28.1, 2024-06-25)
 
-# TODO: test for non-palindromic pattern: show that rev-comp
-# occurrences are not detected
+# note: the non-palindromic case (reverse-strand occurrences are not
+# detected) is covered by the tests "--cut does not search reverse
+# strand" and "--cut first use --fastx_revcomp to search reverse
+# strand" (see above), using the asymetrical pattern "GG^_C".

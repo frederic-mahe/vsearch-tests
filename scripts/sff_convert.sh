@@ -2724,8 +2724,17 @@ fi
 #   2019-01-22), no issue
 # - 100% code coverage [2025-01-19 dim.]
 
-# TODO: big endian byteorder in my tests??
-# TODO: vsearch should emit a warning when --sample "" (empty string)?
+# note: the SFF format is defined as big-endian (network byte order),
+# regardless of the host architecture. vsearch byte-swaps on
+# little-endian hosts when reading. There is no little-endian SFF
+# variant to test against: every test above that successfully parses
+# the generated SFF file already exercises the big-endian reading
+# path.
+
+# note: vsearch accepts an empty --sample argument and writes a bare
+# ";sample=" annotation (see the test "--sff_convert --sample accepts
+# empty string"). Whether an empty string should instead trigger a
+# warning is an upstream design question.
 
 
 # ==2940572== Memcheck, a memory error detector

@@ -2331,8 +2331,15 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-## TODO: add a warning stating that option --log is recommended? (man
-## states 'requires', but it is not enforced yet)
+# note: the manpage lists --log among the mandatory options (and the
+# SYNOPSIS shows it as required), but vsearch does not enforce it: the
+# command runs without --log and exits 0 (see the test "--fastq_stats
+# is a valid command", which deliberately omits --log). Without --log,
+# the statistics are not written anywhere useful, so --log is in
+# practice required to obtain results, but only recommended by the
+# binary. Emitting a warning when --log is missing (or clarifying the
+# manpage wording from "mandatory" to "strongly recommended") would be
+# an upstream change.
 
 
 exit 0
