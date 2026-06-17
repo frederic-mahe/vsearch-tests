@@ -14525,7 +14525,121 @@ rm "${TMP}"
 ##
 ## https://github.com/torognes/vsearch/issues/529
 
-# TBD
+# The log file produced by the older uchime commands reports a block of
+# scoring parameters (minh, xn, dn, xa, mindiv, id, maxp). The new
+# --chimeras_denovo algorithm does not use most of these parameters, so
+# they should no longer be reported in its log file. Only the 'id'
+# parameter remains relevant and is still reported.
+
+# the 'id' parameter is still reported in the chimeras_denovo log
+DESCRIPTION="issue 529: chimeras_denovo log reports the id parameter"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --log - 2> /dev/null | \
+    grep -Eq "[[:space:]]id$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# minh is a uchime-specific parameter, not reported by chimeras_denovo
+DESCRIPTION="issue 529: chimeras_denovo log does not report minh"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --log - 2> /dev/null | \
+    grep -Eq "[[:space:]]minh$" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# xn is a uchime-specific parameter, not reported by chimeras_denovo
+DESCRIPTION="issue 529: chimeras_denovo log does not report xn"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --log - 2> /dev/null | \
+    grep -Eq "[[:space:]]xn$" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# dn is a uchime-specific parameter, not reported by chimeras_denovo
+DESCRIPTION="issue 529: chimeras_denovo log does not report dn"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --log - 2> /dev/null | \
+    grep -Eq "[[:space:]]dn$" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# xa is a uchime-specific parameter, not reported by chimeras_denovo
+DESCRIPTION="issue 529: chimeras_denovo log does not report xa"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --log - 2> /dev/null | \
+    grep -Eq "[[:space:]]xa$" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# mindiv is a uchime-specific parameter, not reported by chimeras_denovo
+DESCRIPTION="issue 529: chimeras_denovo log does not report mindiv"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --log - 2> /dev/null | \
+    grep -Eq "[[:space:]]mindiv$" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# maxp is a uchime-specific parameter, not reported by chimeras_denovo
+DESCRIPTION="issue 529: chimeras_denovo log does not report maxp"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --log - 2> /dev/null | \
+    grep -Eq "[[:space:]]maxp$" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# contrast (non-vacuity check): the uchime_denovo log still reports minh,
+# confirming the grep pattern above does match the parameter when present
+DESCRIPTION="issue 529: uchime_denovo log still reports minh (contrast)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --uchime_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --log - 2> /dev/null | \
+    grep -Eq "[[:space:]]minh$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# contrast (non-vacuity check): the uchime_denovo log still reports maxp
+# (an integer-formatted parameter), confirming the grep pattern matches
+DESCRIPTION="issue 529: uchime_denovo log still reports maxp (contrast)"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --uchime_denovo - \
+        --quiet \
+        --chimeras /dev/null \
+        --log - 2> /dev/null | \
+    grep -Eq "[[:space:]]maxp$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -21206,7 +21320,6 @@ exit 0
 
 
 # DONE: issues 1-622 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496, 504, 522, 524, 548, 564, 569, 570, 584, 607, 609, 614 still open)
-# TODO: issue 529
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
 # TODO: fix issue 260 (SAM format)
