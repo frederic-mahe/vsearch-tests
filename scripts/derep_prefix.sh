@@ -69,6 +69,17 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
+DESCRIPTION="--derep_prefix fails if unable to open uc file for writing"
+TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --uc "${TMP}" 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+w "${TMP}" && rm -f "${TMP}"
+unset TMP
+
 DESCRIPTION="--derep_prefix accepts empty input"
 printf "" | \
     "${VSEARCH}" \
@@ -77,14 +88,17 @@ printf "" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## missing check for fastq input
-# DESCRIPTION="--derep_prefix rejects fastq input"
-# printf "@s\nA\n+\nI\n" | \
-#     "${VSEARCH}" \
-#         --derep_prefix - \
-#         --output /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-#         success "${DESCRIPTION}"
+# the manpage states --derep_prefix merges "fasta or fastq"
+# sequences, so fastq input is accepted; the output is always fasta
+# (quality values are dropped)
+DESCRIPTION="--derep_prefix accepts fastq input and writes fasta output"
+printf "@s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --output - 2> /dev/null | \
+    grep -qx ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_prefix rejects non-fasta input (#1)"
 printf "\n" | \
@@ -3097,11 +3111,30 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-## TODO:
-# - missing check for output files (--output and --uc)
-# - missing check for fastq input
-# - strand is listed as a valid option, but it is not supported by --derep_prefix
-# - missing checks in vsearch code (min/max mismatches)
+# note: vsearch does not require an output option. Running
+# --derep_prefix with neither --output nor --uc exits 0 and produces
+# nothing (see the commented "requires --output" block near the top:
+# this check is missing in vsearch). When an output file is requested
+# but cannot be opened, vsearch does fail with a fatal error (covered
+# by the --output and --uc "unable to open ... for writing" tests).
+
+# note: fastq input is accepted (the manpage documents "fasta or
+# fastq" input); the output is always fasta. See the "accepts fastq
+# input" test.
+
+# note: --strand is listed as plus|both in the manpage, but
+# --derep_prefix rejects it with a fatal error (see the "--strand is
+# rejected" test in the invalid options section). This is a manpage /
+# behaviour discrepancy: the option should either be supported or
+# removed from the --derep_prefix manpage. Flagged for human review.
+
+# note: vsearch performs no validation when a minimum threshold is set
+# higher than its matching maximum (--minuniquesize > --maxuniquesize,
+# or --minseqlength > --maxseqlength). No warning or error is emitted;
+# the command silently produces an empty output. This current
+# behaviour is covered by the "swapped threshold" tests above. Adding
+# an explicit check (or warning) would be an upstream change in
+# vsearch.
 
 
 exit 0
