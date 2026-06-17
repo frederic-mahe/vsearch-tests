@@ -16226,6 +16226,162 @@ DESCRIPTION="issue 536: otutabout cluster names are alpha sorted (reverse input 
         failure "${DESCRIPTION}"
 
 
+# ---------------------------------------------- no sample annotation (diagonal)
+
+# In the absence of a ';sample=' (or ';barcodelabel=') annotation in
+# the query header, the sample name is taken from the query header
+# itself (the leading run of A-Za-z0-9_ characters). Each query thus
+# becomes its own sample.
+DESCRIPTION="issue 536: otutabout without sample annotation uses the query name as the sample name"
+printf ">s1\nAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 1 {exit $2 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# when each query (its own sample) matches a distinct OTU, the table is
+# a diagonal matrix:
+# #OTU ID	s1	s2	s3
+# s1	1	0	0
+# s2	0	1	0
+# s3	0	0	1
+DESCRIPTION="issue 536: otutabout without sample annotation yields a diagonal matrix"
+printf ">s1\nAA\n>s2\nGG\n>s3\nCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s1\nAA\n>s2\nGG\n>s3\nCC\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    tr "\t" "@" | \
+    tr "\n" "#" | \
+    grep -qx "#OTU ID@s1@s2@s3#s1@1@0@0#s2@0@1@0#s3@0@0@1#" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --------------------------------------- OTUs are alpha sorted, not by abundance
+
+# The OTU rows are sorted alphabetically by OTU name (std::set), not by
+# decreasing abundance. Here OTU 'aaa' is less abundant than OTU 'bbb'
+# but still appears on the first data row because of its name.
+# #OTU ID	s
+# aaa	1
+# bbb	5
+DESCRIPTION="issue 536: otutabout sorts OTUs alphabetically, not by decreasing abundance"
+printf ">q1;sample=s;size=1\nAA\n>q2;sample=s;size=5\nGG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">aaa\nAA\n>bbb\nGG\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --sizein \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 2 {exit ($1 == "aaa" && $2 == 1) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the most abundant OTU is not promoted to the first data row
+DESCRIPTION="issue 536: otutabout does not place the most abundant OTU first"
+printf ">q1;sample=s;size=1\nAA\n>q2;sample=s;size=5\nGG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">aaa\nAA\n>bbb\nGG\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --sizein \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'END {exit ($1 == "bbb" && $2 == 5) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ----------------------------------------------- combine --sample and --relabel
+
+# --sample writes a ';sample=' annotation and --relabel renames the
+# sequences; when both are used upstream (here with --fastx_filter),
+# otutabout reads the sample name from the annotation and is unaffected
+# by the relabeling. The two samples 'alpha' and 'beta' become the
+# table columns:
+# #OTU ID	alpha	beta
+# aaa	1	1
+# ggg	1	0
+DESCRIPTION="issue 536: otutabout works with both --sample and --relabel (sample columns)"
+(
+    printf ">x\nAA\n>y\nGG\n" | \
+        "${VSEARCH}" \
+            --fastx_filter - \
+            --relabel read \
+            --sample alpha \
+            --quiet \
+            --fastaout -
+    printf ">x\nAA\n" | \
+        "${VSEARCH}" \
+            --fastx_filter - \
+            --relabel read \
+            --sample beta \
+            --quiet \
+            --fastaout -
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">aaa\nAA\n>ggg\nGG\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" 'NR == 1 {exit ($2 == "alpha" && $3 == "beta") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 536: otutabout works with both --sample and --relabel (abundances)"
+(
+    printf ">x\nAA\n>y\nGG\n" | \
+        "${VSEARCH}" \
+            --fastx_filter - \
+            --relabel read \
+            --sample alpha \
+            --quiet \
+            --fastaout -
+    printf ">x\nAA\n" | \
+        "${VSEARCH}" \
+            --fastx_filter - \
+            --relabel read \
+            --sample beta \
+            --quiet \
+            --fastaout -
+) | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">aaa\nAA\n>ggg\nGG\n") \
+        --minseqlength 2 \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --otutabout - | \
+    awk -F "\t" '$1 == "ggg" {exit ($2 == 1 && $3 == 0) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 #******************************************************************************#
 #                                                                              #
 #     --uchime_denovo takes abundance information into account (issue 537)     #
@@ -21350,7 +21506,8 @@ exit 0
 
 # DONE: issues 1-622 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496, 504, 522, 524, 548, 564, 569, 570, 584, 607, 609, 614 still open)
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
-# TODO: otutabout remaining open-questions (check the actual C++ code):
-#       - in the absence of ';sample=abcd1234;' each cluster is assigned to its own sample (matrix diagonal)?
-#       - clusters are sorted by decreasing abundance?
-#       - show that it work with both --sample and --relabel
+# DONE: otutabout remaining open-questions (checked src/otutable.cc), tested in the issue 536 section:
+#       - in the absence of ';sample=' the sample name is taken from the query header (leading A-Za-z0-9_ run);
+#         when each query matches a distinct OTU the table is a diagonal matrix (confirmed)
+#       - clusters are NOT sorted by decreasing abundance: OTU rows (and sample columns) are std::set, i.e. alpha sorted (confirmed)
+#       - otutabout works with both --sample and --relabel: the sample comes from the ';sample=' annotation, unaffected by relabeling (confirmed)
