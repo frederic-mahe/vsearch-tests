@@ -270,6 +270,39 @@ printf ">s1;size=1\nA\n>s1;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+## --sizein does not strip the size annotation from the label before
+## the identity comparison: entries with the same base label but
+## different size annotations are still treated as different labels
+## and are not grouped (two output entries)
+DESCRIPTION="--derep_id --sizein keeps size annotation as part of the label (different annotations)"
+printf ">s1;size=1\nA\n>s1;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --output - | \
+    awk '/^>/ {c += 1} END {exit c == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## with --sizein, identical labels (including identical size
+## annotations) and identical sequences are grouped, and abundances
+## are summed (1 + 1 = 2)
+DESCRIPTION="--derep_id --sizein groups identical labels and sums abundances"
+printf ">s1;size=1\nA\n>s1;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --output - | \
+    tr "\n" "@" | \
+    grep -qx ">s1;size=2@A@" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 ## --derep_id takes terminal gaps into account (substring aren't merged)
 DESCRIPTION="--derep_id takes terminal gaps into account"
 printf ">s1\nAA\n>s1\nA\n" | \
@@ -2397,22 +2430,25 @@ printf ">s1;size=1;\nA\n>s2;size=2;\nC\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-# ## --topn returns only the n most abundant sequences after full length
-# ## dereplication (s1 in this example)
-# DESCRIPTION="--topn returns the n most abundant sequences after full-length dereplication"
-# printf ">s1;size=1;\nA\n>s2;size=2;\nC\n>s1;size=2;\nA\n" | \
-#     "${VSEARCH}" \
-#         --derep_id - \
-#         --minseqlength 1 \
-#         --sizein \
-#         --sizeout \
-#         --quiet \
-#         --topn 1 \
-#         --output - | \
-#     tr "\n" "@" | \
-#     grep -Eqx ">s1;size=3;?@A@" && \
-#     success "${DESCRIPTION}" || \
-# 	failure "${DESCRIPTION}"
+## --topn returns only the n most abundant sequences after
+## dereplication. Here 'a' is dereplicated to size 2 and 'b' to size
+## 1, so --topn 1 keeps 'a'. Clean labels (no embedded size
+## annotation) are used on purpose: a size annotation is part of the
+## label for --derep_id (see the dedicated test below), which would
+## otherwise prevent the two 'a' entries from grouping.
+DESCRIPTION="--topn returns the n most abundant sequences after dereplication"
+printf ">a\nAA\n>a\nAA\n>b\nCC\n" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --minseqlength 1 \
+        --sizeout \
+        --quiet \
+        --topn 1 \
+        --output - | \
+    tr "\n" "@" | \
+    grep -qx ">a;size=2@AA@" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
 ## --topn fails with negative arguments
 DESCRIPTION="--topn fails with negative arguments"
@@ -3018,11 +3054,19 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-## TODO:
+# note: sequence labels must be identical for grouping, and the size
+# annotation is part of the label. This holds even with --sizein:
+# --sizein controls how the abundance of the surviving representative
+# is read, but does not strip ";size=" from the label before the
+# identity comparison. See the "--sizein keeps size annotation as part
+# of the label" and "--sizein groups identical labels" tests above.
 
-# sequence labels need to be identical, including size annotations?
-
-## does not work as expected:
-# --topn returns only the n most abundant sequences after full length
+# note: --topn returns the n most abundant sequences after
+# dereplication, and works as expected (see the topn section). Earlier
+# confusion came from combining --topn with size-annotated labels: two
+# entries sharing a base label but carrying different ";size=" values
+# are not grouped (different labels), so they are never summed into a
+# single, more abundant entry. Using clean labels removes the
+# ambiguity.
 
 exit 0
