@@ -18375,6 +18375,73 @@ DESCRIPTION="issue 562: --consout consensus does not contain gaps"
 
 #******************************************************************************#
 #                                                                              #
+#     sintax assigns unclassifiable queries to first sequence (issue 563)      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/563
+
+# vsearch --sintax appeared to assign unclassifiable queries to the
+# first (or closest) sequence in the database. The reporter could not
+# provide a minimal reproducible example, and the developer was unable
+# to reproduce the problem. The issue was closed without a fix; there
+# is nothing to test.
+
+
+#******************************************************************************#
+#                                                                              #
+#              Segfault with derep_id on both strands (issue 565)              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/565
+
+# vsearch 2.28.1 crashed with a segmentation fault when running
+# --derep_id on both strands. Fixed in commit a05b2ea.
+
+DESCRIPTION="issue 565: --derep_id --strand both does not segfault"
+printf ">s1;size=1;\nA\n>s1;size=1;\nT\n" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --minseqlength 1 \
+        --strand both \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the two entries share the same identifier and are reverse-complement
+# of each other, so on both strands they are dereplicated together
+DESCRIPTION="issue 565: --derep_id --strand both dereplicates the two reverse-complement entries"
+printf ">s1;size=1;\nA\n>s1;size=1;\nT\n" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --minseqlength 1 \
+        --strand both \
+        --sizeout \
+        --quiet \
+        --output - | \
+    grep -qx ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  fastx_uniques: still reachable memory under certain conditions (issue 567)  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/567
+
+# valgrind reports a small amount of still-reachable memory (not a
+# definite leak) when --fastx_uniques is used together with --fastqout
+# or --tabbedout. This is a minor issue; memory behaviour is covered by
+# the valgrind tests, so there is nothing to add here.
+
+
+#******************************************************************************#
+#                                                                              #
 #       Unexpected behavior when clustering short sequences (issue 568)        #
 #                                                                              #
 #******************************************************************************#
@@ -18495,6 +18562,21 @@ printf "@s\nA\n+\nI\n" | \
         --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#            Mismatches in taxonomic ranks with Sintax (issue 573)             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/573
+
+# A logical bug in the selection of the best lineages could make
+# --sintax taxonomic ranks jump between unrelated clades, but only when
+# the confidence was below 0.5. Fixed in commit aa94d1c (released in
+# v2.29.0). The bug was found with a large private dataset; no minimal
+# reproducible example is available.
 
 
 #******************************************************************************#
@@ -19642,6 +19724,32 @@ printf ">s\nA\n" | \
 
 #******************************************************************************#
 #                                                                              #
+#               Fatal error: Illegal option argument (issue 588)               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/588
+
+# "Fatal error: Illegal option argument" is emitted when a numerical
+# option receives a value that cannot be parsed as a number. In the
+# reported case the value passed to --id was malformed (a user-side
+# configuration error, not a vsearch bug). Here we simply document that
+# a non-numeric numerical argument is rejected.
+
+DESCRIPTION="issue 588: a non-numeric --id argument triggers 'Illegal option argument'"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGT\n") \
+        --id not_a_number \
+        --blast6out /dev/null 2>&1 | \
+    grep -qF "Illegal option argument" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #           Variable results in pairwise alignment  (issue 589)                #
 #                                                                              #
 #******************************************************************************#
@@ -19806,6 +19914,41 @@ unset FASTA_INPUT
 
 #******************************************************************************#
 #                                                                              #
+#--top_hits_only missed hits with same identity and query coverage (issue 590) #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/590
+
+# Not a bug: --top_hits_only compares the exact (unrounded) percentages
+# of identity. In the report the two hits had the same *displayed*
+# identity (rounded to one decimal) but slightly different exact
+# identities, so only the truly best one was kept. The complementary
+# case where two hits share *exactly* the same identity is covered in
+# the issue 603 section below.
+
+DESCRIPTION="issue 590: --top_hits_only keeps only the hit with the strictly highest identity"
+SEQ="ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">d1\nTCGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n>d2\nTTGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 0.5 \
+        --maxaccepts 0 \
+        --maxrejects 0 \
+        --top_hits_only \
+        --quiet \
+        --userfields target \
+        --userout - | \
+    tr "\n" " " | \
+    grep -qx "d1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+
+#******************************************************************************#
+#                                                                              #
 #     change in uchime*_denovo results between v2.22 and v2.29 (issue 591)     #
 #                                                                              #
 #******************************************************************************#
@@ -19875,6 +20018,20 @@ unset FASTA_INPUT
 #         failure "${DESCRIPTION}"
 
 # unset FASTA_INPUT
+
+
+#******************************************************************************#
+#                                                                              #
+#   Feature request: change --top_hits_only to --top_N_hits_only (issue 592)   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/592
+
+# Feature request to add a --top_N_hits_only N option (keep the N best
+# hits). Not implemented: --top_hits_only keeps all hits that share the
+# single best identity (see issues 590 and 603). There is nothing to
+# test.
 
 
 #******************************************************************************#
@@ -20583,6 +20740,40 @@ DESCRIPTION="issue 602: --cluster_fast --gapopen infinite (raise from 1,000 to I
 
 #******************************************************************************#
 #                                                                              #
+#      Multiple taxonomy hits per OTU despite --top_hits_only (issue 603)      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/603
+
+# Expected behaviour: when several targets share *exactly* the same
+# (best) identity, --top_hits_only keeps them all. To obtain a single
+# assignment per query, use --maxaccepts 1 or an OTU table. See also
+# issue 590.
+
+DESCRIPTION="issue 603: --top_hits_only keeps all targets sharing the same best identity"
+SEQ="ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">d1\nTCGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n>d2\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGA\n") \
+        --id 0.5 \
+        --maxaccepts 0 \
+        --maxrejects 0 \
+        --top_hits_only \
+        --quiet \
+        --userfields target \
+        --userout - | \
+    sort | \
+    tr "\n" " " | \
+    grep -qx "d1 d2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+
+#******************************************************************************#
+#                                                                              #
 #             Default parameters for pairwise alignment (issue 604)            #
 #                                                                              #
 #******************************************************************************#
@@ -20594,6 +20785,34 @@ DESCRIPTION="issue 602: --cluster_fast --gapopen infinite (raise from 1,000 to I
 
 #******************************************************************************#
 #                                                                              #
+#       Update map.pl in wiki vsearch pipeline instructions (issue 605)        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/605
+
+# Suggestion to fix a regular expression in the map.pl script of the
+# VSEARCH wiki pipeline. This concerns documentation/wiki material, not
+# the vsearch binary; there is nothing to test here.
+
+
+#******************************************************************************#
+#                                                                              #
+#possible change in uchime*_denovo results between v2.22 and v2.30 (issue 606) #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/606
+
+# uchime*_denovo results changed between v2.22 and v2.30. The developer
+# confirmed that the newer behaviour is the correct implementation of
+# the UCHIME algorithm (earlier versions had a subtle bug that could
+# wrongly retain a second parent). Same topic as issue 591; see the
+# (currently commented-out) tests in the issue 591 section above.
+
+
+#******************************************************************************#
+#                                                                              #
 #       Can vsearch --uchine_denovo take multithreads option ? (issue 608)     #
 #                                                                              #
 #******************************************************************************#
@@ -20601,6 +20820,19 @@ DESCRIPTION="issue 602: --cluster_fast --gapopen infinite (raise from 1,000 to I
 ## https://github.com/torognes/vsearch/issues/608
 
 # question, already tested in uchime_denovo.sh
+
+
+#******************************************************************************#
+#                                                                              #
+#             How to set --fastq_qmax for AVITI reads? (issue 610)             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/610
+
+# How-to question about setting --fastq_qmax for Element Biosciences
+# AVITI reads (quality values above the default range) during
+# --fastq_mergepairs. No bug; there is nothing to test.
 
 
 #******************************************************************************#
@@ -20661,6 +20893,51 @@ DESCRIPTION="issue 612: --cluster_fast --id 1.00 --iddef 1 (expect clustering)"
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#         option to print progress indicator line by line (issue 613)          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/613
+
+# Feature request to print the progress indicator line by line, so that
+# a calling process (e.g. a Python script) can capture progress. Not a
+# bug; there is nothing to test.
+
+
+#******************************************************************************#
+#                                                                              #
+#     --chimeras_denovo leads to segmentation fault in v2.30.2 (issue 615)     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/615
+
+# --chimeras_denovo (an experimental command) could segfault on certain
+# inputs because of a memory-allocation bug caused by miscomputed
+# sequence lengths. Fixed in commit 3bc3a87 (v2.30.3). The crash was
+# triggered by a specific large dataset that could not be reduced to a
+# minimal reproducible example; no small regression test is available.
+
+
+#******************************************************************************#
+#                                                                              #
+#  uchime_denovo score different in the fasta file and statistics file (issue  #
+#                                     617)                                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/issues/617
+
+# With --uchime_denovo, the score written in the --fasta_score header of
+# non-chimeric sequences could be non-zero in some cases when it should
+# have been zero (the non-chimeric N/Y status itself was always
+# correct). Fixed in commit 2b699b6 (v2.30.4). The bug was reported on a
+# specific dataset that could not be reduced to a minimal reproducible
+# example; no small regression test is available.
 
 
 #******************************************************************************#
