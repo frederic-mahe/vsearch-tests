@@ -20570,7 +20570,47 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
 #
 ## https://github.com/torognes/vsearch/issues/600
 
-# TODO: show how to increase the cost of terminal gaps?
+## In issue 600, offset (shifted) repeats cluster together because the
+## shared core aligns perfectly while the non-overlapping ends are
+## absorbed by terminal gaps, which are cheap by default. The cost of
+## terminal gaps can be raised with the gap-penalty notation
+## (vsearch-pairwise_alignment_parameters(7)): the 'E' (extremities)
+## symbol sets both terminal contexts at once, 'I' sets internal gaps.
+
+## s1 and s2 share a 20 nt core ("A"x20) but carry distinct 10 nt
+## ends. With the default (cheap) terminal gap penalties, the optimal
+## alignment uses terminal gaps and reaches 100% identity (terminal
+## gaps are excluded from the default identity definition).
+DESCRIPTION="issue 600: cheap terminal gaps let offset repeats align at 100%"
+printf ">s1\nGGGGGGGGGGAAAAAAAAAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAAAAAAAAAACCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --userfields id \
+        --userout - | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## Raising the terminal gap penalties (--gapopen 20I/40E and --gapext
+## 2I/10E increase the cost of opening and extending terminal gaps)
+## makes terminal gaps too expensive: the aligner then prefers an
+## end-to-end alignment with mismatches, and the reported identity
+## drops well below 100%.
+DESCRIPTION="issue 600: expensive terminal gaps prevent offset repeats from aligning at 100%"
+printf ">s1\nGGGGGGGGGGAAAAAAAAAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAAAAAAAAAACCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --quiet \
+        --gapopen 20I/40E \
+        --gapext 2I/10E \
+        --userfields id \
+        --userout - | \
+    grep -qx "100.0" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 
@@ -21505,4 +21545,13 @@ exit 0
 
 
 # DONE: issues 1-622 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496, 504, 522, 524, 548, 564, 569, 570, 584, 607, 609, 614 still open)
-# TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
+#
+# note: issue 547 reports that --usearch_global may prefer a longer
+# target with a worse raw score, mismatch count and percent identity.
+# This is driven by the kmer-based candidate selection and ordering
+# heuristic used to pick which targets to align, which is an internal
+# implementation detail not specified in the manpage. The resulting
+# ranking cannot be predicted from the documented parameters alone, so
+# no deterministic black-box test is written for it: any assertion
+# would lock in undocumented heuristic behaviour rather than a
+# specified contract. Left as a documented open question for upstream.
