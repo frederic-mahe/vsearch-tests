@@ -1564,33 +1564,38 @@ printf "@s\nA\n+\nh\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# ## no effect?
-# DESCRIPTION="--fastx_uniques --fastq_asciiout (33 in, 64 out)"
-# printf "@s\nA\n+\nI\n" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --fastq_ascii 33 \
-#         --fastq_asciiout 64 \
-#         --quiet \
-#         --fastqout - | \
-#     tr "\n" "@" | \
-#     grep -qx "@s@A@+@h@" &&\
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# --fastq_asciiout only re-encodes quality values for --fastq_convert,
+# --sff_convert and --fasta2fastq (see the manpage excerpt above). With
+# --fastx_uniques the option is accepted but the quality string is
+# written verbatim: 'I' (Q40 in offset 33) is NOT rewritten as 'h'
+# (Q40 in offset 64).
+DESCRIPTION="--fastx_uniques --fastq_asciiout does not re-encode qualities (33 in, 64 out)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --fastq_asciiout 64 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@I@" &&\
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-# ## no effect?
-# DESCRIPTION="--fastx_uniques --fastq_asciiout (64 in, 33 out)"
-# printf "@s\nA\n+\nh\n" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --fastq_ascii 64 \
-#         --fastq_asciiout 33 \
-#         --quiet \
-#         --fastqout - | \
-#     tr "\n" "@" | \
-#     grep -qx "@s@A@+@I@" &&\
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# same in the other direction: 'h' (Q40 in offset 64) is NOT rewritten
+# as 'I' (Q40 in offset 33)
+DESCRIPTION="--fastx_uniques --fastq_asciiout does not re-encode qualities (64 in, 33 out)"
+printf "@s\nA\n+\nh\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 64 \
+        --fastq_asciiout 33 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@h@" &&\
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## ----------------------------------------------------------------- fastq_qmax
 
@@ -4229,8 +4234,19 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-## TODO:
-# - missing checks in vsearch code (min/max mismatches)
-# - fastq_asciiout (33 -> 64) or (64 -> 33) does not re-encode quality values?
+# note: vsearch performs no validation when a minimum threshold is set
+# higher than its matching maximum (--minuniquesize > --maxuniquesize,
+# or --minseqlength > --maxseqlength). No warning or error is emitted;
+# the command silently produces an empty output. This current
+# behaviour is covered by the "swapped threshold" tests above. Adding
+# an explicit check (or warning) would be an upstream change in
+# vsearch.
+
+# note: --fastq_asciiout does not re-encode quality values in
+# --fastx_uniques (it is accepted but has no observable effect on the
+# quality string). This is consistent with the manpage, which states
+# that --fastq_asciiout only applies to --fastq_convert, --sff_convert
+# and --fasta2fastq. See the two "does not re-encode qualities" tests
+# above.
 
 exit 0
