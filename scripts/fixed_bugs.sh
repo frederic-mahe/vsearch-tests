@@ -21506,8 +21506,3 @@ exit 0
 
 # DONE: issues 1-622 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496, 504, 522, 524, 548, 564, 569, 570, 584, 607, 609, 614 still open)
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
-# DONE: otutabout remaining open-questions (checked src/otutable.cc), tested in the issue 536 section:
-#       - in the absence of ';sample=' the sample name is taken from the query header (leading A-Za-z0-9_ run);
-#         when each query matches a distinct OTU the table is a diagonal matrix (confirmed)
-#       - clusters are NOT sorted by decreasing abundance: OTU rows (and sample columns) are std::set, i.e. alpha sorted (confirmed)
-#       - otutabout works with both --sample and --relabel: the sample comes from the ';sample=' annotation, unaffected by relabeling (confirmed)
