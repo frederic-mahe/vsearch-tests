@@ -7890,39 +7890,68 @@ printf ">query\nAAGGGGGGGGGCCC\n" | \
 # MD:Z:? variant string
 # YT:Z:UU string representing alignment type
 
-# NM (edit distance) is defined as the sum of mismatches XM and gap
-# extensions XG, where it should be the sum of mismatches XM, gap
-# extensions XG and gap opens XO, shouldn't it? Unless gap opens are
-# included in mismatches, which does not seem to be the case.
-
-# "${VSEARCH}" \
-#     --usearch_global <(printf '>q1\nGGGGGGGGGG\n') \
-#     --db <(printf '>r1\nGGGGGCCCCGGGGG\n') \
-#     --id 0.5 \
-#     --quiet \
-#     --minseqlength 1 \
-#     --samout - \
-#     --alnout -
-
-# I think the edit distance should just include the number of
-# mismatches and the number of alignment positions with a gap
-# symbol. In the example there are 0 mismatches and 4 gap positions,
-# so the total edit distance is 4. The edit distance is usually
-# defined as the number of simple operations necessary to transform
-# one string into another, where the operations usually allowed are
-# single nucleotide substitutions, single nucleotide deletions, and
-# single nucleotide insertions.
-
-# The edit distance (4 in this example) will usually be identical to
-# the total alignment length (16 in this example) minus the number of
-# matches (12 in this example).
+# Resolution (issue closed, not a bug): the edit distance is the
+# number of mismatches plus the number of alignment positions holding a
+# gap symbol. Each internal gap of length L contributes L edits, so the
+# gap open must NOT be added a second time. vsearch stores the *full*
+# internal gap length (open position included) in XG, hence
+# NM = XM + XG is already the correct edit distance; adding XO would
+# overcount by one per gap. The vsearch-sam(5) manpage documents this:
+# XG is "Equivalent to the total length of internal gaps" and NM is the
+# "sum of XM and XG (mismatches plus total internal gap length)".
 
 # Qry  1 + ggggg----ggggg 10
 #          |||||    |||||
 # Tgt  1 + GGGGGCCCCGGGGG 14
+# 14 cols, 10 ids (71.4%), 4 gaps (28.6%): edit distance = 0 + 4 = 4
 
-# 14 cols, 10 ids (71.4%), 4 gaps (28.6%)
-# q1	0	r1	1	255	5M4D5M	*	0	0	gggggggggg	*	AS:i:71	XN:i:0	XM:i:0	XO:i:1	XG:i:4	NM:i:4	MD:Z:5^CCCC5	YT:Z:UU
+# single internal gap of length 4, no mismatches: the edit distance NM
+# equals the number of mismatches (XM) plus the total internal gap
+# length (XG), i.e. 0 + 4 = 4
+DESCRIPTION="issue 260: SAM NM is the edit distance (mismatches + total internal gap length)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nGGGGGGGGGG\n') \
+    --db <(printf '>r1\nGGGGGCCCCGGGGG\n') \
+    --id 0.5 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - 2> /dev/null | \
+    tr "\t" "\n" | \
+    grep -qx "NM:i:4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# for the same single gap of length 4, XG holds the full internal gap
+# length (4, including the gap-opening position), not the number of gap
+# extensions excluding opens (which would be 3)
+DESCRIPTION="issue 260: SAM XG is the total internal gap length (gap open included)"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nGGGGGGGGGG\n') \
+    --db <(printf '>r1\nGGGGGCCCCGGGGG\n') \
+    --id 0.5 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - 2> /dev/null | \
+    tr "\t" "\n" | \
+    grep -qx "XG:i:4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# combined alignment with one mismatch and one internal gap of length 2:
+# NM = XM + XG = 1 + 2 = 3. The gap open (XO:i:1) is not added a second
+# time, otherwise NM would wrongly be 4
+DESCRIPTION="issue 260: SAM NM combines mismatches and gap length without double-counting gap opens"
+"${VSEARCH}" \
+    --usearch_global <(printf '>q1\nTGACGTGAATAGGCTAGCTAGTCAATTCCAGGTACGTACAGGTACA\n') \
+    --db <(printf '>r1\nTGACCTGAATAGGCTAGCTAGTCAGGATTCCAGGTACGTACAGGTACA\n') \
+    --id 0.5 \
+    --quiet \
+    --minseqlength 1 \
+    --samout - 2> /dev/null | \
+    tr "\t" "\n" | \
+    grep -qx "NM:i:3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -21320,7 +21349,7 @@ exit 0
 
 
 # DONE: issues 1-622 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496, 504, 522, 524, 548, 564, 569, 570, 584, 607, 609, 614 still open)
-# TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.# TODO: fix issue 260 (SAM format)
+# TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
 # TODO: otutabout remaining open-questions (check the actual C++ code):
 #       - in the absence of ';sample=abcd1234;' each cluster is assigned to its own sample (matrix diagonal)?
 #       - clusters are sorted by decreasing abundance?
