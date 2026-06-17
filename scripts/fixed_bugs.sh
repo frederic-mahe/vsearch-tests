@@ -13143,16 +13143,22 @@ printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# flaky test!! remove for now
-# DESCRIPTION="issue 506: reading --db from '-' (stdin) is accepted"
-# printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
-#     "${VSEARCH}" \
-#         --uchime_ref <(printf ">query\nAAGG\n") \
-#         --db - \
-#         --quiet \
-#         --uchimeout /dev/null 2> /dev/null && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# '-' (read from stdin) is rejected for --db, by design. Before reading
+# the database, vsearch calls udb_detect_isudb(), which runs stat() on
+# the literal filename to test for a UDB file. stat("-") fails (there is
+# no file named '-'), so vsearch stops with a fatal error. Explicit
+# stream paths such as /dev/stdin or bash process substitution are real
+# paths that stat() can resolve (and are then detected as pipes), which
+# is why the tests above work while '-' does not.
+DESCRIPTION="issue 506: reading --db from '-' (stdin) is rejected"
+printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
+    "${VSEARCH}" \
+        --uchime_ref <(printf ">query\nAAGG\n") \
+        --db - \
+        --quiet \
+        --uchimeout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 #******************************************************************************#
@@ -21200,7 +21206,6 @@ exit 0
 
 
 # DONE: issues 1-622 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496, 504, 522, 524, 548, 564, 569, 570, 584, 607, 609, 614 still open)
-# TODO: issue 506 read --db from stream fails in CI runs (works on my machine)
 # TODO: issue 529
 # TODO: issue 547: the way kmer profile scores are computed is not clear at all. I cannot predict it.
 # TODO: regex used to strip annotations (^|;)size=[0-9]+(;|$)/;/ fix tests accordingly.
