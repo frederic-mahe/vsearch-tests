@@ -454,6 +454,31 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# issue #628: the missing-abundance warning is written to the log file
+DESCRIPTION="--rereplicate --log writes the missing-abundance warning to the log file"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --quiet \
+        --output /dev/null \
+        --log - 2>/dev/null | \
+    grep -iq "missing abundance information" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# issue #628: with --quiet, the missing-abundance warning goes to the log
+# file only and is no longer duplicated on stderr
+DESCRIPTION="--rereplicate --quiet --log keeps the missing-abundance warning off stderr"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --quiet \
+        --output /dev/null \
+        --log /dev/null 2>&1 > /dev/null | \
+    grep -iq "warning" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## ---------------------------------------------------------------- no_progress
 
 DESCRIPTION="--rereplicate --no_progress is accepted"
