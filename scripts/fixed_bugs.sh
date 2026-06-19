@@ -21541,6 +21541,73 @@ SEQ2="CCAATCCTTTCATGTGACGATACTATGTATCA"
 unset SEQ1 SEQ2
 
 
+#******************************************************************************#
+#                                                                              #
+#         Saturate k-mer match counter to avoid wraparound (issue 630)         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/630
+
+# The per-target shared-k-mer counter (count_t, an unsigned short) in
+# search_topscores was incremented with a plain ++ on the sparse-list
+# path. A query sharing more than 65535 distinct k-mers with one target
+# wraps that counter back toward 0; the wrapped value can fall below
+# minwordmatches, silently dropping the true best target from the
+# candidate set. The fix saturates the increment at INT16_MAX (32767),
+# matching the SIMD bitmap path.
+#
+# The test below reproduces the regression, but it is SLOW (~23 s) and
+# is therefore kept commented out, as documentation of how to exercise
+# the bug. The overflow needs a query sharing >65535 distinct k-mers
+# with a target, i.e. two sequences of ~75 kb; confirming the fix then
+# requires aligning that ~75 kb self-match. (The candidate-rejection
+# path the bug triggers is fast, but the correct path is a full O(L^2)
+# alignment, which dominates the runtime.)
+#
+# The scalar (sparse-list) path is forced with 16 db sequences: a k-mer
+# present in a single target then has count 1 < 16/8 = 2, below the
+# bitmap threshold. minwordmatches (20000) sits between the wrapped
+# value (~distinct - 65536 = ~9286) and the saturation cap (32767): a
+# correct vsearch keeps the target (32767 >= 20000) and reports the
+# self-match; a wrapping vsearch drops it.
+#
+# DESCRIPTION="issue 630: k-mer match counter saturates instead of wrapping at 65536"
+# DB=$(mktemp)
+# QUERY=$(mktemp)
+# # DB: one high-diversity target (75000 bp, ~74800 distinct 12-mers)
+# # followed by 15 short dummies, for 16 sequences total.
+# awk 'BEGIN{
+#        b = "ACGT"; srand(1);
+#        printf ">T0\n";
+#        for (i = 0; i < 75000; i++) printf "%s", substr(b, int(rand() * 4) + 1, 1);
+#        printf "\n";
+#        for (d = 1; d <= 15; d++) {
+#          printf ">dummy%d\n", d;
+#          for (i = 0; i < 50; i++) printf "%s", substr(b, int(rand() * 4) + 1, 1);
+#          printf "\n";
+#        }
+#      }' > "${DB}"
+# # query is a copy of the big target
+# awk '/^>T0$/ {p = 1; print; next} /^>/ {p = 0} p' "${DB}" > "${QUERY}"
+# "${VSEARCH}" \
+#     --usearch_global "${QUERY}" \
+#     --db "${DB}" \
+#     --id 0.9 \
+#     --wordlength 12 \
+#     --minwordmatches 20000 \
+#     --maxseqlength 100000 \
+#     --qmask none \
+#     --dbmask none \
+#     --quiet \
+#     --userfields query+target \
+#     --userout - 2>/dev/null | \
+#     grep -qx "T0	T0" && \
+#     success "${DESCRIPTION}" || \
+#         failure "${DESCRIPTION}"
+# rm -f "${DB}" "${QUERY}"
+
+
 exit 0
 
 
