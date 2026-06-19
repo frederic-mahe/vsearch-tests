@@ -3607,6 +3607,19 @@ DESCRIPTION="fastq_mergepairs option fastq_qmin 16 rejects entry with Q=15 (log 
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# the below-qmin fatal error is written to the log file (it was
+# previously sent to stderr instead of to the log file handle)
+DESCRIPTION="fastq_mergepairs writes the below-qmin fatal error to the log file"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\n0\n") \
+    --reverse <(printf "@s\nT\n+\n0\n") \
+    --fastq_qmin 16 \
+    --fastaout /dev/null \
+    --log - 2>/dev/null | \
+    grep -iq "below qmin" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="fastq_mergepairs option fastq_qmin must be smaller than fastq_qmax"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nJ\n") \
