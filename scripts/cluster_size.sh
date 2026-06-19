@@ -1039,6 +1039,21 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the ;length= field of an MSA consensus must match the true residue
+# count (it was previously one too large, counting the '\0' slot)
+DESCRIPTION="--cluster_size --consout --lengthout reports the correct consensus length"
+printf ">s1\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 1.0 \
+        --minseqlength 1 \
+        --lengthout \
+        --consout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">centroid=s1;seqs=1;length=12" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_size --notrunclabels retains full header"
 printf ">s1 suffix\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \

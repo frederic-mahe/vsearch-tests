@@ -969,6 +969,21 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the ;length= field of an MSA consensus must match the true residue
+# count (it was previously one too large, counting the '\0' slot)
+DESCRIPTION="--cluster_unoise --consout --lengthout reports the correct consensus length"
+printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --sizein \
+        --minseqlength 1 \
+        --lengthout \
+        --consout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">centroid=s1;size=16;seqs=1;length=12" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_unoise --notrunclabels retains full header"
 printf ">s1;size=16 suffix\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
