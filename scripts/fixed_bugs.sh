@@ -10839,10 +10839,13 @@ printf ">q\nAAAAACGTAGCTAGCTGATCGATCGTAGCTAGCTGATTTT\n" | \
 ## not a bug (documentation): --allpairs_global compares each sequence only to
 ## the sequences that come *after* it in the input, not all-against-all. With
 ## three sequences this yields the pairs a-b, a-c and b-c.
+## --threads 1 keeps the pair output order deterministic (with several
+## threads the pairs may be emitted in a different order).
 DESCRIPTION="issue 440: --allpairs_global compares each sequence to the following ones"
 printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTACGT\n>c\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --allpairs_global - \
+        --threads 1 \
         --id 0.5 \
         --minseqlength 1 \
         --userfields query+target \
