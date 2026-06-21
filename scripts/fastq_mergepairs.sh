@@ -3921,7 +3921,7 @@ printf "@s\nA\n+\nI\n" | \
 
 # regular compressed files are sniffed; the flag is not needed
 DESCRIPTION="fastq_mergepairs reads a bzip2 regular file without --bzip2_decompress"
-TMP_REV=$(mktemp --suffix=.bz2)
+TMP_REV=$(mktemp -u).bz2
 printf "@s\nT\n+\nI\n" | bzip2 > "${TMP_REV}"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
@@ -3974,7 +3974,7 @@ printf "@s\nA\n+\nI\n" | \
         success "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs reads a gzip regular file without --gzip_decompress"
-TMP_REV=$(mktemp --suffix=.gz)
+TMP_REV=$(mktemp -u).gz
 printf "@s\nT\n+\nI\n" | gzip > "${TMP_REV}"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \

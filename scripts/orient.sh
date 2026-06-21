@@ -149,7 +149,7 @@ printf ">s\nACGT\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--db accepts a UDB file"
-TMPUDB=$(mktemp --suffix=.udb)
+TMPUDB=$(mktemp -u).udb
 printf ">s\nGACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT\n" | \
     "${VSEARCH}" \
         --makeudb_usearch - \
@@ -171,7 +171,7 @@ unset TMPUDB
 ## with its sizes parsed (udb.cc size-parsing branch); orientation still
 ## succeeds and reports the plus strand
 DESCRIPTION="--db accepts a UDB file built from size-annotated headers"
-TMPUDB=$(mktemp --suffix=.udb)
+TMPUDB=$(mktemp -u).udb
 printf ">s;size=5\nGACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT\n" | \
     "${VSEARCH}" \
         --makeudb_usearch - \
@@ -998,7 +998,7 @@ unset SEQ
 
 # UDB was built with wordlength 12; specifying a different wordlength triggers a warning
 DESCRIPTION="--wordlength is overridden when reading a UDB file"
-TMPUDB=$(mktemp --suffix=.udb)
+TMPUDB=$(mktemp -u).udb
 SEQ="GACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT"
 printf ">s\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
@@ -1318,7 +1318,7 @@ unset OUT_DUST OUT_DUST_HARD
 # with a UDB database, the hardmask (and dust) branch is gated by
 # `not is_udb` (orient.cc:195-205); hardmask therefore has no effect
 DESCRIPTION="--hardmask has no effect when the db is a UDB file"
-TMPUDB=$(mktemp --suffix=.udb)
+TMPUDB=$(mktemp -u).udb
 printf ">s\nGACTGCATGACGTATGCGTATCGATCATCATCGATCATCA\n" | \
     "${VSEARCH}" \
         --makeudb_usearch - \
