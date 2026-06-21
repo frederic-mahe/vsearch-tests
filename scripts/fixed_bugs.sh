@@ -3817,9 +3817,9 @@ ${VSEARCH} \
 DESCRIPTION="issue 63: --cluster_size accepts large sequences (> 16,000 nucleotides)"
 TMP=$(mktemp)
 (printf ">s1\n"
- yes A | head -n 16386
+ yes A 2>/dev/null | head -n 16386
  printf ">s2\n"
- yes A | head -n 100) > "${TMP}"
+ yes A 2>/dev/null | head -n 100) > "${TMP}"
 ${VSEARCH} \
     --cluster_fast "${TMP}" \
     --id 0.95 \
