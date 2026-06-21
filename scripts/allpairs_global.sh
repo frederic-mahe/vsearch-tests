@@ -392,8 +392,7 @@ printf ">s1\n%s\n>s2\n%s\n>s3\n%s\n" "${SEQ}" "${SEQ}" "${SEQ}" | \
         --acceptall \
         --blast6out - \
         --quiet | \
-    wc -l | \
-    grep -qx "3" && \
+    awk 'END {exit NR == 3 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -406,8 +405,7 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         --acceptall \
         --blast6out - \
         --quiet | \
-    wc -l | \
-    grep -qx "1" && \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -458,9 +456,7 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         --acceptall \
         --uc - \
         --quiet | \
-    awk -F'\t' '$1 == "H"' | \
-    wc -l | \
-    grep -qx "1" && \
+    awk -F'\t' '$1 == "H" {c += 1} END {exit c == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1017,9 +1013,7 @@ printf ">s1\n%s\n>s2\n%s\n>s3\n%s\n" "${SEQ}" "${SEQ}" "${SEQ}" | \
         --maxhits 1 \
         --blast6out - \
         --quiet | \
-    awk '$1 == "s1"' | \
-    wc -l | \
-    grep -qx "1" && \
+    awk '$1 == "s1" {c += 1} END {exit c == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
