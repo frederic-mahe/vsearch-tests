@@ -4195,7 +4195,7 @@ printf ">s\tfoo\nA\n" | \
         --notrunclabels \
         --quiet \
         --nonchimeras - | \
-    grep -qP "^>s\tfoo$" && \
+    grep -qxE ">s$(printf '\t')foo" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
