@@ -1680,9 +1680,9 @@ DESCRIPTION="--fastq_stats accepts and allocates for long reads (length = 512)"
 LENGTH=512
 (
     printf "@s\n"
-    yes A | head -n ${LENGTH}
+    yes A 2>/dev/null | head -n ${LENGTH}
     printf "+\n"
-    yes I | head -n ${LENGTH}
+    yes I 2>/dev/null | head -n ${LENGTH}
 ) | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -1695,9 +1695,9 @@ DESCRIPTION="--fastq_stats accepts and allocates for long reads (length = 512 + 
 LENGTH=513
 (
     printf "@s\n"
-    yes A | head -n ${LENGTH}
+    yes A 2>/dev/null | head -n ${LENGTH}
     printf "+\n"
-    yes I | head -n ${LENGTH}
+    yes I 2>/dev/null | head -n ${LENGTH}
 ) | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -1711,9 +1711,9 @@ DESCRIPTION="--fastq_stats accepts and allocates for long reads (length = 512 + 
 LENGTH=514
 (
     printf "@s\n"
-    yes A | head -n ${LENGTH}
+    yes A 2>/dev/null | head -n ${LENGTH}
     printf "+\n"
-    yes I | head -n ${LENGTH}
+    yes I 2>/dev/null | head -n ${LENGTH}
 ) | \
     "${VSEARCH}" \
         --fastq_stats - \

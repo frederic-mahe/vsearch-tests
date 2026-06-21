@@ -560,7 +560,7 @@ DESCRIPTION="--derep_smallmem accepts more than 1,024 unique sequences"
 TMP=$(mktemp)
 (for i in {1..1025} ; do
     printf ">s%d\n" "${i}"
-    yes A | head -n "${i}"
+    yes A 2>/dev/null | head -n "${i}"
  done) > "${TMP}"
 "${VSEARCH}" \
     --derep_smallmem "${TMP}" \

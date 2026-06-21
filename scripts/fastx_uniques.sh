@@ -544,7 +544,7 @@ printf ">s1\nU\n" | \
 DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences"
 (for i in {1..1025} ; do
     printf ">s%d\n" "${i}"
-    yes A | head -n "${i}"
+    yes A 2>/dev/null | head -n "${i}"
  done) | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -3906,7 +3906,7 @@ printf ">s1;size=1;\nA\n>s2;size=1;\nT\n" | \
 DESCRIPTION="--fastx_uniques accepts more than 1,024 unique sequences (--uc)"
 (for i in {1..1025} ; do
     printf ">s%d\n" "${i}"
-    yes A | head -n "${i}"
+    yes A 2>/dev/null | head -n "${i}"
  done) | \
     "${VSEARCH}" \
         --fastx_uniques - \
