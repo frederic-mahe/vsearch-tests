@@ -13165,15 +13165,24 @@ printf ">query\nAAGG\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 506: reading query from process substitution and --db from /dev/stdin"
+# query is read from a regular file rather than a process substitution:
+# on FreeBSD, combining a process-substitution query with --db
+# /dev/stdin makes vsearch read the wrong stream ("File type not
+# recognized"), because /dev/stdin (/dev/fd/0 via fdescfs) and bash
+# process substitution both rely on /dev/fd and interact badly. A plain
+# file query isolates the --db /dev/stdin path being tested here.
+DESCRIPTION="issue 506: reading --db from /dev/stdin (query from a file)"
+QUERY=$(mktemp)
+printf ">query\nAAGG\n" > "${QUERY}"
 printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
     "${VSEARCH}" \
-        --uchime_ref <(printf ">query\nAAGG\n") \
+        --uchime_ref "${QUERY}" \
         --db /dev/stdin \
         --quiet \
         --uchimeout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm -f "${QUERY}"
 
 # '-' (read from stdin) is rejected for --db, by design. Before reading
 # the database, vsearch calls udb_detect_isudb(), which runs stat() on
