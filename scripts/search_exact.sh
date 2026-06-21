@@ -991,7 +991,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --blast6out - \
         --quiet | \
     wc -l | \
-    grep -qx "1" && \
+    grep -qxE "[[:space:]]*1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -1702,7 +1702,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --quiet | \
     awk -F'\t' '$1 == "H"' | \
     wc -l | \
-    grep -qx "2" && \
+    grep -qxE "[[:space:]]*2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
