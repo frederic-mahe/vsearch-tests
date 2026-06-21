@@ -147,7 +147,7 @@ printf ">s1\nA\n>s2\nA\n>s3\nA\n>s4\nA\n" | \
         --output - | \
     grep "^>" | \
     sort | \
-    uniq --repeated | \
+    uniq -d | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"

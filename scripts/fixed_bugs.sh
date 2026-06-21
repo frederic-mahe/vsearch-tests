@@ -16198,7 +16198,7 @@ DESCRIPTION="issue 536: otutabout cluster names are alpha sorted (normal input o
         --quiet \
         --otutabout - | \
     cut -f 1 | \
-    tail --lines=+2 | \
+    tail -n +2 | \
     tr "\n" "@" | \
     grep -qx "s1@s2@s3@" && \
     success "${DESCRIPTION}" || \
@@ -16219,7 +16219,7 @@ DESCRIPTION="issue 536: otutabout cluster names are alpha sorted (reverse input 
         --quiet \
         --otutabout - | \
     cut -f 1 | \
-    tail --lines=+2 | \
+    tail -n +2 | \
     tr "\n" "@" | \
     grep -qx "s1@s2@s3@" && \
     success "${DESCRIPTION}" || \

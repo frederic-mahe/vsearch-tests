@@ -351,7 +351,7 @@ printf ">s1\nA\n>s2\nA\n>s3\nA\n>s4\nA\n" | \
         --fastaout_discarded - 2> /dev/null | \
     grep "^>" | \
     sort | \
-    uniq --repeated | \
+    uniq -d | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"

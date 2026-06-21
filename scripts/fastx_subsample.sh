@@ -588,7 +588,7 @@ printf ">s1\nA\n>s2\nC\n>s3\nG\n>s4\nT\n>s5\nA\n" | \
         --sample_size 3 \
         --fastaout - 2> /dev/null | \
     grep "^>" | \
-    sort --check=quiet && \
+    sort -C && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -624,7 +624,7 @@ printf ">s1\nA\n>s2\nC\n>s3\nG\n>s4\nT\n>s5\nA\n" | \
         --fastaout - \
         --fastaout_discarded - 2> /dev/null | \
     grep "^>" | \
-    sort --unique | \
+    sort -u | \
     awk -F "=" 'END {exit NR == 5 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
