@@ -421,7 +421,7 @@ DESCRIPTION="--udbstats formats DB size with a 'k' suffix for large UDBs"
 TMPFA=$(mktemp)
 TMPUDB=$(mktemp)
 TMPLOG=$(mktemp)
-SEQ10K=$(LC_ALL=C tr -dc 'ACGT' < /dev/urandom | head -c 10010)
+SEQ10K=$(dd if=/dev/urandom bs=720000 count=1 2>/dev/null | LC_ALL=C tr -dc 'ACGT' | head -c 10010)
 for i in 1 2 3 4 5 6 7 8 9 10 ; do
     printf ">s%d\n%s\n" "${i}" "${SEQ10K}"
 done > "${TMPFA}"
@@ -449,7 +449,7 @@ DESCRIPTION="--udbstats formats bucket 'Total size' with a 'k' suffix for full b
 TMPFA=$(mktemp)
 TMPUDB=$(mktemp)
 TMPLOG=$(mktemp)
-SEQ10K=$(LC_ALL=C tr -dc 'ACGT' < /dev/urandom | head -c 10010)
+SEQ10K=$(dd if=/dev/urandom bs=720000 count=1 2>/dev/null | LC_ALL=C tr -dc 'ACGT' | head -c 10010)
 for i in 1 2 3 4 5 6 7 8 9 10 ; do
     printf ">s%d\n%s\n" "${i}" "${SEQ10K}"
 done > "${TMPFA}"

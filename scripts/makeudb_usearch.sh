@@ -599,7 +599,7 @@ TMPUDB=$(mktemp)
 TMPOUT=$(mktemp)
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ; do
     printf ">s%d\n" "${i}"
-    LC_ALL=C tr -dc 'ACGT' < /dev/urandom | head -c 32
+    dd if=/dev/urandom bs=8192 count=1 2>/dev/null | LC_ALL=C tr -dc 'ACGT' | head -c 32
     printf "\n"
 done > "${TMPFA}"
 "${VSEARCH}" \
