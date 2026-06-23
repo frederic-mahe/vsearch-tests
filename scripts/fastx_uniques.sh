@@ -2476,6 +2476,38 @@ printf ">s\n%81s\n" " " | tr " " "A" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
+# the seqlen field is an unsigned int, so --maxseqlength is capped at
+# UINT32_MAX (4,294,967,295) to avoid silently truncating longer values
+DESCRIPTION="--fastx_uniques --maxseqlength accepts UINT32_MAX (4294967295)"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --maxseqlength 4294967295 \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --maxseqlength rejects UINT32_MAX + 1 (4294967296)"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --maxseqlength 4294967296 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --maxseqlength rejects values well above UINT32_MAX"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --maxseqlength 99999999999 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
 # ## missing check in vsearch code!
 # DESCRIPTION="--fastx_uniques --maxseqlength must be a positive integer"
 # printf ">s\n%81s\n" " " | tr " " "A" | \
