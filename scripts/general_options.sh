@@ -80,6 +80,53 @@ mkfifo fifoTestInput123
 printf "@a\nA\n+\na\n" > fifoTestInput123
 rm fifoTestInput123
 
+## A non-regular input (named pipe, /dev/stdin, or the /dev/fd/N entries
+## created by shell process substitution) cannot be reopened from the
+## start. The fasta/fastq reader autodetects gzip/bzip2 compression by
+## reading the first bytes, then rewinds by closing and reopening the
+## file; on a non-rewindable stream those first bytes would be lost and
+## the reader would see a non-fasta/fastq first character, aborting with
+## "File type not recognized". The tests above only check the exit code;
+## the ones below check that the *content* of such a stream is read
+## intact (the leading '>'/'@' and the label are the very first bytes,
+## so any consumption would corrupt the record).
+
+## fasta record read from /dev/stdin is preserved (header and sequence)
+DESCRIPTION="vsearch reads a fasta record from /dev/stdin without consuming bytes"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques /dev/stdin \
+        --quiet \
+        --fastaout - | \
+    tr '\n' ' ' | \
+    grep -qx ">s1 ACGT " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## fasta record read from a process substitution is preserved
+DESCRIPTION="vsearch reads a fasta record from a process substitution without consuming bytes"
+"${VSEARCH}" \
+    --fastx_uniques <(printf ">s1\nACGT\n") \
+    --quiet \
+    --fastaout - | \
+    tr '\n' ' ' | \
+    grep -qx ">s1 ACGT " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## fastq record read from /dev/stdin is preserved (header, sequence and
+## quality string)
+DESCRIPTION="vsearch reads a fastq record from /dev/stdin without consuming bytes"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques /dev/stdin \
+        --quiet \
+        --fastqout - | \
+    tr '\n' ' ' | \
+    grep -qx "@s1 ACGT + IIII " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
