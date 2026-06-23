@@ -261,6 +261,51 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}" "${UDB}"
 unset DB UDB
 
+## A non-regular --db stream (named pipe, /dev/stdin, or the /dev/fd/N
+## entries created by shell process substitution) cannot be a UDB file
+## and cannot be reopened from the start. Before reading the database,
+## vsearch peeks at the 4-byte UDB magic number, and the fasta reader
+## then autodetects compression from the first bytes. On a non-rewindable
+## stream those peeks must not consume any byte, otherwise the reader
+## would see a truncated database and abort (or silently find no match).
+## These tests feed a plain fasta database through such streams and check
+## that the full database sequence is still read: a full-length match at
+## --id 1.0 is reported, with the expected target label.
+
+## --db read from /dev/stdin (the query is read from a regular file: on
+## FreeBSD a process-substitution query combined with --db /dev/stdin
+## makes vsearch read the wrong stream, so the query is isolated here)
+DESCRIPTION="--usearch_global reads --db from /dev/stdin without consuming bytes"
+QUERY=$(mktemp)
+printf ">q\n%s\n" "${SEQ}" > "${QUERY}"
+printf ">d\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global "${QUERY}" \
+        --db /dev/stdin \
+        --id 1.0 \
+        --quiet \
+        --userfields target \
+        --userout - | \
+    grep -qwx "d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${QUERY}"
+unset QUERY
+
+## --db read from a process substitution
+DESCRIPTION="--usearch_global reads --db from a process substitution without consuming bytes"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">d\n%s\n" "${SEQ}") \
+        --id 1.0 \
+        --quiet \
+        --userfields target \
+        --userout - | \
+    grep -qwx "d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--usearch_global fails without --id"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
