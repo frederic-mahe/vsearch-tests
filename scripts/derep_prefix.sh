@@ -58,7 +58,7 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
 #     failure "${DESCRIPTION}" || \
 # 	success "${DESCRIPTION}"
 
-DESCRIPTION="--derep_prefix fails if unable to open output file for writing"
+DESCRIPTION="--derep_prefix errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
@@ -69,7 +69,7 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--derep_prefix fails if unable to open uc file for writing"
+DESCRIPTION="--derep_prefix errors if unable to open uc file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
@@ -2507,7 +2507,7 @@ printf ">s1;size=1;\nA\n>s2;size=2;\nC\n>s3;size=2;\nA\n" | \
 	failure "${DESCRIPTION}"
 
 ## --topn fails with negative arguments
-DESCRIPTION="--topn fails with negative arguments"
+DESCRIPTION="--topn errors with negative arguments"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
@@ -2518,7 +2518,7 @@ printf ">s\nA\n" | \
 
 ## --topn zero should return no sequence or fail (only values > 0
 ## should be accepted)
-DESCRIPTION="--topn zero should return no sequence (or fail)"
+DESCRIPTION="--topn zero should return no sequence (or error)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
@@ -2531,7 +2531,7 @@ printf ">s\nA\n" | \
 	success "${DESCRIPTION}"
 
 ## --topn fails with non-numerical argument
-DESCRIPTION="--topn fails with non-numerical argument"
+DESCRIPTION="--topn errors with non-numerical argument"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \
@@ -2575,7 +2575,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--derep_prefix fails if unable to open uc file for writing"
+DESCRIPTION="--derep_prefix errors if unable to open uc file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -2588,7 +2588,7 @@ chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 ## --uc fails if no output redirection is given (filename, device or -)
-DESCRIPTION="--uc fails if no output redirection is given"
+DESCRIPTION="--uc errors if no output redirection is given"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --derep_prefix - \

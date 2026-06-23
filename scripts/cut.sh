@@ -208,7 +208,7 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cut fails if unable to open fastaout for writing"
+DESCRIPTION="--cut errors if unable to open fastaout for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -220,7 +220,7 @@ printf ">s\nA\n" | \
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--cut fails if unable to open fastaout_rev for writing"
+DESCRIPTION="--cut errors if unable to open fastaout_rev for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -232,7 +232,7 @@ printf ">s\nA\n" | \
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--cut fails if unable to open fastaout_discarded for writing"
+DESCRIPTION="--cut errors if unable to open fastaout_discarded for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -244,7 +244,7 @@ printf ">s\nA\n" | \
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--cut fails if unable to open fastaout_discarded_rev for writing"
+DESCRIPTION="--cut errors if unable to open fastaout_discarded_rev for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -266,7 +266,7 @@ DESCRIPTION="--cut requires an input file"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cut fails if unable to open input file for reading"
+DESCRIPTION="--cut errors if unable to open input file for reading"
 TMP=$(mktemp) && chmod u-r "${TMP}"  # remove write permission
 printf ">s\nA\n" > "${TMP}"
 "${VSEARCH}" \

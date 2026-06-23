@@ -79,7 +79,7 @@ printf ">s1\nAAAAAAAAAAAA\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--cluster_size fails if input file does not exist"
+DESCRIPTION="--cluster_size errors if input file does not exist"
 "${VSEARCH}" \
     --cluster_size /no/such/file \
     --id 1.0 \
@@ -89,7 +89,7 @@ DESCRIPTION="--cluster_size fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_size fails if input file is not readable"
+DESCRIPTION="--cluster_size errors if input file is not readable"
 TMP=$(mktemp)
 printf ">s1\nAAAAAAAAAAAA\n" > "${TMP}"
 chmod u-r "${TMP}"
@@ -148,7 +148,7 @@ printf "not a fasta or fastq file\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_size fails without --id"
+DESCRIPTION="--cluster_size errors without --id"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_size - \
@@ -158,7 +158,7 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_size fails without any output option"
+DESCRIPTION="--cluster_size errors without any output option"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_size - \

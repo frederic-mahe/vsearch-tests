@@ -97,7 +97,7 @@ printf ">q\n%s\n" "${SEQ}" > "${QUERY}"
 rm -f "${DB}" "${QUERY}"
 unset DB QUERY
 
-DESCRIPTION="--usearch_global fails if query file does not exist"
+DESCRIPTION="--usearch_global errors if query file does not exist"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
 "${VSEARCH}" \
@@ -111,7 +111,7 @@ printf ">d\n%s\n" "${SEQ}" > "${DB}"
 rm -f "${DB}"
 unset DB
 
-DESCRIPTION="--usearch_global fails if query file is not readable"
+DESCRIPTION="--usearch_global errors if query file is not readable"
 DB=$(mktemp)
 QUERY=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
@@ -188,7 +188,7 @@ printf "not a fasta file\n" | \
 rm -f "${DB}"
 unset DB
 
-DESCRIPTION="--usearch_global fails without --db"
+DESCRIPTION="--usearch_global errors without --db"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --usearch_global - \
@@ -198,7 +198,7 @@ printf ">q\n%s\n" "${SEQ}" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global fails if --db file does not exist"
+DESCRIPTION="--usearch_global errors if --db file does not exist"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --usearch_global - \
@@ -306,7 +306,7 @@ printf ">q\n%s\n" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global fails without --id"
+DESCRIPTION="--usearch_global errors without --id"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
@@ -380,7 +380,7 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
-DESCRIPTION="--usearch_global fails without any output option"
+DESCRIPTION="--usearch_global errors without any output option"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
@@ -444,7 +444,7 @@ unset OPT
 for OPT in --alnout --biomout --blast6out --fastapairs --lcaout --matched \
            --mothur_shared_out --notmatched --otutabout \
            --samout --uc --userout --dbmatched --dbnotmatched ; do
-    DESCRIPTION="--usearch_global ${OPT} fails if unable to open output file for writing"
+    DESCRIPTION="--usearch_global ${OPT} errors if unable to open output file for writing"
     DB=$(mktemp)
     printf ">d\n%s\n" "${SEQ}" > "${DB}"
     TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
@@ -465,7 +465,7 @@ unset OPT
 ## --qsegout and --tsegout cannot be used alone, so they are paired
 ## with a writable --alnout
 for OPT in --qsegout --tsegout ; do
-    DESCRIPTION="--usearch_global ${OPT} fails if unable to open output file for writing"
+    DESCRIPTION="--usearch_global ${OPT} errors if unable to open output file for writing"
     DB=$(mktemp)
     printf ">d\n%s\n" "${SEQ}" > "${DB}"
     TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission

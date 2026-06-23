@@ -75,7 +75,7 @@ printf ">s\nACGT\n" > "${TMPFA}"
 rm -f "${TMPFA}"
 unset TMPFA
 
-DESCRIPTION="--orient fails if input file does not exist"
+DESCRIPTION="--orient errors if input file does not exist"
 "${VSEARCH}" \
     --orient /no/such/file \
     --db <(printf ">s\nACGT\n") \
@@ -84,7 +84,7 @@ DESCRIPTION="--orient fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--orient fails if input file is not readable"
+DESCRIPTION="--orient errors if input file is not readable"
 TMPFA=$(mktemp)
 printf ">s\nACGT\n" > "${TMPFA}"
 chmod u-r "${TMPFA}"
@@ -98,7 +98,7 @@ chmod u-r "${TMPFA}"
 chmod u+r "${TMPFA}" && rm -f "${TMPFA}"
 unset TMPFA
 
-DESCRIPTION="--orient fails with input that is neither FASTA nor FASTQ"
+DESCRIPTION="--orient errors with input that is neither FASTA nor FASTQ"
 printf "not a fasta or fastq file\n" | \
     "${VSEARCH}" \
         --orient - \
@@ -108,7 +108,7 @@ printf "not a fasta or fastq file\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--orient fails without any output option"
+DESCRIPTION="--orient errors without any output option"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
@@ -190,7 +190,7 @@ printf ">q\nGACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT\n" | \
 rm -f "${TMPUDB}"
 unset TMPUDB
 
-DESCRIPTION="--db fails if database file does not exist"
+DESCRIPTION="--db errors if database file does not exist"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
@@ -200,7 +200,7 @@ printf ">s\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--db fails if database file is not readable"
+DESCRIPTION="--db errors if database file is not readable"
 TMPDB=$(mktemp)
 printf ">s\nACGT\n" > "${TMPDB}"
 chmod u-r "${TMPDB}"
@@ -215,7 +215,7 @@ printf ">s\nACGT\n" | \
 chmod u+r "${TMPDB}" && rm -f "${TMPDB}"
 unset TMPDB
 
-DESCRIPTION="--db fails with database that is neither FASTA, FASTQ, nor UDB"
+DESCRIPTION="--db errors with database that is neither FASTA, FASTQ, nor UDB"
 TMPDB=$(mktemp)
 printf "not a fasta/fastq/udb file\n" > "${TMPDB}"
 printf ">s\nACGT\n" | \
@@ -269,7 +269,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 unset SEQ
 
-DESCRIPTION="--fastaout fails if output file cannot be opened for writing"
+DESCRIPTION="--fastaout errors if output file cannot be opened for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
@@ -309,7 +309,7 @@ printf "@s\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastqout fails with fasta input (no quality scores)"
+DESCRIPTION="--fastqout errors with fasta input (no quality scores)"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
@@ -333,7 +333,7 @@ printf "@q\n%s\n+\n%s\n" "${SEQ}" "${QUAL}" | \
         failure "${DESCRIPTION}"
 unset SEQ QUAL
 
-DESCRIPTION="--fastqout fails if output file cannot be opened for writing"
+DESCRIPTION="--fastqout errors if output file cannot be opened for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
@@ -382,7 +382,7 @@ printf ">q\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--notmatched fails if output file cannot be opened for writing"
+DESCRIPTION="--notmatched errors if output file cannot be opened for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
@@ -418,7 +418,7 @@ printf ">s\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--tabbedout fails if output file cannot be opened for writing"
+DESCRIPTION="--tabbedout errors if output file cannot be opened for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
@@ -1034,7 +1034,7 @@ unset TMPUDB SEQ
 # The happy-path test is therefore omitted; the tests below verify only that
 # the option is recognized by the parser.
 
-DESCRIPTION="--bzip2_decompress fails on uncompressed input"
+DESCRIPTION="--bzip2_decompress errors on uncompressed input"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \

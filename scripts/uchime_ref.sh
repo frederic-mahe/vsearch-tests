@@ -96,7 +96,7 @@ printf ">s\n%s\n" "${PARENT_A}" > "${QUERY}"
 rm -f "${DB}" "${QUERY}"
 unset DB QUERY
 
-DESCRIPTION="--uchime_ref fails if query file does not exist"
+DESCRIPTION="--uchime_ref errors if query file does not exist"
 DB=$(mktemp)
 printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
 "${VSEARCH}" \
@@ -109,7 +109,7 @@ printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
 rm -f "${DB}"
 unset DB
 
-DESCRIPTION="--uchime_ref fails if query file is not readable"
+DESCRIPTION="--uchime_ref errors if query file is not readable"
 DB=$(mktemp)
 QUERY=$(mktemp)
 printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
@@ -181,7 +181,7 @@ printf "not a fasta file\n" | \
 rm -f "${DB}"
 unset DB
 
-DESCRIPTION="--uchime_ref fails without --db"
+DESCRIPTION="--uchime_ref errors without --db"
 printf ">s\n%s\n" "${PARENT_A}" | \
     "${VSEARCH}" \
         --uchime_ref - \
@@ -190,7 +190,7 @@ printf ">s\n%s\n" "${PARENT_A}" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--uchime_ref fails if --db file does not exist"
+DESCRIPTION="--uchime_ref errors if --db file does not exist"
 printf ">s\n%s\n" "${PARENT_A}" | \
     "${VSEARCH}" \
         --uchime_ref - \
@@ -214,7 +214,7 @@ printf ">s\n%s\n" "${PARENT_A}" | \
 rm -f "${DB}"
 unset DB
 
-DESCRIPTION="--uchime_ref fails without any output option"
+DESCRIPTION="--uchime_ref errors without any output option"
 DB=$(mktemp)
 printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
 printf ">s\n%s\n" "${PARENT_A}" | \

@@ -90,7 +90,7 @@ rm -f "${QUERY}"
 unset SEQ QUERY
 
 ## --sintax fails if query file does not exist
-DESCRIPTION="--sintax fails if query file does not exist"
+DESCRIPTION="--sintax errors if query file does not exist"
 "${VSEARCH}" \
     --sintax /no/such/file \
     --db /dev/null \
@@ -100,7 +100,7 @@ DESCRIPTION="--sintax fails if query file does not exist"
         success "${DESCRIPTION}"
 
 ## --sintax fails if query file is not readable
-DESCRIPTION="--sintax fails if query file is not readable"
+DESCRIPTION="--sintax errors if query file is not readable"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 QUERY=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" > "${QUERY}"
@@ -116,7 +116,7 @@ chmod u+r "${QUERY}" && rm -f "${QUERY}"
 unset SEQ QUERY
 
 ## --sintax fails without --db
-DESCRIPTION="--sintax fails without --db"
+DESCRIPTION="--sintax errors without --db"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
@@ -128,7 +128,7 @@ printf ">q\n%s\n" "${SEQ}" | \
 unset SEQ
 
 ## --sintax fails without --tabbedout
-DESCRIPTION="--sintax fails without --tabbedout"
+DESCRIPTION="--sintax errors without --tabbedout"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
@@ -156,7 +156,7 @@ rm -f "${DB}"
 unset SEQ DB
 
 ## --db fails if db file does not exist
-DESCRIPTION="--db fails if db file does not exist"
+DESCRIPTION="--db errors if db file does not exist"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
@@ -169,7 +169,7 @@ printf ">q\n%s\n" "${SEQ}" | \
 unset SEQ
 
 ## --db fails if db file is not readable
-DESCRIPTION="--db fails if db file is not readable"
+DESCRIPTION="--db errors if db file is not readable"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 DB=$(mktemp)
 printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
@@ -242,7 +242,7 @@ printf ">q\n%s\n" "${SEQ}" | \
 unset SEQ
 
 ## --tabbedout fails if output file cannot be written
-DESCRIPTION="--tabbedout fails if output file cannot be written"
+DESCRIPTION="--tabbedout errors if output file cannot be written"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 OUTPUT_DIR=$(mktemp -d)
 chmod u-w "${OUTPUT_DIR}"

@@ -64,7 +64,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques fails if unable to open output file for writing (fasta in, fastaout)"
+DESCRIPTION="--fastx_uniques errors if unable to open output file for writing (fasta in, fastaout)"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -83,7 +83,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques fails if unable to open output file for writing (fastq in, fastqout)"
+DESCRIPTION="--fastx_uniques errors if unable to open output file for writing (fastq in, fastqout)"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
@@ -102,7 +102,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques fails if unable to open output file for writing (fastq in, fastaout)"
+DESCRIPTION="--fastx_uniques errors if unable to open output file for writing (fastq in, fastaout)"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
@@ -137,7 +137,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques fails if unable to open output file for writing (fastq in, tabbedout)"
+DESCRIPTION="--fastx_uniques errors if unable to open output file for writing (fastq in, tabbedout)"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
@@ -1297,7 +1297,7 @@ printf ">s1;size=1;\nA\n>s2;size=1;\nA\n" | \
 	failure "${DESCRIPTION}"
 
 ## --strand fails if an unknown argument is given
-DESCRIPTION="--strand fails if an unknown argument is given"
+DESCRIPTION="--strand errors if an unknown argument is given"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -3380,7 +3380,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques fails if unable to open tabbedout file for writing"
+DESCRIPTION="--fastx_uniques errors if unable to open tabbedout file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
@@ -3392,7 +3392,7 @@ chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 ## --tabbedout fails if no output redirection is given (filename, device or -)
-DESCRIPTION="--tabbedout fails if no output redirection is given"
+DESCRIPTION="--tabbedout errors if no output redirection is given"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -3685,7 +3685,7 @@ printf ">s1;size=1;\nA\n>s2;size=2;\nC\n>s3;size=2;\nA\n" | \
 	failure "${DESCRIPTION}"
 
 ## --topn fails with negative arguments
-DESCRIPTION="--topn fails with negative arguments"
+DESCRIPTION="--topn errors with negative arguments"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -3696,7 +3696,7 @@ printf ">s\nA\n" | \
 
 ## --topn zero should return no sequence or fail (only values > 0
 ## should be accepted)
-DESCRIPTION="--topn zero should return no sequence (or fail)"
+DESCRIPTION="--topn zero should return no sequence (or error)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -3708,7 +3708,7 @@ printf ">s\nA\n" | \
 	success "${DESCRIPTION}"
 
 ## --topn fails with non-numerical argument
-DESCRIPTION="--topn fails with non-numerical argument"
+DESCRIPTION="--topn errors with non-numerical argument"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -3764,7 +3764,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques fails if unable to open uc file for writing"
+DESCRIPTION="--fastx_uniques errors if unable to open uc file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -3776,7 +3776,7 @@ chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 ## --uc fails if no output redirection is given (filename, device or -)
-DESCRIPTION="--uc fails if no output redirection is given"
+DESCRIPTION="--uc errors if no output redirection is given"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \

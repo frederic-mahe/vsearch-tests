@@ -79,7 +79,7 @@ printf ">s1\nAAAAAAAAAAAA\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--cluster_smallmem fails if input file does not exist"
+DESCRIPTION="--cluster_smallmem errors if input file does not exist"
 "${VSEARCH}" \
     --cluster_smallmem /no/such/file \
     --id 1.0 \
@@ -89,7 +89,7 @@ DESCRIPTION="--cluster_smallmem fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_smallmem fails if input file is not readable"
+DESCRIPTION="--cluster_smallmem errors if input file is not readable"
 TMP=$(mktemp)
 printf ">s1\nAAAAAAAAAAAA\n" > "${TMP}"
 chmod u-r "${TMP}"
@@ -148,7 +148,7 @@ printf "not a fasta or fastq file\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_smallmem fails without --id"
+DESCRIPTION="--cluster_smallmem errors without --id"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_smallmem - \
@@ -158,7 +158,7 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_smallmem fails without any output option"
+DESCRIPTION="--cluster_smallmem errors without any output option"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_smallmem - \
@@ -169,7 +169,7 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
         success "${DESCRIPTION}"
 
 ## Sequences must be sorted by decreasing length unless --usersort is given.
-DESCRIPTION="--cluster_smallmem fails when input is not sorted by decreasing length"
+DESCRIPTION="--cluster_smallmem errors when input is not sorted by decreasing length"
 printf ">s1\nAA\n>s2\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_smallmem - \
@@ -182,7 +182,7 @@ printf ">s1\nAA\n>s2\nAAAAAAAAAAAA\n" | \
 
 ## same check in the single-threaded code path (--threads 1 selects the
 ## serial clusterer)
-DESCRIPTION="--cluster_smallmem fails on unsorted input with --threads 1"
+DESCRIPTION="--cluster_smallmem errors on unsorted input with --threads 1"
 printf ">s1\nAA\n>s2\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_smallmem - \

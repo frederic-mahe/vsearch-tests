@@ -45,7 +45,7 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--shuffle fails if unable to open output file for writing"
+DESCRIPTION="--shuffle errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \

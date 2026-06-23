@@ -72,7 +72,7 @@ printf ">s\n%s\n" "${SEQ}" > "${TMPFA}"
 rm -f "${TMPFA}"
 unset TMPFA
 
-DESCRIPTION="--makeudb_usearch fails if input file does not exist"
+DESCRIPTION="--makeudb_usearch errors if input file does not exist"
 "${VSEARCH}" \
     --makeudb_usearch /no/such/file \
     --output /dev/null \
@@ -80,7 +80,7 @@ DESCRIPTION="--makeudb_usearch fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--makeudb_usearch fails if input file is not readable"
+DESCRIPTION="--makeudb_usearch errors if input file is not readable"
 TMPFA=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" > "${TMPFA}"
 chmod u-r "${TMPFA}"
@@ -93,7 +93,7 @@ chmod u-r "${TMPFA}"
 chmod u+r "${TMPFA}" && rm -f "${TMPFA}"
 unset TMPFA
 
-DESCRIPTION="--makeudb_usearch fails with non-fasta input"
+DESCRIPTION="--makeudb_usearch errors with non-fasta input"
 printf "not a fasta file\n" | \
     "${VSEARCH}" \
         --makeudb_usearch - \
@@ -103,7 +103,7 @@ printf "not a fasta file\n" | \
         success "${DESCRIPTION}"
 
 ## --output is mandatory
-DESCRIPTION="--makeudb_usearch fails without --output"
+DESCRIPTION="--makeudb_usearch errors without --output"
 printf ">s\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --makeudb_usearch - \
@@ -124,7 +124,7 @@ printf ">s\n%s\n" "${SEQ}" | \
 rm -f "${TMPUDB}"
 unset TMPUDB
 
-DESCRIPTION="--output fails if destination is not writable"
+DESCRIPTION="--output errors if destination is not writable"
 TMPDIR=$(mktemp -d)
 chmod u-w "${TMPDIR}"
 printf ">s\n%s\n" "${SEQ}" | \

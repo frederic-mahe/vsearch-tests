@@ -69,7 +69,7 @@ printf ">s1\nACGT\n" > "${TMPFA}"
 rm -f "${TMPFA}"
 unset TMPFA
 
-DESCRIPTION="--fastx_mask fails if input file does not exist"
+DESCRIPTION="--fastx_mask errors if input file does not exist"
 "${VSEARCH}" \
     --fastx_mask /no/such/file \
     --fastaout /dev/null \
@@ -77,7 +77,7 @@ DESCRIPTION="--fastx_mask fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_mask fails without an output option"
+DESCRIPTION="--fastx_mask errors without an output option"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -126,7 +126,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastqout fails with fasta input"
+DESCRIPTION="--fastqout errors with fasta input"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -146,7 +146,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
         failure "${DESCRIPTION}"
 
 # coverage: mask.cc (unable to open fasta output file)
-DESCRIPTION="--fastaout fails if unable to open output file for writing"
+DESCRIPTION="--fastaout errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
@@ -159,7 +159,7 @@ chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
 # coverage: mask.cc (unable to open fastq output file)
-DESCRIPTION="--fastqout fails if unable to open output file for writing"
+DESCRIPTION="--fastqout errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf "@s1\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
@@ -304,7 +304,7 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--qmask with no argument fails"
+DESCRIPTION="--qmask with no argument errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -314,7 +314,7 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--qmask with invalid value fails"
+DESCRIPTION="--qmask with invalid value errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -522,7 +522,7 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--max_unmasked_pct with no argument fails"
+DESCRIPTION="--max_unmasked_pct with no argument errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -533,7 +533,7 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--min_unmasked_pct with no argument fails"
+DESCRIPTION="--min_unmasked_pct with no argument errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -544,7 +544,7 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--max_unmasked_pct with non-numeric value fails"
+DESCRIPTION="--max_unmasked_pct with non-numeric value errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -555,7 +555,7 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--min_unmasked_pct with non-numeric value fails"
+DESCRIPTION="--min_unmasked_pct with non-numeric value errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -702,7 +702,7 @@ printf ">s1\nACGT\n>s2\natGC\n>s3\natgc\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--max_unmasked_pct > 100 fails"
+DESCRIPTION="--max_unmasked_pct > 100 errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -713,7 +713,7 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--min_unmasked_pct < 0 fails"
+DESCRIPTION="--min_unmasked_pct < 0 errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -861,7 +861,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--bzip2_decompress fails on an uncompressed input pipe"
+DESCRIPTION="--bzip2_decompress errors on an uncompressed input pipe"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -941,7 +941,7 @@ printf "@s1\nACGT\n+\n@@@@\n" | \
         failure "${DESCRIPTION}"
 
 # offset is restricted to either 33 or 64
-DESCRIPTION="--fastq_ascii with a value other than 33 or 64 fails"
+DESCRIPTION="--fastq_ascii with a value other than 33 or 64 errors"
 printf "@s1\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -979,7 +979,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
 
 # with offset 33, fastq_qmax + fastq_ascii must fit in the ASCII range,
 # i.e. qmax <= 93
-DESCRIPTION="--fastq_qmax above 93 (with default offset 33) fails"
+DESCRIPTION="--fastq_qmax above 93 (with default offset 33) errors"
 printf "@s1\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -1017,7 +1017,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
 
 # the minimum accepted quality score cannot exceed the maximum (default
 # --fastq_qmax is 41)
-DESCRIPTION="--fastq_qmin greater than --fastq_qmax fails"
+DESCRIPTION="--fastq_qmin greater than --fastq_qmax errors"
 printf "@s1\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
@@ -1029,7 +1029,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
         success "${DESCRIPTION}"
 
 # with default offset 33, fastq_qmin must keep the ASCII sum >= 33
-DESCRIPTION="--fastq_qmin below 0 (with default offset 33) fails"
+DESCRIPTION="--fastq_qmin below 0 (with default offset 33) errors"
 printf "@s1\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_mask - \

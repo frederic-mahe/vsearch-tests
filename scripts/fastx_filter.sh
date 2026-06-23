@@ -72,7 +72,7 @@ printf ">s1\nA\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--fastx_filter fails if input file does not exist"
+DESCRIPTION="--fastx_filter errors if input file does not exist"
 "${VSEARCH}" \
     --fastx_filter /no/such/file \
     --fastaout /dev/null \
@@ -80,7 +80,7 @@ DESCRIPTION="--fastx_filter fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_filter fails if input file is not readable"
+DESCRIPTION="--fastx_filter errors if input file is not readable"
 TMP=$(mktemp)
 printf ">s1\nA\n" > "${TMP}"
 chmod u-r "${TMP}"
@@ -111,7 +111,7 @@ printf "@s1\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_filter fails with input that is not FASTA or FASTQ"
+DESCRIPTION="--fastx_filter errors with input that is not FASTA or FASTQ"
 printf "not a fasta or fastq file\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
@@ -129,7 +129,7 @@ printf "" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_filter fails without any output option"
+DESCRIPTION="--fastx_filter errors without any output option"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
@@ -620,7 +620,7 @@ printf "@s1\nT\n+\nI\n" > "${REVERSE}"
 rm -f "${FORWARD}" "${REVERSE}"
 unset FORWARD REVERSE
 
-DESCRIPTION="--fastx_filter: if one mate fails, both reads of the pair are discarded"
+DESCRIPTION="--fastx_filter: if one mate is rejected, both reads of the pair are discarded"
 FORWARD=$(mktemp)
 REVERSE=$(mktemp)
 printf "@r1\nACGT\n+\n!!!!\n" > "${FORWARD}"
@@ -638,7 +638,7 @@ printf "@r1\nACGT\n+\nIIII\n" > "${REVERSE}"
 rm -f "${FORWARD}" "${REVERSE}"
 unset FORWARD REVERSE
 
-DESCRIPTION="--fastx_filter --reverse fails if reverse file does not exist"
+DESCRIPTION="--fastx_filter --reverse errors if reverse file does not exist"
 FORWARD=$(mktemp)
 printf "@s1\nA\n+\nI\n" > "${FORWARD}"
 "${VSEARCH}" \
@@ -689,7 +689,7 @@ unset FORWARD REVERSE
 ## given alongside
 for OPT in --fastaout_rev --fastqout_rev \
            --fastaout_discarded_rev --fastqout_discarded_rev ; do
-    DESCRIPTION="--fastx_filter ${OPT} fails if unable to open output file for writing"
+    DESCRIPTION="--fastx_filter ${OPT} errors if unable to open output file for writing"
     FORWARD=$(mktemp)
     REVERSE=$(mktemp)
     printf "@s1\nACGT\n+\nIIII\n" > "${FORWARD}"
@@ -709,7 +709,7 @@ done
 unset OPT
 
 ## the forward and reverse inputs must be in the same format
-DESCRIPTION="--fastx_filter fails if forward and reverse files are in different formats"
+DESCRIPTION="--fastx_filter errors if forward and reverse files are in different formats"
 FORWARD=$(mktemp)
 REVERSE=$(mktemp)
 printf "@s1\nACGT\n+\nIIII\n" > "${FORWARD}"
@@ -725,7 +725,7 @@ rm -f "${FORWARD}" "${REVERSE}"
 unset FORWARD REVERSE
 
 ## the forward file must not contain more reads than the reverse file
-DESCRIPTION="--fastx_filter fails when there are more forward reads than reverse reads"
+DESCRIPTION="--fastx_filter errors when there are more forward reads than reverse reads"
 FORWARD=$(mktemp)
 REVERSE=$(mktemp)
 printf "@s1\nACGT\n+\nIIII\n@s2\nACGT\n+\nIIII\n" > "${FORWARD}"
@@ -741,7 +741,7 @@ rm -f "${FORWARD}" "${REVERSE}"
 unset FORWARD REVERSE
 
 ## the reverse file must not contain more reads than the forward file
-DESCRIPTION="--fastx_filter fails when there are more reverse reads than forward reads"
+DESCRIPTION="--fastx_filter errors when there are more reverse reads than forward reads"
 FORWARD=$(mktemp)
 REVERSE=$(mktemp)
 printf "@s1\nACGT\n+\nIIII\n" > "${FORWARD}"
@@ -939,7 +939,7 @@ printf "@s1\nA\n+\nI\n" | \
         success "${DESCRIPTION}"
 
 ## --fastq_qmax
-DESCRIPTION="--fastx_filter --fastq_qmax fails when a quality is above it"
+DESCRIPTION="--fastx_filter --fastq_qmax errors when a quality is above it"
 printf "@s1\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
@@ -950,7 +950,7 @@ printf "@s1\nA\n+\nI\n" | \
         success "${DESCRIPTION}"
 
 ## --fastq_qmin
-DESCRIPTION="--fastx_filter --fastq_qmin fails when a quality is below it"
+DESCRIPTION="--fastx_filter --fastq_qmin errors when a quality is below it"
 printf "@s1\nA\n+\n!\n" | \
     "${VSEARCH}" \
         --fastx_filter - \

@@ -160,7 +160,7 @@ TMP=$(mktemp)
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--sff_convert --fastqout fails if unable to open output file for writing"
+DESCRIPTION="--sff_convert --fastqout errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 "${VSEARCH}" \
     --sff_convert "${SFF}" \
@@ -220,7 +220,7 @@ DESCRIPTION="--sff_convert requires an input file"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--sff_convert fails if unable to open input file for reading"
+DESCRIPTION="--sff_convert errors if unable to open input file for reading"
 chmod u-r "${SFF}"  # remove read permission
 "${VSEARCH}" \
     --sff_convert "${SFF}" \
@@ -2317,7 +2317,7 @@ grep -q "." "${TMP}" && \
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--sff_convert --log fails if unable to open output file for writing"
+DESCRIPTION="--sff_convert --log errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 "${VSEARCH}" \
     --sff_convert "${SFF}" \

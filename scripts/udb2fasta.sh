@@ -65,7 +65,7 @@ printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
 rm -f "${TMPUDB}"
 unset TMPUDB
 
-DESCRIPTION="--udb2fasta fails if UDB file does not exist"
+DESCRIPTION="--udb2fasta errors if UDB file does not exist"
 "${VSEARCH}" \
     --udb2fasta /no/such/file \
     --output /dev/null \
@@ -73,7 +73,7 @@ DESCRIPTION="--udb2fasta fails if UDB file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--udb2fasta fails with a non-UDB input file"
+DESCRIPTION="--udb2fasta errors with a non-UDB input file"
 TMPFA=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" > "${TMPFA}"
 "${VSEARCH}" \
@@ -86,7 +86,7 @@ rm -f "${TMPFA}"
 unset TMPFA
 
 ## a UDB file must be at least 200 bytes long (50 header uint32_t values)
-DESCRIPTION="--udb2fasta fails on a truncated UDB file (< 200 bytes)"
+DESCRIPTION="--udb2fasta errors on a truncated UDB file (< 200 bytes)"
 TMPUDB=$(mktemp)
 TMPTRUNC=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
@@ -131,7 +131,7 @@ cat "${TMPUDB}" | \
 rm -f "${TMPUDB}"
 unset TMPUDB
 
-DESCRIPTION="--udb2fasta fails if input file is not readable"
+DESCRIPTION="--udb2fasta errors if input file is not readable"
 TMPUDB=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
 chmod u-r "${TMPUDB}"
@@ -145,7 +145,7 @@ chmod u+r "${TMPUDB}" && rm -f "${TMPUDB}"
 unset TMPUDB
 
 ## --output is mandatory
-DESCRIPTION="--udb2fasta fails without --output"
+DESCRIPTION="--udb2fasta errors without --output"
 TMPUDB=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
 "${VSEARCH}" \
@@ -170,7 +170,7 @@ printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
 rm -f "${TMPUDB}" "${TMPFA}"
 unset TMPUDB TMPFA
 
-DESCRIPTION="--output fails if destination is not writable"
+DESCRIPTION="--output errors if destination is not writable"
 TMPUDB=$(mktemp)
 TMPDIR=$(mktemp -d)
 printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"

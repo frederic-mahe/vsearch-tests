@@ -69,7 +69,7 @@ printf ">s\nACGT\n" > "${TMPFA}"
 rm -f "${TMPFA}"
 unset TMPFA
 
-DESCRIPTION="--fastx_revcomp fails if input file does not exist"
+DESCRIPTION="--fastx_revcomp errors if input file does not exist"
 "${VSEARCH}" \
     --fastx_revcomp /no/such/file \
     --fastaout /dev/null \
@@ -77,7 +77,7 @@ DESCRIPTION="--fastx_revcomp fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_revcomp fails if input file is not readable"
+DESCRIPTION="--fastx_revcomp errors if input file is not readable"
 TMPFA=$(mktemp)
 printf ">s\nACGT\n" > "${TMPFA}"
 chmod u-r "${TMPFA}"
@@ -92,7 +92,7 @@ unset TMPFA
 
 # a readable file whose content starts with neither '>' nor '@' is not
 # recognised as FASTA or FASTQ
-DESCRIPTION="--fastx_revcomp fails with input that is not FASTA or FASTQ (file)"
+DESCRIPTION="--fastx_revcomp errors with input that is not FASTA or FASTQ (file)"
 TMPFILE=$(mktemp)
 printf "not a fasta or fastq file\n" > "${TMPFILE}"
 "${VSEARCH}" \
@@ -104,7 +104,7 @@ printf "not a fasta or fastq file\n" > "${TMPFILE}"
 rm -f "${TMPFILE}"
 unset TMPFILE
 
-DESCRIPTION="--fastx_revcomp fails with stdin that is not FASTA or FASTQ"
+DESCRIPTION="--fastx_revcomp errors with stdin that is not FASTA or FASTQ"
 printf "not a fasta or fastq file\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
@@ -113,7 +113,7 @@ printf "not a fasta or fastq file\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_revcomp fails without any output option"
+DESCRIPTION="--fastx_revcomp errors without any output option"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
@@ -141,7 +141,7 @@ printf ">s\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastaout fails if unable to open output file for writing"
+DESCRIPTION="--fastaout errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
@@ -172,7 +172,7 @@ printf "@s\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastqout fails if unable to open output file for writing"
+DESCRIPTION="--fastqout errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
@@ -184,7 +184,7 @@ printf "@s\nACGT\n+\nIIII\n" | \
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--fastqout fails with fasta input (no quality scores)"
+DESCRIPTION="--fastqout errors with fasta input (no quality scores)"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
@@ -225,7 +225,7 @@ printf "@s\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastaout fails when given an empty filename"
+DESCRIPTION="--fastaout errors when given an empty filename"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \
@@ -496,7 +496,7 @@ printf "@s\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--bzip2_decompress fails on uncompressed input"
+DESCRIPTION="--bzip2_decompress errors on uncompressed input"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_revcomp - \

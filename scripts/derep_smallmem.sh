@@ -93,7 +93,7 @@ printf ">s\nA\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--derep_smallmem fails if unable to open output file for writing (fasta in, fastaout)"
+DESCRIPTION="--derep_smallmem errors if unable to open output file for writing (fasta in, fastaout)"
 INPUT=$(mktemp)
 printf ">s\nA\n" > "${INPUT}"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
@@ -117,7 +117,7 @@ printf "@s\nA\n+\nI\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--derep_smallmem fails if unable to open output file for writing (fastq in, fastaout)"
+DESCRIPTION="--derep_smallmem errors if unable to open output file for writing (fastq in, fastaout)"
 INPUT=$(mktemp)
 printf "@s\nA\n+\nI\n" > "${INPUT}"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
@@ -1350,7 +1350,7 @@ rm -f "${TMP}"
 unset TMP
 
 ## --strand fails if an unknown argument is given
-DESCRIPTION="--strand fails if an unknown argument is given"
+DESCRIPTION="--strand errors if an unknown argument is given"
 TMP=$(mktemp)
 printf ">s1\nA\n" > "${TMP}"
 "${VSEARCH}" \

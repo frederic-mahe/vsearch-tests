@@ -290,7 +290,7 @@ DESCRIPTION="--usearch_global --samout --samheader @SQ LN is correct"
 	    failure "${DESCRIPTION}"
 
 #sequences not matching to only get the header
-DESCRIPTION="--usearch_global --samout --samheader fails if starting with *"
+DESCRIPTION="--usearch_global --samout --samheader errors if starting with *"
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nCCC\n') \
     --db <(printf '>*seq1\nAAA\n') \
@@ -303,7 +303,7 @@ DESCRIPTION="--usearch_global --samout --samheader fails if starting with *"
     failure "${DESCRIPTION}" || \
 	    success "${DESCRIPTION}"
 
-DESCRIPTION="--usearch_global --samout --samheader fails if starting with ="
+DESCRIPTION="--usearch_global --samout --samheader errors if starting with ="
 "${VSEARCH}" \
     --usearch_global <(printf '>seq1\nCCC\n') \
     --db <(printf '>=seq1\nAAA\n') \

@@ -72,7 +72,7 @@ printf "@s1\nA\n+\nI\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--fastq_filter fails if input file does not exist"
+DESCRIPTION="--fastq_filter errors if input file does not exist"
 "${VSEARCH}" \
     --fastq_filter /no/such/file \
     --fastaout /dev/null \
@@ -80,7 +80,7 @@ DESCRIPTION="--fastq_filter fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_filter fails if input file is not readable"
+DESCRIPTION="--fastq_filter errors if input file is not readable"
 TMP=$(mktemp)
 printf "@s1\nA\n+\nI\n" > "${TMP}"
 chmod u-r "${TMP}"
@@ -102,7 +102,7 @@ printf ">s1\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_filter fails with input that is not FASTA or FASTQ"
+DESCRIPTION="--fastq_filter errors with input that is not FASTA or FASTQ"
 printf "not a fasta or fastq file\n" | \
     "${VSEARCH}" \
         --fastq_filter - \
@@ -120,7 +120,7 @@ printf "" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_filter fails without any output option"
+DESCRIPTION="--fastq_filter errors without any output option"
 printf "@s1\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_filter - \
@@ -145,7 +145,7 @@ unset OPT
 ## each output option fails if its target file cannot be opened for
 ## writing (write-protected file)
 for OPT in --fastaout --fastaout_discarded --fastqout --fastqout_discarded ; do
-    DESCRIPTION="--fastq_filter ${OPT} fails if unable to open output file for writing"
+    DESCRIPTION="--fastq_filter ${OPT} errors if unable to open output file for writing"
     TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
     printf "@s1\nA\n+\nI\n" | \
         "${VSEARCH}" \
@@ -770,7 +770,7 @@ printf "@s1\nT\n+\nI\n" > "${REVERSE}"
 rm -f "${FORWARD}" "${REVERSE}"
 unset FORWARD REVERSE
 
-DESCRIPTION="--fastq_filter: if forward read fails, both reads of the pair are discarded"
+DESCRIPTION="--fastq_filter: if forward read is rejected, both reads of the pair are discarded"
 FORWARD=$(mktemp)
 REVERSE=$(mktemp)
 printf "@r1\nACGT\n+\n!!!!\n" > "${FORWARD}"
@@ -806,7 +806,7 @@ printf "@r1\nACGT\n+\nIIII\n" > "${REVERSE}"
 rm -f "${FORWARD}" "${REVERSE}"
 unset FORWARD REVERSE
 
-DESCRIPTION="--fastq_filter --reverse fails if reverse file does not exist"
+DESCRIPTION="--fastq_filter --reverse errors if reverse file does not exist"
 FORWARD=$(mktemp)
 printf "@s1\nA\n+\nI\n" > "${FORWARD}"
 "${VSEARCH}" \
@@ -1013,7 +1013,7 @@ printf "@s1\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_filter --fastq_qmax fails when a quality is above it"
+DESCRIPTION="--fastq_filter --fastq_qmax errors when a quality is above it"
 printf "@s1\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_filter - \
@@ -1025,7 +1025,7 @@ printf "@s1\nA\n+\nI\n" | \
 
 ## when --log is set, the above-qmax fatal error is also written to the
 ## log file
-DESCRIPTION="--fastq_filter --fastq_qmax failure is recorded in the log file"
+DESCRIPTION="--fastq_filter --fastq_qmax error is recorded in the log file"
 LOG=$(mktemp)
 printf "@s1\nA\n+\nI\n" | \
     "${VSEARCH}" \
@@ -1051,7 +1051,7 @@ printf "@s1\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_filter --fastq_qmin fails when a quality is below it"
+DESCRIPTION="--fastq_filter --fastq_qmin errors when a quality is below it"
 printf "@s1\nA\n+\n!\n" | \
     "${VSEARCH}" \
         --fastq_filter - \
@@ -1063,7 +1063,7 @@ printf "@s1\nA\n+\n!\n" | \
 
 ## when --log is set, the below-qmin fatal error is also written to the
 ## log file
-DESCRIPTION="--fastq_filter --fastq_qmin failure is recorded in the log file"
+DESCRIPTION="--fastq_filter --fastq_qmin error is recorded in the log file"
 LOG=$(mktemp)
 printf "@s1\nA\n+\n!\n" | \
     "${VSEARCH}" \

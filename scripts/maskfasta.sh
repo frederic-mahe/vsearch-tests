@@ -69,7 +69,7 @@ printf ">s1\nACGT\n" > "${TMPFA}"
 rm -f "${TMPFA}"
 unset TMPFA
 
-DESCRIPTION="--maskfasta fails if input file does not exist"
+DESCRIPTION="--maskfasta errors if input file does not exist"
 "${VSEARCH}" \
     --maskfasta /no/such/file \
     --output /dev/null \
@@ -77,7 +77,7 @@ DESCRIPTION="--maskfasta fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--maskfasta fails without --output"
+DESCRIPTION="--maskfasta errors without --output"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --maskfasta - \
@@ -106,7 +106,7 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--output fails if unable to open output file for writing"
+DESCRIPTION="--output errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
@@ -248,7 +248,7 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--qmask with no argument fails"
+DESCRIPTION="--qmask with no argument errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --maskfasta - \
@@ -258,7 +258,7 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--qmask with invalid value fails"
+DESCRIPTION="--qmask with invalid value errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --maskfasta - \
@@ -547,7 +547,7 @@ printf ">s1\nACGTACGTACGTACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fasta_width with non-numeric argument fails"
+DESCRIPTION="--fasta_width with non-numeric argument errors"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --maskfasta - \
@@ -574,7 +574,7 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--bzip2_decompress fails on an uncompressed input pipe"
+DESCRIPTION="--bzip2_decompress errors on an uncompressed input pipe"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --maskfasta - \

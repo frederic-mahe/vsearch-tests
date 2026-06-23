@@ -82,7 +82,7 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" > "${INPUT}"
 rm -f "${INPUT}"
 unset INPUT
 
-DESCRIPTION="--allpairs_global fails if input file does not exist"
+DESCRIPTION="--allpairs_global errors if input file does not exist"
 "${VSEARCH}" \
     --allpairs_global /no/such/file \
     --acceptall \
@@ -91,7 +91,7 @@ DESCRIPTION="--allpairs_global fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--allpairs_global fails if input file is not readable"
+DESCRIPTION="--allpairs_global errors if input file is not readable"
 INPUT=$(mktemp)
 printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" > "${INPUT}"
 chmod u-r "${INPUT}"
@@ -156,7 +156,7 @@ printf "not a fasta file\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--allpairs_global fails without any output option"
+DESCRIPTION="--allpairs_global errors without any output option"
 printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
     "${VSEARCH}" \
         --allpairs_global - \
@@ -165,7 +165,7 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--allpairs_global fails without --acceptall or --id"
+DESCRIPTION="--allpairs_global errors without --acceptall or --id"
 printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
     "${VSEARCH}" \
         --allpairs_global - \
@@ -213,7 +213,7 @@ unset OPT
 ## used alone, so they are paired with a writable --alnout.
 for OPT in --alnout --blast6out --fastapairs --matched --notmatched \
            --samout --uc --userout ; do
-    DESCRIPTION="--allpairs_global ${OPT} fails if unable to open output file for writing"
+    DESCRIPTION="--allpairs_global ${OPT} errors if unable to open output file for writing"
     TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
     printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         "${VSEARCH}" \
@@ -228,7 +228,7 @@ done
 unset OPT
 
 for OPT in --qsegout --tsegout ; do
-    DESCRIPTION="--allpairs_global ${OPT} fails if unable to open output file for writing"
+    DESCRIPTION="--allpairs_global ${OPT} errors if unable to open output file for writing"
     TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
     printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         "${VSEARCH}" \

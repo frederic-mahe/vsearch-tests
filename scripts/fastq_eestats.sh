@@ -812,7 +812,7 @@ fi
 #*****************************************************************************#
 
 ## --output fails if the target file cannot be opened for writing
-DESCRIPTION="--fastq_eestats --output fails if unable to open output file for writing"
+DESCRIPTION="--fastq_eestats --output errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \

@@ -70,7 +70,7 @@ DESCRIPTION="fastq_mergepairs option reverse is accepted"
 ## --------------------------------------------- output option is mandatory ---
 
 # The SYNOPSIS specifies (--fastaout | --fastqout) as mandatory.
-DESCRIPTION="fastq_mergepairs fails if neither --fastaout nor --fastqout is given"
+DESCRIPTION="fastq_mergepairs errors if neither --fastaout nor --fastqout is given"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
@@ -122,7 +122,7 @@ DESCRIPTION="fastq_mergepairs accepts --eetabbedout alone as output"
 #    - too few kmers on same diag found
 
 
-DESCRIPTION="fastq_mergepairs failed merging: too few kmers found on same diagonal "
+DESCRIPTION="fastq_mergepairs merging rejected: too few kmers found on same diagonal "
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
@@ -131,7 +131,7 @@ DESCRIPTION="fastq_mergepairs failed merging: too few kmers found on same diagon
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs failed merging: multiple potential alignments"
+DESCRIPTION="fastq_mergepairs merging rejected: multiple potential alignments"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAAAAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTT\n+\nIIIIIIIIII\n") \
@@ -140,7 +140,7 @@ DESCRIPTION="fastq_mergepairs failed merging: multiple potential alignments"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs failed merging: overlap too short"
+DESCRIPTION="fastq_mergepairs merging rejected: overlap too short"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nTAAAAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nATTTTTTTTT\n+\nIIIIIIIIII\n") \
@@ -152,7 +152,7 @@ DESCRIPTION="fastq_mergepairs failed merging: overlap too short"
 # --AAAATAAAAAA
 #   |||||||||
 # AAAAAATAAAA--
-DESCRIPTION="fastq_mergepairs failed merging: staggered read pairs"
+DESCRIPTION="fastq_mergepairs merging rejected: staggered read pairs"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
@@ -164,7 +164,7 @@ DESCRIPTION="fastq_mergepairs failed merging: staggered read pairs"
 # --AAAATAAAAAA
 #   |||||||||
 # AAAAAATAAAA--
-DESCRIPTION="fastq_mergepairs failed merging: staggered read pairs (allowed)"
+DESCRIPTION="fastq_mergepairs merging accepted: staggered read pairs (allowed)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
@@ -178,7 +178,7 @@ DESCRIPTION="fastq_mergepairs failed merging: staggered read pairs (allowed)"
 # AAAATAAAA
 # -||||||||
 # TAAATAAAA
-DESCRIPTION="fastq_mergepairs failed merging: alignment score too low, or score drop too high"
+DESCRIPTION="fastq_mergepairs merging rejected: alignment score too low, or score drop too high"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAAATAAAA\n+\nIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTATTTA\n+\nIIIIIIIII\n") \
@@ -982,7 +982,7 @@ DESCRIPTION="fastq_mergepairs reverse read is reverse-complemented before alignm
 
 # if R2 were not reverse-complemented, the two identical sequences would
 # not align (they lie on opposite strands once we orient R2)
-DESCRIPTION="fastq_mergepairs two identical R1/R2 sequences fail to merge"
+DESCRIPTION="fastq_mergepairs two identical R1/R2 sequences are not merged"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
@@ -3530,7 +3530,7 @@ DESCRIPTION="fastq_mergepairs option fastq_qmin accepts positive integers (40)"
         failure "${DESCRIPTION}"
 
 # The argument to --fastq_qmin cannot be equal to or greater than --fastq_qmax
-DESCRIPTION="fastq_mergepairs fails if fastq_qmin is equal to fastq_qmax default (41)"
+DESCRIPTION="fastq_mergepairs errors if fastq_qmin is equal to fastq_qmax default (41)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \

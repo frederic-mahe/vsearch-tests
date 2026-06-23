@@ -72,7 +72,7 @@ printf ">s1\nA\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--fastx_getseqs fails if input file does not exist"
+DESCRIPTION="--fastx_getseqs errors if input file does not exist"
 "${VSEARCH}" \
     --fastx_getseqs /no/such/file \
     --label "s1" \
@@ -81,7 +81,7 @@ DESCRIPTION="--fastx_getseqs fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_getseqs fails if input file is not readable"
+DESCRIPTION="--fastx_getseqs errors if input file is not readable"
 TMP=$(mktemp)
 printf ">s1\nA\n" > "${TMP}"
 chmod u-r "${TMP}"
@@ -95,7 +95,7 @@ chmod u-r "${TMP}"
 chmod u+r "${TMP}" && rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--fastx_getseqs fails with input that is not FASTA or FASTQ"
+DESCRIPTION="--fastx_getseqs errors with input that is not FASTA or FASTQ"
 printf "not a fasta or fastq file\n" | \
     "${VSEARCH}" \
         --fastx_getseqs - \
@@ -115,7 +115,7 @@ printf "" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_getseqs fails without any label option"
+DESCRIPTION="--fastx_getseqs errors without any label option"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --fastx_getseqs - \
@@ -124,7 +124,7 @@ printf ">s1\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_getseqs fails without any output option"
+DESCRIPTION="--fastx_getseqs errors without any output option"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --fastx_getseqs - \
@@ -392,7 +392,7 @@ printf ">s1\nA\n" | \
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--labels fails if the labels file does not exist"
+DESCRIPTION="--labels errors if the labels file does not exist"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --fastx_getseqs - \
@@ -402,7 +402,7 @@ printf ">s1\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--labels fails if the labels file is not readable"
+DESCRIPTION="--labels errors if the labels file is not readable"
 TMP=$(mktemp)
 printf "s1\n" > "${TMP}"
 chmod u-r "${TMP}"
@@ -522,7 +522,7 @@ printf ">s1;abc\nA\n" | \
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--label_words fails if the file does not exist"
+DESCRIPTION="--label_words errors if the file does not exist"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --fastx_getseqs - \
@@ -740,7 +740,7 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastaout fails if unable to open the output file for writing"
+DESCRIPTION="--fastaout errors if unable to open the output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
@@ -775,7 +775,7 @@ printf "@s1\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastqout fails with fasta input"
+DESCRIPTION="--fastqout errors with fasta input"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --fastx_getseqs - \
@@ -808,7 +808,7 @@ printf ">s1\nA\n>s2\nC\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--notmatched fails if unable to open output file for writing"
+DESCRIPTION="--notmatched errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
@@ -833,7 +833,7 @@ printf "@s1\nA\n+\nI\n@s2\nC\n+\nJ\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--notmatchedfq fails with fasta input"
+DESCRIPTION="--notmatchedfq errors with fasta input"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
         --fastx_getseqs - \
@@ -1238,7 +1238,7 @@ fi
 #*****************************************************************************#
 
 ## --labels fails when the labels file cannot be opened
-DESCRIPTION="--fastx_getseqs --labels fails when the labels file does not exist"
+DESCRIPTION="--fastx_getseqs --labels errors when the labels file does not exist"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_getseqs - \
@@ -1249,7 +1249,7 @@ printf ">s1\nACGT\n" | \
         success "${DESCRIPTION}"
 
 ## the corresponding fatal error is also written to the log file
-DESCRIPTION="--fastx_getseqs --labels failure is recorded in the log file"
+DESCRIPTION="--fastx_getseqs --labels error is recorded in the log file"
 LOG=$(mktemp)
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \

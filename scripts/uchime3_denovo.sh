@@ -83,7 +83,7 @@ printf ">s;size=1\n%s\n" "${PARENT_A}" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--uchime3_denovo fails if input file does not exist"
+DESCRIPTION="--uchime3_denovo errors if input file does not exist"
 "${VSEARCH}" \
     --uchime3_denovo /no/such/file \
     --quiet \
@@ -91,7 +91,7 @@ DESCRIPTION="--uchime3_denovo fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--uchime3_denovo fails if input file is not readable"
+DESCRIPTION="--uchime3_denovo errors if input file is not readable"
 TMP=$(mktemp)
 printf ">s;size=1\n%s\n" "${PARENT_A}" > "${TMP}"
 chmod u-r "${TMP}"
@@ -131,7 +131,7 @@ printf "not a fasta or fastq file\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--uchime3_denovo fails without any output option"
+DESCRIPTION="--uchime3_denovo errors without any output option"
 printf ">s;size=1\n%s\n" "${PARENT_A}" | \
     "${VSEARCH}" \
         --uchime3_denovo - \

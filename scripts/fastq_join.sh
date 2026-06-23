@@ -85,7 +85,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join fails if unable to open output file for writing (fastq in, fastaout)"
+DESCRIPTION="--fastq_join errors if unable to open output file for writing (fastq in, fastaout)"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
@@ -126,7 +126,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join fails if unable to open output file for writing (fastq in, fastqout)"
+DESCRIPTION="--fastq_join errors if unable to open output file for writing (fastq in, fastqout)"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \

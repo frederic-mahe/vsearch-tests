@@ -57,14 +57,14 @@ printf ">s\n%s\n" "${SEQ}" | \
 rm -f "${TMPUDB}"
 unset TMPUDB
 
-DESCRIPTION="--udbstats fails if UDB file does not exist"
+DESCRIPTION="--udbstats errors if UDB file does not exist"
 "${VSEARCH}" \
     --udbstats /no/such/file \
     --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--udbstats fails with a non-UDB input file"
+DESCRIPTION="--udbstats errors with a non-UDB input file"
 TMPFA=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" > "${TMPFA}"
 "${VSEARCH}" \
@@ -76,7 +76,7 @@ rm -f "${TMPFA}"
 unset TMPFA
 
 ## a UDB file must be at least 200 bytes (50 header uint32_t values)
-DESCRIPTION="--udbstats fails on a truncated UDB file (< 200 bytes)"
+DESCRIPTION="--udbstats errors on a truncated UDB file (< 200 bytes)"
 TMPUDB=$(mktemp)
 TMPTRUNC=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | \
@@ -106,7 +106,7 @@ head -c 600 /dev/urandom > "${TMPBAD}"
 rm -f "${TMPBAD}"
 unset TMPBAD
 
-DESCRIPTION="--udbstats fails if input file is not readable"
+DESCRIPTION="--udbstats errors if input file is not readable"
 TMPUDB=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \

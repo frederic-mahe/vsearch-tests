@@ -79,7 +79,7 @@ printf ">s1\nAAAA\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--cluster_fast fails if input file does not exist"
+DESCRIPTION="--cluster_fast errors if input file does not exist"
 "${VSEARCH}" \
     --cluster_fast /no/such/file \
     --id 1.0 \
@@ -89,7 +89,7 @@ DESCRIPTION="--cluster_fast fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_fast fails if input file is not readable"
+DESCRIPTION="--cluster_fast errors if input file is not readable"
 TMP=$(mktemp)
 printf ">s1\nAAAA\n" > "${TMP}"
 chmod u-r "${TMP}"
@@ -148,7 +148,7 @@ printf "not a fasta or fastq file\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_fast fails without --id"
+DESCRIPTION="--cluster_fast errors without --id"
 printf ">s1\nAAAA\n" | \
     "${VSEARCH}" \
         --cluster_fast - \
@@ -158,7 +158,7 @@ printf ">s1\nAAAA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_fast fails without any output option"
+DESCRIPTION="--cluster_fast errors without any output option"
 printf ">s1\nAAAA\n" | \
     "${VSEARCH}" \
         --cluster_fast - \
@@ -428,7 +428,7 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
         failure "${DESCRIPTION}"
 rm -f ./-[0-9]*
 
-DESCRIPTION="--cluster_fast --clusters fails if prefix argument is missing"
+DESCRIPTION="--cluster_fast --clusters errors if prefix argument is missing"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_fast - \

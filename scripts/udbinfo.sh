@@ -57,14 +57,14 @@ printf ">s\n%s\n" "${SEQ}" | \
 rm -f "${TMPUDB}"
 unset TMPUDB
 
-DESCRIPTION="--udbinfo fails if UDB file does not exist"
+DESCRIPTION="--udbinfo errors if UDB file does not exist"
 "${VSEARCH}" \
     --udbinfo /no/such/file \
     --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--udbinfo fails with a non-UDB input file"
+DESCRIPTION="--udbinfo errors with a non-UDB input file"
 TMPFA=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" > "${TMPFA}"
 "${VSEARCH}" \
@@ -77,7 +77,7 @@ unset TMPFA
 
 ## a UDB file must provide a 200-byte header; truncating below that
 ## triggers a distinct read-error path in udb_info
-DESCRIPTION="--udbinfo fails on a truncated UDB file (< 200 bytes)"
+DESCRIPTION="--udbinfo errors on a truncated UDB file (< 200 bytes)"
 TMPUDB=$(mktemp)
 TMPTRUNC=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | \
@@ -108,7 +108,7 @@ head -c 600 /dev/urandom > "${TMPBAD}"
 rm -f "${TMPBAD}"
 unset TMPBAD
 
-DESCRIPTION="--udbinfo fails if input file is not readable"
+DESCRIPTION="--udbinfo errors if input file is not readable"
 TMPUDB=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \

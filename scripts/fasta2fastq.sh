@@ -48,7 +48,7 @@ printf ">s\nA\n" | \
         failure "${DESCRIPTION}"
 
 ## --fastqout is mandatory
-DESCRIPTION="--fasta2fastq fails without --fastqout"
+DESCRIPTION="--fasta2fastq errors without --fastqout"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fasta2fastq - \
@@ -64,7 +64,7 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fasta2fastq fails if unable to open output file for writing"
+DESCRIPTION="--fasta2fastq errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -112,7 +112,7 @@ printf "@s\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fasta2fastq fails if unable to open input file for reading"
+DESCRIPTION="--fasta2fastq errors if unable to open input file for reading"
 TMP=$(mktemp) && chmod u-r "${TMP}"  # remove read permission
 printf ">s\nA\n" > "${TMP}"
 "${VSEARCH}" \

@@ -49,14 +49,14 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_convert fails without --fastqout"
+DESCRIPTION="--fastq_convert errors without --fastqout"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_convert - 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_convert fails if output file is not writable"
+DESCRIPTION="--fastq_convert errors if output file is not writable"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
@@ -77,14 +77,14 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_convert fails if input file does not exist"
+DESCRIPTION="--fastq_convert errors if input file does not exist"
 "${VSEARCH}" \
     --fastq_convert /no/such/file \
     --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_convert fails if input file is not readable"
+DESCRIPTION="--fastq_convert errors if input file is not readable"
 TMP=$(mktemp) && printf "@s\nA\n+\nI\n" > "${TMP}" && chmod u-r "${TMP}"
 "${VSEARCH}" \
     --fastq_convert "${TMP}" \
@@ -94,7 +94,7 @@ TMP=$(mktemp) && printf "@s\nA\n+\nI\n" > "${TMP}" && chmod u-r "${TMP}"
 chmod u+r "${TMP}" && rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--fastq_convert fails with FASTA input"
+DESCRIPTION="--fastq_convert errors with FASTA input"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastq_convert - \
@@ -608,7 +608,7 @@ printf "@s\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--bzip2_decompress fails on uncompressed input"
+DESCRIPTION="--bzip2_decompress errors on uncompressed input"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_convert - \

@@ -46,7 +46,7 @@ printf ">s1;size=1\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--rereplicate fails if unable to open output file for writing"
+DESCRIPTION="--rereplicate errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s1;size=1\nA\n" | \
     "${VSEARCH}" \

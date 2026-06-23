@@ -79,7 +79,7 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--cluster_unoise fails if input file does not exist"
+DESCRIPTION="--cluster_unoise errors if input file does not exist"
 "${VSEARCH}" \
     --cluster_unoise /no/such/file \
     --sizein \
@@ -89,7 +89,7 @@ DESCRIPTION="--cluster_unoise fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_unoise fails if input file is not readable"
+DESCRIPTION="--cluster_unoise errors if input file is not readable"
 TMP=$(mktemp)
 printf ">s1;size=16\nAAAAAAAAAAAA\n" > "${TMP}"
 chmod u-r "${TMP}"
@@ -148,7 +148,7 @@ printf "not a fasta or fastq file\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_unoise fails without any output option"
+DESCRIPTION="--cluster_unoise errors without any output option"
 printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_unoise - \

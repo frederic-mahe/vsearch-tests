@@ -47,14 +47,14 @@ printf ">s\nA\n" | \
         failure "${DESCRIPTION}"
 
 ## --cluster_fast --clusters fails if filename is missing
-DESCRIPTION="--cluster_fast --clusters fails if filename is missing"
+DESCRIPTION="--cluster_fast --clusters errors if filename is missing"
 printf ">s\nA\n" | \
     "${VSEARCH}" --cluster_fast - --id 1 --clusters > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
 ## --cluster_fast --clusters fails with an error message if filename is missing
-DESCRIPTION="--cluster_fast --clusters fails with an error message if filename is missing"
+DESCRIPTION="--cluster_fast --clusters errors with an error message if filename is missing"
 printf ">s\nA\n" | \
     "${VSEARCH}" --cluster_fast - --id 1 --clusters 2>&1 > /dev/null | \
     grep -q "vsearch: option '--clusters' requires an argument" && \
@@ -76,7 +76,7 @@ SEQ="ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT"
 ## writing (write-protected file)
 for OPT in --centroids --uc --alnout --samout --userout --blast6out \
            --matched --notmatched --otutabout --mothur_shared_out --biomout ; do
-    DESCRIPTION="--cluster_fast ${OPT} fails if unable to open output file for writing"
+    DESCRIPTION="--cluster_fast ${OPT} errors if unable to open output file for writing"
     TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
     printf ">q\n%s\n" "${SEQ}" | \
         "${VSEARCH}" \
@@ -94,7 +94,7 @@ unset OPT
 ## --fastapairs, --qsegout and --tsegout cannot be used alone, so they
 ## are paired with a writable --alnout
 for OPT in --fastapairs --qsegout --tsegout ; do
-    DESCRIPTION="--cluster_fast ${OPT} fails if unable to open output file for writing"
+    DESCRIPTION="--cluster_fast ${OPT} errors if unable to open output file for writing"
     TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
     printf ">q\n%s\n" "${SEQ}" | \
         "${VSEARCH}" \
@@ -113,7 +113,7 @@ unset OPT
 ## --clusters takes a prefix and appends a number to it; it fails when
 ## the resulting file cannot be created (here the target directory does
 ## not exist)
-DESCRIPTION="--cluster_fast --clusters fails if unable to open output file for writing"
+DESCRIPTION="--cluster_fast --clusters errors if unable to open output file for writing"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --cluster_fast - \

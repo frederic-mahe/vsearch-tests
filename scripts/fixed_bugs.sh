@@ -6707,7 +6707,7 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
 ## not a bug: with phred+64 full-range FASTQ files the quality values can
 ## exceed the default maximum (41), so --fastq_qmax must be raised. Without
 ## it the command fails; with --fastq_qmax 62 it succeeds.
-DESCRIPTION="issue 194: --fastq_stats fails on out-of-range quality without --fastq_qmax"
+DESCRIPTION="issue 194: --fastq_stats errors on out-of-range quality without --fastq_qmax"
 printf "@s1\nACGT\n+\n~~~~\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -9685,7 +9685,7 @@ printf "@s\nA\n+\nG\n" | \
 ## reverse file is given with --reverse and written with --fastqout_rev. A
 ## pair is discarded if either read fails the filter. Here the p1 pair is
 ## removed because its reverse read has too many expected errors.
-DESCRIPTION="issue 359: --fastx_filter discards a pair when its reverse read fails"
+DESCRIPTION="issue 359: --fastx_filter discards a pair when its reverse read is rejected"
 FWD=$(mktemp)
 REV=$(mktemp)
 printf "@p1\nACGTACGT\n+\nIIIIIIII\n@p2\nACGTACGT\n+\nIIIIIIII\n" > "${FWD}"
@@ -14184,7 +14184,7 @@ printf "@s\nA\n+\n~\n" | \
 ## generally are)
 
 ## It seems like you can seek and write to /dev/null on macOS at least
-#DESCRIPTION="issue 523: makeudb_usearch fails to write to a non-seekable output"
+#DESCRIPTION="issue 523: makeudb_usearch cannot write to a non-seekable output"
 #printf ">s1\nA\n" | \
 #    "${VSEARCH}" \
 #        --makeudb_usearch /dev/stdin \

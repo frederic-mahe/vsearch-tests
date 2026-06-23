@@ -72,7 +72,7 @@ printf ">s1\nACGT\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--fastx_getsubseq fails if input file does not exist"
+DESCRIPTION="--fastx_getsubseq errors if input file does not exist"
 "${VSEARCH}" \
     --fastx_getsubseq /no/such/file \
     --label "s1" \
@@ -81,7 +81,7 @@ DESCRIPTION="--fastx_getsubseq fails if input file does not exist"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_getsubseq fails if input file is not readable"
+DESCRIPTION="--fastx_getsubseq errors if input file is not readable"
 TMP=$(mktemp)
 printf ">s1\nACGT\n" > "${TMP}"
 chmod u-r "${TMP}"
@@ -95,7 +95,7 @@ chmod u-r "${TMP}"
 chmod u+r "${TMP}" && rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--fastx_getsubseq fails with input that is not FASTA or FASTQ"
+DESCRIPTION="--fastx_getsubseq errors with input that is not FASTA or FASTQ"
 printf "not a fasta or fastq file\n" | \
     "${VSEARCH}" \
         --fastx_getsubseq - \
@@ -115,7 +115,7 @@ printf "" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_getsubseq fails without --label"
+DESCRIPTION="--fastx_getsubseq errors without --label"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_getsubseq - \
@@ -124,7 +124,7 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_getsubseq fails without any output option"
+DESCRIPTION="--fastx_getsubseq errors without any output option"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_getsubseq - \
@@ -410,7 +410,7 @@ printf ">s1\nACGT\n" | \
         failure "${DESCRIPTION}"
 
 ## --subseq_start must be <= --subseq_end
-DESCRIPTION="--subseq_start greater than --subseq_end fails"
+DESCRIPTION="--subseq_start greater than --subseq_end errors"
 printf ">s1\nACGTACGT\n" | \
     "${VSEARCH}" \
         --fastx_getsubseq - \
@@ -542,7 +542,7 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastaout fails if unable to open output file for writing"
+DESCRIPTION="--fastaout errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
@@ -566,7 +566,7 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastqout fails with fasta input"
+DESCRIPTION="--fastqout errors with fasta input"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_getsubseq - \
@@ -697,7 +697,7 @@ printf ">s1\nACGTACGT\n>s2\nTTTTTTTT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--notmatched fails if unable to open output file for writing"
+DESCRIPTION="--notmatched errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
@@ -756,7 +756,7 @@ printf "@s1\nACGTACGT\n+\nIIIIIIII\n@s2\nTTTTTTTTTT\n+\n1234567890\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--notmatchedfq fails with fasta input"
+DESCRIPTION="--notmatchedfq errors with fasta input"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_getsubseq - \

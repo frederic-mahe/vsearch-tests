@@ -55,7 +55,7 @@ printf ">s1;size=9\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--sortbylength fails if unable to open output file for writing"
+DESCRIPTION="--sortbylength errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf ">s1;size=9\nA\n" | \
     "${VSEARCH}" \
