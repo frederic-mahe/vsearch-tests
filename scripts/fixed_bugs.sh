@@ -7525,6 +7525,11 @@ printf "@s\nA\n+\nI\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/239
 
+# --shuffle, --sortbysize and --sortbylength accept fastq input and write
+# fasta output; this is now documented behaviour (see the respective
+# manpages) and is already covered by the "reads fastq and returns fasta"
+# tests in shuffle.sh, sortbysize.sh and sortbylength.sh
+
 
 #******************************************************************************#
 #                                                                              #
