@@ -31,6 +31,7 @@ for test_script in vsearch.sh \
                        fastx_mask.sh \
                        fastx_revcomp.sh \
                        fastx_subsample.sh \
+                       fastx_syncpairs.sh \
                        fastx_uniques.sh \
                        help.sh \
                        makeudb_usearch.sh \
