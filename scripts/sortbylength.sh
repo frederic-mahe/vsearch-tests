@@ -76,6 +76,17 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sortbylength reads fastq and returns fasta"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --quiet \
+        --output - | \
+    tr -d "\n" | \
+    grep -qx ">sA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--sortbylength accepts empty input"
 printf "" | \
     "${VSEARCH}" \

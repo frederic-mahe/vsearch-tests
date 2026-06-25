@@ -75,6 +75,17 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sortbysize reads fastq and returns fasta"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --quiet \
+        --output - | \
+    tr -d "\n" | \
+    grep -qx ">sA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--sortbysize accepts empty input"
 printf "" | \
     "${VSEARCH}" \
