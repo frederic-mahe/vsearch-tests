@@ -5912,7 +5912,7 @@ printf "@read1 somedescription\nCGATTCACACTGGGCCAACAAGTTTCGTGCTGACGTGTAT\n+\nIII
     --reverse "${REV}" \
     --fastqout - \
     --quiet 2>/dev/null | \
-    head -1 | \
+    head -n 1 | \
     grep -qx "@read1 somedescription" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -8282,7 +8282,7 @@ printf "@s;size=1;\nA\n+\nI\n" | \
         --xsize \
         --fastqout - \
         --quiet | \
-    head -1 | \
+    head -n 1 | \
     grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -8346,7 +8346,7 @@ printf "@s;ee=0.5;\nA\n+\nI\n" | \
         --xee \
         --fastqout - \
         --quiet | \
-    head -1 | \
+    head -n 1 | \
     grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -9337,7 +9337,7 @@ printf ">1-1234.1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --minseqlength 1 \
         --otutabout - \
         --quiet | \
-    head -1 | \
+    head -n 1 | \
     grep -qx "#OTU ID	1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -9351,7 +9351,7 @@ printf ">q;sample=1-1234\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --minseqlength 1 \
         --otutabout - \
         --quiet | \
-    head -1 | \
+    head -n 1 | \
     grep -qx "#OTU ID	1-1234" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
