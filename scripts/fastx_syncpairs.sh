@@ -129,6 +129,33 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_syncpairs fastqout_rev requires fastq input (fasta in)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf ">s\nA\n") \
+        --fastqout_rev /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs fastqout_orphans requires fastq input (fasta in)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf ">s\nA\n") \
+        --fastqout_orphans /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs fastqout_orphans_rev requires fastq input (fasta in)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf ">s\nA\n") \
+        --fastqout_orphans_rev /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_syncpairs rejects a mix of fasta forward and fastq reverse"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
@@ -184,6 +211,39 @@ printf "" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
         --reverse <(printf "") \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a non-empty forward with an empty reverse: every forward read is an
+## orphan, no pair is synchronized
+DESCRIPTION="--fastx_syncpairs accepts a non-empty forward with an empty reverse"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "") \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs sends a forward read to orphans when the reverse is empty"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "") \
+        --fastaout /dev/null \
+        --fastaout_orphans - 2> /dev/null | \
+    grep -qx ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## an empty forward with a non-empty reverse: every reverse read is an
+## orphan, no pair is synchronized
+DESCRIPTION="--fastx_syncpairs accepts an empty forward with a non-empty reverse"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf ">s\nA\n") \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -295,12 +355,66 @@ printf "@a 1:N:0:1\nAA\n+\nII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## an orphan output alone (no synced output) is a valid invocation
+DESCRIPTION="--fastx_syncpairs accepts --fastaout_orphans as the only output"
+printf "@a 1:N:0:1\nAA\n+\nII\n@b 1:N:0:1\nCC\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a 2:N:0:1\nTT\n+\nII\n") \
+        --fastaout_orphans - 2> /dev/null | \
+    grep -qx ">b 1:N:0:1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs accepts --fastqout_orphans as the only output"
+printf "@a 1:N:0:1\nAA\n+\nII\n@b 1:N:0:1\nCC\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a 2:N:0:1\nTT\n+\nII\n") \
+        --fastqout_orphans - 2> /dev/null | \
+    grep -qx "@b 1:N:0:1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs accepts --fastaout_orphans_rev as the only output"
+printf "@a 1:N:0:1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a 2:N:0:1\nTT\n+\nII\n@d 2:N:0:1\nGG\n+\nII\n") \
+        --fastaout_orphans_rev - 2> /dev/null | \
+    grep -qx ">d 2:N:0:1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs accepts --fastqout_orphans_rev as the only output"
+printf "@a 1:N:0:1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a 2:N:0:1\nTT\n+\nII\n@d 2:N:0:1\nGG\n+\nII\n") \
+        --fastqout_orphans_rev - 2> /dev/null | \
+    grep -qx "@d 2:N:0:1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
 #                               mate matching                                 #
 #                                                                             #
 #*****************************************************************************#
+
+## a multi-character label that ends in neither a separator nor a mate
+## number is used verbatim as the matching key (no suffix is stripped)
+DESCRIPTION="--fastx_syncpairs matches a multi-character label with no mate marker"
+printf "@xy\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@xy\nTT\n+\nII\n") \
+        --fastaout /dev/null \
+        --fastaout_orphans - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_syncpairs matches Casava 1.8+ headers (differ after a space)"
 printf "@a 1:N:0:1\nAA\n+\nII\n" | \
