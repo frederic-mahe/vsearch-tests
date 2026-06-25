@@ -383,6 +383,21 @@ printf "@a 1:N:0:1\nAA\n+\nII\n@a 1:N:0:1\nCC\n+\nII\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## duplicate forward labels are only rejected when they create an
+## ambiguous pairing; two forward orphans sharing a label are harmless
+## and are written out unchanged
+DESCRIPTION="--fastx_syncpairs keeps duplicate forward orphans (no shared mate)"
+printf "@a 1:N:0:1\nAA\n+\nII\n@a 1:N:0:1\nCC\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@z 2:N:0:1\nTT\n+\nII\n") \
+        --fastaout /dev/null \
+        --fastaout_orphans - 2> /dev/null | \
+    grep -c "^>a" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
