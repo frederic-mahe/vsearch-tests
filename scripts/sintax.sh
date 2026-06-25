@@ -847,7 +847,7 @@ printf ">q\n%s\n" "${PALQ}" | \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${PALREF}") \
         --strand both \
-        --randseed 6 \
+        --randseed 5 \
         --threads 1 \
         --minseqlength 10 \
         --tabbedout /dev/stdout \
