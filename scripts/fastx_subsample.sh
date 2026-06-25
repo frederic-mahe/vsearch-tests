@@ -695,7 +695,7 @@ cmp --quiet \
           "${VSEARCH}" \
               --fastx_subsample - \
               --randseed ${SEED} \
-              --sample_size 3 \
+              --sample_size 8 \
               --fastqout - 2> /dev/null) \
      <(for ((i=1 ; i<=9 ; i+=1)) ; do
            printf "@s%s\nA\n+\nI\n" ${i}
@@ -703,7 +703,7 @@ cmp --quiet \
            "${VSEARCH}" \
                --fastx_subsample - \
                --randseed ${SEED} \
-               --sample_size 3 \
+               --sample_size 8 \
                --fastqout - 2> /dev/null) && \
            failure "${DESCRIPTION}" || \
                success "${DESCRIPTION}"
@@ -998,7 +998,7 @@ printf ">s\nA\n" | \
         --randseed 1 \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample a fix --randseed produces constant output"
 SEED=1
@@ -1022,7 +1022,7 @@ OUTPUT2=$(
        )
 [[ "${OUTPUT1}" == "${OUTPUT2}" ]] && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 unset SEED OUTPUT1 OUTPUT2
 
 DESCRIPTION="--fastx_subsample accepts --randseed 0 (free seed)"
@@ -1034,7 +1034,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --randseed 0 \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample accepts --randseed -1 (negative integer)"
 printf ">s1\nA\n>s2\nA\n" | \
@@ -1045,7 +1045,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --randseed -1 \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample rejects --randseed A (not an integer)"
 printf ">s1\nA\n>s2\nA\n" | \
@@ -1055,7 +1055,7 @@ printf ">s1\nA\n>s2\nA\n" | \
         --randseed A \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+    success "${DESCRIPTION}"
 
 ## --------------------------------------------------------------------- sizein
 
@@ -1194,7 +1194,7 @@ printf ">s\nA\n" | \
         --fasta_width 1 \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --fasta_width wraps fasta output"
 printf ">s\nAA\n" | \
@@ -1219,7 +1219,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastq_ascii 33 \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 ## ----------------------------------------------------------------- fastq_qmax
 
@@ -1232,7 +1232,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastq_qmax 41 \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 # J = 41, the read should be removed?
 DESCRIPTION="--fastx_subsample --fastq_qmax has no effect"
@@ -1259,7 +1259,7 @@ printf "@s\nA\n+\nI\n" | \
         --fastq_qmin 1 \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --fastq_qmin has no effect"
 printf "@s\nA\n+\nH\n" | \
@@ -1272,7 +1272,7 @@ printf "@s\nA\n+\nH\n" | \
     tr -d "\n" | \
     grep -qx ">sA" && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 ## ------------------------------------------------------------ gzip_decompress
 
@@ -1311,7 +1311,7 @@ printf ">s\nA\n" | \
         --label_suffix "_suffix" \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --label_suffix adds the suffix 'string' to sequence headers"
 printf ">s\nA\n" | \
@@ -1349,7 +1349,7 @@ printf ">s\nA\n" | \
         --lengthout \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --lengthout adds length annotations to output"
 printf ">s\nA\n" | \
@@ -1374,7 +1374,7 @@ printf ">s\nA\n" | \
         --log /dev/null \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --log writes to a file"
 printf ">s\nA\n" | \
@@ -1410,7 +1410,7 @@ printf ">s\nA\n" | \
         --no_progress \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 ## note: progress is not written to the log file
 DESCRIPTION="--fastx_subsample --no_progress removes progressive report on stderr (no visible effect)"
@@ -1435,7 +1435,7 @@ printf ">s\nA\n" | \
         --notrunclabels \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --notrunclabels preserves full headers"
 printf ">s extra\nA\n" | \
@@ -1447,7 +1447,7 @@ printf ">s extra\nA\n" | \
         --fastaout - | \
     grep -qx ">s extra" && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 ## ---------------------------------------------------------------------- quiet
 
@@ -1459,7 +1459,7 @@ printf ">s\nA\n" | \
         --quiet \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --quiet eliminates all (normal) messages to stderr"
 printf ">s\nA\n" | \
@@ -1470,7 +1470,7 @@ printf ">s\nA\n" | \
         --fastaout /dev/null 2>&1 | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+    success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --quiet allows error messages to be sent to stderr"
 printf ">s\nA\n" | \
@@ -1482,7 +1482,7 @@ printf ">s\nA\n" | \
         --fastaout /dev/null 2>&1 | \
     grep -q "." && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 ## -------------------------------------------------------------------- relabel
 
@@ -1495,7 +1495,7 @@ printf ">s\nA\n" | \
         --relabel "label" \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --relabel renames sequence (label + ticker)"
 printf ">s\nA\n" | \
@@ -1507,7 +1507,7 @@ printf ">s\nA\n" | \
         --fastaout - | \
     grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --relabel renames sequence (empty label, only ticker)"
 printf ">s\nA\n" | \
@@ -1519,7 +1519,7 @@ printf ">s\nA\n" | \
         --fastaout - | \
     grep -qx ">1" && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --relabel cannot combine with --relabel_md5"
 printf ">s\nA\n" | \
@@ -1531,7 +1531,7 @@ printf ">s\nA\n" | \
         --relabel_md5 \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+    success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --relabel cannot combine with --relabel_sha1"
 printf ">s\nA\n" | \
@@ -1543,7 +1543,7 @@ printf ">s\nA\n" | \
         --relabel_sha1 \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+    success "${DESCRIPTION}"
 
 ## --------------------------------------------------------------- relabel_keep
 
@@ -1557,7 +1557,7 @@ printf ">s\nA\n" | \
         --relabel_keep \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --relabel_keep renames and keeps original sequence name"
 printf ">s\nA\n" | \
@@ -1570,7 +1570,7 @@ printf ">s\nA\n" | \
         --fastaout - | \
     grep -qx ">label1 s" && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 ## ---------------------------------------------------------------- relabel_md5
 
@@ -1583,7 +1583,7 @@ printf ">s\nA\n" | \
         --relabel_md5 \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --relabel_md5 relabels using MD5 hash of sequence"
 printf ">s\nA\n" | \
@@ -1595,7 +1595,7 @@ printf ">s\nA\n" | \
         --fastaout - | \
     grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 ## --------------------------------------------------------------- relabel_self
 
@@ -1608,7 +1608,7 @@ printf ">s\nA\n" | \
         --relabel_self \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --relabel_self relabels using sequence as label"
 printf ">s\nA\n" | \
@@ -1633,7 +1633,7 @@ printf ">s\nA\n" | \
         --relabel_sha1 \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --relabel_sha1 relabels using SHA1 hash of sequence"
 printf ">s\nA\n" | \
@@ -1658,7 +1658,7 @@ printf ">s\nA\n" | \
         --sample "ABC" \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --sample adds sample name to sequence headers"
 printf ">s\nA\n" | \
@@ -1683,7 +1683,7 @@ printf ">s\nA\n" | \
         --sizeout \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --sizeout is accepted (with size)"
 printf ">s;size=2\nA\n" | \
@@ -1694,7 +1694,7 @@ printf ">s;size=2\nA\n" | \
         --sizeout \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --sizeout missing size annotations are not added (no size)"
 printf ">s\nA\n" | \
@@ -1944,7 +1944,7 @@ printf ">s\nA\n" | \
         --quiet \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --threads > 1 triggers a warning (not multithreaded)"
 printf ">s\nA\n" | \
@@ -1969,7 +1969,7 @@ printf "@s;ee=1.00\nA\n+\nI\n" | \
         --quiet \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --xee removes expected error annotations from input"
 printf "@s;ee=1.00\nA\n+\nI\n" | \
@@ -1994,7 +1994,7 @@ printf ">s;length=1\nA\n" | \
         --quiet \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --xlength removes length annotations from input"
 printf ">s;length=1\nA\n" | \
@@ -2032,7 +2032,7 @@ printf ">s;size=1\nA\n" | \
         --quiet \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --xsize removes abundance annotations from input"
 printf ">s;size=1\nA\n" | \
