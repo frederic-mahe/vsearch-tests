@@ -5867,7 +5867,7 @@ printf "@read1 somedescription\nCGATTCACACTGGGCCAACAAGTTTCGTGCTGACGTGTAT\n+\nIII
     --reverse "${REV}" \
     --fastqout - \
     --quiet 2>/dev/null | \
-    head -1 | \
+    head -n 1 | \
     grep -qx "@read1 somedescription" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -8079,8 +8079,143 @@ printf "@\n\n+\n\351\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/271
 
-# open issue (not covered): when an annotation is added (e.g. ;ee=) to a
-# header already ending with ';', two separators ';;' may appear
+## when an annotation (e.g. ;ee=) is appended to a header (or label
+## suffix) that already ends with the separator ';', the separators are
+## merged into a single ';' instead of producing ";;"
+
+DESCRIPTION="issue 271: appended ee annotation merges a trailing ';' (no ';;')"
+printf "@s;size=1;\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --eeout \
+        --fastqout - \
+        --quiet | \
+    head -n 1 | \
+    grep -qx "@s;size=1;ee=0.0001000" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a header that does not end with ';' is unaffected (no separator merge)
+DESCRIPTION="issue 271: ee annotation keeps a single ';' when header has no trailing ';'"
+printf "@s;size=1\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --eeout \
+        --fastqout - \
+        --quiet | \
+    head -n 1 | \
+    grep -qx "@s;size=1;ee=0.0001000" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the merge also applies to the fasta output path
+DESCRIPTION="issue 271: appended length annotation merges a trailing ';' in fasta headers"
+printf ">s;\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --lengthout \
+        --fastaout - \
+        --quiet | \
+    head -n 1 | \
+    grep -qx ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the trailing ';' may come from a label suffix supplied with --label_suffix
+DESCRIPTION="issue 271: appended ee annotation merges a trailing ';' from --label_suffix"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --label_suffix ";foo;" \
+        --eeout \
+        --fastqout - \
+        --quiet | \
+    head -n 1 | \
+    grep -qx "@s;foo;ee=0.0001000" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the trailing ';' from a label suffix is also merged in fasta headers
+DESCRIPTION="issue 271: appended length annotation merges a trailing ';' from --label_suffix (fasta)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --label_suffix ";foo;" \
+        --lengthout \
+        --fastaout - \
+        --quiet | \
+    head -n 1 | \
+    grep -qx ">s;foo;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the merge applies to the sample annotation too
+DESCRIPTION="issue 271: appended sample annotation merges a trailing ';'"
+printf "@s;\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sample bar \
+        --fastqout - \
+        --quiet | \
+    head -n 1 | \
+    grep -qx "@s;sample=bar" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## and to the sample annotation in fasta headers
+DESCRIPTION="issue 271: appended sample annotation merges a trailing ';' (fasta)"
+printf ">s;\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sample bar \
+        --fastaout - \
+        --quiet | \
+    head -n 1 | \
+    grep -qx ">s;sample=bar" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a trailing ';' is left untouched when no annotation is appended
+DESCRIPTION="issue 271: a trailing ';' is preserved when nothing is appended"
+printf "@s;\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastqout - \
+        --quiet | \
+    head -n 1 | \
+    grep -qx "@s;" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## only the first appended annotation reuses the trailing ';'; the
+## following annotations keep their own separator
+DESCRIPTION="issue 271: only the first annotation merges the trailing ';'"
+printf "@s;\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sizeout \
+        --eeout \
+        --lengthout \
+        --fastqout - \
+        --quiet | \
+    head -n 1 | \
+    grep -qx "@s;size=1;ee=0.0001000;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a size annotation that is stripped and re-added does not introduce ";;"
+DESCRIPTION="issue 271: re-added size annotation does not duplicate the separator"
+printf "@s;size=5;\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sizeout \
+        --eeout \
+        --fastqout - \
+        --quiet | \
+    head -n 1 | \
+    grep -qx "@s;size=5;ee=0.0001000" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 
@@ -8102,7 +8237,7 @@ printf "@s;size=1;\nA\n+\nI\n" | \
         --xsize \
         --fastqout - \
         --quiet | \
-    head -1 | \
+    head -n 1 | \
     grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -8166,7 +8301,7 @@ printf "@s;ee=0.5;\nA\n+\nI\n" | \
         --xee \
         --fastqout - \
         --quiet | \
-    head -1 | \
+    head -n 1 | \
     grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -9157,7 +9292,7 @@ printf ">1-1234.1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --minseqlength 1 \
         --otutabout - \
         --quiet | \
-    head -1 | \
+    head -n 1 | \
     grep -qx "#OTU ID	1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -9171,7 +9306,7 @@ printf ">q;sample=1-1234\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --minseqlength 1 \
         --otutabout - \
         --quiet | \
-    head -1 | \
+    head -n 1 | \
     grep -qx "#OTU ID	1-1234" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
