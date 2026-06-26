@@ -21560,6 +21560,94 @@ unset SEQ1 SEQ2
 
 #******************************************************************************#
 #                                                                              #
+#         Missing-abundance warning to the log file (pull request 628)         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/628
+
+# In the --log branch of rereplicate(), the "Missing abundance
+# information" warning was written to stderr instead of the log file
+# handle. As a result the warning was printed to stderr twice (once in
+# the !opt_quiet branch and once here) and never reached the --log
+# file. The fix writes it to fp_log: it now lands in the log file and
+# is no longer duplicated on stderr.
+
+# with --quiet the stderr copy is suppressed, so the warning is only
+# visible in the log file if it was correctly routed there
+DESCRIPTION="pull request 628: rereplicate missing-abundance warning reaches the log file"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --output /dev/null \
+        --quiet \
+        --log /dev/stdout 2>/dev/null | \
+    grep -q "WARNING: Missing abundance information" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# without --quiet the warning is printed to stderr exactly once (it was
+# duplicated before the fix)
+DESCRIPTION="pull request 628: rereplicate missing-abundance warning not duplicated on stderr"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --output /dev/null \
+        --log /dev/null 2>&1 > /dev/null | \
+    grep -c "WARNING: Missing abundance information" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#        Off-by-one in MSA consensus ;length= output (pull request 629)        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/629
+
+# print_consensus_sequence() passed cons_v.size() as the sequence
+# length to fasta_print_general(), but cons_v is sized conslen + 1 (the
+# extra slot holds the '\0' terminator). With --consout --lengthout
+# this made the ;length= field of every cluster's consensus one larger
+# than the actual consensus. The sequence body itself was unaffected.
+# The fix passes cons_v.size() - 1 so the reported length matches the
+# true residue count.
+
+# two identical 36 nt reads cluster into one consensus of 36 nt; the
+# buggy version reported length=37
+DESCRIPTION="pull request 629: consensus ;length= equals the true length (not +1)"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.9 \
+        --consout - \
+        --lengthout \
+        --quiet 2>/dev/null | \
+    grep -qx ">centroid=a;seqs=2;length=36" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the reported ;length= must match the actual length of the consensus
+# sequence body
+DESCRIPTION="pull request 629: consensus ;length= matches the consensus body length"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.9 \
+        --consout - \
+        --lengthout \
+        --quiet 2>/dev/null | \
+    awk '/^>/ {sub(/.*;length=/, ""); len = $0 + 0; next}
+         {if (length($0) != len) {exit 1}}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
 #         Saturate k-mer match counter to avoid wraparound (issue 630)         #
 #                                                                              #
 #******************************************************************************#
@@ -21625,10 +21713,176 @@ unset SEQ1 SEQ2
 # rm -f "${DB}" "${QUERY}"
 
 
+#******************************************************************************#
+#                                                                              #
+#             64-bit SIMD aligner length limits (pull request 631)             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/631
+
+# The SIMD aligner guarded against overflow using only the product of
+# the two sequence lengths, and computed its direction-buffer size and
+# indexing in 32-bit arithmetic. With very long sequences the qlen
+# multiplications and the buffer index could overflow a 32-bit int. The
+# fix guards by the sum of the lengths as well, and widens the
+# direction-buffer size and index computations to 64-bit.
+#
+# Like issue 630, triggering the overflow requires pairs of sequences
+# in the gigabase range, which is far too large and too slow for a
+# black-box test. No deterministic test is written; this note documents
+# the fix.
+
+
+#******************************************************************************#
+#                                                                              #
+#               Upper bound on --maxseqlength (pull request 632)               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/632
+
+# opt_maxseqlength had no upper bound (only values < 1 were rejected),
+# so a value above UINT32_MAX would let a sequence longer than the
+# unsigned int seqlen field be accepted and silently truncated. The fix
+# rejects any value above UINT32_MAX (4294967295) with a clear error.
+
+# the largest accepted value is UINT32_MAX (4294967295)
+DESCRIPTION="pull request 632: --maxseqlength accepts UINT32_MAX (4294967295)"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minseqlength 1 \
+        --maxseqlength 4294967295 \
+        --fastaout /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# one above UINT32_MAX is rejected with a fatal error
+DESCRIPTION="pull request 632: --maxseqlength rejects UINT32_MAX + 1 (4294967296)"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minseqlength 1 \
+        --maxseqlength 4294967296 \
+        --fastaout /dev/null \
+        --quiet 2>&1 | \
+    grep -q "cannot exceed 4294967295" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the 64-bit widening of the abundance, cluster-size (;seqs=) and
+# centroid-abundance fields in the same pull request cannot be exercised
+# by a black-box test: reaching the 32-bit limit needs more than 2^31
+# sequences in a single input or cluster. No deterministic test is
+# written for those changes.
+
+
+#******************************************************************************#
+#                                                                              #
+#        Read the database from a non-regular stream (pull request 633)        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/633
+
+# Both the UDB magic-number detection and the compression
+# autodetection peeked at the first bytes of the database file and then
+# rewound by reopening it, which only works for regular files. The
+# stream was special-cased only when it was a FIFO (S_ISFIFO), but on
+# FreeBSD /dev/stdin and the /dev/fd/N entries used by shell process
+# substitution are character devices, not FIFOs, so the first bytes
+# were consumed and the reader aborted with "File type not recognized".
+# The fix stats the open descriptor and treats anything that is not a
+# regular file as a non-rewindable stream, skipping the consume-and-
+# reopen step.
+
+# the database is read from a pipe via /dev/stdin: the query matches its
+# single database sequence (the stream is not corrupted)
+DESCRIPTION="pull request 633: --usearch_global reads --db from /dev/stdin"
+printf ">r\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global <(printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --db /dev/stdin \
+        --id 0.9 \
+        --minseqlength 1 \
+        --threads 1 \
+        --quiet \
+        --userfields query+target \
+        --userout - 2>/dev/null | \
+    grep -qx "q	r" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the same non-regular database stream is also accepted by uchime_ref
+# (the original FreeBSD report), and is not rejected as "File type not
+# recognized"
+DESCRIPTION="pull request 633: --uchime_ref reads --db from /dev/stdin without corruption"
+printf ">r\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --uchime_ref <(printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --db /dev/stdin \
+        --uchimeout /dev/null \
+        --quiet 2>&1 | \
+    grep -q "not recognized" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#      Graceful worker-thread error on bad input (pull requests 635-637)       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/635
+## https://github.com/torognes/vsearch/pull/636
+## https://github.com/torognes/vsearch/pull/637
+
+# fastq_mergepairs (635), the query readers of sintax, usearch_global/
+# search, search_exact and uchime_ref (636), and uchime_ref's query
+# reader and a dead scorematrix global (637) all called fatal()
+# (std::exit()) from a worker thread, or carried a data race, while
+# sibling workers were still writing output. std::exit() from a worker
+# flushes and closes shared streams and runs static destructors
+# concurrently with those threads, a data race that can corrupt libc
+# state and crash. The fixes defer the parse error to a flag and report
+# it from the main thread after the worker pool has joined.
+#
+# These are timing-dependent races: the crash is intermittent and
+# platform-dependent, and the observable error message and non-zero exit
+# code are the same before and after the fix. There is no deterministic
+# black-box test that distinguishes the fixed from the unfixed binary,
+# so no test is written; this note documents the fixes.
+
+
+#******************************************************************************#
+#                                                                              #
+#        Reproducible cross-platform --randseed (pull requests 639-640)        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://github.com/torognes/vsearch/pull/639
+## https://github.com/torognes/vsearch/pull/640
+
+# --shuffle, --fastx_subsample and --sintax used std::shuffle and/or
+# seeded their generator from the --randseed value truncated to 32 bits,
+# so the order produced for a given seed was implementation-defined and
+# not reproducible across platforms or thread counts. The fixes seed
+# from the full 64-bit --randseed and use the portable Fisher-Yates
+# helper, making the result identical across platforms for a given seed.
+#
+# The "a fixed --randseed produces constant output" contract is already
+# covered by the per-command tests in shuffle.sh, fastx_subsample.sh and
+# sintax.sh. Exact cross-platform identity of the permutation cannot be
+# verified from a single platform, so no additional test is written here.
+
+
 exit 0
 
 
-# DONE: issues 1-622 (issues 86, 118, 132, 159, 185, 202, 218, 229, 239, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496, 504, 522, 524, 548, 564, 569, 570, 584, 607, 609, 614 still open)
+# DONE: issues 1-622, pull requests 628-640 (issues 86, 118, 132, 159, 185, 202, 218, 229, 263, 265, 271, 282, 309, 314, 316, 332, 400, 415, 417, 423, 461, 465, 487, 496, 504, 522, 524, 548, 564, 569, 570, 584, 607, 609, 614 still open)
 #
 # note: issue 547 reports that --usearch_global may prefer a longer
 # target with a worse raw score, mismatch count and percent identity.
