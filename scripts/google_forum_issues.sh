@@ -1264,3 +1264,1333 @@ rm -f "${DB}"
 ## not testable: interpretation/version-upgrade advice on a real dataset, no minimal repro.
 
 
+#******************************************************************************#
+#                                                                              #
+#  Query for flag - double dashes vs single dash                               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/nlnrmI4jgMQ
+## 2016-09-09
+## Q: Does using a single dash (-strand) vs double dash (--strand) change results?
+## A: No, vsearch accepts both single and double dashes identically; results are the same.
+
+DESCRIPTION="forum (2016-09-09): options are accepted with a single dash"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        -derep_fulllength - \
+        -output - \
+        -quiet 2> /dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="forum (2016-09-09): single-dash and double-dash options give identical results"
+SINGLE=$(printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" -cluster_size - -id 0.97 -uc - -quiet 2> /dev/null)
+DOUBLE=$(printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" --cluster_size - --id 0.97 --uc - --quiet 2> /dev/null)
+[ "${SINGLE}" = "${DOUBLE}" ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SINGLE DOUBLE
+
+
+#******************************************************************************#
+#                                                                              #
+#  subsample split                                                             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/zxfLn0CJEAU
+## 2016-09-19
+## Q: How to write the sequences NOT chosen by a random subsample to a separate file?
+## A: Use --fastaout_discarded (or --fastqout_discarded), added in v2.1.0.
+
+DESCRIPTION="forum (2016-09-19): --fastaout_discarded receives the unselected sequences"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct 50 \
+        --randseed 1 \
+        --fastaout /dev/null \
+        --fastaout_discarded /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx ">s2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="forum (2016-09-19): --fastaout and --fastaout_discarded partition the input"
+SELECTED=$(printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct 50 \
+        --randseed 1 \
+        --fastaout /dev/stdout \
+        --fastaout_discarded /dev/null \
+        --quiet 2> /dev/null | \
+    grep -c "^>")
+DISCARDED=$(printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct 50 \
+        --randseed 1 \
+        --fastaout /dev/null \
+        --fastaout_discarded /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -c "^>")
+[ "${SELECTED}" -eq 1 ] && [ "${DISCARDED}" -eq 1 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SELECTED DISCARDED
+
+
+#******************************************************************************#
+#                                                                              #
+#  De novo VS reference                                                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/-lJcLqulp5A
+## 2016-10-06
+## Q: Which chimera count (de novo vs reference) to trust in QIIME?
+## A: Advice to trust/combine methods; no specific vsearch behaviour to pin down.
+## not testable: usage/interpretation advice mediated by QIIME and external DB; no reproducible vsearch behaviour or option.
+
+
+#******************************************************************************#
+#                                                                              #
+#  extracting all mapped sequences from uc file or biom table                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/5hQynxy_29E
+## 2016-10-11
+## Q: How to extract all sequences mapped to OTUs from a .uc file?
+## A: Unanswered post; downstream parsing/biom task, not a vsearch behaviour.
+## not testable: unanswered post about post-processing a uc file / biom table with external tools; no reproducible vsearch behaviour or option.
+
+
+#******************************************************************************#
+#                                                                              #
+#  confused on how to merge different FASTQ file                               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/gt3JmqJtbh8
+## 2016-10-12
+## Q: How to merge several FASTQ pairs and pool them for a database?
+## A: Process each pair individually then concatenate; cluster_otus/otutab not implemented.
+## not testable: workflow/usage advice (per-file loops, cat, unsupported usearch v8 features); no single reproducible vsearch behaviour a minimal test can pin down.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Clustering method ??                                                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/YoSsyQYKVmU
+## 2016-10-13
+## Q: Which clustering method does vsearch implement (usearch 5/6/uparse)?
+## A: uclust-style (cluster_fast/cluster_smallmem); UPARSE/cluster_otus not implemented.
+## not testable: informational answer about algorithm provenance; no command-level behaviour to assert beyond cluster_otus being unimplemented (covered elsewhere).
+
+
+#******************************************************************************#
+#                                                                              #
+#  Getting all matches from a mapping                                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/aB35IM4KF1Y
+## 2016-10-17
+## Q: --uc_allhits only returns the top hit; why?
+## A: The option is --maxaccepts (not --max_accepts); with maxaccepts 0 + --uc_allhits all hits are reported.
+
+DESCRIPTION="forum (2016-10-17): --max_accepts (with underscore) is an unrecognized option"
+DB=$(mktemp)
+printf ">t1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --max_accepts 0 \
+        --uc /dev/stdout 2>&1 | \
+    grep -q "unrecognized option '--max_accepts'" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+
+DESCRIPTION="forum (2016-10-17): --uc_allhits reports every equally-good target hit"
+DB=$(mktemp)
+printf ">t1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>t2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --maxaccepts 0 \
+        --maxrejects 0 \
+        --uc_allhits \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {n = 0} /^H/ {n++} END {if (n == 2) exit 0; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+
+DESCRIPTION="forum (2016-10-17): without --uc_allhits only the top hit is reported"
+DB=$(mktemp)
+printf ">t1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>t2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --maxaccepts 0 \
+        --maxrejects 0 \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {n = 0} /^H/ {n++} END {if (n == 1) exit 0; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  vsearch for chimera checkin but not clustering?                             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/qsXT59Gy4mo
+## 2016-10-19
+## Q: Can vsearch do chimera detection only, then feed output to swarm/sumaclust?
+## A: Yes; --uchime_denovo with --nonchimeras/--chimeras works standalone.
+
+DESCRIPTION="forum (2016-10-19): --uchime_denovo can be run standalone to filter chimeras"
+printf ">a;size=20\nACGACGACGACGTTTTTTTTTTTTTTTTTTTTTTTTTTGGGGGGGGGG\n>b;size=15\nGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCCCCCCCACGACGACGACG\n>c;size=1\nACGACGACGACGTTTTTTTTTTTTTTTTTTTTTTTTTTACGACGACGACG\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --sizein \
+        --nonchimeras /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Understanding counts from vsearch logs (chimera abundance)                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/niW4C0kT-Hg
+## 2016-10-26
+## Q: Why is the chimera-log sequence count lower than the dereplication input count?
+## A: --minuniquesize 2 discarded singletons during dereplication (those are not passed on).
+
+DESCRIPTION="forum (2016-10-26): --minuniquesize 2 keeps clusters with size >= 2"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s3\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minuniquesize 2 \
+        --sizeout \
+        --output /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="forum (2016-10-26): --minuniquesize 2 discards singleton clusters"
+N=$(printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s3\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minuniquesize 2 \
+        --output /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -c "^>")
+[ "${N}" -eq 1 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset N
+
+
+#******************************************************************************#
+#                                                                              #
+#  WHY SEQUENCES LONGER THEN 7 ARE NOT CLUSTERING?                             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/aCtLcke0Oek
+## 2016-11-15
+## Q: Very short (8-9 nt) sequences fail to cluster; can word length be changed?
+## A: vsearch uses 8-mer heuristics; --wordlength can be set (range 3 to 15) to help short seqs.
+
+DESCRIPTION="forum (2016-11-15): --wordlength 15 is accepted by cluster_smallmem"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.97 \
+        --wordlength 15 \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -q "^C" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="forum (2016-11-15): --wordlength above 15 is rejected (range is 3 to 15)"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.97 \
+        --wordlength 16 \
+        --uc /dev/stdout 2>&1 | \
+    grep -q "Argument to --wordlength must be in the range 3 to 15" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  QIIME crashing with vsearch                                                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/E3y0p5zJg00
+## 2016-11-15
+## Q: QIIME crashes (KeyError 'denovo51') with vsearch 2.3.0 but not 2.0.2.
+## A: QIIME-side parsing problem / possible missing library in a binary build; not a vsearch behaviour.
+## not testable: crash occurs in QIIME's parse_usearch61_clusters wrapper / binary-distribution issue; no reproducible vsearch behaviour or option to assert.
+
+
+#******************************************************************************#
+#                                                                              #
+#  VSEARCH/QIIME chimera checking                                              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/m8jstyrgEyY
+## 2016-11-15
+## Q: How/when to run chimera checking and which reference DB in QIIME?
+## A: Developer redirected the user to the QIIME forum; not a vsearch question.
+## not testable: QIIME workflow and reference-database choice questions; no reproducible vsearch behaviour or option.
+
+
+#******************************************************************************#
+#                                                                              #
+#  FORBIDDEN INTERNAL GAPS                                                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/OBIUgQ157ZM
+## 2016-11-15
+## Q: Internal gaps appear in the alignment despite forbidding them via *I gap penalties.
+## A: Acknowledged as an unresolved bug at the time; here we pin down the stable, well-defined part:
+##    the *I (interior) gap-penalty syntax is accepted by --gapopen/--gapext.
+
+DESCRIPTION="forum (2016-11-15): *I (interior) gap-penalty syntax is accepted by cluster_smallmem"
+printf ">s1\nACGTACGTACGT\n>s2\nACGTACGTAC\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.5 \
+        --minseqlength 3 \
+        --gapopen "*I/0E" \
+        --gapext "*I/12E" \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -q "^C" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  recalculated phred scores after merge pairs                                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/yY8U9aGTT8g
+## 2016-11-15
+## Q: How to view recalculated Phred/expected-error values after merging reads?
+## A: Use --eeout (with fastq_filter); the expected error is written into the read header.
+
+DESCRIPTION="forum (2016-11-15): --eeout adds ee= to fastq header"
+printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --eeout \
+        --quiet \
+        --fastqout - | \
+    grep -q "^@s1;ee=" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  No chimeras in the representative OTUs                                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/19uYH8T6hww
+## 2016-11-18
+## Q: Why does de novo chimera detection find no chimeras among representative OTUs?
+## A: De novo detection requires abundance (size) information; without abundance differences nothing is flagged.
+
+## A;size=50 + B;size=50 are parents; chim;size=1 is a left-A/right-B chimera.
+DESCRIPTION="forum (2016-11-18): de novo chimera detection flags chimera when parents are more abundant"
+printf ">A;size=50\nGCTAACGCGTTAAGTATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAATGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGAAGAACCTTACCAGGTCTTGACATCCTGCGAACCCTC\n>B;size=50\nTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGTCCTTAGTTGCCAGCATTCAGTTGGGCACTCTAAGGAGACTGCCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTA\n>chim;size=1\nGCTAACGCGTTAAGTATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAATGAGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTA\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --quiet \
+        --chimeras /dev/stdout 2> /dev/null | \
+    grep -qx ">chim;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## same sequences but all size=1: no abundance skew, no chimera reported.
+DESCRIPTION="forum (2016-11-18): de novo chimera detection finds nothing without abundance differences"
+printf ">A;size=1\nGCTAACGCGTTAAGTATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAATGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGAAGAACCTTACCAGGTCTTGACATCCTGCGAACCCTC\n>B;size=1\nTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGTCCTTAGTTGCCAGCATTCAGTTGGGCACTCTAAGGAGACTGCCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTA\n>chim;size=1\nGCTAACGCGTTAAGTATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAATGAGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTA\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --quiet \
+        --chimeras /dev/stdout 2> /dev/null | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  VSEARCH Citation                                                            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/mFbspR4RUQA
+## 2016-11-19
+## Q: How should VSEARCH be cited?
+## A: Cite the PeerJ paper (https://peerj.com/articles/2584/).
+## not testable: citation request, no vsearch behaviour to pin down
+
+
+#******************************************************************************#
+#                                                                              #
+#  Do I need to concatenate after fastq_filter                                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/ozNuNkDpmI0
+## 2016-11-28
+## Q: Is an explicit concatenation step still needed before dereplication?
+## A: No; vsearch reads concatenated entries straight from stdin (e.g. cat *.fa | vsearch --derep_fulllength -).
+
+## two "files" concatenated into stdin; identical a/c collapse to size=2.
+DESCRIPTION="forum (2016-11-28): derep_fulllength reads concatenated entries from stdin (no temp file)"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n>c\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --output /dev/stdout | \
+    grep -qx ">a;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Clustering OTU on VSEARCH                                                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/pNjWOTTXSnE
+## 2016-12-19
+## Q: Why is --otus not accepted by --cluster_fast?
+## A: --cluster_fast has no --otus option; use --centroids to output representative sequences.
+
+DESCRIPTION="forum (2016-12-19): cluster_fast rejects --otus"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --otus /dev/stdout 2>&1 | \
+    grep -q "unrecognized option '--otus'" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="forum (2016-12-19): cluster_fast outputs representatives with --centroids"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --quiet \
+        --centroids /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Agglomerative clustering with vsearch                                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/FAKsLsohmS4
+## 2016-12-23
+## Q: Does vsearch offer agglomerative clustering like usearch -cluster_agg?
+## A: No; there is no such function (--cluster_agg is not a recognized option).
+
+DESCRIPTION="forum (2016-12-23): no agglomerative clustering (--cluster_agg unrecognized)"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_agg - \
+        --id 0.80 2>&1 | \
+    grep -q "unrecognized option '--cluster_agg'" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  using vsearch instead of usearch in the GBS-SNP-CROPs pipeline              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/T2hNL6Nb9GA
+## 2016-12-23
+## Q: How to port usearch sortbylength/sortbysize commands (using --fastaout) to vsearch?
+## A: vsearch uses --output, not --fastaout, for sortbylength/sortbysize.
+
+DESCRIPTION="forum (2016-12-23): sortbylength rejects --fastaout"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --fastaout /dev/stdout 2>&1 | \
+    grep -q "Invalid option(s): --fastaout" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="forum (2016-12-23): sortbylength writes results with --output"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --sortbylength - \
+        --quiet \
+        --output /dev/stdout | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="forum (2016-12-23): sortbysize rejects --fastaout"
+printf ">s1;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --fastaout /dev/stdout 2>&1 | \
+    grep -q "Invalid option(s): --fastaout" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Using multiple clustering QIIME pipeline for OTU picking                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/vfnj22Jkjmk
+## 2016-12-29
+## Q: Can vsearch produce an OTU map for chaining with QIIME's merge_otu_map.py?
+## A: (no reply in thread)
+## not testable: unanswered, QIIME-specific OTU-map workflow with no defined vsearch behaviour
+
+
+#******************************************************************************#
+#                                                                              #
+#  search_exact doesn't find matches - syntax issue?                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/AvYdBCEc_cU
+## 2017-01-04
+## Q: Why does search_exact return 0 hits when matching short oligos against a longer reference?
+## A: search_exact requires full-length matches (equal lengths); use usearch_global for shorter queries.
+
+## query (25 nt) is a prefix of the longer reference (36 nt).
+DESCRIPTION="forum (2017-01-04): search_exact requires full-length match (no hit for shorter query)"
+printf ">q\nACGTACGTACGTACGTACGTACGTA\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db <(printf ">ref\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --quiet \
+        --blast6out /dev/stdout 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="forum (2017-01-04): usearch_global id 1.0 matches shorter query within longer reference"
+printf ">q\nACGTACGTACGTACGTACGTACGTA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">ref\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 1.0 \
+        --quiet \
+        --blast6out /dev/stdout 2> /dev/null | \
+    awk '$1 == "q" && $2 == "ref" && $3 == "100.0" { found = 1 } END { exit found ? 0 : 1 }' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Chimera detecting in vsearch OTU clustering                                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/ffrrHqy4QM0
+## 2017-01-06
+## Q: Do vsearch clustering commands detect chimeras like usearch cluster_otus?
+## A: No; vsearch clustering does clustering only, run uchime_denovo/uchime_ref separately.
+## not testable: usage advice (no integrated chimera step); the "clustering only" claim has no
+## single distinguishing observable beyond the chimera tests already covered above
+
+
+#******************************************************************************#
+#                                                                              #
+#  Unusually high chimera percentage                                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/XI8q75NNPYg
+## 2017-01-09
+## Q: Why ~41% chimeras with uchime_ref? Arguments were reversed.
+## A: Put the query first (--uchime_ref) and the reference second (--db); swapping them is wrong.
+
+## chim is a left-A/right-B chimera; A and B are the reference parents.
+DESCRIPTION="forum (2017-01-09): uchime_ref flags query chimera against reference --db"
+printf ">chim;size=1\nGCTAACGCGTTAAGTATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAATGAGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTA\n" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db <(printf ">A;size=50\nGCTAACGCGTTAAGTATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAATGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGAAGAACCTTACCAGGTCTTGACATCCTGCGAACCCTC\n>B;size=50\nTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGTCCTTAGTTGCCAGCATTCAGTTGGGCACTCTAAGGAGACTGCCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTA\n") \
+        --quiet \
+        --chimeras /dev/stdout 2> /dev/null | \
+    grep -qx ">chim;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## swapped: chimera used as the reference, parents queried -> nothing flagged.
+DESCRIPTION="forum (2017-01-09): uchime_ref with swapped query/db arguments finds no chimera"
+printf ">A;size=50\nGCTAACGCGTTAAGTATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAATGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGAAGAACCTTACCAGGTCTTGACATCCTGCGAACCCTC\n>B;size=50\nTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGTCCTTAGTTGCCAGCATTCAGTTGGGCACTCTAAGGAGACTGCCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTA\n" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db <(printf ">chim;size=1\nGCTAACGCGTTAAGTATCCCGCCTGGGGAGTACGGTCGCAAGATTAAAACTCAAATGAGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTA\n") \
+        --quiet \
+        --chimeras /dev/stdout 2> /dev/null | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="forum (2017-01-09): uchime_ref requires --db"
+printf ">q;size=1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --chimeras /dev/stdout 2>&1 | \
+    grep -q "Fatal error: Database filename not specified with --db" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  fastq_mergepairs with named pipes                                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/1UPEtGEA_fg
+## 2017-01-10
+## Q: Can fastq_mergepairs read from named pipes (FIFOs)?
+## A: Yes (after the fix accepting S_ISFIFO inputs); vsearch reads forward/reverse from FIFOs.
+
+DESCRIPTION="forum (2017-01-10): fastq_mergepairs accepts named pipes (FIFO) as input"
+WORKDIR=$(mktemp -d)
+FWD="${WORKDIR}/r1"
+REV="${WORKDIR}/r2"
+mkfifo "${FWD}" "${REV}"
+printf "@s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACGCGCGCG\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${FWD}" &
+printf "@s\nCGCGCGCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${REV}" &
+"${VSEARCH}" \
+    --fastq_mergepairs "${FWD}" \
+    --reverse "${REV}" \
+    --quiet \
+    --fastaout /dev/stdout 2> /dev/null | \
+    grep -q "^>s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+wait
+rm -f "${FWD}" "${REV}"
+rmdir "${WORKDIR}"
+unset WORKDIR FWD REV
+
+
+#******************************************************************************#
+#                                                                              #
+#  Chimera checking without clustering                                         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/X7w2jiKNfrQ
+## 2017-02-07
+## Q: How to run chimera detection without clustering while keeping original ids?
+## A: (no reply in thread)
+## not testable: unanswered usage question, no specific vsearch behaviour/error to pin down
+
+
+#******************************************************************************#
+#                                                                              #
+#  cluster_fast consensus differs from usearch                                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/AibAvepI1Sw
+## 2017-02-16
+## Q: Why does cluster_fast yield far fewer clusters (453) than usearch (693) at id 0.995?
+## A: Different undisclosed heuristics; vsearch is more sensitive. Not a bug.
+## not testable: usearch is closed-source and unavailable; no deterministic black-box behaviour to pin down
+
+
+#******************************************************************************#
+#                                                                              #
+#  Does the order of commands change final OTU clustering?                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/yfc3pGWeeZg
+## 2017-02-23
+## Q: Does the order of pipeline commands affect final OTU clustering?
+## A: Pipeline (derep -> uchime_denovo -> cluster_fast -> usearch_global) is reasonable.
+## not testable: general pipeline-design advice, no specific reproducible vsearch behaviour or option
+
+
+#******************************************************************************#
+#                                                                              #
+#  vsearch pipeline for 16s analysis                                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/3noDiYwIfz0
+## 2017-03-05
+## Q: Is this 16S pipeline OK and how to dereplicate without losing sample info?
+## A: Add a derep step but keep sample info to build the biom file later.
+## not testable: pipeline/usage advice and downstream biom/taxonomy tools; no isolated vsearch behaviour
+
+
+#******************************************************************************#
+#                                                                              #
+#  Dereplication, chimera removal and Rereplication                            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/7j_Pv2e7ZUA
+## 2017-03-08
+## Q: Should chimeras + non-chimeras equal total input? Why does rereplicate duplicate labels?
+## A: chimeras + non-chimeras + borderline = total; rereplicate lacks info to restore labels.
+DESCRIPTION="forum (2017-03-08): uchime_denovo chimeras + non-chimeras + borderline equals total"
+A="ACGTACGTACGTACGTACGTACGTAGCTAGCTAGCTAGCTAGCTAGCTGGCCGGCCGGCCGGCCTTAATTAATTAATTAA"
+B="TTGGTTGGTTGGTTGGCCAACCAACCAACCAAGATCGATCGATCGATCAATTCCGGAATTCCGGAATTCCTTGGAATTCC"
+CHIM="${A:0:40}${B:40:40}"
+printf ">a;size=20\n%s\n>b;size=20\n%s\n>chim;size=1\n%s\n" "${A}" "${B}" "${CHIM}" | \
+    ${VSEARCH} \
+        --uchime_denovo - \
+        --chimeras /dev/null \
+        --nonchimeras /dev/null \
+        --borderline /dev/null 2>&1 | \
+    grep -q "1 (33.3%) chimeras, 2 (66.7%) non-chimeras," && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION A B CHIM
+
+DESCRIPTION="forum (2017-03-08): rereplicate repeats the same label and loses original identity"
+printf ">s1;size=3\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --rereplicate - \
+        --output - \
+        --quiet 2>/dev/null | \
+    grep -c "^>s1$" | \
+    grep -qx "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  Remove singleton after clustering and create biom                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/J5a2yLvTeYw
+## 2017-04-17
+## Q: How to remove singletons after clustering and convert to a BIOM file?
+## A: Use --sortbysize --minsize 2 to drop singletons; --search_exact ... --biomout for the table.
+DESCRIPTION="forum (2017-04-17): sortbysize --minsize 2 removes singleton OTUs"
+printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=1\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    ${VSEARCH} \
+        --sortbysize - \
+        --minsize 2 \
+        --output - \
+        --quiet 2>/dev/null | \
+    grep "^>" | \
+    tr "\n" " " | \
+    grep -qx ">a;size=5 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+DESCRIPTION="forum (2017-04-17): search_exact --biomout writes a BIOM 1.0 JSON table"
+printf ">q;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --search_exact - \
+        --db <(printf ">otu1\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --biomout - \
+        --quiet 2>/dev/null | \
+    grep -q "Biological Observation Matrix" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  Remove singletons and approach to closed reference in vsearch               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/ll7_jXyc-6Y
+## 2017-04-24
+## Q: Run usearch_global on singleton-filtered OTUs or on the original file?
+## A: Use the original labelled file; derep+filtering loses sample info. minsize boundary is inclusive.
+DESCRIPTION="forum (2017-04-24): sortbysize --minsize 2 keeps doubletons (boundary is inclusive)"
+printf ">a;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=1\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    ${VSEARCH} \
+        --sortbysize - \
+        --minsize 2 \
+        --output - \
+        --quiet 2>/dev/null | \
+    grep "^>" | \
+    tr "\n" " " | \
+    grep -qx ">a;size=2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  Problem during installing                                                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/hDpuiEffScY
+## 2017-04-27
+## Q: Build fails with "autoreconf: not found".
+## A: Install GNU autotools/gcc, or download a precompiled binary.
+## not testable: build/install environment issue, not a vsearch runtime behaviour
+
+
+#******************************************************************************#
+#                                                                              #
+#  VSEARCH-based pipeline                                                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/QEM5_fiZe70
+## 2017-05-01
+## Q: Can the pipeline be used for amoA, and where do sample names come from?
+## A: Update DBs for the target gene; sample labels come from --relabel during derep.
+## not testable: pipeline-adaptation and external-database advice; no isolated reproducible behaviour
+
+
+#******************************************************************************#
+#                                                                              #
+#  Finding duplicate sequences                                                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/Le0wIs-CVo4
+## 2017-05-17
+## Q: Does derep_fulllength do substring/prefix dedup, and what does "19I1394M83I" mean?
+## A: derep_fulllength only merges identical seqs (allows case + T/U); derep_prefix dedups prefixes.
+DESCRIPTION="forum (2017-05-17): derep_fulllength merges sequences differing only by case and T/U"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nacguacguacguacguacguacguacguacgu\n" | \
+    ${VSEARCH} \
+        --derep_fulllength - \
+        --output - \
+        --sizeout \
+        --quiet 2>/dev/null | \
+    grep -q "^>s1;size=2$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+DESCRIPTION="forum (2017-05-17): derep_fulllength does not merge a prefix (requires identical length)"
+printf ">pfx\nACGTACGTACGTACGTACGTACGTACGTACGT\n>full\nACGTACGTACGTACGTACGTACGTACGTACGTGGGG\n" | \
+    ${VSEARCH} \
+        --derep_fulllength - \
+        --output - \
+        --quiet 2>/dev/null | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+DESCRIPTION="forum (2017-05-17): derep_prefix merges a prefix into the longest sequence"
+printf ">pfx\nACGTACGTACGTACGTACGTACGTACGTACGT\n>full\nACGTACGTACGTACGTACGTACGTACGTACGTGGGG\n" | \
+    ${VSEARCH} \
+        --derep_prefix - \
+        --output - \
+        --sizeout \
+        --quiet 2>/dev/null | \
+    grep -q "^>full;size=2$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  Confusion on algorithm in clustering: cluster_fast                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/dTPMmyibRaU
+## 2017-05-18
+## Q: Which algorithm does cluster_fast use and must derep output be length-sorted first?
+## A: Length-based greedy centroid clustering; cluster_fast sorts by length internally, no pre-sort needed.
+DESCRIPTION="forum (2017-05-18): cluster_fast sorts by decreasing length, so the longest input is the centroid"
+printf ">short\nACGTACGTACGTACGTACGTACGTACGTACGT\n>long\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --cluster_fast - \
+        --id 0.80 \
+        --centroids - \
+        --quiet 2>/dev/null | \
+    grep -q "^>long$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  Fastq_truncee (fastq_trunclen typo)                                         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/rYcFdVF8jcU
+## 2017-06-10
+## Q: How to preserve headers of reads discarded during quality filtering of paired reads?
+## A: Use --fastqout_discarded to capture reads removed by fastq_filter.
+DESCRIPTION="forum (2017-06-10): fastq_filter --fastqout_discarded keeps reads removed by quality filtering"
+printf "@good\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n@bad\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\n################################\n" | \
+    ${VSEARCH} \
+        --fastq_filter - \
+        --fastq_maxee 0.5 \
+        --fastqout /dev/null \
+        --fastqout_discarded - \
+        --quiet 2>/dev/null | \
+    grep -q "^@bad$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  --uchime_denovo no chimeras detected - alternative dereplication            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/roWz8_nw2Tk
+## 2017-06-14
+## Q: Why does uchime_denovo report 0 chimeras when sequences lack size annotations?
+## A: De novo detection needs abundance; embed ;size=N (e.g. via --sizeout) before running it.
+DESCRIPTION="forum (2017-06-14): uchime_denovo detects no chimeras when all sequences have abundance 1"
+A="ACGTACGTACGTACGTACGTACGTAGCTAGCTAGCTAGCTAGCTAGCTGGCCGGCCGGCCGGCCTTAATTAATTAATTAA"
+B="TTGGTTGGTTGGTTGGCCAACCAACCAACCAAGATCGATCGATCGATCAATTCCGGAATTCCGGAATTCCTTGGAATTCC"
+CHIM="${A:0:40}${B:40:40}"
+printf ">a\n%s\n>b\n%s\n>chim\n%s\n" "${A}" "${B}" "${CHIM}" | \
+    ${VSEARCH} \
+        --uchime_denovo - \
+        --chimeras - \
+        --quiet 2>/dev/null | \
+    grep -c "^>" | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION A B CHIM
+
+DESCRIPTION="forum (2017-06-14): uchime_denovo detects the chimera once abundances are provided"
+A="ACGTACGTACGTACGTACGTACGTAGCTAGCTAGCTAGCTAGCTAGCTGGCCGGCCGGCCGGCCTTAATTAATTAATTAA"
+B="TTGGTTGGTTGGTTGGCCAACCAACCAACCAAGATCGATCGATCGATCAATTCCGGAATTCCGGAATTCCTTGGAATTCC"
+CHIM="${A:0:40}${B:40:40}"
+printf ">a;size=20\n%s\n>b;size=20\n%s\n>chim;size=1\n%s\n" "${A}" "${B}" "${CHIM}" | \
+    ${VSEARCH} \
+        --uchime_denovo - \
+        --chimeras - \
+        --quiet 2>/dev/null | \
+    grep -qi "^>chim" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION A B CHIM
+
+
+#******************************************************************************#
+#                                                                              #
+#  Output IDs that are not clustered                                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/LbBMT-yqkhg
+## 2017-06-22
+## Q: How to output sequences that are not members of a cluster (singletons)?
+## A: Identify singletons with --sortbysize and --maxsize.
+DESCRIPTION="forum (2017-06-22): sortbysize --maxsize 1 outputs only non-clustered singletons"
+printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=1\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    ${VSEARCH} \
+        --sortbysize - \
+        --maxsize 1 \
+        --output - \
+        --quiet 2>/dev/null | \
+    grep "^>" | \
+    tr "\n" " " | \
+    grep -qx ">b;size=1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  Different clustering when using single thread                               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/tnSPNKkFAe8
+## 2017-07-07
+## Q: Does --threads count change cluster membership in --cluster_smallmem (not just output order)?
+## A: Unanswered; only output order is acknowledged as thread-dependent, with no reproducible spec to pin down on tiny input.
+## not testable: no resolution given; thread-count effect on membership is not a documented/deterministic behaviour reproducible from minimal input.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Retain reference id from reference                                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/jVY76zySsyk
+## 2017-07-13
+## Q: How to keep the reference (database) IDs instead of de novo OTU labels?
+## A: Map reads directly to the reference with usearch_global; the hit's target field is the reference id.
+DESCRIPTION="forum (2017-07-13): usearch_global --uc reports the reference id as target"
+printf ">q1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACG\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">ref1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACG\n") \
+        --id 0.97 \
+        --strand plus \
+        --quiet \
+        --uc /dev/stdout | \
+    awk '$1 == "H" {print $10}' | \
+    grep -qx "ref1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  Clustering and OTU table generation                                         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/o6WiRmvCL60
+## 2017-07-13
+## Q: How to preserve abundances reduced by dereplication when clustering into an OTU table?
+## A: Use --sizein/--sizeout throughout so abundances propagate; cluster_size sums member sizes into the centroid.
+DESCRIPTION="forum (2017-07-13): cluster_size with sizein/sizeout sums member abundances"
+printf ">a;size=3\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=4\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --cluster_size - \
+        --id 0.97 \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --centroids /dev/stdout | \
+    grep -qx ">b;size=7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  How do I generate OTU map file (txt) using vsearch                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/RdsaX0C1_IM
+## 2017-07-14
+## Q: How to produce a centroid->members OTU map text file in a specific custom layout?
+## A: vsearch cannot emit that exact format; use --uc / --biomout / --otutabout instead.
+## not testable: request is for an unsupported custom text layout; no reproducible vsearch behaviour to pin down.
+
+
+#******************************************************************************#
+#                                                                              #
+#  maxhits vs top_hits_only                                                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/0q9gllMGSpQ
+## 2017-08-01
+## Q: Are --maxhits 1 and --top_hits_only redundant?
+## A: No; top_hits_only reports all co-best hits, while maxhits 1 caps output to a single hit.
+DESCRIPTION="forum (2017-08-01): top_hits_only reports all co-best hits"
+printf ">q1\nGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">d1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT\n>d2\nGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n") \
+        --id 0.90 \
+        --strand plus \
+        --maxaccepts 10 \
+        --maxrejects 0 \
+        --top_hits_only \
+        --userfields target \
+        --quiet \
+        --userout /dev/stdout | \
+    wc -l | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+DESCRIPTION="forum (2017-08-01): maxhits 1 caps output to one hit despite co-best ties"
+printf ">q1\nGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">d1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT\n>d2\nGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n") \
+        --id 0.90 \
+        --strand plus \
+        --maxaccepts 10 \
+        --maxrejects 0 \
+        --maxhits 1 \
+        --userfields target \
+        --quiet \
+        --userout /dev/stdout | \
+    wc -l | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  fasta input to usearch_global header issue                                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/i6feVrSHPxM
+## 2017-08-02
+## Q: Why does --otutabout make one column per read instead of per sample?
+## A: vsearch aggregates by the "sample=" header annotation; add it so columns become samples.
+DESCRIPTION="forum (2017-08-02): sample= header annotation sets otutabout columns"
+printf ">q1;sample=A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACG\n>q2;sample=B\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACG\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">ref1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACG\n") \
+        --id 0.97 \
+        --strand plus \
+        --quiet \
+        --otutabout /dev/stdout | \
+    head -n 1 | \
+    grep -qx "#OTU ID	A	B" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  generating a sample x otu table from multiple sample files                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/Ifpiybc5kRU
+## 2017-08-04
+## Q: Why does relabel create read-level granularity instead of per-sample aggregation?
+## A: --relabel always appends an incrementing numeric ticker, making each header unique.
+DESCRIPTION="forum (2017-08-04): relabel appends an incrementing ticker to each header"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    ${VSEARCH} \
+        --derep_fulllength - \
+        --relabel sample=X \
+        --quiet \
+        --output /dev/stdout | \
+    grep "^>" | \
+    tr '\n' ' ' | \
+    grep -qx ">sample=X1 >sample=X2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  Chimeras with more than two parents in very long amplicons                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/uwfYbFpOeJ4
+## 2017-08-04
+## Q: Why are multi-breakpoint (>2 parent) chimeras in ~4.5kb amplicons not detected?
+## A: Algorithmic limitation: the model assumes a single breakpoint; multi-parent detection is out of scope.
+## not testable: a fundamental single-breakpoint model limitation; reproducing it reliably needs real multi-kb multi-parent data, not minimal printf input.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Dereplication leading to loss of an entire technical replicate              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/ymYN5O3LfH4
+## 2017-08-04
+## Q: Why does a technical replicate disappear after derep -> uchime_denovo -> rereplicate?
+## A: No conclusive resolution; final counts matched chimera removal, loss likely expected, not pinned down.
+## not testable: no confirmed reproducible behaviour; outcome attributed to the user's full pipeline, not a single specifiable vsearch effect.
+
+
+#******************************************************************************#
+#                                                                              #
+#  uchime_denovo usearch vs vsearch                                            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/z3FxNepVc5k
+## 2017-09-29
+## Q: What does --id do in uchime_denovo, and why does vsearch find more chimeras?
+## A: Count differences are deliberate algorithmic choices (not a bug); --id is not a uchime_denovo option (it belongs to uchime_ref).
+DESCRIPTION="forum (2017-09-29): uchime_denovo does not accept the --id option"
+printf ">a;size=9\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --uchime_denovo - \
+        --id 0.99 \
+        --chimeras /dev/null 2>&1 | \
+    grep -q "Invalid option(s): --id" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  cluster_fast VS cluster_size                                                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/_ZjBk3vk2bo
+## 2017-10-06
+## Q: What is the difference between --cluster_fast and --cluster_size?
+## A: cluster_fast sorts by decreasing length (longest = centroid); cluster_size sorts by decreasing abundance (most abundant = centroid).
+DESCRIPTION="forum (2017-10-06): cluster_size sorts by abundance, most abundant is centroid"
+printf ">a;size=1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n>b;size=5\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC\n" | \
+    ${VSEARCH} \
+        --cluster_size - \
+        --id 0.90 \
+        --sizein \
+        --quiet \
+        --centroids /dev/stdout | \
+    grep -qx ">b;size=5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+DESCRIPTION="forum (2017-10-06): cluster_fast sorts by length, longest is centroid"
+printf ">short\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n>longer\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    ${VSEARCH} \
+        --cluster_fast - \
+        --id 0.80 \
+        --quiet \
+        --centroids /dev/stdout | \
+    grep -qx ">longer" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  Chimera ID after OTU picking with QIIME                                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/dkzjlN7Y8S4
+## 2017-10-26
+## Q: Why does uchime fail with "illegal character" on aligned/QIIME FASTA files?
+## A: Aligned FASTA contains gaps ('-') and dots ('.'), which vsearch rejects; run chimera detection on ungapped sequences.
+DESCRIPTION="forum (2017-10-26): alignment gap '-' is rejected as an illegal character"
+printf ">s1\nACG-TACGTACGTACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --uchime_denovo - \
+        --nonchimeras /dev/null 2>&1 | \
+    grep -q "Illegal character '-'" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+DESCRIPTION="forum (2017-10-26): alignment dot '.' is rejected as an illegal character"
+printf ">s1\nACG.TACGTACGTACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --uchime_denovo - \
+        --nonchimeras /dev/null 2>&1 | \
+    grep -q "Illegal character '\.'" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+
+#******************************************************************************#
+#                                                                              #
+#  How to set --fastq_maxdiffs on variable length amplicon data                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/XneTn0tKdMw
+## 2017-11-10
+## Q: How to set --fastq_maxdiffs for variable-length (ITS) amplicons with differing overlaps?
+## A: Set it very high (highest tolerable in the longest overlap); other rules guard merges. fastq_mergepairs accepts large values.
+DESCRIPTION="forum (2017-11-10): fastq_mergepairs accepts a very large fastq_maxdiffs value"
+REV=$(mktemp)
+printf "@s1\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${REV}"
+printf "@s1\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+    ${VSEARCH} \
+        --fastq_mergepairs - \
+        --reverse "${REV}" \
+        --fastq_maxdiffs 1000 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${REV}"
+unset REV DESCRIPTION
+
+
