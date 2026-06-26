@@ -3903,3 +3903,1037 @@ DESCRIPTION="forum (2020-01-22): --minseqlength 30 keeps the 30 nt sequence in d
         failure "${DESCRIPTION}"
 
 
+#******************************************************************************#
+#                                                                              #
+#  Indexing database                                                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/3PEsOYRAaOQ
+## 2020-01-28
+## Q: Does vsearch implement UDB pre-indexed database files to speed up repeated searches?
+## A: UDB support was added (--makeudb_usearch, --udbinfo, --udbstats, --udb2fasta); --db auto-detects UDB.
+## not testable: feature-availability discussion; building/inspecting UDB files is covered by their own dedicated command tests, not pinned by this thread.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Duplicate OTU numbers                                                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/0QUOG62ncT8
+## 2020-04-28
+## Q: Why does my usearch_global blast6out taxonomy output contain duplicate OTUs with different taxa?
+## A: Short alignments (26 nt) were accepted; --mincols 30 filters out alignments shorter than the threshold.
+DESCRIPTION="forum (2020-04-28): --mincols rejects an alignment shorter than the threshold"
+printf ">q1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">t1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --mincols 31 \
+        --output_no_hits \
+        --quiet \
+        --blast6out - 2> /dev/null | \
+    awk '$2 == "*" {n++} END {if (n == 1) exit 0; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="forum (2020-04-28): --mincols accepts an alignment equal to the threshold"
+printf ">q1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">t1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --mincols 30 \
+        --quiet \
+        --blast6out - 2> /dev/null | \
+    awk '$1 == "q1" && $2 == "t1" {n++} END {if (n == 1) exit 0; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Hi, I have problem to run vsearch                                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/v9lpdwHKKOs
+## 2020-05-14
+## Q: vsearch.exe on Windows opens and closes immediately; PowerShell install throws errors.
+## A: vsearch is a command-line app; run it from CMD/PowerShell. No specific vsearch behaviour.
+## not testable: platform/launch issue (Windows GUI double-click, install), no reproducible vsearch option or error.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Is it possible to resume truncated --cluster_smallmem run?                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/iACwEOp7074
+## 2020-06-10
+## Q: Can a truncated --cluster_smallmem run be resumed after an interruption?
+## A: No built-in resume; manual workaround (re-feed seeds + unclustered seqs). No testable vsearch behaviour.
+## not testable: feature-absence / procedural workaround, nothing a small black-box test can pin down.
+
+
+#******************************************************************************#
+#                                                                              #
+#  protein clustering                                                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/iwVKINHqffo
+## 2020-06-25
+## Q: Why does cluster_smallmem silently strip non-nucleotide characters from protein sequences?
+## A: vsearch is nucleotide-only; amino-acid characters are stripped (a clearer warning was requested, issue #414).
+## not testable: discusses a requested warning improvement; the amino-acid-stripping warning itself is already
+## covered by the 2016-05-09 and 2021-03-07 tests.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Vsearch for AMR gene determination                                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/ReMl5dLmpgI
+## 2020-07-03
+## Q: How to determine AMR genes in metagenomic data using the SARG database with vsearch?
+## A: Question deemed too vague; general pipeline advice, no command given.
+## not testable: open-ended methodology / external database question, no reproducible vsearch behaviour.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Problem encountered during MiteTracker                                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/adiYgPvdQac
+## 2020-08-25
+## Q: MiteTracker fails at the clustering step with a FileNotFoundError for the vsearch binary.
+## A: Relative path to the binary was wrong; use an absolute path. Third-party wrapper config issue.
+## not testable: FileNotFoundError comes from MiteTracker's Python, not vsearch; binary-path/wrapper config.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Implementation details on kh_find_diagonals                                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/pBEe7gy5cDI
+## 2020-09-01
+## Q: How does kh_find_diagonals work and why use k-mer hashing instead of Needleman-Wunsch for merging?
+## A: K-mers screen candidate overlap diagonals quickly; full optimal alignment would be too slow.
+## not testable: source-code internals / algorithmic rationale, no observable command behaviour.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Help with command for --usearch_global, only 1 result                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/4m9NBXurO-g
+## 2020-10-01
+## Q: usearch_global returns only 1 hit when many matches are expected.
+## A: Search stopped early; --maxaccepts 0 --maxrejects 0 searches the whole database.
+DESCRIPTION="forum (2020-10-01): --maxaccepts 0 --maxrejects 0 reports all database hits, not just one"
+printf ">q1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">t1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>t2\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 0.9 \
+        --maxaccepts 0 \
+        --maxrejects 0 \
+        --quiet \
+        --blast6out - 2> /dev/null | \
+    awk 'END {if (NR == 2) exit 0; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Having vsearch --cluster_fast to output fastq sequences                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/xMbtqrVzwOs
+## 2020-10-27
+## Q: Can --cluster_fast output FASTQ sequences?
+## A: No; clustering commands only produce FASTA, --fastqout is not a valid option.
+DESCRIPTION="forum (2020-10-27): --cluster_fast rejects --fastqout (FASTA-only output)"
+printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+    ${VSEARCH} \
+        --cluster_fast - \
+        --id 0.97 \
+        --fastqout /dev/stdout 2>&1 | \
+    grep -qx "Invalid option(s): --fastqout" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  --usearch global (taxonomy, sintax)                                         #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/CnI6g82yIrk
+## 2020-12-11
+## Q: Why does usearch_global return 0 results with short sequences?
+## A: Default minseqlength is 32 (short seqs discarded); use --minseqlength 1 to keep shorter sequences.
+DESCRIPTION="forum (2020-12-11): usearch_global discards sequences shorter than default minseqlength 32"
+printf ">q1\nACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">t1\nACGTACGTACGTACGTACGT\n") \
+        --id 0.9 \
+        --blast6out /dev/null 2>&1 | \
+    grep -qx "minseqlength 32: 1 sequence discarded." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="forum (2020-12-11): --minseqlength 1 lets usearch_global match a short sequence"
+printf ">q1\nACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">t1\nACGTACGTACGTACGTACGT\n") \
+        --id 0.9 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out - 2> /dev/null | \
+    awk '$1 == "q1" && $2 == "t1" {n++} END {if (n == 1) exit 0; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  For point mutation identification                                           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/pjLg8N1TC_Q
+## 2021-02-04
+## Q: Can vsearch align PacBio reads against a protein template to find point mutations?
+## A: vsearch is nucleotide-only; cannot align against protein/amino-acid sequences.
+## not testable: capability/suitability advice (no protein support), no specific reproducible command behaviour.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Difference between vsearch and usearch clustering outputs                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/kh8UZuJlT6g
+## 2021-02-19
+## Q: Why does vsearch produce many more OTUs than usearch on the same data at 97% identity?
+## A: usearch removes singletons before clustering; algorithmic/heuristic differences explain the gap.
+## not testable: cross-tool comparison and heuristic behaviour on a large real dataset, not a small pinned corner-case.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Clustering unique ASV sequences (no abundances)                             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/orqWhwGlPPY
+## 2021-02-26
+## Q: How to map clustered ASVs back to their OTU centroids when there are no abundances?
+## A: The --uc file holds the mapping; H lines carry the member in column 9 and its seed (centroid) in column 10, S/C lines carry the seed label in column 9 and '*' in column 10.
+
+# in a uc file, an H (hit) line places the clustered member in field 9 and
+# its centroid (seed) in field 10
+DESCRIPTION="forum (2021-02-26): uc H line has member in field 9 and seed in field 10"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGA\n" | \
+    ${VSEARCH} \
+        --cluster_size - \
+        --id 0.97 \
+        --strand plus \
+        --quiet \
+        --uc /dev/stdout 2> /dev/null | \
+    awk '$1 == "H" && $9 == "s2" && $10 == "s1" { found = 1 } END { exit !found }' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# in a uc file, an S (seed) line places the centroid label in field 9 and a
+# placeholder '*' in field 10
+DESCRIPTION="forum (2021-02-26): uc S line has seed label in field 9 and '*' in field 10"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGA\n" | \
+    ${VSEARCH} \
+        --cluster_size - \
+        --id 0.97 \
+        --strand plus \
+        --quiet \
+        --uc /dev/stdout 2> /dev/null | \
+    awk '$1 == "S" && $9 == "s1" && $10 == "*" { found = 1 } END { exit !found }' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  why not 100% matching query sequences                                       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/JjzzYS8uDkw
+## 2021-03-04
+## Q: Why does usearch_global report <100% matches against the centroids the queries were clustered into?
+## A: usearch_global is heuristic; raising --maxrejects (or setting it to 0) considers more candidates.
+## not testable: the missed-match effect requires a large, structured database to expose the maxrejects heuristic;
+## a minimal printf input cannot reliably reproduce a heuristic miss (parameter-tuning advice already covered by
+## per-command maxrejects tests).
+
+
+#******************************************************************************#
+#                                                                              #
+#  Unrecognized string Error                                                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/0flwvF3KfCs
+## 2021-03-07
+## Q: Why does '--cluster_fast in.txt --clusters --id 1' fail, and why are protein sequences mangled?
+## A: --clusters requires a filename-prefix argument (omitting it yields "Unrecognized string on command line"); vsearch is nucleotide-only and strips amino-acid-only characters with a WARNING.
+
+# --clusters expects a filename prefix argument; when the next token is another
+# option (here --id), vsearch reports the missing argument as an unrecognized
+# string on the command line
+DESCRIPTION="forum (2021-03-07): --clusters without a prefix argument is a fatal error"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --cluster_fast - \
+        --clusters \
+        --id 1 2>&1 | \
+    grep -qx "Fatal error: Unrecognized string on command line (1)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# vsearch processes nucleic acids only; amino-acid-only characters (here I, L,
+# P) are stripped from the input and a WARNING is emitted
+DESCRIPTION="forum (2021-03-07): amino-acid characters are stripped with a WARNING"
+printf ">s1\nILPILPILPILPILPILPILPILPILPILPILP\n" | \
+    ${VSEARCH} \
+        --cluster_fast - \
+        --id 1 \
+        --centroids /dev/null 2>&1 | \
+    grep -q "^WARNING:.*invalid characters stripped from FASTA file" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Reference database                                                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/L7oc83Dy76o
+## 2021-04-15
+## Q: Where to download a SILVA reference database compatible with vsearch --sintax?
+## A: Pointed to GitHub issue 438 for prepared databases.
+## not testable: external database sourcing/download question; no vsearch behaviour, option, or error to pin down with a black-box test.
+
+
+#******************************************************************************#
+#                                                                              #
+#  usearch_global not matching even at lower identity                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/DxI4xOFB-jM
+## 2021-05-04
+## Q: Why does usearch_global miss a short divergent query even at --id 0.5?
+## A: The default k-mer prefilter (--minwordmatches) needs enough shared words; a short divergent sequence shares too few, so the alignment is never attempted. Setting --minwordmatches 0 disables the prefilter and rescues the match.
+
+# a short, divergent query shares too few words with the target to pass the
+# default k-mer prefilter, so no alignment is attempted and no match is
+# reported, even at a permissive identity threshold
+DESCRIPTION="forum (2021-05-04): default minwordmatches prefilter misses a short divergent query"
+printf ">q1\nACGATCGATCGATCGATCG\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">t1\nTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAAACGTTCGATCTATCGTTCGTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAA\n") \
+        --id 0.5 \
+        --minseqlength 1 \
+        --strand plus \
+        --quiet \
+        --userfields query \
+        --userout /dev/stdout 2> /dev/null | \
+    grep -q . && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# disabling the k-mer prefilter with --minwordmatches 0 forces the alignment
+# and rescues the otherwise-missed short divergent query
+DESCRIPTION="forum (2021-05-04): --minwordmatches 0 rescues the short divergent query"
+printf ">q1\nACGATCGATCGATCGATCG\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">t1\nTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAAACGTTCGATCTATCGTTCGTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAA\n") \
+        --id 0.5 \
+        --minseqlength 1 \
+        --minwordmatches 0 \
+        --strand plus \
+        --quiet \
+        --userfields query \
+        --userout /dev/stdout 2> /dev/null | \
+    grep -qx "q1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --minwordmatches 0 is accepted and does not break ordinary identical matches
+DESCRIPTION="forum (2021-05-04): --minwordmatches 0 is accepted on a normal match"
+printf ">q1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    ${VSEARCH} \
+        --usearch_global - \
+        --db <(printf ">t1\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 0.9 \
+        --minwordmatches 0 \
+        --strand plus \
+        --quiet \
+        --userfields id \
+        --userout /dev/stdout 2> /dev/null | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  different otu numbers in otu table and rep seqs                             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/a7WWm1sZ2C4
+## 2021-12-08
+## Q: Why does the rep-seqs file contain more OTUs than the OTU table?
+## A: Question about a third-party pipeline's allocation of multi-mapping reads; no vsearch command was given and the thread has no developer resolution.
+## not testable: third-party-wrapper output discrepancy with no vsearch command, option, or error to reproduce.
+
+
+#******************************************************************************#
+#                                                                              #
+#  micca otu vsearch error                                                     #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/MPBeY6b0TD0
+## 2021-12-14
+## Q: Why does a micca otu run fail right after vsearch reads the input?
+## A: The actual error was not from vsearch; developer redirected the user to the micca forum.
+## not testable: failure originates in the micca wrapper, not vsearch; no reproducible vsearch behaviour or error message.
+
+
+#******************************************************************************#
+#                                                                              #
+#  Dereplication with fastq out file                                          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/U6tJQow4XX8
+## 2022-01-11
+## Q: Can dereplication read FASTQ and write FASTQ with quality scores preserved?
+## A: derep_fulllength is FASTA-out only; fastx_uniques (v2.20.0+) dereplicates FASTQ->FASTQ, averaging quality by default and keeping the best score per position with --fastq_qout_max.
+
+# by default fastx_uniques averages the per-position quality of merged
+# duplicates: combining Q40 ('I') and Q20 ('5') yields Q22 ('7')
+DESCRIPTION="forum (2022-01-11): fastx_uniques averages quality of duplicates by default"
+printf "@a\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n@b\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\n55555555555555555555555555555555\n" | \
+    ${VSEARCH} \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout /dev/stdout 2> /dev/null | \
+    awk 'NR == 4 && /^7+$/ { ok = 1 } END { exit !ok }' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --fastq_qout_max keeps the best (maximum) quality per position instead of
+# averaging: combining Q40 ('I') and Q20 ('5') yields Q40 ('I')
+DESCRIPTION="forum (2022-01-11): fastx_uniques --fastq_qout_max keeps the best quality per position"
+printf "@a\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n@b\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\n55555555555555555555555555555555\n" | \
+    ${VSEARCH} \
+        --fastx_uniques - \
+        --quiet \
+        --fastq_qout_max \
+        --fastqout /dev/stdout 2> /dev/null | \
+    awk 'NR == 4 && /^I+$/ { ok = 1 } END { exit !ok }' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# derep_fulllength is FASTA-output only and rejects --fastqout
+DESCRIPTION="forum (2022-01-11): derep_fulllength rejects --fastqout"
+printf "@a\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+    ${VSEARCH} \
+        --derep_fulllength - \
+        --quiet \
+        --fastqout /dev/stdout 2>&1 | \
+    grep -q "^Invalid option(s): --fastqout" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Vsearch cluster results seems inconsistent                                  #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/qZpjwLqT1WA
+## 2022-08-31
+## Q: Why do clustering results differ when reproducing a colleague's analysis?
+## A: Threshold-based clustering is sensitive to parameters, vsearch version, input order, and threading; cluster content is stable but ordering/results can shift.
+## not testable: explanation of reproducibility factors (version, parameters, input order, threading) with no specific command or single pinnable behaviour.
+
+
+#******************************************************************************#
+#                                                                              #
+#  fastq_mergepairs gives drastically different results than usearch           #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/ojqZYbEyUw4
+## 2022-10-10
+## Q: Why does fastq_mergepairs merge far fewer pairs than usearch?
+## A: vsearch is deliberately stricter (lower error rate); --fastq_allowmergestagger handles staggered reads as usearch does.
+## not testable: the core resolution is a design-philosophy difference between tools (strictness/error-rate trade-off), not a single reproducible behaviour (staggered-read handling is covered by the 2018-09-26 test).
+
+
+#******************************************************************************#
+#                                                                              #
+#  mothur output file is too large                                             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/8hFowsiJs00
+## 2022-11-09
+## Q: How to shrink a 533 GB mothur shared output from a closed-reference meta-analysis?
+## A: Insert a clustering step (--cluster_size at 99% or --cluster_unoise) between dereplication and usearch_global to merge similar sequences before alignment.
+## not testable: workflow advice to reduce output size; file size is data-volume dependent, not a pinnable black-box behaviour (the clustering commands themselves are covered by their own tests).
+
+
+#******************************************************************************#
+#                                                                              #
+#  replacing perl script with shell command line                               #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/zvTMtfJarCQ
+## 2023-04-27
+## Q: How to replace a Perl mapping script with shell commands to extract non-chimeric, non-singleton sequences?
+## A: User found an alternative external Perl script; no vsearch command-line equivalent was demonstrated.
+## not testable: scripting/workflow help around an external Perl script; no specific vsearch option, behaviour, or error to reproduce.
+
+
+#******************************************************************************#
+#                                                                              #
+#  23S and 16S analysis                                                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/uW4WwRb8Yjw
+## 2023-05-22
+## Q: What is the correct sequence of vsearch commands for 16S/23S taxonomic classification and abundance?
+## A: No resolution provided; thread is an unanswered pipeline-design request.
+## not testable: open-ended pipeline-design question with no specific command, behaviour, or error; thread is unanswered.
+
+
+#******************************************************************************#
+#                                                                              #
+#  fastq_mergepairs: multiple potential alignments report                      #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/DNdmOKtxM3w
+## 2023-05-31
+## Q: Can vsearch report which reads were discarded due to multiple potential alignments?
+## A: No such feature exists (feature request, GitHub issue #524).
+## not testable: feature request for not-yet-implemented reporting; no observable behaviour to pin down
+
+
+#******************************************************************************#
+#                                                                              #
+#  Merged unsync fastq files                                                   #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/DKKrbvVc7u0
+## 2023-08-13
+## Q: Does fastq_mergepairs check headers, or does it require R1/R2 to be in sync?
+## A: vsearch requires R1 and R2 files to be in sync; it does not resync them.
+
+## more forward reads than reverse reads is a fatal error (files must be in sync)
+DESCRIPTION="forum (2023-08-13): fastq_mergepairs fails when forward/reverse counts differ"
+FORWARD=$(mktemp)
+REVERSE=$(mktemp)
+printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n@s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${FORWARD}"
+printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${REVERSE}"
+"${VSEARCH}" \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "More forward reads than reverse reads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
+unset FORWARD REVERSE
+
+
+#******************************************************************************#
+#                                                                              #
+#  PRE-PROCESSING                                                              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/JZ4jjO9yzPg
+## 2023-10-11
+## Q: What is the difference between --fastq_trunclen and --fastq_minlen?
+## A: trunclen cuts reads to a fixed length (and discards shorter ones); minlen only discards reads below a length.
+
+## fastq_trunclen truncates a longer read to the requested length
+DESCRIPTION="forum (2023-10-11): fastq_trunclen truncates reads to the given length"
+printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_trunclen 32 \
+        --fastqout /dev/stdout \
+        --quiet 2> /dev/null | \
+    sed -n '2p' | \
+    awk '{exit (length($0) == 32) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## fastq_trunclen also discards reads shorter than the requested length
+DESCRIPTION="forum (2023-10-11): fastq_trunclen discards reads shorter than the given length"
+[ "$(printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_trunclen 40 \
+        --fastqout /dev/stdout \
+        --quiet 2> /dev/null | \
+    wc -l)" -eq 0 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## fastq_minlen only discards reads shorter than the threshold (does not truncate)
+DESCRIPTION="forum (2023-10-11): fastq_minlen discards reads shorter than the given length"
+printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_minlen 40 \
+        --fastqout /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk 'END {exit (NR == 0) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Inconsistent reads between derep.fa and otutab?                             #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/p6Sb6-ZjJHg
+## 2023-10-17
+## Q: Why does the OTU table hold fewer reads than the dereplicated input?
+## A: --minuniquesize 2 discards sequences with post-dereplication abundance below 2 (singletons).
+
+## --minuniquesize 2 removes singleton sequences from dereplication output
+DESCRIPTION="forum (2023-10-17): derep_fulllength --minuniquesize 2 discards singletons"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s3\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minuniquesize 2 \
+        --output /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -c "^>" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  --uchime_denovo doesn't write nonchimeras using abundance information       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/Cvgbb6xjFqI
+## 2023-10-31
+## Q: Why does --nonchimeras hold few sequences while the stats say ~99% are non-chimeric?
+## A: per-unique-sequence counts differ from abundance-weighted (;size=) totals; --nonchimeras writes representatives, abundance is used only in the weighted stats line.
+
+## uchime_denovo reports an abundance-weighted total reflecting ;size= annotations
+DESCRIPTION="forum (2023-10-31): uchime_denovo abundance-weighted stats use ;size= info"
+printf ">a;size=99\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=1\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --sizein \
+        --nonchimeras /dev/null 2>&1 | \
+    grep -q "in 100 total sequences" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --nonchimeras output keeps the abundance annotation (with --sizein --sizeout)
+DESCRIPTION="forum (2023-10-31): uchime_denovo --nonchimeras preserves ;size= with sizeout"
+printf ">a;size=99\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=1\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\n" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --sizein \
+        --sizeout \
+        --nonchimeras /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx ">a;size=99" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  vsearch --usearch_global N stretches                                        #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/8IRNR3qant4
+## 2023-11-23
+## Q: How to detect/avoid matches driven by N (ambiguous) stretches in queries?
+## A: aligning any ambiguous symbol scores zero, so an all-N query yields raw score 0; N positions add nothing to the score.
+
+## an all-N query produces a raw alignment score of zero
+DESCRIPTION="forum (2023-11-23): all-N query yields a raw alignment score of 0"
+printf ">q\nNNNNNNNNNNNNNNNNNNNN\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTACGTACGTACGTACGT\n") \
+        --id 0.1 \
+        --minseqlength 1 \
+        --userfields query+raw \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "q	0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the 12 trailing N positions add nothing to the raw alignment score: only
+## the 8 leading ACGT matches score (8 x default match reward 2 = 16)
+DESCRIPTION="forum (2023-11-23): N positions do not contribute to the raw alignment score"
+printf ">q\nACGTACGTNNNNNNNNNNNN\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTACGTACGTACGTACGT\n") \
+        --id 0.1 \
+        --qmask none \
+        --dbmask none \
+        --minseqlength 1 \
+        --userfields query+raw \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "q	16" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Is the usearch --otutab and vsearch --usearch_global command the same       #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/0b3OfZE4L9k
+## 2023-12-21
+## Q: Are usearch --otutab and vsearch --usearch_global the same command?
+## A: No; --otutab is not a vsearch command and --otus is not a vsearch option (use --usearch_global with --db and --otutabout).
+
+## --otutab is not a recognized vsearch command
+DESCRIPTION="forum (2023-12-21): --otutab is not a valid vsearch command"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --otutab - 2>&1 | \
+    grep -q "no valid command specified" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --otus is not a recognized vsearch option
+DESCRIPTION="forum (2023-12-21): --otus is not a valid vsearch option"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --otus /dev/null 2>&1 | \
+    grep -q "unrecognized option '--otus'" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  OTU Table Labels                                                            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/hJokKGCFgrA
+## Marita White / Frédéric Mahé 2024-06-27
+## Q: how to pass sample names to option otutabout?
+## A: filenames are truncated to the first hyphen; use ;sample=NAME annotations.
+##
+## (test moved verbatim from fixed_bugs.sh)
+
+## OTU Table Labels (Marita White) 2024-06-26
+# how to pass sample names to option otutabout?
+# - filenames are trunctated to first hyphen when building OTU tables
+# - solution is to use ;sample=NAME annotations
+DESCRIPTION="forum (2024-06-26): OTU table labels"
+SAMPLE1=$(mktemp)
+SAMPLE2=$(mktemp)
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sample "sample1-ITS1-good" \
+        --quiet \
+        --fastaout "${SAMPLE1}"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --sample "sample2-ITS1-good" \
+        --quiet \
+        --fastaout "${SAMPLE2}"
+
+cat "${SAMPLE1}" "${SAMPLE2}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">s\nA\n") \
+        --minseqlength 1 \
+        --id 1.0 \
+        --quiet \
+        --otutabout - 2> /dev/null | \
+    grep -q "sample[12]-ITS1-good" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm "${SAMPLE1}" "${SAMPLE2}"
+unset SAMPLE1 SAMPLE2
+
+# expect:
+# #OTU ID	sample1-ITS1-good	sample2-ITS1-good
+# s	1	1
+
+
+#******************************************************************************#
+#                                                                              #
+#  More OTU counts than number of starting/merged reads in a sample            #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/n_sQ8GVp78Q
+## 2024-07-03
+## Q: Why are there more OTU counts than merged reads in a sample?
+## A: --sizein makes clustering abundance-weighted, so centroid sizes sum the abundances of clustered sequences.
+
+## --sizein sums member abundances into the centroid size
+DESCRIPTION="forum (2024-07-03): cluster_size --sizein sums member abundances into centroid size"
+printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=3\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --sizein \
+        --sizeout \
+        --centroids /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx ">a;size=8" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  How to analyze several fastq files at once + Other Questions                #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/xalA8QaNZy0
+## 2024-07-10
+## Q: fastq_filter fails with quality values outside qmin/qmax bounds.
+## A: a quality value above qmax or below qmin is a fatal error; adjust --fastq_qmax / --fastq_qmin to the data.
+
+## a quality value above the default qmax (41) is a fatal error
+DESCRIPTION="forum (2024-07-10): fastq_filter errors when a quality value exceeds qmax"
+printf "@s1\nACGT\n+\nKKKK\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastqout /dev/null 2>&1 | \
+    grep -q "above qmax (41)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a quality value below qmin is a fatal error
+DESCRIPTION="forum (2024-07-10): fastq_filter errors when a quality value is below qmin"
+printf "@s1\nACGT\n+\n3333\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_qmin 20 \
+        --fastqout /dev/null 2>&1 | \
+    grep -q "below qmin (20)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Max length for derep or cluster commands                                    #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/_Bk4vr1P660
+## 2024-08-06
+## Q: Is there an upper length limit for derep/cluster (sequences several kb long)?
+## A: No hard limit; only speed degrades for very long sequences in alignment-heavy steps.
+
+## derep_fulllength accepts a long (6000 nt) sequence
+DESCRIPTION="forum (2024-08-06): derep_fulllength accepts sequences several kb long"
+printf ">s1\n%s\n" "$(awk 'BEGIN {for (i = 0; i < 6000; i++) printf "A"; print ""}')" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --output /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Cluster different samples, I need same otus id                              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/fzFti9CMuFM
+## 2024-12-17
+## Q: How to cluster many samples while keeping consistent OTU ids across them?
+## A: cluster the pooled reads (e.g. with --relabel) then map per sample; --sample can tag reads with their sample of origin.
+
+## --sample adds a ;sample= annotation to output headers (per-sample tagging)
+DESCRIPTION="forum (2024-12-17): --sample annotates output headers with ;sample="
+printf ">q1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --sample sampleA \
+        --output /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx ">q1;sample=sampleA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --relabel gives clustering centroids consistent, predictable OTU ids
+DESCRIPTION="forum (2024-12-17): cluster_size --relabel produces consistent OTU ids"
+printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGCCCCGGGGCCCCGGGGCCCCGGGGCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --relabel OTU_ \
+        --centroids /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx ">OTU_1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Recommendations for clustering ONT reads with variable length?              #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/qs_9Zo6cc8c
+## 2025-01-31
+## Q: How to cluster variable-length full-length 16S ONT reads?
+## A: lower gap-open penalties for noisy reads via --gapopen (e.g. 4I/2E), use ~97% id, skip derep.
+
+## --gapopen accepts the per-context "4I/2E" syntax
+DESCRIPTION="forum (2025-01-31): cluster_size accepts --gapopen 4I/2E syntax"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n>r\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --gapopen 4I/2E \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## an invalid character in the gap penalty string is a fatal error
+DESCRIPTION="forum (2025-01-31): --gapopen rejects an invalid penalty character"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n>r\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --gapopen 4Z \
+        --centroids /dev/null 2>&1 | \
+    grep -q "Invalid char 'Z' in gap penalty string" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  ASVs vs 97% OTUs when using -usearch_global to create an OTU table          #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/VWeKh1KvPVo
+## 2025-08-04
+## Q: Does usearch_global --id 0.97 turn ASVs into 97% OTUs, and what does --id do here?
+## A: it preserves ASVs (maps reads to them); --id is a mapping threshold and each read is counted once (single best hit).
+
+## usearch_global returns a single hit per query even when several targets tie
+DESCRIPTION="forum (2025-08-04): usearch_global returns one hit per query (single best match)"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>t2\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 0.97 \
+        --userfields query+target \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a read counted once contributes a total of 1 across the OTU table
+DESCRIPTION="forum (2025-08-04): usearch_global --otutabout counts each read once"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>t2\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --id 0.97 \
+        --otutabout /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk 'NR > 1 {sum += $2} END {exit (sum == 1) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#******************************************************************************#
+#                                                                              #
+#  Pac Bio amplicon clustering                                                 #
+#                                                                              #
+#******************************************************************************#
+##
+## https://groups.google.com/g/vsearch-forum/c/6jvZQ_ye0Go
+## 2025-09-18
+## Q: Best practices for quality filtering, chimera detection, dereplication and clustering of PacBio HiFi reads?
+## A: (no answer in the thread; open-ended best-practice request)
+## not testable: unanswered open-ended best-practices question, no concrete vsearch behaviour/option/error to pin down
+
+
