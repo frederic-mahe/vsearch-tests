@@ -1886,6 +1886,98 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
 
 #*****************************************************************************#
 #                                                                             #
+#                  long sequences (linear memory aligner)                     #
+#                                                                             #
+#*****************************************************************************#
+
+## The SIMD aligner uses 16-bit cells and falls back to the linear
+## memory aligner (linmemalign.cc) when a pair cannot be represented:
+## either the length sum exceeds 65535, or the length product exceeds
+## 25,000,000. The sequence below is 5010 nt long, so a self-pair has a
+## product of 5010 * 5010 = 25,100,100 > 25,000,000 and is aligned by
+## the linear memory aligner. These tests check that this fallback path
+## (otherwise never exercised by the small inputs used elsewhere)
+## produces correct alignments.
+
+DESCRIPTION="--allpairs_global aligns identical sequences too large for the SIMD aligner (100% identity)"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${LONG}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userfields id \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG
+
+DESCRIPTION="--allpairs_global (linear memory aligner) reports no gap for identical large sequences"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${LONG}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userfields gaps \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG
+
+DESCRIPTION="--allpairs_global (linear memory aligner) encodes a deletion in large sequences"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+# delete 6 nt from the second sequence (s2 is 6 nt shorter than s1)
+SHORT="${LONG:0:2000}${LONG:2006}"
+printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${SHORT}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userfields caln \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "1994M6D3010M" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG SHORT
+
+DESCRIPTION="--allpairs_global (linear memory aligner) encodes an insertion in large sequences"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+# insert 6 nt into the second sequence (s2 is 6 nt longer than s1)
+LONGER="${LONG:0:2500}GGGGGG${LONG:2500}"
+printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${LONGER}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userfields caln \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "2500M6I2510M" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG LONGER
+
+DESCRIPTION="--allpairs_global (linear memory aligner) counts mismatches in large sequences"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+# substitute 5 nt in the second sequence (4 of them are true mismatches)
+MUTATED="${LONG:0:1000}TTTTT${LONG:1005}"
+printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${MUTATED}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userfields mism \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG MUTATED
+
+
+#*****************************************************************************#
+#                                                                             #
 #                              ignored options                                #
 #                                                                             #
 #*****************************************************************************#
