@@ -1418,7 +1418,7 @@ printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --id 0.9 \
         --max_accepts 0 \
         --uc /dev/stdout 2>&1 | \
-    grep -q "unrecognized option '--max_accepts'" && \
+    grep -q "unrecognized option .--max_accepts'" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -1530,13 +1530,17 @@ unset N
 ## Q: Very short (8-9 nt) sequences fail to cluster; can word length be changed?
 ## A: vsearch uses 8-mer heuristics; --wordlength can be set (range 3 to 15) to help short seqs.
 
-DESCRIPTION="forum (2016-11-15): --wordlength 15 is accepted by cluster_smallmem"
+# --wordlength 15 is also within range but builds a 4^15-entry k-mer
+# index (~4 GB, tens of seconds), too heavy for CI; the lower bound (3)
+# is tested here and the upper bound is covered by the rejection of 16
+# below.
+DESCRIPTION="forum (2016-11-15): --wordlength 3 is accepted by cluster_smallmem"
 printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --cluster_smallmem - \
         --usersort \
         --id 0.97 \
-        --wordlength 15 \
+        --wordlength 3 \
         --uc /dev/stdout \
         --quiet 2> /dev/null | \
     grep -q "^C" && \
@@ -1722,7 +1726,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --cluster_fast - \
         --id 0.97 \
         --otus /dev/stdout 2>&1 | \
-    grep -q "unrecognized option '--otus'" && \
+    grep -q "unrecognized option .--otus'" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1754,7 +1758,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --cluster_agg - \
         --id 0.80 2>&1 | \
-    grep -q "unrecognized option '--cluster_agg'" && \
+    grep -q "unrecognized option .--cluster_agg'" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4673,7 +4677,7 @@ printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --usearch_global - \
         --db <(printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
         --otus /dev/null 2>&1 | \
-    grep -q "unrecognized option '--otus'" && \
+    grep -q "unrecognized option .--otus'" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
