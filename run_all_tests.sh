@@ -59,6 +59,7 @@ done
 ## non-specific tests
 for test_script in fastq_parsing.sh \
                        fixed_bugs.sh \
+                       google_forum_issues.sh \
                        test_accepted_chars.sh ; do
     bash "./scripts/${test_script}" "${1}" || exit 1
     echo
