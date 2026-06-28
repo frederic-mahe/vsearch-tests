@@ -1601,6 +1601,62 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## ---------- multithreaded clustering (extra-hits path) ----------
+
+## Clustering reads queries in rounds of (1 * --threads) sequences. With
+## --threads 2 two sequences are searched in the same round, before
+## either is added to the database index. A later query in the round
+## that matches an earlier (new-seed) query in the same round is caught
+## by the "extra hits" code path (cluster.cc:evaluate_extra_hits), which
+## is never exercised with the default single-query rounds used in the
+## other tests. The tests below drive that path.
+
+DESCRIPTION="--cluster_fast (--threads 2) clusters two identical sequences via the extra-hits path"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --threads 2 \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {n = 0} /^H/ {n++} END {if (n == 1) exit 0 ; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## The extra-hits alignment normally uses the 16-bit SIMD aligner, but
+## falls back to the linear memory aligner when a pair is too large for
+## it (length product above 25,000,000). The 5010 nt sequence below has
+## a self-pair product of 5010 * 5010 = 25,100,100, exercising that
+## fallback inside the clustering extra-hits path.
+DESCRIPTION="--cluster_fast (--threads 2) clusters two large sequences via the linear memory aligner"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${LONG}" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --threads 2 \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {n = 0} /^H/ {n++} END {if (n == 1) exit 0 ; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG
+
+## two sequences that share enough k-mers to become extra-hit candidates
+## (common 16 nt prefix) but align below the identity threshold are
+## rejected after alignment and form two separate clusters
+DESCRIPTION="--cluster_fast (--threads 2) rejects a below-threshold extra hit (two clusters)"
+printf ">s1\nACGTACGTACGTACGTAAAAAAAAAAAAAAAA\n>s2\nACGTACGTACGTACGTCCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --threads 2 \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {n = 0} /^H/ {n++} END {if (n == 0) exit 0 ; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------- decompression ----------
 
 DESCRIPTION="--cluster_fast --gzip_decompress reads gzip-compressed stdin"
