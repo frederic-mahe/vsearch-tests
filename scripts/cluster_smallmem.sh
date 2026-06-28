@@ -1345,6 +1345,38 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## With --threads >= 2 the extra-hits path keeps a per-query candidate
+## list ranked by shared k-mers, of size --maxaccepts + --maxrejects.
+## When that list is full and a same-round extra seed shares more k-mers
+## than an already-aligned hit, the bottom hit is evicted
+## (cluster.cc:trash bottom element). The scenario below forces this:
+##  - round 1 (seqs 1-2) seeds the database with "tgt" and "fill"
+##  - round 2 (seqs 3-4) holds "extra" then "query" (--usersort keeps
+##    input order; --threads 2 puts both in the same round)
+##  - "query" first aligns "tgt" from the database (shares blocks P3+P4),
+##    filling the size-1 list with an aligned hit
+##  - then the same-round extra seed "extra" (shares P1+P2+P3, i.e. more
+##    k-mers) evicts that aligned hit
+## With those k-mer counts "query" ends up clustered with "extra", the
+## candidate it shares the most k-mers with.
+DESCRIPTION="--cluster_smallmem (--threads 2) evicts a lower-ranked aligned hit from a full candidate list"
+printf ">tgt\nTTAACCGGTTAAGGCCAATTGGCCACACATGTGTGTTGTACACACATG\n>fill\nGAGTCTCTGAGACTCAGAGACTCTATGCGCGCATATGCATATATGCGC\n>extra\nAAGGCCTTAAGGCCTTGGAACCTTTTAACCGGTTAAGAGAGAGTCTCT\n>query\nAAGGCCTTAAGGCCTTGGAACCTTTTAACCGGTTAAGGCCAATTGGCC\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.6 \
+        --maxaccepts 1 \
+        --maxrejects 1 \
+        --threads 2 \
+        --minseqlength 1 \
+        --qmask none \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk '$1 == "H" && $9 == "query" {print $10}' | \
+    grep -qx "extra" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------- decompression ----------
 
 DESCRIPTION="--cluster_smallmem --gzip_decompress reads gzip-compressed stdin"
