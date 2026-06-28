@@ -30,6 +30,21 @@ DESCRIPTION="check if vsearch is executable"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## reverse reads are passed via a regular file rather than process
+## substitution <(...). On FreeBSD, <(...) is a named FIFO whose
+## open-for-write blocks until a reader appears; when vsearch exits
+## before reading --reverse (e.g. option-rejection tests, where it
+## correctly fatals during validation), the printf writer would block
+## forever and hang the test suite. A regular file never blocks on
+## open. Tests run sequentially, so a single shared file is enough.
+REVERSE=$(mktemp)
+trap 'rm -f "${REVERSE}"' EXIT
+reverse_input () {
+    # shellcheck disable=SC2059
+    printf "$@" > "${REVERSE}"
+    printf '%s' "${REVERSE}"
+}
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -52,7 +67,7 @@ DESCRIPTION="--fastq_join requires an output file"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") 2> /dev/null && \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
@@ -60,7 +75,7 @@ DESCRIPTION="--fastq_join requires an output file (fastq in, fastaout)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -69,7 +84,7 @@ DESCRIPTION="--fastq_join outputs to fasta file"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout - 2> /dev/null | \
     grep -q "." && \
     success "${DESCRIPTION}" || \
@@ -79,7 +94,7 @@ DESCRIPTION="--fastq_join outputs fasta to fasta file"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout - 2> /dev/null | \
     grep -qx ">s" && \
     success "${DESCRIPTION}" || \
@@ -90,7 +105,7 @@ TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -101,7 +116,7 @@ DESCRIPTION="--fastq_join requires an output file (fastq in, fastqout)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -110,7 +125,7 @@ DESCRIPTION="--fastq_join outputs to fastq file"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -q "." && \
     success "${DESCRIPTION}" || \
@@ -120,7 +135,7 @@ DESCRIPTION="--fastq_join outputs fastq to fastq file"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "@s" && \
     success "${DESCRIPTION}" || \
@@ -131,7 +146,7 @@ TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -142,7 +157,7 @@ DESCRIPTION="--fastq_join fastqout requires fastq input (both inputs)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf ">s\nA\n") \
+        --reverse "$(reverse_input ">s\nA\n")" \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
@@ -151,7 +166,7 @@ DESCRIPTION="--fastq_join fastqout requires fastq input (mix: fasta forward, fas
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf ">@\nA\n+\nI\n") \
+        --reverse "$(reverse_input ">@\nA\n+\nI\n")" \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
@@ -160,7 +175,7 @@ DESCRIPTION="--fastq_join fastqout requires fastq input (mix: fastq forward, fas
 printf ">@\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf ">s\nA\n") \
+        --reverse "$(reverse_input ">s\nA\n")" \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
@@ -169,7 +184,7 @@ DESCRIPTION="--fastq_join accepts empty input (both forward and reverse)"
 printf "" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "") \
+        --reverse "$(reverse_input "")" \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -178,7 +193,7 @@ DESCRIPTION="--fastq_join keeps empty sequences"
 printf "@s\n\n+\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\n\n+\n") \
+        --reverse "$(reverse_input "@s\n\n+\n")" \
         --fastaout - 2> /dev/null | \
     grep -qx ">s" && \
     success "${DESCRIPTION}" || \
@@ -188,7 +203,7 @@ DESCRIPTION="--fastq_join rejects inputs with different number of entries (empty
 printf "" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -197,7 +212,7 @@ DESCRIPTION="--fastq_join rejects inputs with different number of entries (empty
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "") \
+        --reverse "$(reverse_input "")" \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -207,7 +222,7 @@ DESCRIPTION="--fastq_join accepts short fastq entry"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout - 2> /dev/null | \
     grep -qx ">s" && \
     success "${DESCRIPTION}" || \
@@ -217,7 +232,7 @@ DESCRIPTION="--fastq_join can output both fasta and fastq"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout /dev/null \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -237,7 +252,7 @@ DESCRIPTION="--fastq_join joins two fastq reads into a single entry"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout - 2> /dev/null | \
     awk '/^>/ {c += 1} END {exit c == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -247,7 +262,7 @@ DESCRIPTION="--fastq_join joins two fastq reads (join sequences)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout - 2> /dev/null | \
     grep -qx "A.*T" && \
     success "${DESCRIPTION}" || \
@@ -257,7 +272,7 @@ DESCRIPTION="--fastq_join joins two fastq reads (join quality)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "I.*I" && \
     success "${DESCRIPTION}" || \
@@ -269,7 +284,7 @@ DESCRIPTION="--fastq_join outputs sequences starting with the forward sequence"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -q "^A" && \
     success "${DESCRIPTION}" || \
@@ -279,7 +294,7 @@ DESCRIPTION="--fastq_join outputs sequences ending with the reverse-complement o
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -q "A$" && \
     success "${DESCRIPTION}" || \
@@ -290,7 +305,7 @@ DESCRIPTION="--fastq_join adds a padding sequence (8 Ns by default)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout - 2> /dev/null | \
     grep -qx "ANNNNNNNNT" && \
     success "${DESCRIPTION}" || \
@@ -300,7 +315,7 @@ DESCRIPTION="--fastq_join adds a padding quality string (8 Is by default)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "IIIIIIIIII" && \
     success "${DESCRIPTION}" || \
@@ -310,7 +325,7 @@ DESCRIPTION="--fastq_join adds a padding sequence to empty entries"
 printf "@s\n\n+\n\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\n\n+\n\n") \
+        --reverse "$(reverse_input "@s\n\n+\n\n")" \
         --fastaout - 2> /dev/null | \
     grep -qx "NNNNNNNN" && \
     success "${DESCRIPTION}" || \
@@ -320,7 +335,7 @@ DESCRIPTION="--fastq_join adds a padding quality string to empty entries"
 printf "@s\n\n+\n\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\n\n+\n\n") \
+        --reverse "$(reverse_input "@s\n\n+\n\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "IIIIIIII" && \
     success "${DESCRIPTION}" || \
@@ -331,7 +346,7 @@ DESCRIPTION="--fastq_join joins paired-end reads (no merging)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "ANNNNNNNNA" && \
     success "${DESCRIPTION}" || \
@@ -341,7 +356,7 @@ DESCRIPTION="--fastq_join counts the number of joined reads"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --fastqout /dev/null 2>&1 | \
     grep -Eqx "1 pairs? joined" && \
     success "${DESCRIPTION}" || \
@@ -351,7 +366,7 @@ DESCRIPTION="--fastq_join counts the number of joined reads (empty input)"
 printf "" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "") \
+        --reverse "$(reverse_input "")" \
         --fastqout /dev/null 2>&1 | \
     grep -Eqx "0 pairs? joined" && \
     success "${DESCRIPTION}" || \
@@ -361,7 +376,7 @@ DESCRIPTION="--fastq_join preserves sequence case (lowercase input -> lowercase 
 printf "@s\na\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nt\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nt\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "aNNNNNNNNa" && \
     success "${DESCRIPTION}" || \
@@ -390,7 +405,7 @@ printf "@s\na\n+\nI\n" | \
         printf "@s\nA\n+\nI\n" | \
             "${VSEARCH}" \
                 --fastq_join - \
-                --reverse <(printf "@s\n%s\n+\nI\n" "${A}") \
+                --reverse "$(reverse_input "@s\n%s\n+\nI\n" "${A}")" \
                 --fastqout - 2> /dev/null | \
             grep -qx "ANNNNNNNN${B}" && \
             success "${DESCRIPTION}" || \
@@ -401,7 +416,7 @@ DESCRIPTION="--fastq_join preserves U in forward sequence"
 printf "@s\nU\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "UNNNNNNNNA" && \
     success "${DESCRIPTION}" || \
@@ -411,7 +426,7 @@ DESCRIPTION="--fastq_join preserves quality values (Q39)"
 printf "@s\nU\n+\nH\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nH\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nH\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "HIIIIIIIIH" && \
     success "${DESCRIPTION}" || \
@@ -421,7 +436,7 @@ DESCRIPTION="--fastq_join preserves quality values (Q0)"
 printf "@s\nU\n+\n!\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\n!\n") \
+        --reverse "$(reverse_input "@s\nT\n+\n!\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "!IIIIIIII!" && \
     success "${DESCRIPTION}" || \
@@ -431,7 +446,7 @@ DESCRIPTION="--fastq_join discards entries with unexpected quality values (negat
 printf "@s\nU\n+\n \n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\n \n") \
+        --reverse "$(reverse_input "@s\nT\n+\n \n")" \
         --fastqout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
@@ -441,7 +456,7 @@ DESCRIPTION="--fastq_join preserves quality values (Q41)"
 printf "@s\nU\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nJ\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nJ\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "JIIIIIIIIJ" && \
     success "${DESCRIPTION}" || \
@@ -451,7 +466,7 @@ DESCRIPTION="--fastq_join preserves quality values (Q42)"
 printf "@s\nU\n+\nK\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nK\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nK\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "KIIIIIIIIK" && \
     success "${DESCRIPTION}" || \
@@ -461,7 +476,7 @@ DESCRIPTION="--fastq_join preserves quality values (Q93)"
 printf "@s\nU\n+\n~\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\n~\n") \
+        --reverse "$(reverse_input "@s\nT\n+\n~\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "~IIIIIIII~" && \
     success "${DESCRIPTION}" || \
@@ -476,7 +491,7 @@ DESCRIPTION="--fastq_join does not fold fastq sequences longer than 80 nucleotid
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -Eqx "I{81,}" && \
     success "${DESCRIPTION}" || \
@@ -491,7 +506,7 @@ DESCRIPTION="--fastq_join folds fasta sequences longer than 80 nucleotides"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --fastaout - 2> /dev/null | \
     awk 'END {exit NR == 3 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -502,7 +517,7 @@ DESCRIPTION="--fastq_join joins reads independently of their names"
 printf "@s1\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s2\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s2\nT\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     awk '/^@/ {c += 1} END {exit c == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -512,7 +527,7 @@ DESCRIPTION="--fastq_join preserves the name of the forward read"
 printf "@s1\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s2\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s2\nT\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     grep -qx "@s1" && \
     success "${DESCRIPTION}" || \
@@ -521,22 +536,24 @@ printf "@s1\nA\n+\nI\n" | \
 ## coverage tests: trigger memory reverse sequence reallocation (fastq
 ## entries with more than 1,024 nucleotides)
 DESCRIPTION="--fastq_join long reverse entry (> 1,024 nucleotides)"
+{ printf "@s\n%1025s\n" " " | tr " " "A"
+  printf "+\n%1025s\n" " " | tr " " "I" ; } > "${REVERSE}"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\n%1025s\n" " " | tr " " "A"
-                    printf "+\n%1025s\n" " " | tr " " "I") \
+        --reverse "${REVERSE}" \
         --fastqout - 2> /dev/null | \
     awk 'NR == 2 {exit length($1) > 1025 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_join long reverse entry (> 1,024 quality symbols)"
+{ printf "@s\n%1025s\n" " " | tr " " "A"
+  printf "+\n%1025s\n" " " | tr " " "I" ; } > "${REVERSE}"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\n%1025s\n" " " | tr " " "A"
-                    printf "+\n%1025s\n" " " | tr " " "I") \
+        --reverse "${REVERSE}" \
         --fastqout - 2> /dev/null | \
     awk 'NR == 4 {exit length($1) > 1025 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -550,7 +567,7 @@ DESCRIPTION="--fastq_join long reverse entry (> 2,056 nucleotides)"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     awk 'NR == 2 {exit length($1) > 2056 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -573,7 +590,7 @@ DESCRIPTION="--fastq_join --join_padgap is accepted"
 printf "@s\nT\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "NNNNNNNN" \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -584,7 +601,7 @@ for S in A C G T U B D H K M N R S V W Y a c g t u b d h k m n r s v w y ; do
     printf "@s\nA\n+\nI\n" | \
         "${VSEARCH}" \
             --fastq_join - \
-            --reverse <(printf "@s\nT\n+\nI\n") \
+            --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
             --join_padgap "${S}${S}${S}${S}${S}${S}${S}${S}" \
             --fastqout - 2> /dev/null | \
         grep -Eqx "A${S}{8,}A" && \
@@ -596,7 +613,7 @@ DESCRIPTION="--fastq_join --join_padgap accepts non IUPAC symbols (X)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "XXXXXXXX" \
         --fastqout - 2> /dev/null | \
     grep -qx "AXXXXXXXXA" && \
@@ -607,7 +624,7 @@ DESCRIPTION="--fastq_join --join_padgap accepts non IUPAC symbols (SPACE)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "        " \
         --fastqout - 2> /dev/null | \
     grep -qx "A        A" && \
@@ -618,7 +635,7 @@ DESCRIPTION="--fastq_join --join_padgap accepts non IUPAC symbols (digits)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "01234567" \
         --fastqout - 2> /dev/null | \
     grep -qx "A01234567A" && \
@@ -629,7 +646,7 @@ DESCRIPTION="--fastq_join --join_padgap accepts any visible ASCII symbols (not [
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "!\"#$%&'()*+,-./:;<=>?@[\]^_{|}~" \
         --join_padgapq "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIII" \
         --quiet \
@@ -642,7 +659,7 @@ DESCRIPTION="--fastq_join --join_padgap accepts any visible ASCII symbols (backt
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "\`" \
         --join_padgapq "I" \
         --quiet \
@@ -655,7 +672,7 @@ DESCRIPTION="--fastq_join --join_padgap rejects non ASCII symbols (é)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "é" \
         --join_padgapq "I" \
         --fastaout /dev/null 2> /dev/null && \
@@ -669,7 +686,7 @@ DESCRIPTION="--fastq_join --join_padgapq is accepted"
 printf "@s\nT\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgapq "IIIIIIII" \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -679,7 +696,7 @@ DESCRIPTION="--fastq_join --join_padgapq accepts J (Q41)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgapq "JJJJJJJJ" \
         --fastqout - 2> /dev/null | \
     grep -qx "IJJJJJJJJI" && \
@@ -690,7 +707,7 @@ DESCRIPTION="--fastq_join --join_padgapq accepts ! (Q0)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgapq "!!!!!!!!" \
         --fastqout - 2> /dev/null | \
     grep -qx "I!!!!!!!!I" && \
@@ -701,7 +718,7 @@ DESCRIPTION="--fastq_join --join_padgapq accepts ~ (Q93)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgapq "~~~~~~~~" \
         --fastqout - 2> /dev/null | \
     grep -qx "I~~~~~~~~I" && \
@@ -712,7 +729,7 @@ DESCRIPTION="--fastq_join --join_padgapq accepts SPACE (< Q0)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgapq "        " \
         --fastqout - 2> /dev/null | \
     grep -qx "I        I" && \
@@ -723,7 +740,7 @@ DESCRIPTION="--fastq_join padding can be empty"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "" \
         --join_padgapq "" \
         --fastqout - 2> /dev/null | \
@@ -735,7 +752,7 @@ DESCRIPTION="--fastq_join --join_padgapq accepts any visible ASCII symbols (not 
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN" \
         --join_padgapq "!\"#$%&'()*+,-./:;<=>?@[\]^_{|}~" \
         --quiet \
@@ -748,7 +765,7 @@ DESCRIPTION="--fastq_join --join_padgapq accepts any visible ASCII symbols (back
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "N" \
         --join_padgapq "\`" \
         --quiet \
@@ -761,7 +778,7 @@ DESCRIPTION="--fastq_join --join_padgapq rejects non ASCII symbols (é)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "N" \
         --join_padgapq "é" \
         --fastqout /dev/null 2> /dev/null && \
@@ -772,7 +789,7 @@ DESCRIPTION="--fastq_join sequence and quality padding must have the same length
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "NN" \
         --join_padgapq "I" \
         --fastqout /dev/null 2> /dev/null && \
@@ -786,7 +803,7 @@ QUAL=$(printf "%256s" " " | tr " " "I")
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "${SEQ}" \
         --join_padgapq "${QUAL}" \
         --fastqout - 2> /dev/null | \
@@ -801,7 +818,7 @@ QUAL=$(printf "%1024s" " " | tr " " "I")
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nT\n+\nI\n")" \
         --join_padgap "${SEQ}" \
         --join_padgapq "${QUAL}" \
         --fastqout - 2> /dev/null | \
@@ -830,7 +847,7 @@ printf "@s\nA\n+\nI\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --bzip2_decompress \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -841,7 +858,7 @@ printf "@s\nA\n+\nI\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -851,7 +868,7 @@ printf "" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "") \
+        --reverse "$(reverse_input "")" \
         --bzip2_decompress \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -863,7 +880,7 @@ printf "@s\nA\n+\nI\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --bzip2_decompress \
         --quiet \
         --fastaout /dev/null 2> /dev/null && \
@@ -874,7 +891,7 @@ DESCRIPTION="--fastq_join --bzip2_decompress rejects uncompressed stdin (forward
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --bzip2_decompress \
         --quiet \
         --fastaout /dev/null 2> /dev/null && \
@@ -886,7 +903,7 @@ printf "@s\nA\n+\nI\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --bzip2_decompress \
         --quiet \
         --fastaout /dev/null 2> /dev/null && \
@@ -903,7 +920,7 @@ DESCRIPTION="--fastq_join --fasta_width is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fasta_width 1 \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -917,7 +934,7 @@ DESCRIPTION="--fastq_join fastq output is not wrapped"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout - 2> /dev/null | \
     awk 'NR == 2 {exit length($1) > 80 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -930,7 +947,7 @@ DESCRIPTION="--fastq_join fasta output is wrapped by default (80 chars)"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout - 2> /dev/null | \
     awk 'NR == 2 {exit length($1) == 80 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -940,7 +957,7 @@ DESCRIPTION="--fastq_join --fasta_width controls fasta wrapping"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fasta_width 1 \
         --fastaout - 2> /dev/null | \
     awk 'END {exit NR == 11 ? 0 : 1}' && \
@@ -951,7 +968,7 @@ DESCRIPTION="--fastq_join --fasta_width is accepted (empty input)"
 printf "" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "") \
+        --reverse "$(reverse_input "")" \
         --fasta_width 80 \
         --quiet \
         --fastaout /dev/null 2> /dev/null && \
@@ -962,7 +979,7 @@ DESCRIPTION="--fastq_join --fasta_width 2^32 is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fasta_width $(( 2 ** 32 )) \
         --quiet \
         --fastaout /dev/null 2> /dev/null && \
@@ -977,7 +994,7 @@ DESCRIPTION="--fastq_join --fasta_width 0 (no wrapping)"
 ) | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fasta_width 0 \
         --fastaout - 2> /dev/null | \
     awk 'NR == 2 {exit length($1) == 89 ? 0 : 1}' && \
@@ -990,7 +1007,7 @@ DESCRIPTION="--fastq_join --fastq_ascii is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 33 \
         --quiet \
         --fastqout /dev/null 2> /dev/null && \
@@ -1001,7 +1018,7 @@ DESCRIPTION="--fastq_join --fastq_ascii 33 is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 33 \
         --quiet \
         --fastqout /dev/null 2> /dev/null && \
@@ -1012,7 +1029,7 @@ DESCRIPTION="--fastq_join --fastq_ascii 64 is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 64 \
         --quiet \
         --fastqout /dev/null 2> /dev/null && \
@@ -1023,7 +1040,7 @@ DESCRIPTION="--fastq_join --fastq_ascii values other than 33 and 64 are rejected
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 63 \
         --quiet \
         --fastqout /dev/null 2> /dev/null && \
@@ -1034,7 +1051,7 @@ DESCRIPTION="--fastq_join --fastq_ascii 64 default quality padding is Q40 (h)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 64 \
         --fastqout - 2> /dev/null | \
     grep -qx "IhhhhhhhhI" && \
@@ -1046,7 +1063,7 @@ DESCRIPTION="--fastq_join --fastq_ascii 64 accepts low quality (same as default)
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --join_padgapq "IIIIIIII" \
         --fastq_ascii 64 \
         --fastqout - 2> /dev/null | \
@@ -1062,7 +1079,7 @@ DESCRIPTION="--fastq_join --fastq_qmax is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmax 41 \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1072,7 +1089,7 @@ DESCRIPTION="--fastq_join --fastq_qmax accepts lower quality values (H = 39)"
 printf "@s\nA\n+\nH\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmax 40 \
         --fastqout - 2> /dev/null |\
     grep -qx "@s" && \
@@ -1083,7 +1100,7 @@ DESCRIPTION="--fastq_join --fastq_qmax accepts equal quality values (I = 40)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmax 40 \
         --quiet \
         --fastqout - 2> /dev/null |\
@@ -1096,7 +1113,7 @@ DESCRIPTION="--fastq_join --fastq_qmax is ignored and has no effect"
 printf "@s\nA\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmax 40 \
         --fastqout - 2> /dev/null |\
     grep -qx "@s" && \
@@ -1107,7 +1124,7 @@ DESCRIPTION="--fastq_join --fastq_qmax must be a positive integer"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmax -1 \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -1117,7 +1134,7 @@ DESCRIPTION="--fastq_join --fastq_qmax can be set to zero"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmax 0 \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1127,7 +1144,7 @@ DESCRIPTION="--fastq_join --fastq_qmax can be set to 93 (offset 33)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 33 \
         --fastq_qmax 93 \
         --fastqout /dev/null 2> /dev/null && \
@@ -1138,7 +1155,7 @@ DESCRIPTION="--fastq_join --fastq_qmax cannot be greater than 93 (offset 33)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 33 \
         --fastq_qmax 94 \
         --fastqout /dev/null 2> /dev/null && \
@@ -1149,7 +1166,7 @@ DESCRIPTION="--fastq_join --fastq_qmax can be set to 62 (offset 64)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 64 \
         --fastq_qmax 62 \
         --fastqout /dev/null 2> /dev/null && \
@@ -1160,7 +1177,7 @@ DESCRIPTION="--fastq_join --fastq_qmax cannot be greater than 62 (offset 64)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 64 \
         --fastq_qmax 63 \
         --fastqout /dev/null 2> /dev/null && \
@@ -1175,7 +1192,7 @@ DESCRIPTION="--fastq_join --fastq_qmin is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmin 0 \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1185,7 +1202,7 @@ DESCRIPTION="--fastq_join --fastq_qmin accepts higher quality values (0 = 15)"
 printf "@s\nA\n+\n0\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmin 14 \
         --fastqout - 2> /dev/null |\
     grep -qx "@s" && \
@@ -1196,7 +1213,7 @@ DESCRIPTION="--fastq_join --fastq_qmin accepts equal quality values (0 = 15)"
 printf "@s\nA\n+\n0\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmin 15 \
         --fastqout - 2> /dev/null |\
     grep -qx "@s" && \
@@ -1208,7 +1225,7 @@ DESCRIPTION="--fastq_join --fastq_qmin is ignored and has no effect"
 printf "@s\nA\n+\n0\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmin 16 \
         --fastqout - 2> /dev/null |\
     grep -qx "@s" && \
@@ -1219,7 +1236,7 @@ DESCRIPTION="--fastq_join --fastq_qmin must be a positive integer"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmin -1 \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -1229,7 +1246,7 @@ DESCRIPTION="--fastq_join --fastq_qmin can be set to zero (default)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmin 0 \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1239,7 +1256,7 @@ DESCRIPTION="--fastq_join --fastq_qmin can be lower than fastq_qmax (41 by defau
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmin 40 \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1250,7 +1267,7 @@ DESCRIPTION="--fastq_join --fastq_qmin can be equal to fastq_qmax (41 by default
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmin 41 \
         --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1260,7 +1277,7 @@ DESCRIPTION="--fastq_join --fastq_qmin cannot be higher than fastq_qmax (41 by d
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_qmin 42 \
         --quiet \
         --fastqout /dev/null 2> /dev/null && \
@@ -1272,7 +1289,7 @@ DESCRIPTION="--fastq_join --fastq_qmin can be set to 93 (offset 33)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 33 \
         --fastq_qmin 93 \
         --fastq_qmax 93 \
@@ -1285,7 +1302,7 @@ DESCRIPTION="--fastq_join --fastq_qmin can be set to 62 (offset 64)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastq_ascii 64 \
         --fastq_qmin 62 \
         --fastq_qmax 62 \
@@ -1300,7 +1317,7 @@ printf "@s\nA\n+\nI\n" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --gzip_decompress \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1311,7 +1328,7 @@ printf "@s\nA\n+\nI\n" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout - 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1321,7 +1338,7 @@ printf "" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "") \
+        --reverse "$(reverse_input "")" \
         --gzip_decompress \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1332,7 +1349,7 @@ printf "@s\nA\n+\nI\n" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --gzip_decompress \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1343,7 +1360,7 @@ DESCRIPTION="--fastq_join --gzip_decompress accepts uncompressed stdin"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --gzip_decompress \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1353,7 +1370,7 @@ DESCRIPTION="--fastq_join rejects --bzip2_decompress + --gzip_decompress"
 printf "" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --bzip2_decompress \
         --gzip_decompress \
         --fastaout /dev/null 2> /dev/null && \
@@ -1366,7 +1383,7 @@ DESCRIPTION="--fastq_join --label_suffix is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --label_suffix "suffix" \
         --fastaout /dev/null 2> /dev/null  && \
     success "${DESCRIPTION}" || \
@@ -1376,7 +1393,7 @@ DESCRIPTION="--fastq_join --label_suffix adds suffix (fastq in, fasta out)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --label_suffix ";suffix" \
         --fastaout - 2> /dev/null | \
     grep -qx ">s;suffix" && \
@@ -1387,7 +1404,7 @@ DESCRIPTION="--fastq_join --label_suffix adds suffix (fastq in, fastq out)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --label_suffix ";suffix" \
         --fastqout - 2> /dev/null | \
     grep -qx "@s;suffix" && \
@@ -1398,7 +1415,7 @@ DESCRIPTION="--fastq_join --label_suffix adds suffix (empty suffix string)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --label_suffix "" \
         --fastaout - 2> /dev/null | \
     grep -qx ">s" && \
@@ -1411,7 +1428,7 @@ DESCRIPTION="--fastq_join --lengthout is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --lengthout \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1421,7 +1438,7 @@ DESCRIPTION="--fastq_join --lengthout adds length annotations to output"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --lengthout \
         --fastaout - 2> /dev/null | \
     grep -qx ">s;length=10" && \
@@ -1434,7 +1451,7 @@ DESCRIPTION="--fastq_join --log is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --log /dev/null \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1444,7 +1461,7 @@ DESCRIPTION="--fastq_join --log writes to a file"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout /dev/null \
         --log - 2> /dev/null | \
     grep -q "." && \
@@ -1455,7 +1472,7 @@ DESCRIPTION="--fastq_join --log + --quiet prevents messages to be sent to stderr
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --quiet \
         --fastaout /dev/null \
         --log /dev/null 2>&1 | \
@@ -1467,7 +1484,7 @@ DESCRIPTION="--fastq_join --log reports time and memory"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout /dev/null \
         --log - 2> /dev/null | \
     grep -q "memory" && \
@@ -1478,7 +1495,7 @@ DESCRIPTION="--fastq_join --log reports number of joined pairs"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout /dev/null \
         --log - 2> /dev/null | \
     grep -q "joined" && \
@@ -1491,7 +1508,7 @@ DESCRIPTION="--fastq_join --no_progress is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --no_progress \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1502,7 +1519,7 @@ DESCRIPTION="--fastq_join --no_progress removes progressive report on stderr (no
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --no_progress \
         --fastaout /dev/null 2>&1 | \
     grep -iq "^joining" && \
@@ -1515,7 +1532,7 @@ DESCRIPTION="--fastq_join --quiet is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --quiet \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1526,7 +1543,7 @@ DESCRIPTION="--fastq_join --quiet eliminates all (normal) messages to stderr"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --quiet \
         --fastaout /dev/null 2>&1 | \
     grep -q "." && \
@@ -1537,7 +1554,7 @@ DESCRIPTION="--fastq_join --quiet allows error messages to be sent to stderr"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --quiet \
         --quiet2 \
         --fastaout /dev/null 2>&1 | \
@@ -1551,7 +1568,7 @@ DESCRIPTION="--fastq_join --relabel is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel "label" \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1561,7 +1578,7 @@ DESCRIPTION="--fastq_join --relabel renames sequence (label + ticker)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel "label" \
         --fastaout - 2> /dev/null | \
     grep -qx ">label1" && \
@@ -1572,7 +1589,7 @@ DESCRIPTION="--fastq_join --relabel renames sequence (empty label, only ticker)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --quiet \
         --relabel "" \
         --fastaout - 2> /dev/null | \
@@ -1584,7 +1601,7 @@ DESCRIPTION="--fastq_join --relabel cannot combine with --relabel_md5"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel "label" \
         --relabel_md5 \
         --fastaout /dev/null 2> /dev/null && \
@@ -1595,7 +1612,7 @@ DESCRIPTION="--fastq_join --relabel cannot combine with --relabel_sha1"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel "label" \
         --relabel_sha1 \
         --fastaout /dev/null 2> /dev/null && \
@@ -1608,7 +1625,7 @@ DESCRIPTION="--fastq_join --relabel_keep is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel "label" \
         --relabel_keep \
         --fastaout /dev/null 2> /dev/null && \
@@ -1619,7 +1636,7 @@ DESCRIPTION="--fastq_join --relabel_keep renames and keeps original sequence nam
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel "label" \
         --relabel_keep \
         --fastaout - 2> /dev/null | \
@@ -1633,7 +1650,7 @@ DESCRIPTION="--fastq_join --relabel_md5 is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_md5 \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1643,7 +1660,7 @@ DESCRIPTION="--fastq_join --relabel_md5 relabels using MD5 hash of sequence"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_md5 \
         --fastaout - 2> /dev/null | \
     grep -qx ">c70eb64a711ee0d143b42e6594139dfe" && \
@@ -1656,7 +1673,7 @@ DESCRIPTION="--fastq_join --relabel_self is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_self \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1666,7 +1683,7 @@ DESCRIPTION="--fastq_join --relabel_self relabels using sequence as label"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_self \
         --fastaout - 2> /dev/null | \
     grep -qx ">ANNNNNNNNT" && \
@@ -1679,7 +1696,7 @@ DESCRIPTION="--fastq_join --relabel_sha1 is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_sha1 \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1689,7 +1706,7 @@ DESCRIPTION="--fastq_join --relabel_sha1 relabels using SHA1 hash of sequence"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --quiet \
         --relabel_sha1 \
         --fastaout - 2> /dev/null | \
@@ -1703,7 +1720,7 @@ DESCRIPTION="--fastq_join --sizein is accepted (no size annotation)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizein \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1713,7 +1730,7 @@ DESCRIPTION="--fastq_join --sizein is accepted (size annotation)"
 printf "@s;size=1\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s;size=1\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s;size=1\nA\n+\nI\n")" \
         --sizein \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1723,7 +1740,7 @@ DESCRIPTION="--fastq_join --sizein (no size in, no size out)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizein \
         --fastaout - 2> /dev/null | \
     grep -qx ">s" && \
@@ -1735,7 +1752,7 @@ DESCRIPTION="--fastq_join --sizein --sizeout assumes size=1 (no initial size ann
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizein \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -1747,7 +1764,7 @@ DESCRIPTION="--fastq_join --sizein propagates size annotations (sizeout is impli
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizein \
         --fastaout - 2> /dev/null | \
     grep -qx ">s;size=2" && \
@@ -1764,7 +1781,7 @@ DESCRIPTION="--fastq_join --sizeout is accepted (no size)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizeout \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1774,7 +1791,7 @@ DESCRIPTION="--fastq_join --sizeout is accepted (with size)"
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizeout \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1784,7 +1801,7 @@ DESCRIPTION="--fastq_join --sizeout missing size annotations are not added (no s
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout - 2> /dev/null | \
     grep -qx ">s" && \
     success "${DESCRIPTION}" || \
@@ -1795,7 +1812,7 @@ DESCRIPTION="--fastq_join size annotations are preserved (without sizein, with s
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizeout \
         --fastaout - 2> /dev/null | \
     grep -qx ">s;size=2" && \
@@ -1806,7 +1823,7 @@ DESCRIPTION="--fastq_join size annotations are preserved (with sizein and sizeou
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizein \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -1818,7 +1835,7 @@ DESCRIPTION="--fastq_join size annotations are left untouched (without sizein an
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastaout - 2> /dev/null | \
     grep -qx ">s;size=2" && \
     success "${DESCRIPTION}" || \
@@ -1829,7 +1846,7 @@ DESCRIPTION="--fastq_join --relabel no size annotations (without --sizeout)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel "label" \
         --fastaout - 2> /dev/null | \
     grep -qx ">label1" && \
@@ -1840,7 +1857,7 @@ DESCRIPTION="--fastq_join --relabel --sizeout adds size annotations"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel "label" \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -1852,7 +1869,7 @@ DESCRIPTION="--fastq_join --relabel_self no size annotations (without --sizeout)
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_self \
         --fastaout - 2> /dev/null | \
     grep -qx ">ANNNNNNNNT" && \
@@ -1863,7 +1880,7 @@ DESCRIPTION="--fastq_join --relabel_self --sizeout adds size annotations"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_self \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -1875,7 +1892,7 @@ DESCRIPTION="--fastq_join --relabel_md5 no size annotations (without --sizeout)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_md5 \
         --fastaout - 2> /dev/null | \
     grep -qx ">c70eb64a711ee0d143b42e6594139dfe" && \
@@ -1886,7 +1903,7 @@ DESCRIPTION="--fastq_join --relabel_md5 --sizeout adds size annotations"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_md5 \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -1898,7 +1915,7 @@ DESCRIPTION="--fastq_join --relabel_sha1 no size annotations (without --sizeout)
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_sha1 \
         --fastaout - 2> /dev/null | \
     grep -qx ">dc327932820a3b0750c30bd768d9c2e95ce6f794" && \
@@ -1909,7 +1926,7 @@ DESCRIPTION="--fastq_join --relabel_sha1 --sizeout adds size annotations"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_sha1 \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -1922,7 +1939,7 @@ DESCRIPTION="--fastq_join --relabel no size annotations (size annotation in, wit
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel "label" \
         --fastaout - 2> /dev/null | \
     grep -qx ">label1" && \
@@ -1933,7 +1950,7 @@ DESCRIPTION="--fastq_join --relabel --sizeout preserves size annotations (withou
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel "label" \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -1945,7 +1962,7 @@ DESCRIPTION="--fastq_join --relabel --sizeout preserves size annotations (with s
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizein \
         --relabel "label" \
         --sizeout \
@@ -1958,7 +1975,7 @@ DESCRIPTION="--fastq_join --relabel_self no size annotations (size annotation in
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_self \
         --fastaout - 2> /dev/null | \
     grep -qx ">ANNNNNNNNT" && \
@@ -1969,7 +1986,7 @@ DESCRIPTION="--fastq_join --relabel_self --sizeout preserves size annotations (w
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_self \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -1981,7 +1998,7 @@ DESCRIPTION="--fastq_join --relabel_self --sizeout preserves size annotations (w
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizein \
         --relabel_self \
         --sizeout \
@@ -1994,7 +2011,7 @@ DESCRIPTION="--fastq_join --relabel_md5 no size annotations (size annotation in,
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_md5 \
         --fastaout - 2> /dev/null | \
     grep -qx ">c70eb64a711ee0d143b42e6594139dfe" && \
@@ -2005,7 +2022,7 @@ DESCRIPTION="--fastq_join --relabel_md5 --sizeout preserves size annotations"
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_md5 \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -2017,7 +2034,7 @@ DESCRIPTION="--fastq_join --relabel_md5 --sizeout preserves size annotations (wi
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizein \
         --relabel_md5 \
         --sizeout \
@@ -2030,7 +2047,7 @@ DESCRIPTION="--fastq_join --relabel_sha1 no size annotations (size annotation in
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_sha1 \
         --fastaout - 2> /dev/null | \
     grep -qx ">dc327932820a3b0750c30bd768d9c2e95ce6f794" && \
@@ -2041,7 +2058,7 @@ DESCRIPTION="--fastq_join --relabel_sha1 --sizeout preserves size annotations"
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_sha1 \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -2053,7 +2070,7 @@ DESCRIPTION="--fastq_join --relabel_sha1 --sizeout preserves size annotations (w
 printf "@s;size=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizein \
         --relabel_sha1 \
         --sizeout \
@@ -2068,7 +2085,7 @@ DESCRIPTION="--fastq_join --threads is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --threads 1 \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -2078,7 +2095,7 @@ DESCRIPTION="--fastq_join --threads > 1 triggers a warning (not multithreaded)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --threads 2 \
         --fastaout /dev/null 2>&1 | \
     grep -iq "warning" && \
@@ -2091,7 +2108,7 @@ DESCRIPTION="--fastq_join --xee is accepted"
 printf "@s;ee=1.00\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --xee \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -2101,7 +2118,7 @@ DESCRIPTION="--fastq_join --xee removes expected error annotations from input"
 printf "@s;ee=1.00\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --xee \
         --fastaout - 2> /dev/null | \
     grep -qx ">s" && \
@@ -2114,7 +2131,7 @@ DESCRIPTION="--fastq_join --xlength is accepted"
 printf "@s;length=1\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --xlength \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -2124,7 +2141,7 @@ DESCRIPTION="--fastq_join --xlength removes length annotations from input"
 printf "@s;length=1\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --xlength \
         --fastaout - 2> /dev/null | \
     grep -qx ">s" && \
@@ -2135,7 +2152,7 @@ DESCRIPTION="--fastq_join --xlength accepts input without length annotations"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --xlength \
         --fastaout - 2> /dev/null | \
     grep -qx ">s" && \
@@ -2146,7 +2163,7 @@ DESCRIPTION="--fastq_join --xlength removes length annotations (input), lengthou
 printf "@s;length=2\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --xlength \
         --lengthout \
         --fastaout - 2> /dev/null | \
@@ -2161,7 +2178,7 @@ DESCRIPTION="--fastq_join --xsize is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --xsize \
         --fastaout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -2171,7 +2188,7 @@ DESCRIPTION="--fastq_join --xsize strips abundance values"
 printf "@s;size=1;\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizein \
         --xsize \
         --fastaout - 2> /dev/null | \
@@ -2183,7 +2200,7 @@ DESCRIPTION="--fastq_join --xsize strips abundance values (without --sizein)"
 printf "@s;size=1;\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --xsize \
         --fastaout - 2> /dev/null | \
     grep -q "^>s;size=1" && \
@@ -2195,7 +2212,7 @@ DESCRIPTION="--fastq_join --xsize + sizeout (preserve size)"
 printf "@s;size=2;\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --xsize \
         --sizeout \
         --fastaout - 2> /dev/null | \
@@ -2207,7 +2224,7 @@ DESCRIPTION="--fastq_join --xsize + sizein (keep original size)"
 printf "@s;size=2;\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizeout \
         --xsize \
         --fastaout - 2> /dev/null | \
@@ -2219,7 +2236,7 @@ DESCRIPTION="--fastq_join --xsize + sizein + sizeout (preserve size)"
 printf "@s;size=2;\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --sizeout \
         --xsize \
         --fastaout - 2> /dev/null | \
@@ -2231,7 +2248,7 @@ DESCRIPTION="--fastq_join --xsize + sizein + sizeout + relabel_keep (keep old si
 printf "@s;size=2;\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --relabel_keep \
         --sizein \
         --xsize \
@@ -2252,7 +2269,7 @@ DESCRIPTION="--fastq_join --output is rejected"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
@@ -2261,7 +2278,7 @@ DESCRIPTION="--fastq_join --maxseqlength is rejected"
 printf ">s\n%81s\n" " " | tr " " "A" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --maxseqlength 81 \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -2271,7 +2288,7 @@ DESCRIPTION="--fastq_join --minseqlength is rejected"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --minseqlength 1 \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -2281,7 +2298,7 @@ DESCRIPTION="--fastq_join --notrunclabels is rejected"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --notrunclabels \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -2301,8 +2318,8 @@ if which valgrind > /dev/null 2>&1 ; then
         --log-file="${TMP}" \
         --leak-check=full \
         "${VSEARCH}" \
-        --fastq_join <(printf "@s\nA\n+\nI\n") \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --fastq_join "$(reverse_input "@s\nA\n+\nI\n")" \
+        --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout /dev/null \
         --log /dev/null \
         --fastaout /dev/null 2> /dev/null
