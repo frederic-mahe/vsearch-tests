@@ -563,6 +563,27 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## with --threads 1 the serial code path (cluster_core_serial) selects
+## the best hit by abundance when --sizeorder is set; three identical
+## sequences merge into a single cluster whose size is the sum of their
+## abundances (5 + 3 + 1 = 9)
+DESCRIPTION="--cluster_size --sizeorder --threads 1 selects best-by-abundance in the serial path"
+printf ">s1;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2;size=3\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s3;size=1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --sizein \
+        --id 0.97 \
+        --sizeorder \
+        --maxaccepts 2 \
+        --threads 1 \
+        --minseqlength 1 \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk '$1 == "C" {print $3}' | \
+    grep -qx "9" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_size --sizeout adds ;size= to centroid headers"
 printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
