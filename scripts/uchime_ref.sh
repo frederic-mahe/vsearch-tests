@@ -299,6 +299,36 @@ printf ">chimeraAB\n%s\n" "${CHIMERA_AB}" | \
 rm -f "${DB}"
 unset DB
 
+## Aligning the query against a reference normally uses the 16-bit SIMD
+## aligner, which falls back to the linear memory aligner when a pair is
+## too large for it (length product above 25,000,000). With references
+## and a query of 5040 nt the product (5040 * 5040 = 25,401,600) exceeds
+## that limit, exercising that fallback inside chimera detection. The
+## sequences must be long and dissimilar, so they are built from a
+## deterministic pseudo-random generator (a MINSTD linear congruential
+## generator, whose products stay within awk's exact-integer range):
+## parentA = blocks(1,2), parentB = blocks(3,4), query = blocks(1,4),
+## i.e. a recombinant of the two references.
+DESCRIPTION="--uchime_ref detects a chimera in sequences too large for the SIMD aligner"
+GEN='BEGIN {b = "ACGT"; x = seed; for (i = 0; i < n; i++) {x = (x * 16807) % 2147483647; printf "%s", substr(b, (int(x / 256) % 4) + 1, 1)}}'
+A1=$(awk -v n=2520 -v seed=1 "${GEN}")
+A2=$(awk -v n=2520 -v seed=2 "${GEN}")
+B1=$(awk -v n=2520 -v seed=3 "${GEN}")
+B2=$(awk -v n=2520 -v seed=4 "${GEN}")
+DB=$(mktemp)
+printf ">parentA\n%s%s\n>parentB\n%s%s\n" "${A1}" "${A2}" "${B1}" "${B2}" > "${DB}"
+printf ">chim\n%s%s\n" "${A1}" "${B2}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --chimeras /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {n = 0} /^>chim$/ {n++} END {if (n == 1) exit 0 ; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset GEN A1 A2 B1 B2 DB
+
 DESCRIPTION="--uchime_ref writes non-chimeric query sequences to --nonchimeras"
 DB=$(mktemp)
 printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
