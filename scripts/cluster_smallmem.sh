@@ -1377,6 +1377,48 @@ printf ">tgt\nTTAACCGGTTAAGGCCAATTGGCCACACATGTGTGTTGTACACACATG\n>fill\nGAGTCTCTG
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## an extra-hit candidate is also subject to the pre-alignment accept
+## filters: here --mintsize 2 rejects the size-1 seed "s1" as a target
+## before any alignment (cluster.cc: rejection without alignment), so the
+## two identical sequences are not clustered (two clusters instead of one)
+DESCRIPTION="--cluster_smallmem (--threads 2) --mintsize rejects an extra-hit candidate before alignment"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.97 \
+        --mintsize 2 \
+        --threads 2 \
+        --minseqlength 1 \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {n = 0} /^H/ {n++} END {if (n == 0) exit 0 ; exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## same database/extra-seed setup as the eviction test, but with room
+## for two hits (--maxrejects 2): the aligned database hit "tgt" is not
+## evicted but, once the higher-ranked extra seed "extra" is accepted,
+## the accept/reject loop stops and "tgt" is left undetermined and freed
+## (cluster.cc: delete undetermined hits, including an aligned one)
+DESCRIPTION="--cluster_smallmem (--threads 2) discards an undetermined aligned hit after an extra hit is accepted"
+printf ">tgt\nTTAACCGGTTAAGGCCAATTGGCCACACATGTGTGTTGTACACACATG\n>fill\nGAGTCTCTGAGACTCAGAGACTCTATGCGCGCATATGCATATATGCGC\n>extra\nAAGGCCTTAAGGCCTTGGAACCTTTTAACCGGTTAAGAGAGAGTCTCT\n>query\nAAGGCCTTAAGGCCTTGGAACCTTTTAACCGGTTAAGGCCAATTGGCC\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.6 \
+        --maxaccepts 1 \
+        --maxrejects 2 \
+        --threads 2 \
+        --minseqlength 1 \
+        --qmask none \
+        --uc /dev/stdout \
+        --quiet 2> /dev/null | \
+    awk '$1 == "H" && $9 == "query" {print $10}' | \
+    grep -qx "extra" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------- decompression ----------
 
 DESCRIPTION="--cluster_smallmem --gzip_decompress reads gzip-compressed stdin"
