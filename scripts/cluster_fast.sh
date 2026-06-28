@@ -696,6 +696,23 @@ printf ">s1\nAAAATTTTGGGG\n>s2\nCCCCAAAATTTT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## with --threads 1 clustering uses the serial code path
+## (cluster_core_serial), which has its own reverse-strand handling
+## distinct from the parallel path exercised above
+DESCRIPTION="--cluster_fast --strand both matches reverse complement with --threads 1 (serial path)"
+printf ">s1\nAAAATTTTGGGG\n>s2\nCCCCAAAATTTT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 1.0 \
+        --strand both \
+        --threads 1 \
+        --minseqlength 1 \
+        --uc - \
+        --quiet 2> /dev/null | \
+    grep -q "^H" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --uc: uclust-like tab-separated format with S/H/C record types
 DESCRIPTION="--cluster_fast --uc emits S records for cluster seeds"
 printf ">s1\nAAAAAAAAAAAA\n" | \
@@ -1711,6 +1728,45 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
         --centroids - \
         --quiet 2> /dev/null | \
     grep -qx ">s1;tag=x;length=12" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ---------- output files that cannot be opened ----------
+
+## vsearch dies with a fatal error when a per-cluster output file cannot
+## be opened for writing. '/dev/null/x' is used as an unwritable path:
+## '/dev/null' is not a directory, so creating a file under it fails.
+
+DESCRIPTION="--cluster_fast --msaout fails when the output file cannot be opened"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --msaout /dev/null/x \
+        --quiet 2>&1 | \
+    grep -q "Unable to open msaout file" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --consout fails when the output file cannot be opened"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --consout /dev/null/x \
+        --quiet 2>&1 | \
+    grep -q "Unable to open consout file" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --profile fails when the output file cannot be opened"
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --profile /dev/null/x \
+        --quiet 2>&1 | \
+    grep -q "Unable to open profile file" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
