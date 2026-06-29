@@ -292,6 +292,23 @@ OUTPUT2=$(
 	failure "${DESCRIPTION}"
 unset SEED OUTPUT1 OUTPUT2
 
+## since vsearch commit ad0b38a3, a given --randseed yields the same
+## order on any platform. Pin the exact order produced by seed 1 (with
+## distinct sequences, so that a reordering is observable) so that any
+## change to the now cross-platform pseudo-random generator is caught.
+DESCRIPTION="--shuffle --randseed 1 produces a fixed, cross-platform order"
+printf ">s1\nAAAA\n>s2\nCCCC\n>s3\nGGGG\n>s4\nTTTT\n>s5\nACGT\n" | \
+    "${VSEARCH}" \
+        --shuffle - \
+        --quiet \
+        --randseed 1 \
+        --output - | \
+    grep "^>" | \
+    tr -d '\n' | \
+    grep -qx ">s3>s4>s2>s5>s1" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 ## special seed value
 DESCRIPTION="--shuffle accepts --randseed 0 (free seed)"
 printf ">s1\nA\n>s2\nA\n" | \

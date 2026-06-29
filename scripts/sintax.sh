@@ -929,6 +929,49 @@ diff -q "${TABBEDOUT1}" "${TABBEDOUT2}" > /dev/null && \
 rm -f "${DB}" "${TABBEDOUT1}" "${TABBEDOUT2}"
 unset SEQ DB TABBEDOUT1 TABBEDOUT2
 
+## since vsearch commit ad0b38a3, a fixed --randseed makes the
+## classification reproducible regardless of the number of threads (the
+## per-query random draws no longer depend on thread scheduling). Output
+## line order can still vary with --threads, so the results are sorted
+## before being compared. The palindromic setup forces a plus/minus
+## strand tie broken by a seed-dependent random draw, and the eight
+## queries are enough to be split across the four threads.
+DESCRIPTION="--randseed gives identical classification regardless of --threads"
+PALQ="ACTTAGGCAATCAAGGCATGCATGCCTTGATTGCCTAAGT"
+PALREF="GCATGCATGC"
+DB=$(mktemp)
+TABBEDOUT1=$(mktemp)
+TABBEDOUT4=$(mktemp)
+QUERIES=$(printf ">q%d\n${PALQ}\n" 1 2 3 4 5 6 7 8)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${PALREF}" > "${DB}"
+printf "%s\n" "${QUERIES}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --strand both \
+        --randseed 1 \
+        --threads 1 \
+        --minseqlength 10 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    sort > "${TABBEDOUT1}"
+printf "%s\n" "${QUERIES}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --strand both \
+        --randseed 1 \
+        --threads 4 \
+        --minseqlength 10 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    sort > "${TABBEDOUT4}"
+diff -q "${TABBEDOUT1}" "${TABBEDOUT4}" > /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${TABBEDOUT1}" "${TABBEDOUT4}"
+unset PALQ PALREF DB TABBEDOUT1 TABBEDOUT4 QUERIES
+
 ## --threads is accepted
 DESCRIPTION="--threads is accepted"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"

@@ -1025,6 +1025,24 @@ OUTPUT2=$(
     failure "${DESCRIPTION}"
 unset SEED OUTPUT1 OUTPUT2
 
+## since vsearch commit ad0b38a3, a given --randseed selects the same
+## sequences on any platform. Pin the exact subset produced by seed 1
+## (distinct sequences, so the selection is observable) so that any
+## change to the now cross-platform pseudo-random generator is caught.
+DESCRIPTION="--fastx_subsample --randseed 1 selects a fixed, cross-platform subset"
+printf ">s1\nAAAA\n>s2\nCCCC\n>s3\nGGGG\n>s4\nTTTT\n>s5\nACGT\n>s6\nTGCA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 3 \
+        --quiet \
+        --randseed 1 \
+        --fastaout - | \
+    grep "^>" | \
+    tr -d '\n' | \
+    grep -qx ">s1>s2>s4" && \
+    success "${DESCRIPTION}" || \
+    failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_subsample accepts --randseed 0 (free seed)"
 printf ">s1\nA\n>s2\nA\n" | \
     "${VSEARCH}" \
