@@ -30,6 +30,11 @@ DESCRIPTION="check if vsearch is executable"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## macOS uses 'md5 -r' instead of 'md5sum' (used by the @SQ M5 test)
+if [[ ${OSTYPE} =~ darwin ]] ; then
+    md5sum() { md5 -r ; }
+fi
+
 
 ## vsearch --usearch_global fastxfile --db filename --id real (--alnout |
 ## --biomout | --blast6out | --fastapairs | --matched |
@@ -2511,6 +2516,315 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## the @HD line, when present, must be the first line of the file
+DESCRIPTION="--usearch_global --samheader @HD is the first line"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    awk 'NR == 1 {exit /^@HD/ ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## every header line starts with @ followed by a two-letter record type code
+DESCRIPTION="--usearch_global --samheader header lines are well-formed"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    awk '/^@/ {if ($0 !~ /^@[A-Z][A-Z]\t/) exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## @HD VN holds the SAM format version (a major.minor number)
+DESCRIPTION="--usearch_global --samheader @HD VN is a version number"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -qE "^@HD.*	VN:[0-9]+\.[0-9]+" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## @HD SO records the sort order (one of the SAM-defined keywords)
+DESCRIPTION="--usearch_global --samheader @HD SO is a valid sort order"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -qE "^@HD.*	SO:(unknown|unsorted|queryname|coordinate)(	|$)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## @HD GO records the grouping order (one of the SAM-defined keywords)
+DESCRIPTION="--usearch_global --samheader @HD GO is a valid grouping order"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -qE "^@HD.*	GO:(none|query|reference)(	|$)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## one @SQ reference dictionary line is emitted
+DESCRIPTION="--usearch_global --samheader emits an @SQ line"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -q "^@SQ" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## @SQ carries the mandatory SN (name) and LN (length) tags
+DESCRIPTION="--usearch_global --samheader @SQ has both SN and LN tags"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -qE "^@SQ.*	SN:.*	LN:" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## @SQ SN is the reference label as given in the database fasta
+DESCRIPTION="--usearch_global --samheader @SQ SN is the reference label"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    awk -F'\t' '/^@SQ/ {exit ($2 == "SN:d") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## one @SQ line is emitted per database reference
+DESCRIPTION="--usearch_global --samheader emits one @SQ line per reference"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\nGGGGCCCCAAAATTTTGGGGCCCCAAAATTTTGGGGCCCC\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    awk '/^@SQ/ {n++} END {exit (n == 2) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## @SQ LN is the length of the reference sequence (40 nt here)
+DESCRIPTION="--usearch_global --samheader @SQ LN is the reference length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -qE "^@SQ.*	LN:40(	|$)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## @SQ M5 is the MD5 checksum of the uppercased reference sequence
+DESCRIPTION="--usearch_global --samheader @SQ M5 is the MD5 of the reference"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+MD5=$(printf "%s" "${SEQ}" | md5sum | awk '{print $1}')
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -qE "^@SQ.*	M5:${MD5}(	|$)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB MD5
+
+## @SQ UR records the database location as a file: URI
+DESCRIPTION="--usearch_global --samheader @SQ UR is the database file URI"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -qF "	UR:file:${DB}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the @SQ SN value matches the RNAME field of the alignment record
+DESCRIPTION="--usearch_global --samheader @SQ SN matches the alignment RNAME"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    awk -F'\t' '/^@SQ/ {sub(/^SN:/, "", $2); sn = $2}
+                !/^@/  {exit ($3 == sn) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a single @PG program line is emitted
+DESCRIPTION="--usearch_global --samheader emits an @PG line"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -q "^@PG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## @PG carries ID:vsearch identifying the program
+DESCRIPTION="--usearch_global --samheader @PG ID is vsearch"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -qE "^@PG.*	ID:vsearch(	|$)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## @PG VN is the running vsearch version number
+DESCRIPTION="--usearch_global --samheader @PG VN is the vsearch version"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+VERSION=$("${VSEARCH}" --version 2>&1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+" | head -n 1)
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -qE "^@PG.*	VN:${VERSION}(	|$)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB VERSION
+
+## vsearch does not emit a read-group (@RG) header line
+DESCRIPTION="--usearch_global --samheader does not emit an @RG line"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --samheader \
+        --quiet | \
+    grep -q "^@RG" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ------------------------------------------------------------------- samout
 
 ## See vsearch-sam(5) for the SAM format produced by vsearch. A record
@@ -3334,6 +3648,130 @@ printf ">q\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n" | \
         --samout - \
         --quiet 2> /dev/null | \
     awk -F'\t' '{exit (toupper($10) == "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------ secondary-alignment RNAME and CIGAR well-formedness ------
+
+## a secondary alignment points to its own (less similar) reference
+DESCRIPTION="--usearch_global --samout RNAME is correct for a secondary alignment"
+DB=$(mktemp)
+printf ">R1\nGGGG\n>R2\nCGGG\n" > "${DB}"
+printf ">S1\nGGGG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxaccepts 2 \
+        --minseqlength 1 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' 'NR == 2 {exit ($3 == "R2") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## consecutive CIGAR operations must differ (no two adjacent runs share
+## the same operation letter)
+DESCRIPTION="--usearch_global --samout adjacent CIGAR operations differ"
+DB=$(mktemp)
+printf ">r1\nAAGGGGAAAAGGGGCC\n" > "${DB}"
+printf ">q1\nAAGGGGGGGGGCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --minseqlength 1 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{print $6}' | \
+    tr -d '0-9' | \
+    grep -qE "(.)\1" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the lengths of the query-consuming CIGAR operations (M, I, S) sum to
+## the length of SEQ
+DESCRIPTION="--usearch_global --samout CIGAR M/I/S lengths sum to the SEQ length"
+DB=$(mktemp)
+printf ">r1\nAAGGGGAAAAGGGGCC\n" > "${DB}"
+printf ">q1\nAAGGGGGGGGGCCC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --minseqlength 1 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{print $6}' | \
+    grep -oE "[0-9]+[MIS]" | \
+    grep -oE "[0-9]+" | \
+    awk '{s += $1} END {exit (s == 14) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------ optional-field (tag) well-formedness ------
+
+## every optional field follows the TAG:TYPE:VALUE structure
+DESCRIPTION="--usearch_global --samout optional fields are TAG:TYPE:VALUE"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    cut -f 12- | \
+    tr '\t' '\n' | \
+    grep -qvE "^[A-Za-z][A-Za-z0-9]:[AifZHB]:" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## each optional-field TAG appears at most once per alignment record
+DESCRIPTION="--usearch_global --samout optional-field tags are unique"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    cut -f 12- | \
+    tr '\t' '\n' | \
+    cut -d ':' -f 1 | \
+    sort | \
+    uniq -d | \
+    grep -q . && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the NM edit-distance tag is present (recommended by the SAM spec)
+DESCRIPTION="--usearch_global --samout includes the recommended NM tag"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --samout - \
+        --quiet | \
+    grep -qE "	NM:i:[0-9]+(	|$)" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
