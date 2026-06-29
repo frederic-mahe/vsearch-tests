@@ -2314,11 +2314,17 @@ printf "@s\nA\n+\nI\n" | \
 ## valgrind: search for errors and memory leaks
 if which valgrind > /dev/null 2>&1 ; then
     TMP=$(mktemp)
+    # the forward and reverse reads must come from two distinct files;
+    # reverse_input writes to a single shared file, so it cannot supply
+    # both inputs at once (it would alias the forward read onto the
+    # reverse). Give the forward read its own file.
+    FORWARD=$(mktemp)
+    printf "@s\nA\n+\nI\n" > "${FORWARD}"
     valgrind \
         --log-file="${TMP}" \
         --leak-check=full \
         "${VSEARCH}" \
-        --fastq_join "$(reverse_input "@s\nA\n+\nI\n")" \
+        --fastq_join "${FORWARD}" \
         --reverse "$(reverse_input "@s\nA\n+\nI\n")" \
         --fastqout /dev/null \
         --log /dev/null \
@@ -2331,8 +2337,8 @@ if which valgrind > /dev/null 2>&1 ; then
     grep -q "ERROR SUMMARY: 0 errors" "${TMP}" && \
         success "${DESCRIPTION}" || \
             failure "${DESCRIPTION}"
-    rm -f "${TMP}"
-    unset TMP
+    rm -f "${TMP}" "${FORWARD}"
+    unset TMP FORWARD
 fi
 
 
