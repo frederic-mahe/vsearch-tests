@@ -2381,7 +2381,7 @@ printf ">q1\nGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT\n" | \
         --quiet \
         --userout /dev/stdout | \
     wc -l | \
-    grep -qx "2" && \
+    grep -qx " *2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset DESCRIPTION
@@ -2400,7 +2400,7 @@ printf ">q1\nGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT\n" | \
         --quiet \
         --userout /dev/stdout | \
     wc -l | \
-    grep -qx "1" && \
+    grep -qx " *1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset DESCRIPTION
