@@ -750,6 +750,64 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## usearch 6, 7 and 8 output a "=" when the sequences are strictly
+## identical (CIGAR field is the 8th column of H records)
+DESCRIPTION="--cluster_fast --uc CIGAR field is \"=\" when sequences are identical"
+printf ">s1\nACGT\n>s2\nACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --uc - \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {FS = "\t"} /^H/ {exit ($8 == "=") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## terminal gaps are ignored, so a shorter substring is still
+## considered strictly identical (CIGAR field is "=")
+DESCRIPTION="--cluster_fast --uc CIGAR field is \"=\" when identical (terminal gaps ignored)"
+printf ">s1\nACGT\n>s2\nACG\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --uc - \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {FS = "\t"} /^H/ {exit ($8 == "=") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the 3rd column of an H record is the query (hit) length, not the
+## alignment length nor the centroid length
+DESCRIPTION="--cluster_fast --uc 3rd column of H record is the query length"
+printf ">s1\nACGT\n>s2\nACAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --uc - \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {FS = "\t"} /^H/ {exit ($3 == 4 && $9 == "s1") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the 2nd column of an H record is the ordinal number of its centroid
+## cluster (here two clusters numbered 0 and 1)
+DESCRIPTION="--cluster_fast --uc 2nd column of H record is the centroid ordinal number"
+printf ">s1\nAAAA\n>s2\nAAAT\n>s3\nGGGG\n>s4\nGGGC\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.75 \
+        --minseqlength 1 \
+        --uc - \
+        --quiet 2> /dev/null | \
+    awk 'BEGIN {FS = "\t" ; a = 0 ; b = 0 ; c = 0}
+         /^H/ {if ($2 == 0) {a++} else if ($2 == 1) {b++} else {c++}}
+         END {exit (a == 1 && b == 1 && c == 0) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #

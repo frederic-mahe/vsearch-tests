@@ -2731,6 +2731,20 @@ printf ">s1\nA\n>s2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --uc cluster size (C line, 3rd column) accounts for --sizein
+## (here the sizes 3 and 1 sum up to 4, not a sequence count of 2)
+DESCRIPTION="--uc cluster size is correct for C line (3rd column) with --sizein"
+printf ">s1;size=3;\nACGT\n>s2;size=1;\nACGT\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --minseqlength 1 \
+        --sizein \
+        --quiet \
+        --uc - | \
+    awk '/^C/ {exit $3 == 4 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --uc centroid length is correct for S line (3rd column)
 DESCRIPTION="--uc centroid length is correct for S line (3rd column) #1"
 printf ">s1\nA\n" | \
