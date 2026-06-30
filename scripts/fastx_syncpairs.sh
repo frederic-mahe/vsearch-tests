@@ -61,12 +61,15 @@ printf "@s\nA\n+\nI\n" | \
 ## --------------------------------------------------- mandatory output file
 
 DESCRIPTION="--fastx_syncpairs requires an output file"
+REVERSE=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${REVERSE}"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf "@s\nA\n+\nI\n") 2> /dev/null && \
+        --reverse "${REVERSE}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 DESCRIPTION="--fastx_syncpairs accepts --fastqout as the only output (fastq in)"
 printf "@s\nA\n+\nI\n" | \
@@ -121,58 +124,76 @@ printf ">s\nA\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_syncpairs fastqout requires fastq input (fasta in)"
+REVERSE=$(mktemp)
+printf ">s\nA\n" > "${REVERSE}"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf ">s\nA\n") \
+        --reverse "${REVERSE}" \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 DESCRIPTION="--fastx_syncpairs fastqout_rev requires fastq input (fasta in)"
+REVERSE=$(mktemp)
+printf ">s\nA\n" > "${REVERSE}"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf ">s\nA\n") \
+        --reverse "${REVERSE}" \
         --fastqout_rev /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 DESCRIPTION="--fastx_syncpairs fastqout_orphans requires fastq input (fasta in)"
+REVERSE=$(mktemp)
+printf ">s\nA\n" > "${REVERSE}"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf ">s\nA\n") \
+        --reverse "${REVERSE}" \
         --fastqout_orphans /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 DESCRIPTION="--fastx_syncpairs fastqout_orphans_rev requires fastq input (fasta in)"
+REVERSE=$(mktemp)
+printf ">s\nA\n" > "${REVERSE}"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf ">s\nA\n") \
+        --reverse "${REVERSE}" \
         --fastqout_orphans_rev /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 DESCRIPTION="--fastx_syncpairs rejects a mix of fasta forward and fastq reverse"
+REVERSE=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${REVERSE}"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "${REVERSE}" \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 DESCRIPTION="--fastx_syncpairs rejects a mix of fastq forward and fasta reverse"
+REVERSE=$(mktemp)
+printf ">s\nA\n" > "${REVERSE}"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf ">s\nA\n") \
+        --reverse "${REVERSE}" \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 DESCRIPTION="--fastx_syncpairs writes fasta output from fastq input (drops quality)"
 printf "@s\nA\n+\nI\n" | \
@@ -196,13 +217,16 @@ printf "@s\nA\n+\nI\n" | \
 
 DESCRIPTION="--fastx_syncpairs errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
+REVERSE=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${REVERSE}"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "${REVERSE}" \
         --fastqout "${TMP}" 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
@@ -480,22 +504,28 @@ printf "@a/1\nAA\n+\nII\n" | \
 #*****************************************************************************#
 
 DESCRIPTION="--fastx_syncpairs rejects duplicate labels in the reverse file"
+REVERSE=$(mktemp)
+printf "@a 2:N:0:1\nTT\n+\nII\n@a 2:N:0:1\nGG\n+\nII\n" > "${REVERSE}"
 printf "@a 1:N:0:1\nAA\n+\nII\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf "@a 2:N:0:1\nTT\n+\nII\n@a 2:N:0:1\nGG\n+\nII\n") \
+        --reverse "${REVERSE}" \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 DESCRIPTION="--fastx_syncpairs rejects duplicate labels in the forward file"
+REVERSE=$(mktemp)
+printf "@a 2:N:0:1\nTT\n+\nII\n" > "${REVERSE}"
 printf "@a 1:N:0:1\nAA\n+\nII\n@a 1:N:0:1\nCC\n+\nII\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf "@a 2:N:0:1\nTT\n+\nII\n") \
+        --reverse "${REVERSE}" \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 ## duplicate forward labels are only rejected when they create an
 ## ambiguous pairing; two forward orphans sharing a label are harmless
@@ -639,14 +669,17 @@ printf "@s\nA\n+\nI\n" | \
 #*****************************************************************************#
 
 DESCRIPTION="--fastx_syncpairs rejects an unrelated option (--join_padgap)"
+REVERSE=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${REVERSE}"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_syncpairs - \
-        --reverse <(printf "@s\nA\n+\nI\n") \
+        --reverse "${REVERSE}" \
         --fastqout /dev/null \
         --join_padgap NNN 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 
 exit 0
