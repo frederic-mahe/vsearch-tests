@@ -3822,16 +3822,19 @@ printf ">s1\nGTACTGATCGATTACGGCATGCTAGCTAGCAT\n>s2\nGGGGCCCCAAAAATGCTAGCTAGCATGC
         failure "${DESCRIPTION}"
 
 DESCRIPTION="forum (2019-11-25): --acceptall is rejected by usearch_global"
+DB=$(mktemp)
+printf ">t\nGTACTGATCGATTACGGCATGCTAGCTAGCAT\n" > "${DB}"
 printf ">q\nGTACTGATCGATTACGGCATGCTAGCTAGCAT\n" | \
     ${VSEARCH} \
         --usearch_global - \
-        --db <(printf ">t\nGTACTGATCGATTACGGCATGCTAGCTAGCAT\n") \
+        --db "${DB}" \
         --id 0.9 \
         --acceptall \
         --blast6out /dev/null 2>&1 | \
     grep -q "^Invalid option(s): --acceptall" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm -f "${DB}"
 
 
 #******************************************************************************#
@@ -4672,14 +4675,17 @@ printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 
 ## --otus is not a recognized vsearch option
 DESCRIPTION="forum (2023-12-21): --otus is not a valid vsearch option"
+DB=$(mktemp)
+printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n" > "${DB}"
 printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --usearch_global - \
-        --db <(printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --db "${DB}" \
         --otus /dev/null 2>&1 | \
     grep -q "unrecognized option .--otus'" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm -f "${DB}"
 
 
 #******************************************************************************#
