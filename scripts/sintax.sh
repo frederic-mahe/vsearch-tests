@@ -105,13 +105,16 @@ SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 QUERY=$(mktemp)
 printf ">q\n%s\n" "${SEQ}" > "${QUERY}"
 chmod u-r "${QUERY}"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
 "${VSEARCH}" \
     --sintax "${QUERY}" \
-    --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+    --db "${DB}" \
     --tabbedout /dev/null \
     --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 chmod u+r "${QUERY}" && rm -f "${QUERY}"
 unset SEQ QUERY
 
@@ -130,13 +133,16 @@ unset SEQ
 ## --sintax fails without --tabbedout
 DESCRIPTION="--sintax errors without --tabbedout"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 ## --db is accepted
@@ -246,14 +252,17 @@ DESCRIPTION="--tabbedout errors if output file cannot be written"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 OUTPUT_DIR=$(mktemp -d)
 chmod u-w "${OUTPUT_DIR}"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --tabbedout "${OUTPUT_DIR}/output.tsv" \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 chmod u+w "${OUTPUT_DIR}" && rm -rf "${OUTPUT_DIR}"
 unset SEQ OUTPUT_DIR
 
@@ -592,15 +601,18 @@ unset SEQ SHORT
 ## --sintax_cutoff with a negative value is rejected
 DESCRIPTION="--sintax_cutoff rejects negative value"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --sintax_cutoff -0.1 \
         --tabbedout /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 ## --sintax_cutoff 0.99 filters ranks with less than 99% bootstrap support
@@ -860,15 +872,18 @@ unset PALQ PALREF
 ## --strand minus is rejected (only plus and both are valid)
 DESCRIPTION="--strand minus is rejected"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --strand minus \
         --tabbedout /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 ## --randseed is accepted
@@ -1088,29 +1103,35 @@ unset SEQ
 ## --wordlength 2 is rejected (below the minimum of 3)
 DESCRIPTION="--wordlength 2 is rejected (below minimum of 3)"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --wordlength 2 \
         --tabbedout /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 ## --wordlength 16 is rejected (above the maximum of 15)
 DESCRIPTION="--wordlength 16 is rejected (above maximum of 15)"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --wordlength 16 \
         --tabbedout /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 
@@ -1328,15 +1349,18 @@ unset SEQ QUAL
 DESCRIPTION="--fastq_ascii 50 is rejected"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 QUAL="IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
 printf "@q\n%s\n+\n%s\n" "${SEQ}" "${QUAL}" | \
     "${VSEARCH}" \
         --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --fastq_ascii 50 \
         --tabbedout /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ QUAL
 
 ## --fastq_qmax is accepted (with fastq query)
@@ -1574,43 +1598,52 @@ unset SEQ
 ## --uc is not a valid option for --sintax
 DESCRIPTION="--uc is not a valid option for --sintax"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --tabbedout /dev/null \
         --uc /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 ## --matched is not a valid option for --sintax
 DESCRIPTION="--matched is not a valid option for --sintax"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --tabbedout /dev/null \
         --matched /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 ## --notmatched is not a valid option for --sintax
 DESCRIPTION="--notmatched is not a valid option for --sintax"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB2=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB2}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
-        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --db "${DB2}" \
         --tabbedout /dev/null \
         --notmatched /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB2}"
 unset SEQ
 
 
