@@ -507,13 +507,16 @@ DESCRIPTION="--sortbysize accepts --topn"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--sortbysize --topn must be greater than zero"
+INPUT=$(mktemp)
+printf ">s1;size=3\nAA\n" > "${INPUT}"
 "${VSEARCH}" \
-    --sortbysize <(printf ">s1;size=3\nAA\n") \
+    --sortbysize "${INPUT}" \
     --quiet \
     --topn 0 \
     --output - /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${INPUT}"
 
 DESCRIPTION="--sortbysize --topn can be larger than the number of entries"
 "${VSEARCH}" \
