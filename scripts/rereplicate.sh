@@ -1086,13 +1086,16 @@ printf ">s;size=1\nA\n" | \
 
 ## -------------------------------------------------------------------- maxsize
 DESCRIPTION="--sortbylength rejects --maxsize"
+TMP=$(mktemp)
+printf ">s1;size=1\nAA\n" > "${TMP}"
 "${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=1\nAA\n") \
+    --sortbylength "${TMP}" \
     --quiet \
     --maxsize 2 \
     --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${TMP}"
 
 ## --------------------------------------------------------------- minseqlength
 
@@ -1107,13 +1110,16 @@ printf ">s;size=1\nA\n" | \
 
 ## -------------------------------------------------------------------- minsize
 DESCRIPTION="--sortbylength rejects --minsize"
+TMP=$(mktemp)
+printf ">s1;size=3\nAA\n" > "${TMP}"
 "${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=3\nAA\n") \
+    --sortbylength "${TMP}" \
     --quiet \
     --minsize 2 \
     --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${TMP}"
 
 ## --------------------------------------------------------------------- strand
 
