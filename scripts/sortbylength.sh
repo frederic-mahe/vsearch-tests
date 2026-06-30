@@ -495,13 +495,16 @@ DESCRIPTION="--sortbylength accepts --topn"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--sortbylength --topn must be greater than zero"
+INPUT=$(mktemp)
+printf ">s1;size=3\nAA\n" > "${INPUT}"
 "${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=3\nAA\n") \
+    --sortbylength "${INPUT}" \
     --quiet \
     --topn 0 \
     --output - /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${INPUT}"
 
 DESCRIPTION="--sortbylength --topn can be larger than the number of entries"
 "${VSEARCH}" \
@@ -1447,23 +1450,29 @@ printf ">s;size=1\nA\n" | \
 
 ## -------------------------------------------------------------------- maxsize
 DESCRIPTION="--sortbylength rejects --maxsize"
+INPUT=$(mktemp)
+printf ">s1;size=1\nAA\n" > "${INPUT}"
 "${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=1\nAA\n") \
+    --sortbylength "${INPUT}" \
     --quiet \
     --maxsize 2 \
     --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${INPUT}"
 
 ## -------------------------------------------------------------------- minsize
 DESCRIPTION="--sortbylength rejects --minsize"
+INPUT=$(mktemp)
+printf ">s1;size=3\nAA\n" > "${INPUT}"
 "${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=3\nAA\n") \
+    --sortbylength "${INPUT}" \
     --quiet \
     --minsize 2 \
     --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${INPUT}"
 
 
 #*****************************************************************************#
