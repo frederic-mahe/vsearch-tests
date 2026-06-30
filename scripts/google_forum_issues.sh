@@ -4263,10 +4263,12 @@ printf ">s1\nILPILPILPILPILPILPILPILPILPILPILP\n" | \
 # default k-mer prefilter, so no alignment is attempted and no match is
 # reported, even at a permissive identity threshold
 DESCRIPTION="forum (2021-05-04): default minwordmatches prefilter misses a short divergent query"
+DB=$(mktemp)
+printf ">t1\nTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAAACGTTCGATCTATCGTTCGTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAA\n" > "${DB}"
 printf ">q1\nACGATCGATCGATCGATCG\n" | \
     ${VSEARCH} \
         --usearch_global - \
-        --db <(printf ">t1\nTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAAACGTTCGATCTATCGTTCGTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAA\n") \
+        --db "${DB}" \
         --id 0.5 \
         --minseqlength 1 \
         --strand plus \
@@ -4276,6 +4278,7 @@ printf ">q1\nACGATCGATCGATCGATCG\n" | \
     grep -q . && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 # disabling the k-mer prefilter with --minwordmatches 0 forces the alignment
 # and rescues the otherwise-missed short divergent query
