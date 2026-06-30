@@ -327,8 +327,7 @@ printf ">s1\nA\n>s2\nC\n" | \
         --fastaout - \
         --quiet 2> /dev/null | \
     awk '/^>/' | \
-    wc -l | \
-    grep -qw "1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -357,8 +356,7 @@ printf ">s1\nA\n>s2\nC\n>s3\nT\n" | \
         --fastaout - \
         --quiet 2> /dev/null | \
     awk '/^>/' | \
-    wc -l | \
-    grep -qw "2" && \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -500,8 +498,7 @@ printf ">s1;abc\nA\n>s2;foo\nC\n>s3;xyz\nT\n" | \
         --fastaout - \
         --quiet 2> /dev/null | \
     awk '/^>/' | \
-    wc -l | \
-    grep -qw "2" && \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP}"

@@ -646,8 +646,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --id 1.0 \
         --blast6out - \
         --quiet | \
-    wc -l | \
-    grep -qxE "[[:space:]]*1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -783,8 +782,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --maxaccepts 2 \
         --blast6out - \
         --quiet | \
-    wc -l | \
-    grep -qxE "[[:space:]]*2" && \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -837,8 +835,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --maxrejects 0 \
         --blast6out - \
         --quiet | \
-    wc -l | \
-    grep -qxE "[[:space:]]*3" && \
+    awk 'END {exit (NR == 3) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -1696,8 +1693,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --maxhits 1 \
         --blast6out - \
         --quiet | \
-    wc -l | \
-    grep -qxE "[[:space:]]*1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -3942,8 +3938,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --top_hits_only \
         --blast6out - \
         --quiet | \
-    wc -l | \
-    grep -qxE "[[:space:]]*1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -4026,8 +4021,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --uc_allhits \
         --quiet | \
     awk -F'\t' '$1 == "H"' | \
-    wc -l | \
-    grep -qxE "[[:space:]]*2" && \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"

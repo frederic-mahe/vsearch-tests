@@ -358,8 +358,7 @@ printf ">s1\nA\n>s1\nC\n>s2\nT\n" | \
         --fastaout - \
         --quiet 2> /dev/null | \
     awk '/^>/' | \
-    wc -l | \
-    grep -qw "2" && \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

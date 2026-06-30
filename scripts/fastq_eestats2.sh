@@ -405,8 +405,7 @@ printf "@s\nA\n+\nI\n" | \
         --output - \
         --quiet 2> /dev/null | \
     grep -o "MaxEE" | \
-    wc -l | \
-    grep -qxE "[[:space:]]*5" && \
+    awk 'END {exit (NR == 5) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

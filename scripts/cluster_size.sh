@@ -861,8 +861,7 @@ printf ">s1\nAAAAAAAAAAAA\n>s2\nCCCCCCCCCCCC\n" | \
         --userfields query+target \
         --quiet 2> /dev/null | \
     awk -F "\t" '$2 == "*"' | \
-    wc -l | \
-    grep -qxE "[[:space:]]*2" && \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

@@ -143,8 +143,7 @@ printf "" | \
         --fastq_eestats - \
         --output - \
         --quiet 2> /dev/null | \
-    wc -l | \
-    grep -qxE "[[:space:]]*1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -234,8 +233,7 @@ printf "@s\nA\n+\nI\n" | \
         --output - \
         --quiet 2> /dev/null | \
     awk 'NR>1' | \
-    wc -l | \
-    grep -qxE "[[:space:]]*1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -246,8 +244,7 @@ printf "@s\nAA\n+\nII\n" | \
         --output - \
         --quiet 2> /dev/null | \
     awk 'NR>1' | \
-    wc -l | \
-    grep -qxE "[[:space:]]*2" && \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -261,8 +258,7 @@ printf "@s\nACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIII\n" | \
         --output - \
         --quiet 2> /dev/null | \
     awk 'NR>1' | \
-    wc -l | \
-    grep -qxE "[[:space:]]*16" && \
+    awk 'END {exit (NR == 16) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

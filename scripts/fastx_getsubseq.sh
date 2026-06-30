@@ -525,8 +525,7 @@ printf "@s1\nACGTACGT\n+\nABCDEFGH\n" | \
         --quiet 2> /dev/null | \
     awk 'NR==2 || NR==4 {print length($0)}' | \
     sort -u | \
-    wc -l | \
-    grep -qxE "[[:space:]]*1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

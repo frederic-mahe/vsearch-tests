@@ -990,8 +990,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --maxhits 1 \
         --blast6out - \
         --quiet | \
-    wc -l | \
-    grep -qxE "[[:space:]]*1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -1701,8 +1700,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --uc_allhits \
         --quiet | \
     awk -F'\t' '$1 == "H"' | \
-    wc -l | \
-    grep -qxE "[[:space:]]*2" && \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"

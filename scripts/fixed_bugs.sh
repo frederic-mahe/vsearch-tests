@@ -13568,9 +13568,7 @@ printf ">q\n%s\n" "${MOTIF}" | \
         --userfields query+target \
         --userout - \
         --quiet | \
-    wc -l | \
-    tr -d " " | \
-    grep -qx "1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset MOTIF

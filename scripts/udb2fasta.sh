@@ -266,7 +266,8 @@ DESCRIPTION="--udb2fasta folds long sequences at the default width (80)"
 TMPUDB=$(mktemp)
 SEQ90=$(printf 'ACGTACGTAC%.0s' {1..9})
 printf ">s\n%s\n" "${SEQ90}" | make_udb "${TMPUDB}"
-[[ $("${VSEARCH}" --udb2fasta "${TMPUDB}" --output /dev/stdout --quiet 2> /dev/null | wc -l) -eq 3 ]] && \
+"${VSEARCH}" --udb2fasta "${TMPUDB}" --output /dev/stdout --quiet 2> /dev/null | \
+    awk 'END {exit (NR == 3) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMPUDB}"
@@ -277,7 +278,8 @@ DESCRIPTION="--fasta_width 0 suppresses folding"
 TMPUDB=$(mktemp)
 SEQ90=$(printf 'ACGTACGTAC%.0s' {1..9})
 printf ">s\n%s\n" "${SEQ90}" | make_udb "${TMPUDB}"
-[[ $("${VSEARCH}" --udb2fasta "${TMPUDB}" --output /dev/stdout --quiet --fasta_width 0 2> /dev/null | wc -l) -eq 2 ]] && \
+"${VSEARCH}" --udb2fasta "${TMPUDB}" --output /dev/stdout --quiet --fasta_width 0 2> /dev/null | \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMPUDB}"

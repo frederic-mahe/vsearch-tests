@@ -2380,8 +2380,7 @@ printf ">q1\nGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT\n" | \
         --userfields target \
         --quiet \
         --userout /dev/stdout | \
-    wc -l | \
-    grep -qx " *2" && \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset DESCRIPTION
@@ -2399,8 +2398,7 @@ printf ">q1\nGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT\n" | \
         --userfields target \
         --quiet \
         --userout /dev/stdout | \
-    wc -l | \
-    grep -qx " *1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset DESCRIPTION
@@ -3797,8 +3795,7 @@ printf ">q1\nGTACTGATCGATTACGGCATGCTAGCTAGCAT\n" | \
         --maxhits 1 \
         --blast6out /dev/stdout \
         --quiet 2> /dev/null | \
-    wc -l | \
-    grep -qx " *1" && \
+    awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4521,13 +4518,13 @@ printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIII
 
 ## fastq_trunclen also discards reads shorter than the requested length
 DESCRIPTION="forum (2023-10-11): fastq_trunclen discards reads shorter than the given length"
-[ "$(printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
     "${VSEARCH}" \
         --fastq_filter - \
         --fastq_trunclen 40 \
         --fastqout /dev/stdout \
         --quiet 2> /dev/null | \
-    wc -l)" -eq 0 ] && \
+    awk 'END {exit (NR == 0) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
