@@ -71,12 +71,17 @@ DESCRIPTION="fastq_mergepairs option reverse is accepted"
 
 # The SYNOPSIS specifies (--fastaout | --fastqout) as mandatory.
 DESCRIPTION="fastq_mergepairs errors if neither --fastaout nor --fastqout is given"
+FORWARD=$(mktemp)
+printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
-    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 # --eetabbedout and --*notmerged_* should be usable without --fastaout/fastqout
 DESCRIPTION="fastq_mergepairs accepts --eetabbedout alone as output"
@@ -905,21 +910,31 @@ DESCRIPTION="fastq_mergepairs R1 and R2 empty input"
 
 # Fatal error: More forward reads than reverse reads
 DESCRIPTION="fastq_mergepairs R2 empty input"
+FORWARD=$(mktemp)
+printf "@s1\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s1\nA\n+\nI\n") \
-    --reverse <(printf "") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastqout - > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 # Fatal error: More reverse reads than forward reads
 DESCRIPTION="fastq_mergepairs R1 empty input"
+FORWARD=$(mktemp)
+printf "" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s1\nA\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "") \
-    --reverse <(printf "@s1\nA\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastqout - > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs empty input yields empty output"
 TMP=$(mktemp -u)
@@ -952,12 +967,17 @@ DESCRIPTION="fastq_mergepairs error if missing file"
 DESCRIPTION="fastq_mergepairs error if unable to open file for writing"
 TMP=$(mktemp)
 chmod u-w "${TMP}"
+FORWARD=$(mktemp)
+printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
-    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastqout "${TMP}" > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 chmod u+w "${TMP}"
 rm -f "${TMP}"
 unset TMP
@@ -1008,20 +1028,30 @@ DESCRIPTION="fastq_mergepairs pairs are matched by position (labels may differ)"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs error if R1 has more reads than R2"
+FORWARD=$(mktemp)
+printf "@s1\nAAATAAAAAA\n+\nIIIIIIIIII\n@s2\nAAATAAAAAA\n+\nIIIIIIIIII\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s1\nTTTTTTATTT\n+\nIIIIIIIIII\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s1\nAAATAAAAAA\n+\nIIIIIIIIII\n@s2\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
-    --reverse <(printf "@s1\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs error if R2 has more reads than R1"
+FORWARD=$(mktemp)
+printf "@s1\nAAATAAAAAA\n+\nIIIIIIIIII\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s1\nTTTTTTATTT\n+\nIIIIIIIIII\n@s2\nTTTTTTATTT\n+\nIIIIIIIIII\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s1\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
-    --reverse <(printf "@s1\nTTTTTTATTT\n+\nIIIIIIIIII\n@s2\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 
 ## ----------------------------------- outside-overlap Q scores come from R1/R2 ---
@@ -1667,49 +1697,74 @@ DESCRIPTION="fastq_mergepairs option fastq_maxdiffs accepts values > 0 (2^63 - 1
 
 # option value is stored in a signed int64_t
 DESCRIPTION="fastq_mergepairs option fastq_maxdiffs rejects values > 2^63 - 1 (2^63)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxdiffs 9223372036854775808 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxdiffs rejects values > 2^63 - 1 (2^64 - 1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxdiffs 18446744073709551615 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxdiffs rejects values > 2^63 - 1 (2^64)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxdiffs 18446744073709551616 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxdiffs must be a positive integer (-1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxdiffs -1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxdiffs must be an integer (A)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxdiffs A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 # normal case: no diff (already covered)
 # case with 1 diff: maxdiff = 10 (default) (already covered)
@@ -1852,13 +1907,18 @@ DESCRIPTION="fastq_mergepairs --fastq_maxdiffpct 6 rejects 1 mismatch in a 15-nt
 # sequence (default is 1000000)
 
 DESCRIPTION="fastq_mergepairs option fastq_maxmergelen rejects a null value (0)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxmergelen 0 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values > 0 (1)"
 "${VSEARCH}" \
@@ -1916,49 +1976,74 @@ DESCRIPTION="fastq_mergepairs option fastq_maxmergelen accepts values > 0 (2^63 
 
 # option value is stored in a signed int64_t
 DESCRIPTION="fastq_mergepairs option fastq_maxmergelen rejects values > 2^63 - 1 (2^63)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxmergelen 9223372036854775808 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxmergelen rejects values > 2^63 - 1 (2^64 - 1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxmergelen 18446744073709551615 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxmergelen rejects values > 2^63 - 1 (2^64)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxmergelen 18446744073709551616 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxmergelen must be a positive integer (-1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxmergelen -1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxmergelen must be an integer (A)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxmergelen A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 # 1...5....10
 # AAATAAAAAA
@@ -2070,49 +2155,74 @@ DESCRIPTION="fastq_mergepairs option fastq_minmergelen accepts values >= 0 (2^63
 
 # option value is stored in a signed int64_t
 DESCRIPTION="fastq_mergepairs option fastq_minmergelen rejects values > 2^63 - 1 (2^63)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minmergelen 9223372036854775808 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minmergelen rejects values > 2^63 - 1 (2^64 - 1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minmergelen 18446744073709551615 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minmergelen rejects values > 2^63 - 1 (2^64)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minmergelen 18446744073709551616 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minmergelen must be a positive integer (-1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minmergelen -1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minmergelen must be an integer (A)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minmergelen A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 # 1...5....10
 # AAATAAAAAA
@@ -2221,67 +2331,102 @@ DESCRIPTION="fastq_mergepairs option fastq_minovlen accepts values >= 5 (2^63 - 
 
 # option value is stored in a signed int64_t
 DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values > 2^63 - 1 (2^63)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minovlen 9223372036854775808 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values > 2^63 - 1 (2^64 - 1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minovlen 18446744073709551615 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values > 2^63 - 1 (2^64)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minovlen 18446744073709551616 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values below 5 (4)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minovlen 4 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minovlen rejects values below 5 (0)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minovlen 0 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minovlen must be a positive integer (-1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minovlen -1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minovlen must be an integer (A)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minovlen A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 
 DESCRIPTION="fastq_mergepairs option fastq_minovlen is accepted"
@@ -2470,13 +2615,18 @@ DESCRIPTION="fastq_mergepairs option fastq_ascii is accepted (64)"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs option fastq_ascii rejects values other than 33 or 64"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_ascii 32 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 ## --------------------------------------------------- --fastq_ascii effect ---
 
@@ -2498,13 +2648,18 @@ DESCRIPTION="fastq_mergepairs --fastq_ascii 64 changes the Q value decoding"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs --fastq_ascii 33 rejects high ASCII (chars > offset + qmax)"
+FORWARD=$(mktemp)
+printf "@s\nAAATAAAAAA\n+\nhhhhhhhhhh\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nTTTTTTATTT\n+\nhhhhhhhhhh\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nhhhhhhhhhh\n") \
-    --reverse <(printf "@s\nTTTTTTATTT\n+\nhhhhhhhhhh\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_ascii 33 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 
 #*****************************************************************************#
@@ -2524,49 +2679,74 @@ DESCRIPTION="fastq_mergepairs --fastq_ascii 33 rejects high ASCII (chars > offse
 
 ## error probabilities can be small but not null
 DESCRIPTION="fastq_mergepairs option fastq_maxee rejects null value (0.0)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxee 0.0 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxee rejects negative values (-0.0)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxee -0.0 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxee rejects negative values (-0.1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxee -0.1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxee rejects negative values (-1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxee -1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxee must be a double (A)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxee A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 ## - largest int that fits in a double without precision loss (n * 1.0)
 ## - (n * Q93) 2.22045e-16
@@ -2905,58 +3085,88 @@ DESCRIPTION="fastq_mergepairs option fastq_maxlen accepts values >= 1 (2^63 - 1)
 
 # option value is stored in a signed int64_t
 DESCRIPTION="fastq_mergepairs option fastq_maxlen rejects values > 2^63 - 1 (2^63)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxlen 9223372036854775808 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxlen rejects values > 2^63 - 1 (2^64 - 1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxlen 18446744073709551615 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxlen rejects values > 2^63 - 1 (2^64)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxlen 18446744073709551616 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxlen rejects values below 1 (0)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxlen 0 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxlen must be a positive integer (-1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxlen -1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxlen must be an integer (A)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxlen A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs fastq_maxlen accept sequences of up to LONG_MAX length (default)"
 "${VSEARCH}" \
@@ -3062,49 +3272,74 @@ DESCRIPTION="fastq_mergepairs option fastq_maxns accepts values >= 0 (2^63 - 1)"
 
 # option value is stored in a signed int64_t
 DESCRIPTION="fastq_mergepairs option fastq_maxns rejects values > 2^63 - 1 (2^63)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxns 9223372036854775808 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxns rejects values > 2^63 - 1 (2^64 - 1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxns 18446744073709551615 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxns rejects values > 2^63 - 1 (2^64)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxns 18446744073709551616 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxns must be a positive integer (-1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxns -1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_maxns must be an integer (A)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_maxns A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 # AAATAAAAAAN
 # |||||||||||
@@ -3224,60 +3459,90 @@ DESCRIPTION="fastq_mergepairs option fastq_minlen accepts values >= 5 (2^63 - 1)
 
 # option value is stored in a signed int64_t
 DESCRIPTION="fastq_mergepairs option fastq_minlen rejects values > 2^63 - 1 (2^63)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minlen 9223372036854775808 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 
 DESCRIPTION="fastq_mergepairs option fastq_minlen rejects values > 2^63 - 1 (2^64 - 1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minlen 18446744073709551615 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minlen rejects values > 2^63 - 1 (2^64)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minlen 18446744073709551616 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 # should minlen = 0 be rejected? should users be allowed to reject all input sequences?
 DESCRIPTION="fastq_mergepairs option fastq_minlen rejects value 0"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minlen 0 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minlen must be a positive integer"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minlen -1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_minlen must be an integer"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_minlen A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs fastq_minlen accept sequences of length 1 or more (default)"
 "${VSEARCH}" \
@@ -3331,13 +3596,18 @@ DESCRIPTION="fastq_mergepairs option fastq_minlen is accepted"
 # int64_t again, values accepted should range from 0 to 93
 
 DESCRIPTION="fastq_mergepairs option fastq_qmax rejects negative values"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmax -1 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 # lowest possible qmin is zero, and qmax = qmin + 1
 DESCRIPTION="fastq_mergepairs option fastq_qmax accepts a null value"
@@ -3379,13 +3649,18 @@ DESCRIPTION="fastq_mergepairs option fastq_qmax accepts positive integers (93)"
 
 # Sum of arguments to --fastq_ascii and --fastq_qmax must be no more than 126
 DESCRIPTION="fastq_mergepairs option fastq_qmax rejects values greater than 126 - 33 = 93 (94)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmax 94 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_qmax 40 accepts entry with Q=40"
 "${VSEARCH}" \
@@ -3397,33 +3672,48 @@ DESCRIPTION="fastq_mergepairs option fastq_qmax 40 accepts entry with Q=40"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs option fastq_qmax 40 rejects entry with Q=41"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nJ\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nJ\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nJ\n") \
-    --reverse <(printf "@s\nT\n+\nJ\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmax 40 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_qmax 40 rejects entry with Q=41 (log file)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nJ\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nJ\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nJ\n") \
-    --reverse <(printf "@s\nT\n+\nJ\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmax 40 \
     --log /dev/null \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_qmax must be greater than fastq_qmin"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nJ\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nJ\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nJ\n") \
-    --reverse <(printf "@s\nT\n+\nJ\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmin 42 \
     --fastq_qmax 41 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 
 DESCRIPTION="fastq_mergepairs option fastq_qmax is accepted"
@@ -3494,13 +3784,18 @@ DESCRIPTION="fastq_mergepairs default --fastq_qmaxout leaves combined Q unclampe
 
 # Sum of arguments to --fastq_ascii and --fastq_qmin must be no less than 33
 DESCRIPTION="fastq_mergepairs option fastq_qmin rejects negative values (-1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmin -1 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_qmin accepts a null value (default)"
 "${VSEARCH}" \
@@ -3531,13 +3826,18 @@ DESCRIPTION="fastq_mergepairs option fastq_qmin accepts positive integers (40)"
 
 # The argument to --fastq_qmin cannot be equal to or greater than --fastq_qmax
 DESCRIPTION="fastq_mergepairs errors if fastq_qmin is equal to fastq_qmax default (41)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmin 41 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs succeeds if fastq_qmin is smaller than fastq_qmax (41)"
 "${VSEARCH}" \
@@ -3571,13 +3871,18 @@ DESCRIPTION="fastq_mergepairs succeeds if fastq_qmax is greater than fastq_qmin 
 
 # The argument to --fastq_qmin cannot be larger than --fastq_qmax
 DESCRIPTION="fastq_mergepairs option fastq_qmin rejects values greater than 126 - 33 = 93 (94)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmin 94 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_qmin 15 accepts entry with Q=15"
 "${VSEARCH}" \
@@ -3589,23 +3894,33 @@ DESCRIPTION="fastq_mergepairs option fastq_qmin 15 accepts entry with Q=15"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs option fastq_qmin 16 rejects entry with Q=15"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\n0\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\n0\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\n0\n") \
-    --reverse <(printf "@s\nT\n+\n0\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmin 16 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_qmin 16 rejects entry with Q=15 (log file)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\n0\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\n0\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\n0\n") \
-    --reverse <(printf "@s\nT\n+\n0\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmin 16 \
     --log /dev/null \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 # the below-qmin fatal error is written to the log file (it was
 # previously sent to stderr instead of to the log file handle)
@@ -3621,14 +3936,19 @@ DESCRIPTION="fastq_mergepairs writes the below-qmin fatal error to the log file"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs option fastq_qmin must be smaller than fastq_qmax"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nJ\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nJ\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nJ\n") \
-    --reverse <(printf "@s\nT\n+\nJ\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_qmin 42 \
     --fastq_qmax 41 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 
 DESCRIPTION="fastq_mergepairs option fastq_qmin is accepted"
@@ -3695,31 +4015,46 @@ for QUAL in {0..93} ; do
 done
 
 DESCRIPTION="fastq_mergepairs option fastq_truncqual rejects value > 93 (94)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_truncqual 94 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_truncqual rejects value < 0 (-1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_truncqual -1 \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs option fastq_truncqual rejects non-integral values (A)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastq_truncqual A \
     --fastqout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 ## fastq_truncqual applies before merging
 # 1...5...10
@@ -3910,14 +4245,17 @@ printf "@s\nA\n+\nI\n" | \
 
 # compressed stdin without --bzip2_decompress is rejected
 DESCRIPTION="fastq_mergepairs rejects bzip2-compressed stdin without --bzip2_decompress"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 printf "@s\nA\n+\nI\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_mergepairs - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "${REVERSE}" \
         --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 # regular compressed files are sniffed; the flag is not needed
 DESCRIPTION="fastq_mergepairs reads a bzip2 regular file without --bzip2_decompress"
@@ -3934,14 +4272,19 @@ unset TMP_REV
 
 # mutually exclusive
 DESCRIPTION="fastq_mergepairs rejects --bzip2_decompress combined with --gzip_decompress"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --bzip2_decompress \
     --gzip_decompress \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 
 #*****************************************************************************#
@@ -3964,14 +4307,17 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs rejects gzip-compressed stdin without --gzip_decompress"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 printf "@s\nA\n+\nI\n" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_mergepairs - \
-        --reverse <(printf "@s\nT\n+\nI\n") \
+        --reverse "${REVERSE}" \
         --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs reads a gzip regular file without --gzip_decompress"
 TMP_REV=$(mktemp -u).gz
@@ -4203,34 +4549,49 @@ DESCRIPTION="fastq_mergepairs --relabel ticker increments with each merged read"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs --relabel cannot combine with --relabel_md5"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --relabel "label" \
     --relabel_md5 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs --relabel cannot combine with --relabel_sha1"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --relabel "label" \
     --relabel_sha1 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs --relabel_md5 cannot combine with --relabel_sha1"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --relabel_md5 \
     --relabel_sha1 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 
 #*****************************************************************************#
@@ -4693,13 +5054,18 @@ DESCRIPTION="fastq_mergepairs threads rejects a value of 0"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs threads rejects a value of 1025"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --threads 1025 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs threads accepts a float (implicit conversion)"
 "${VSEARCH}" \
@@ -4711,22 +5077,32 @@ DESCRIPTION="fastq_mergepairs threads accepts a float (implicit conversion)"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs threads rejects negative values (-1)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --threads -1 \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="fastq_mergepairs threads rejects non-integers (A)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --threads A \
     --fastaout /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 
 DESCRIPTION="fastq_mergepairs option threads is accepted"
@@ -4846,23 +5222,33 @@ DESCRIPTION="fastq_mergepairs --xsize strips existing size annotations from inpu
 # --fastaout_discarded is a real vsearch option for fastx_filter/fastq_filter
 # but is not accepted by fastq_mergepairs
 DESCRIPTION="fastq_mergepairs rejects --fastaout_discarded (unrelated option)"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --fastaout /dev/null \
     --fastaout_discarded /dev/null > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 # --strand is a real vsearch option for search commands, not mergepairs
 DESCRIPTION="fastq_mergepairs rejects --strand (unrelated option)"
+FORWARD2=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD2}"
+REVERSE2=$(mktemp)
+printf "@s\nT\n+\nI\n" > "${REVERSE2}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
-    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD2}" \
+    --reverse "${REVERSE2}" \
     --fastaout /dev/null \
     --strand plus > /dev/null 2>&1 && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD2}" "${REVERSE2}"
 
 #*****************************************************************************#
 #                                                                             #
