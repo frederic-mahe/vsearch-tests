@@ -630,8 +630,10 @@ DESCRIPTION="issue 11: --cluster_size is implemented"
 
 ## usearch --cluster_otus is deprecated, replaced with uparse
 DESCRIPTION="issue 11: --cluster_otus is not implemented"
+INPUT=$(mktemp)
+printf ">t1\nAAA\n>t2\nAAC\n" > "${INPUT}"
 "${VSEARCH}" \
-    --cluster_otus <(printf ">t1\nAAA\n>t2\nAAC\n") \
+    --cluster_otus "${INPUT}" \
     --minseqlength 1 \
     --id 0.6 \
     --quiet \
@@ -639,6 +641,7 @@ DESCRIPTION="issue 11: --cluster_otus is not implemented"
     --centroids /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${INPUT}"
 
 
 #******************************************************************************#
@@ -1724,14 +1727,17 @@ DESCRIPTION="issue 25: --cluster_fast accepts --consout"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 25: --cluster_fast --cons_truncate is not implemented"
+INPUT=$(mktemp)
+printf ">q1\nA\n" > "${INPUT}"
 "${VSEARCH}" \
-    --cluster_fast <(printf ">q1\nA\n") \
+    --cluster_fast "${INPUT}" \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
     --cons_truncate /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${INPUT}"
 
 # Note: msaout and consout outputs are tested in later issues
 
@@ -1864,22 +1870,28 @@ DESCRIPTION="issue 28: --sortbylength sorts ties by increasing label (assume uni
         failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 28: --sortbylength does not accept --minsize"
+INPUT=$(mktemp)
+printf ">s1;size=1\nAA\n>s2;size=3\nAA\n" > "${INPUT}"
 "${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=1\nAA\n>s2;size=3\nAA\n") \
+    --sortbylength "${INPUT}" \
     --quiet \
     --minsize 2 \
     --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${INPUT}"
 
 DESCRIPTION="issue 28: --sortbylength does not accept --maxsize"
+INPUT=$(mktemp)
+printf ">s1;size=3\nAA\n>s2;size=1\nAA\n" > "${INPUT}"
 "${VSEARCH}" \
-    --sortbylength <(printf ">s1;size=3\nAA\n>s2;size=1\nAA\n") \
+    --sortbylength "${INPUT}" \
     --quiet \
     --maxsize 2 \
     --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${INPUT}"
 
 
 #******************************************************************************#
@@ -8408,16 +8420,19 @@ printf "@s;ee=0.5;\nA\n+\nI\n" | \
 ## (which performs a search, not clustering); it is rejected as an invalid
 ## option
 DESCRIPTION="issue 284: --usearch_global rejects the clustering option --consout"
+DB=$(mktemp)
+printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n" > "${DB}"
 printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --usearch_global - \
-        --db <(printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
+        --db "${DB}" \
         --id 0.9 \
         --minseqlength 1 \
         --consout /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 
 
@@ -13287,14 +13302,17 @@ rm -f "${QUERY}"
 # paths that stat() can resolve (and are then detected as pipes), which
 # is why the tests above work while '-' does not.
 DESCRIPTION="issue 506: reading --db from '-' (stdin) is rejected"
+INPUT=$(mktemp)
+printf ">query\nAAGG\n" > "${INPUT}"
 printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
     "${VSEARCH}" \
-        --uchime_ref <(printf ">query\nAAGG\n") \
+        --uchime_ref "${INPUT}" \
         --db - \
         --quiet \
         --uchimeout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${INPUT}"
 
 
 #******************************************************************************#
@@ -13505,13 +13523,18 @@ DESCRIPTION="issue 512: fastq_mergepairs equal number of reads"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 512: fastq_mergepairs more forward reads"
+FORWARD=$(mktemp)
+printf "@s1_1\nA\n+\nI\n@s2_1\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s1_2\nT\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s1_1\nA\n+\nI\n@s2_1\nA\n+\nI\n") \
-    --reverse <(printf "@s1_2\nT\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --quiet \
     --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="issue 512: fastq_mergepairs more forward reads (error message)"
 "${VSEARCH}" \
@@ -13524,13 +13547,18 @@ DESCRIPTION="issue 512: fastq_mergepairs more forward reads (error message)"
         failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 512: fastq_mergepairs more reverse reads"
+FORWARD=$(mktemp)
+printf "@s1_1\nA\n+\nI\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s1_2\nT\n+\nI\n@s2_2\nA\n+\nI\n" > "${REVERSE}"
 "${VSEARCH}" \
-    --fastq_mergepairs <(printf "@s1_1\nA\n+\nI\n") \
-    --reverse <(printf "@s1_2\nT\n+\nI\n@s2_2\nA\n+\nI\n") \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
     --quiet \
     --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
 
 DESCRIPTION="issue 512: fastq_mergepairs more reverse reads (error message)"
 "${VSEARCH}" \
@@ -20574,14 +20602,16 @@ UDB=$(mktemp)
     --makeudb_usearch <(echo "${SEQ}") \
     --quiet \
     --output "${UDB}"
+INPUT=$(mktemp)
+printf "%s\n" "${SEQ}" > "${INPUT}"
 "${VSEARCH}" \
-    --search_exact <(echo "${SEQ}") \
+    --search_exact "${INPUT}" \
     --db "${UDB}" \
     --blast6out /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-rm -f "${UDB}"
+rm -f "${UDB}" "${INPUT}"
 unset SEQ TMP
 
 
