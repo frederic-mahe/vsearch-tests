@@ -76,46 +76,58 @@ rm -f "${TMPFA}"
 unset TMPFA
 
 DESCRIPTION="--orient errors if input file does not exist"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 "${VSEARCH}" \
     --orient /no/such/file \
-    --db <(printf ">s\nACGT\n") \
+    --db "${DB}" \
     --fastaout /dev/null \
     --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 DESCRIPTION="--orient errors if input file is not readable"
 TMPFA=$(mktemp)
 printf ">s\nACGT\n" > "${TMPFA}"
 chmod u-r "${TMPFA}"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 "${VSEARCH}" \
     --orient "${TMPFA}" \
-    --db <(printf ">s\nACGT\n") \
+    --db "${DB}" \
     --fastaout /dev/null \
     --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 chmod u+r "${TMPFA}" && rm -f "${TMPFA}"
 unset TMPFA
 
 DESCRIPTION="--orient errors with input that is neither FASTA nor FASTQ"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf "not a fasta or fastq file\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 DESCRIPTION="--orient errors without any output option"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 ## --db
 
@@ -271,14 +283,17 @@ unset SEQ
 
 DESCRIPTION="--fastaout errors if output file cannot be opened for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout "${TMP}" \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
@@ -310,14 +325,17 @@ printf "@s\nACGT\n+\nIIII\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastqout errors with fasta input (no quality scores)"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastqout /dev/null \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 DESCRIPTION="--fastqout - writes to stdout"
 SEQ="GACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT"
@@ -335,14 +353,17 @@ unset SEQ QUAL
 
 DESCRIPTION="--fastqout errors if output file cannot be opened for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf "@s\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastqout "${TMP}" \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
@@ -384,14 +405,17 @@ printf ">q\nACGT\n" | \
 
 DESCRIPTION="--notmatched errors if output file cannot be opened for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --notmatched "${TMP}" \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
@@ -420,14 +444,17 @@ printf ">s\nACGT\n" | \
 
 DESCRIPTION="--tabbedout errors if output file cannot be opened for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --tabbedout "${TMP}" \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 chmod u+w "${TMP}" && rm -f "${TMP}"
 unset TMP
 
@@ -908,28 +935,34 @@ unset SEQ
 
 DESCRIPTION="--wordlength rejects value below minimum (2)"
 SEQ="GACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT"
+DB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --wordlength 2 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 DESCRIPTION="--wordlength rejects value above maximum (16)"
 SEQ="GACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT"
+DB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --wordlength 16 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 # NOTE for human review: the manpage specifies a range of 3 to 15 for
@@ -938,28 +971,34 @@ unset SEQ
 # "unset / use default" sentinel by the option parser).
 DESCRIPTION="--wordlength rejects value below minimum (1)"
 SEQ="GACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT"
+DB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --wordlength 1 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 DESCRIPTION="--wordlength rejects negative value"
 SEQ="GACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT"
+DB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\n%s\n" "${SEQ}") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --wordlength -1 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 unset SEQ
 
 # --wordlength affects orientation outcome: too-short query cannot orient at k=12 default
@@ -1035,27 +1074,33 @@ unset TMPUDB SEQ
 # the option is recognized by the parser.
 
 DESCRIPTION="--bzip2_decompress errors on uncompressed input"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --bzip2_decompress \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 DESCRIPTION="--bzip2_decompress and --gzip_decompress together is rejected"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --bzip2_decompress \
         --gzip_decompress \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 ## --dbmask
 
@@ -1093,15 +1138,18 @@ printf ">s\nACGT\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--dbmask rejects unknown value"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --dbmask invalid \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 # default is dust: homopolymer is masked and cannot be used for orientation
 DESCRIPTION="--dbmask dust (default) masks low-complexity db, homopolymer cannot be oriented"
@@ -1597,15 +1645,18 @@ printf ">s\nACGT\n" | \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--qmask rejects unknown value"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --qmask invalid \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 # --qmask none disables query masking; combined with --dbmask dust, the query
 # still produces a single matching kmer on the forward strand -> oriented as +
@@ -1759,76 +1810,94 @@ unset SEQ
 
 # mutual exclusion tests
 DESCRIPTION="--relabel and --relabel_md5 together produce an error"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --relabel "seq" \
         --relabel_md5 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 DESCRIPTION="--relabel and --relabel_sha1 together produce an error"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --relabel "seq" \
         --relabel_sha1 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 DESCRIPTION="--relabel and --relabel_self together produce an error"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --relabel "seq" \
         --relabel_self \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 DESCRIPTION="--relabel_md5 and --relabel_sha1 together produce an error"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --relabel_md5 \
         --relabel_sha1 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 DESCRIPTION="--relabel_md5 and --relabel_self together produce an error"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --relabel_md5 \
         --relabel_self \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 DESCRIPTION="--relabel_sha1 and --relabel_self together produce an error"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --relabel_sha1 \
         --relabel_self \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 ## --relabel_self
 
@@ -2129,75 +2198,93 @@ unset SEQ
 
 # --fastq_ascii is not listed in the --orient manpage; verify it is rejected
 DESCRIPTION="--orient rejects --fastq_ascii"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --fastq_ascii 33 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 # --fastq_qmax is not listed in the --orient manpage
 DESCRIPTION="--orient rejects --fastq_qmax"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --fastq_qmax 41 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 # --fastq_qmin is not listed in the --orient manpage
 DESCRIPTION="--orient rejects --fastq_qmin"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --fastq_qmin 0 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 # --strand is a search option; --orient decides strand itself
 DESCRIPTION="--orient rejects --strand"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --strand both \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 # --id is a clustering/search option
 DESCRIPTION="--orient rejects --id"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --id 0.9 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 # --minseqlength is a filter option; not listed in the --orient manpage
 DESCRIPTION="--orient rejects --minseqlength"
+DB=$(mktemp)
+printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db "${DB}" \
         --fastaout /dev/null \
         --minseqlength 1 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
 
 
 #*****************************************************************************#
