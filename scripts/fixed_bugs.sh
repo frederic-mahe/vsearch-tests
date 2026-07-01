@@ -21866,35 +21866,65 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTAC
 # rejects any value above UINT32_MAX (4294967295) with a clear error.
 
 # the largest accepted value is UINT32_MAX (4294967295)
-DESCRIPTION="pull request 632: --maxseqlength accepts UINT32_MAX (4294967295)"
-printf ">s\nACGT\n" | \
-    "${VSEARCH}" \
-        --fastx_uniques - \
-        --minseqlength 1 \
-        --maxseqlength 4294967295 \
-        --fastaout /dev/null \
-        --quiet && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+#DESCRIPTION="pull request 632: --maxseqlength accepts UINT32_MAX (4294967295)"
+#printf ">s\nACGT\n" | \
+#    "${VSEARCH}" \
+#        --fastx_uniques - \
+#        --minseqlength 1 \
+#        --maxseqlength 4294967295 \
+#        --fastaout /dev/null \
+#        --quiet && \
+#    success "${DESCRIPTION}" || \
+#        failure "${DESCRIPTION}"
 
 # one above UINT32_MAX is rejected with a fatal error
-DESCRIPTION="pull request 632: --maxseqlength rejects UINT32_MAX + 1 (4294967296)"
-printf ">s\nACGT\n" | \
-    "${VSEARCH}" \
-        --fastx_uniques - \
-        --minseqlength 1 \
-        --maxseqlength 4294967296 \
-        --fastaout /dev/null \
-        --quiet 2>&1 | \
-    grep -q "cannot exceed 4294967295" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+#DESCRIPTION="pull request 632: --maxseqlength rejects UINT32_MAX + 1 (4294967296)"
+#printf ">s\nACGT\n" | \
+#    "${VSEARCH}" \
+#        --fastx_uniques - \
+#        --minseqlength 1 \
+#        --maxseqlength 4294967296 \
+#        --fastaout /dev/null \
+#        --quiet 2>&1 | \
+#    grep -q "cannot exceed 4294967295" && \
+#    success "${DESCRIPTION}" || \
+#        failure "${DESCRIPTION}"
 
 # the 64-bit widening of the abundance, cluster-size (;seqs=) and
 # centroid-abundance fields in the same pull request cannot be exercised
 # by a black-box test: reaching the 32-bit limit needs more than 2^31
 # sequences in a single input or cluster. No deterministic test is
 # written for those changes.
+
+
+# The maximum length has been reduced to INT_MAX - buffer_headroom (2001),
+# which is 2147481646, because the length is often represented by signed
+# 16-bit integers.
+
+# The largest accepted value is INT_MAX - 2001 = 2147481646
+DESCRIPTION="Option --maxseqlength accepts INT_MAX - 2001 (2147481646)"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minseqlength 1 \
+        --maxseqlength 2147481646 \
+        --fastaout /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# One above INT_MAX - 2001 (2147481647) is rejected with a fatal error
+DESCRIPTION="Option --maxseqlength rejects INT_MAX - 2001 + 1 (2147481647)"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minseqlength 1 \
+        --maxseqlength 2147481647 \
+        --fastaout /dev/null \
+        --quiet 2>&1 | \
+    grep -q "cannot exceed 2147481646" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #******************************************************************************#

@@ -2522,29 +2522,29 @@ printf ">s\n%81s\n" " " | tr " " "A" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-# the seqlen field is an unsigned int, so --maxseqlength is capped at
-# UINT32_MAX (4,294,967,295) to avoid silently truncating longer values
-DESCRIPTION="--fastx_uniques --maxseqlength accepts UINT32_MAX (4294967295)"
+# Sequence lengths are restricted to signed int, so --maxseqlength is capped at
+# INT_MAX - buffer_headroom (2001) = 2,147,481,646 to avoid silent truncation
+DESCRIPTION="--fastx_uniques --maxseqlength accepts INT_MAX - 2001 (2147481646)"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --maxseqlength 4294967295 \
+        --maxseqlength 2147481646 \
         --quiet \
         --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques --maxseqlength rejects UINT32_MAX + 1 (4294967296)"
+DESCRIPTION="--fastx_uniques --maxseqlength rejects INT_MAX - 2001 + 1 (2147481647)"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --maxseqlength 4294967296 \
+        --maxseqlength 2147481647 \
         --quiet \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques --maxseqlength rejects values well above UINT32_MAX"
+DESCRIPTION="--fastx_uniques --maxseqlength rejects values well above INT_MAX"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
