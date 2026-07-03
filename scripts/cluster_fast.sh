@@ -1802,7 +1802,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGT
         --id 0.97 \
         --msaout /dev/null/x \
         --quiet 2>&1 | \
-    grep -q "Unable to open msaout output file for writing" && \
+    grep -q "Unable to open msaout file for writing" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1813,7 +1813,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGT
         --id 0.97 \
         --consout /dev/null/x \
         --quiet 2>&1 | \
-    grep -q "Unable to open consout output file for writing" && \
+    grep -q "Unable to open consout file for writing" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1824,7 +1824,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGT
         --id 0.97 \
         --profile /dev/null/x \
         --quiet 2>&1 | \
-    grep -q "Unable to open profile output file for writing" && \
+    grep -q "Unable to open profile file for writing" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
