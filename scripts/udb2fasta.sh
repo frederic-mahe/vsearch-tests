@@ -113,6 +113,26 @@ head -c 600 /dev/urandom > "${TMPBAD}"
 rm -f "${TMPBAD}"
 unset TMPBAD
 
+## the stored sequence count is validated against the file size on load: the
+## per-sequence header-index and length tables store 4 bytes each, so a file
+## cannot describe more than filesize/4 sequences. A crafted UDB whose seqcount
+## header field (buffer[13], byte offset 52) is inflated is now rejected rather
+## than driving an out-of-bounds allocation/index (fixed on dev, PR #647). dd
+## overwrites those 4 bytes in place with 0xFFFFFFFF, leaving the rest intact.
+DESCRIPTION="--udb2fasta rejects a UDB with an inflated sequence count"
+TMPUDB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
+printf '\377\377\377\377' | \
+    dd of="${TMPUDB}" bs=1 seek=52 count=4 conv=notrunc 2> /dev/null
+"${VSEARCH}" \
+    --udb2fasta "${TMPUDB}" \
+    --output /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
 ## UDB files cannot be read from a pipe (udb_read requires xstat).
 ## 'cat file |' is needed to create an actual FIFO on stdin; a redirect
 ## '< file' would leave stdin as a seekable regular file and not trigger
