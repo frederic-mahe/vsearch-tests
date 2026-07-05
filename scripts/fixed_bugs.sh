@@ -7559,18 +7559,13 @@ printf ">s1\nA\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/243
 
-# in vsearch v2.31.0, writing output to a full device (e.g. --uc /dev/full or
-# --output /dev/full) still returns no error message and exit status 0; the
-# ENOSPC write failure is not detected. This differs from the behaviour the
-# issue asked for; flagged for human review.
-
-# update (dev, PR #651 "Detect write/flush/close errors on output streams"):
-# the short-write case described above is now detected. Output closes go
-# through fclose_output() (fflush + ferror + checked fclose), so a failed
-# write to a full device produces a fatal error and a non-zero exit instead of
-# a silently truncated file. The note above is kept for the record; the test
-# below guards the fixed behaviour. (/dev/full is Linux-only, so the test is
-# skipped where it is absent, e.g. macOS.)
+# writing output to a full device (e.g. --uc /dev/full or --output /dev/full)
+# is now detected: earlier versions returned no error and exit status 0, but
+# since PR #651 ("Detect write/flush/close errors on output streams") output
+# closes go through fclose_output() (fflush + ferror + checked fclose), so a
+# failed write produces a fatal error and a non-zero exit instead of a silently
+# truncated file. (/dev/full is Linux-only, so the test is skipped where it is
+# absent, e.g. macOS.)
 if [ -c /dev/full ] ; then
     DESCRIPTION="issue 243: a failed write to a full device is reported (not silently truncated)"
     printf ">s\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
