@@ -1892,6 +1892,52 @@ DESCRIPTION="--sff_convert removes clipped values (right)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## each clip field is individually bounded by the number of bases, but an
+## inverted pair (clip start beyond clip end) is now rejected under --sff_clip:
+## it would otherwise underflow "length = clip_end - clip_start" (both uint32_t)
+## to ~4 GB and drive a massive out-of-bounds read. Here clip_qual_left = 4
+## (clip_start = 3) and clip_qual_right = 1 (clip_end = 1) over 4 bases, so
+## clip_start > clip_end (fixed on dev, PR #650 "Harden the SFF reader").
+DESCRIPTION="--sff_convert --sff_clip rejects an inverted clipping region"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x04"                 # number of bases before clipping
+    printf "%b" "\x00\x04"                         # clip qual left  (clip_start = 3)
+    printf "%b" "\x00\x01"                         # clip qual right (clip_end = 1)
+    printf "%b" "\x00\x00"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01\x01\x01"
+    printf "ACGT"
+    printf "%b" "\x28\x28\x28\x28"
+    printf "%b" "\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --sff_clip \
+        --fastqout - 2>&1 | \
+    grep -qF "Clipping region is empty" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
