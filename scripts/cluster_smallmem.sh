@@ -484,6 +484,26 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## regression guard (S10): on a small dataset, large --maxaccepts / --maxrejects
+## make their sum exceed the sequence count, so the per-query hit list (sized to
+## the sequence count) used to be overrun by the maxaccepts + maxrejects - 1
+## insertion bound. That bound is now clamped to the buffer capacity, so this
+## must complete without crashing (fixed on dev, PR #650 "Fix hit-list buffer
+## overflow in clustering with large maxaccepts/maxrejects").
+DESCRIPTION="--cluster_smallmem does not overflow the hit list with large maxaccepts/maxrejects"
+printf ">s1\nAAAACCCCGGGGTTTTAAAACCCCGGGGTTTT\n>s2\nAAAACCCCGGGGTTTTAAAACCCCGGGGTTTG\n>s3\nTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAA\n>s4\nTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAC\n>s5\nGGGGTTTTAAAACCCCGGGGTTTTAAAACCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.8 \
+        --maxaccepts 100000 \
+        --maxrejects 100000 \
+        --minseqlength 1 \
+        --uc /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_smallmem --msaout writes an MSA with a consensus"
 printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
