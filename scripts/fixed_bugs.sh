@@ -7564,6 +7564,25 @@ printf ">s1\nA\n" | \
 # ENOSPC write failure is not detected. This differs from the behaviour the
 # issue asked for; flagged for human review.
 
+# update (dev, PR #651 "Detect write/flush/close errors on output streams"):
+# the short-write case described above is now detected. Output closes go
+# through fclose_output() (fflush + ferror + checked fclose), so a failed
+# write to a full device produces a fatal error and a non-zero exit instead of
+# a silently truncated file. The note above is kept for the record; the test
+# below guards the fixed behaviour. (/dev/full is Linux-only, so the test is
+# skipped where it is absent, e.g. macOS.)
+if [ -c /dev/full ] ; then
+    DESCRIPTION="issue 243: a failed write to a full device is reported (not silently truncated)"
+    printf ">s\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+        "${VSEARCH}" \
+            --derep_fulllength - \
+            --output /dev/full \
+            --quiet 2>&1 | \
+        grep -qF "Unable to write to output file" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+fi
+
 
 #******************************************************************************#
 #                                                                              #
@@ -20181,6 +20200,45 @@ printf ">s1\nACGT\n" | \
         --db <(printf ">t\nACGT\n") \
         --id not_a_number \
         --blast6out /dev/null 2>&1 | \
+    grep -qF "Illegal option argument" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# non-finite floating-point option arguments are now rejected: args_getdouble()
+# gained a std::isfinite() check, so the strings "nan" and "inf" (which
+# sscanf("%lf") otherwise accepts, and which slip past range checks of the form
+# "if (x < lo or x > hi)" because every comparison with NaN is false) now
+# trigger "Illegal option argument". The single check covers every REAL option
+# at once (fixed on dev, PR #649).
+
+DESCRIPTION="a NaN --id argument triggers 'Illegal option argument'"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGT\n") \
+        --id nan \
+        --blast6out /dev/null 2>&1 | \
+    grep -qF "Illegal option argument" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="an infinite --id argument triggers 'Illegal option argument'"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db <(printf ">t\nACGT\n") \
+        --id inf \
+        --blast6out /dev/null 2>&1 | \
+    grep -qF "Illegal option argument" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="a NaN --sample_pct argument triggers 'Illegal option argument'"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct nan \
+        --fastaout /dev/null 2>&1 | \
     grep -qF "Illegal option argument" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
