@@ -370,6 +370,24 @@ printf ">s1\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## same case on the FASTQ (--fastqout) path: the guard added for the
+## out-of-bounds read must precede the offset of BOTH the sequence and the
+## quality pointer, so a subseq_start past the length yields an empty record
+## rather than reading past the buffer until a NUL (fixed on dev, PR #650).
+DESCRIPTION="--subseq_start beyond the sequence length yields an empty subsequence (fastq)"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_getsubseq - \
+        --label "s1" \
+        --subseq_start 10 \
+        --subseq_end 20 \
+        --fastqout - \
+        --quiet 2> /dev/null | \
+    awk 'NR==2 || NR==4' | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## --subseq_end
 DESCRIPTION="--subseq_end is accepted"
 printf ">s1\nACGT\n" | \
