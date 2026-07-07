@@ -1115,8 +1115,9 @@ printf ">s\nA\n" | \
 #*****************************************************************************#
 
 ## options not listed in the uchime2_denovo manpage or in the valid
-## options list reported by vsearch
-for OPT in --id --strand --db --self --selfid --dbmask --gzip_decompress --bzip2_decompress ; do
+## options list reported by vsearch. Flags (no argument) are tested
+## bare; the command exits non-zero because the option is invalid.
+for OPT in --self --selfid --gzip_decompress --bzip2_decompress ; do
     DESCRIPTION="--uchime2_denovo rejects ${OPT} as an invalid option"
     printf ">s;size=1\n%s\n" "${PARENT_A}" | \
         "${VSEARCH}" \
@@ -1128,6 +1129,31 @@ for OPT in --id --strand --db --self --selfid --dbmask --gzip_decompress --bzip2
             success "${DESCRIPTION}"
 done
 unset OPT
+
+## same, for options that take an argument: pass a syntactically valid
+## argument and check for the "Invalid option" diagnostic, so the test
+## cannot pass vacuously. A bare arg-taking option instead fails with
+## "Illegal option argument" when the following token is consumed as its
+## value. --id and --weak_id are search-identity options; denovo chimera
+## detection uses a fixed internal identity with no weak band.
+while read -r OPT ARG ; do
+    DESCRIPTION="--uchime2_denovo rejects ${OPT} as an invalid option"
+    printf ">s;size=1\n%s\n" "${PARENT_A}" | \
+        "${VSEARCH}" \
+            --uchime2_denovo - \
+            "${OPT}" "${ARG}" \
+            --chimeras /dev/null 2>&1 | \
+        grep -qi "Invalid option" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+done <<'INVALID_ARG_OPTIONS'
+--id 0.3
+--weak_id 0.3
+--strand plus
+--db /dev/null
+--dbmask dust
+INVALID_ARG_OPTIONS
+unset OPT ARG
 
 
 ## clean up common variables before the memory leaks section redefines

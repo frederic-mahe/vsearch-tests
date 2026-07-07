@@ -5096,7 +5096,28 @@ printf ">s;size=42\nA\n" | \
 #                                                                             #
 #*****************************************************************************#
 
-# none
+## --id and --weak_id are search-identity options (usearch_global, cluster*,
+## allpairs), not chimeras_denovo options: chimera detection uses a fixed
+## internal identity with no weak band, so both are rejected. Pass a
+## syntactically valid argument and check for the "Invalid option" diagnostic,
+## so the test cannot pass vacuously (a bare arg-taking option instead fails
+## with "Illegal option argument" as the following token is consumed as its
+## value).
+while read -r OPT ARG ; do
+    DESCRIPTION="--chimeras_denovo rejects ${OPT} as an invalid option"
+    printf ">s;size=1\nA\n" | \
+        "${VSEARCH}" \
+            --chimeras_denovo - \
+            "${OPT}" "${ARG}" \
+            --chimeras /dev/null 2>&1 | \
+        grep -qi "Invalid option" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+done <<'INVALID_ARG_OPTIONS'
+--id 0.3
+--weak_id 0.3
+INVALID_ARG_OPTIONS
+unset OPT ARG
 
 
 #*****************************************************************************#

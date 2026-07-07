@@ -1718,8 +1718,9 @@ unset DB
 #*****************************************************************************#
 
 ## options not listed in the uchime_ref manpage or in the valid
-## options list reported by vsearch
-for OPT in --id --gzip_decompress --bzip2_decompress ; do
+## options list reported by vsearch. Flags (no argument) are tested
+## bare; the command exits non-zero because the option is invalid.
+for OPT in --gzip_decompress --bzip2_decompress ; do
     DESCRIPTION="--uchime_ref rejects ${OPT} as an invalid option"
     DB=$(mktemp)
     printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
@@ -1736,6 +1737,33 @@ for OPT in --id --gzip_decompress --bzip2_decompress ; do
     unset DB
 done
 unset OPT
+
+## same, for options that take an argument: pass a syntactically valid
+## argument and check for the "Invalid option" diagnostic, so the test
+## cannot pass vacuously. A bare arg-taking option instead fails with
+## "Illegal option argument" when the following token is consumed as its
+## value. --id and --weak_id are search-identity options; uchime_ref uses a
+## fixed internal identity with no weak band, so both are rejected.
+while read -r OPT ARG ; do
+    DESCRIPTION="--uchime_ref rejects ${OPT} as an invalid option"
+    DB=$(mktemp)
+    printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
+    printf ">s\n%s\n" "${PARENT_A}" | \
+        "${VSEARCH}" \
+            --uchime_ref - \
+            --db "${DB}" \
+            "${OPT}" "${ARG}" \
+            --chimeras /dev/null 2>&1 | \
+        grep -qi "Invalid option" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done <<'INVALID_ARG_OPTIONS'
+--id 0.3
+--weak_id 0.3
+INVALID_ARG_OPTIONS
+unset OPT ARG
 
 
 ## clean up common variables before the memory leaks section redefines
