@@ -266,6 +266,32 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}" "${UDB}"
 unset DB UDB
 
+## a UDB used as --db is validated when loaded: a crafted UDB whose stored
+## sequence count (buffer[13], byte offset 52) is inflated past filesize/4 is
+## rejected rather than driving an out-of-bounds access (fixed on dev, PR #647).
+## dd overwrites those 4 bytes in place with 0xFFFFFFFF, leaving the rest intact.
+DESCRIPTION="--usearch_global rejects a corrupt UDB --db (inflated sequence count)"
+DB=$(mktemp)
+UDB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB}" \
+    --output "${UDB}" \
+    --quiet 2> /dev/null
+printf '\377\377\377\377' | \
+    dd of="${UDB}" bs=1 seek=52 count=4 conv=notrunc 2> /dev/null
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${UDB}" \
+        --id 0.9 \
+        --alnout /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}" "${UDB}"
+unset DB UDB
+
 ## A non-regular --db stream (named pipe, /dev/stdin, or the /dev/fd/N
 ## entries created by shell process substitution) cannot be a UDB file
 ## and cannot be reopened from the start. Before reading the database,
