@@ -106,6 +106,30 @@ head -c 600 /dev/urandom > "${TMPBAD}"
 rm -f "${TMPBAD}"
 unset TMPBAD
 
+## the stored sequence count is validated against the file size on load: the
+## per-sequence header-index and length tables store 4 bytes each, so a file
+## cannot describe more than filesize/4 sequences. A crafted UDB whose seqcount
+## header field (buffer[13], byte offset 52) is inflated is rejected rather
+## than driving an out-of-bounds allocation/index (fixed on dev, PR #647). dd
+## overwrites those 4 bytes in place with 0xFFFFFFFF, leaving the rest intact.
+DESCRIPTION="--udbstats rejects a UDB with an inflated sequence count"
+TMPUDB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+printf '\377\377\377\377' | \
+    dd of="${TMPUDB}" bs=1 seek=52 count=4 conv=notrunc 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
 DESCRIPTION="--udbstats errors if input file is not readable"
 TMPUDB=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | \
