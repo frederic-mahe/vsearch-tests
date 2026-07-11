@@ -543,6 +543,45 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# non-finite floating-point arguments (nan, inf, ...) used to slip past the
+# range checks; they are now rejected up front (fixed on dev, PR #649)
+DESCRIPTION="--fastx_subsample --sample_pct rejects nan"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct nan \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --sample_pct rejects inf"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct inf \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --sample_pct rejects -inf"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct -inf \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --sample_pct rejects nan (error message)"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct nan \
+        --fastaout /dev/null 2>&1 | \
+    grep -qi "Illegal option argument" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # final number of reads = 100 * 10.9 / 100.0 = 10.9 -> 10 (not 11)
 DESCRIPTION="--fastx_subsample --sample_pct final number of reads is floored, not rounded"
 for i in {1..100} ; do
@@ -1156,6 +1195,24 @@ printf ">s;size=3\nA\n" | \
         --fastaout - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s;size=2A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## with --sizein, selecting the whole abundance mass makes the last selected
+## read the last read of the last amplicon, which used to trigger a
+## one-past-the-end abundance read (fixed on dev, PR #650). Selecting every
+## read must preserve all amplicons and keep the sum of sizes constant (2+1+3).
+DESCRIPTION="--fastx_subsample --sizein selecting every read keeps all amplicons (issue 650)"
+printf ">s1;size=2\nAA\n>s2;size=1\nC\n>s3;size=3\nGGG\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 6 \
+        --sizein \
+        --sizeout \
+        --randseed 1 \
+        --quiet \
+        --fastaout - | \
+    awk -F "=" '/^>/ {s += $2} END {exit s == 6 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
