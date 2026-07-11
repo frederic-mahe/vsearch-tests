@@ -7567,7 +7567,7 @@ printf ">s1\nA\n" | \
 # truncated file. (/dev/full is Linux-only, so the test is skipped where it is
 # absent, e.g. macOS.)
 if [ -c /dev/full ] ; then
-    DESCRIPTION="issue 243: a failed write to a full device is reported (not silently truncated)"
+    DESCRIPTION="issue 243: an unsuccessful write to a full device is reported (not silently truncated)"
     printf ">s\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         "${VSEARCH}" \
             --derep_fulllength - \

@@ -3542,7 +3542,7 @@ unset DESCRIPTION UDB
 ## 2019-04-07
 ## Q: fastq_filter aborts with "FASTQ quality value (42) above qmax (41)".
 ## A: The default qmax is 41; pass --fastq_qmax 42 (or higher) to accept the higher quality scores.
-DESCRIPTION="forum (2019-04-07): a quality value of 42 fails with default qmax 41"
+DESCRIPTION="forum (2019-04-07): a quality value of 42 is rejected with default qmax 41"
 printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n+\nKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK\n" | \
     ${VSEARCH} \
         --fastq_filter - \
@@ -4482,7 +4482,7 @@ printf "@a\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 ## A: vsearch requires R1 and R2 files to be in sync; it does not resync them.
 
 ## more forward reads than reverse reads is a fatal error (files must be in sync)
-DESCRIPTION="forum (2023-08-13): fastq_mergepairs fails when forward/reverse counts differ"
+DESCRIPTION="forum (2023-08-13): fastq_mergepairs aborts when forward/reverse counts differ"
 FORWARD=$(mktemp)
 REVERSE=$(mktemp)
 printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n@s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${FORWARD}"

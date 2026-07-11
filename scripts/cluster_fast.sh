@@ -1814,7 +1814,7 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
 ## be opened for writing. '/dev/null/x' is used as an unwritable path:
 ## '/dev/null' is not a directory, so creating a file under it fails.
 
-DESCRIPTION="--cluster_fast --msaout fails when the output file cannot be opened"
+DESCRIPTION="--cluster_fast --msaout aborts when the output file cannot be opened"
 printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --cluster_fast - \
@@ -1825,7 +1825,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGT
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_fast --consout fails when the output file cannot be opened"
+DESCRIPTION="--cluster_fast --consout aborts when the output file cannot be opened"
 printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --cluster_fast - \
@@ -1836,7 +1836,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGT
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--cluster_fast --profile fails when the output file cannot be opened"
+DESCRIPTION="--cluster_fast --profile aborts when the output file cannot be opened"
 printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --cluster_fast - \
