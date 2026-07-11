@@ -1994,6 +1994,43 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## Regression: on short sequences (aligned by the 16-bit SIMD aligner) the
+## '*' infinite gap penalty must forbid gaps, not reward them. s1 and s2
+## differ by a 6-nt internal insertion, so the default alignment opens an
+## internal gap (gaps == 6); forbidding internal gap opening with '*I' must
+## place the length difference at the termini instead (no internal gap, so
+## gaps == 0). Before the fix the SIMD path truncated the infinite penalty
+## and produced a gap-riddled alignment.
+
+DESCRIPTION="--allpairs_global default opens an internal gap for a 6-nt insertion (short/SIMD)"
+printf ">s1\n%s\n>s2\n%s\n" \
+    "ACGATCGATCGATCGATCGATCGATCGATCGA" \
+    "ACGATCGATCGATCGATTTTTTTCGATCGATCGATCGA" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userfields gaps \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "6" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global '*I' forbids the internal gap on short sequences (SIMD path)"
+printf ">s1\n%s\n>s2\n%s\n" \
+    "ACGATCGATCGATCGATCGATCGATCGATCGA" \
+    "ACGATCGATCGATCGATTTTTTTCGATCGATCGATCGA" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --gapopen '*I' \
+        --userfields gaps \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
