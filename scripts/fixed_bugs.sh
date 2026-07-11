@@ -13308,14 +13308,13 @@ printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
         failure "${DESCRIPTION}"
 rm -f "${QUERY}"
 
-# '-' (read from stdin) is rejected for --db, by design. Before reading
-# the database, vsearch calls udb_detect_isudb(), which runs stat() on
-# the literal filename to test for a UDB file. stat("-") fails (there is
-# no file named '-'), so vsearch stops with a fatal error. Explicit
-# stream paths such as /dev/stdin or bash process substitution are real
-# paths that stat() can resolve (and are then detected as pipes), which
-# is why the tests above work while '-' does not.
-DESCRIPTION="issue 506: reading --db from '-' (stdin) is rejected"
+# '-' now reads the database from stdin, like other input options. Before
+# reading, vsearch calls udb_detect_isudb(), which opens the input through
+# open_input_file() (mapping '-' to a duplicate of stdin) and fstat()s the
+# descriptor: a pipe is reported as non-regular, so the stream is read as a
+# fasta/fastq database from stdin rather than probed as a UDB. Here the
+# query comes from a regular file, so only --db reads stdin.
+DESCRIPTION="issue 506: reading --db from '-' (stdin) is accepted"
 INPUT=$(mktemp)
 printf ">query\nAAGG\n" > "${INPUT}"
 printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
@@ -13324,9 +13323,22 @@ printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
         --db - \
         --quiet \
         --uchimeout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${INPUT}"
+
+# the query and --db both map '-' to a duplicate of stdin, so using '-' for
+# both is rejected up front; otherwise the two readers would race over the
+# same stream and silently return no hits.
+DESCRIPTION="issue 506: reading both the query and --db from '-' is rejected"
+printf ">query\nAAGG\n" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db - \
+        --quiet \
+        --uchimeout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
-rm -f "${INPUT}"
 
 
 #******************************************************************************#
