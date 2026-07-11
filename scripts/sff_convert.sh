@@ -522,6 +522,60 @@ DESCRIPTION="--sff_convert rejects invalid SFF files (incorrect header length)"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## the header length is "31 + number_of_flows_per_read + key_length" rounded
+## up to a multiple of 8, stored in a uint16. A huge number_of_flows_per_read
+## used to overflow that sum silently (the guard was an assert compiled out of
+## release builds); it is now rejected (fixed on dev, PR #650). With
+## key_length 4, the flows guard fires above 65535 - 36 = 65499.
+DESCRIPTION="--sff_convert rejects invalid SFF files (number of flows per read too large)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\xff\xff"                          # number of flows per read (65535, overflows)
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -qF "Number of flows per read too large" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a number_of_flows_per_read that passes the flows check (<= 65499) but makes
+## "31 + flows + key_length" round up past the uint16 ceiling is caught by the
+## round-up guard (also an assert stripped from release builds before PR #650)
+DESCRIPTION="--sff_convert rejects invalid SFF files (header section length too large)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\xff\xdb"                          # number of flows per read (65499)
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -qF "Header section length too large" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # file is shorter than header_length (31 bytes received, 31 + 1 = 32
 # bytes expected) (compiler automatically adds +1 padding to align
 # memory)
@@ -851,6 +905,43 @@ DESCRIPTION="--sff_convert accepts SFF files with empty reads (empty sequence)"
         --sff_convert - \
         --quiet \
         --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the read header length is "16 + name_length" rounded up to a multiple of 8,
+## stored in a uint16. A huge read-name length used to overflow that sum
+## silently (the guard was an assert compiled out of release builds); it is now
+## rejected (fixed on dev, PR #650).
+DESCRIPTION="--sff_convert rejects invalid SFF files (read name length too large)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"                 # number of reads (1)
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"                         # number of flows per read (1)
+    printf "%b" "\x01"
+    printf "T"                                     # flow chars (1 flow)
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"                         # read header length (uint16)
+    printf "%b" "\xff\xff"                          # length of read name (65535, overflows)
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -qF "Read name length too large" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1576,6 +1667,45 @@ DESCRIPTION="--sff_convert rejects invalid SFF files (truncated flowgram values)
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+## a flowgram stores two bytes per flow. The pre-fix reader skipped only one
+## byte per flow, so a file carrying exactly number_of_flows_per_read bytes
+## (half the required length) slipped through; the reader now requires the full
+## 2 * number_of_flows_per_read bytes (fixed on dev, PR #650). Here 1 of the 2
+## required flowgram bytes is present.
+DESCRIPTION="--sff_convert rejects invalid SFF files (flowgram truncated to half its length)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"                         # number of flows per read (needs 2 bytes)
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x00\x00"
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -------------------------
+    printf "%b" "\x00"                             # only 1 of the 2 flowgram bytes
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -qF "Unable to read flowgram values" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--sff_convert rejects invalid SFF files (truncated flow indices)"
 (
