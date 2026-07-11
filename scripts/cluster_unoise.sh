@@ -396,6 +396,26 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## regression guard (S10): on a small dataset, large --maxaccepts / --maxrejects
+## make their sum exceed the sequence count, so the per-query hit list (sized to
+## the sequence count) used to be overrun by the maxaccepts + maxrejects - 1
+## insertion bound. That bound is now clamped to the buffer capacity, so this
+## must complete without crashing (fixed on dev, PR #650 "Fix hit-list buffer
+## overflow in clustering with large maxaccepts/maxrejects"). --cluster_unoise
+## filters by --minsize (default 8), so the sequences carry --sizein abundances.
+DESCRIPTION="--cluster_unoise does not overflow the hit list with large maxaccepts/maxrejects"
+printf ">s1;size=100\nAAAACCCCGGGGTTTTAAAACCCCGGGGTTTT\n>s2;size=90\nAAAACCCCGGGGTTTTAAAACCCCGGGGTTTG\n>s3;size=80\nTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAA\n>s4;size=70\nTTTTGGGGCCCCAAAATTTTGGGGCCCCAAAC\n>s5;size=60\nGGGGTTTTAAAACCCCGGGGTTTTAAAACCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --sizein \
+        --maxaccepts 100000 \
+        --maxrejects 100000 \
+        --minseqlength 1 \
+        --uc /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_unoise --minsize is accepted"
 printf ">s1;size=2\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
