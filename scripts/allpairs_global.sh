@@ -1883,6 +1883,117 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --match, --mismatch and finite gap penalties are stored in the SIMD
+## aligner's signed 16-bit cells (align_simd.cc); values that would not
+## fit are rejected at parse time, before they would wrap silently.
+## --match and --mismatch accept -32767 to +32767, a finite gap penalty
+## must be in the range 0 to 6553, and '*' declares an infinite (i.e.
+## gap-forbidding) penalty.
+
+DESCRIPTION="--allpairs_global --match accepts the upper limit (32767)"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --match 32767 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --mismatch accepts the lower limit (-32767)"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --mismatch -32767 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --gapopen accepts the upper finite limit (6553)"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --gapopen 6553 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --gapopen accepts the infinite penalty '*'"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --gapopen '*' \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global rejects --match above the 16-bit range (32768)"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --match 32768 \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep -qi "match must be in the range" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global rejects --mismatch below the 16-bit range (-32768)"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --mismatch -32768 \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep -qi "mismatch must be in the range" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global rejects a finite gap penalty above the limit (6554)"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --gapopen 6554 \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep -qi "finite gap penalty must be in the range" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global rejects a gap penalty that would wrap the 16-bit cell (60000)"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --gapopen 60000 \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep -qi "finite gap penalty must be in the range" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global rejects a negative gap penalty"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --gapopen -5 \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep -qi "finite gap penalty must be in the range" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
