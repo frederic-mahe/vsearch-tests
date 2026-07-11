@@ -845,6 +845,37 @@ printf ">s\nA\n>s\nA\n>s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+## the abundance and the --minuniquesize threshold are compared as 64-bit
+## integers, so a threshold above 2^31 (2147483648) selects amplicons correctly
+## instead of overflowing a signed 32-bit field (fixed on dev, PR #632)
+DESCRIPTION="pull request 632: --minuniquesize above 2^31 keeps a larger abundance"
+printf ">s;size=3000000000\nACGT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --minuniquesize 2500000000 \
+        --quiet \
+        --output - | \
+    grep -qx ">s;size=3000000000" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="pull request 632: --minuniquesize above 2^31 discards a smaller abundance"
+printf ">s;size=2000000000\nACGT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --minuniquesize 2500000000 \
+        --quiet \
+        --output - 2> /dev/null | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--minuniquesize must be an integer (not a double)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \

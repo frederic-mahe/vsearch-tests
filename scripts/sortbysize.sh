@@ -1164,6 +1164,22 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## abundances are read and written as 64-bit integers, so a size above 2^31
+## (2147483648) is sorted and preserved rather than overflowing a signed 32-bit
+## field (fixed on dev, PR #632)
+DESCRIPTION="pull request 632: --sortbysize preserves and orders a size above 2^31"
+printf ">s1;size=3000000000\nAAAA\n>s2;size=100\nCCCC\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --output - | \
+    head -n 1 | \
+    grep -qx ">s1;size=3000000000" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------------- sizeout
 
 # When using --relabel, --relabel_self, --relabel_md5 or --relabel_sha1,

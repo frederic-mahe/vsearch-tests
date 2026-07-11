@@ -3076,6 +3076,33 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+## abundances are stored, summed and written as 64-bit integers, so a size
+## above 2^31 (2147483648) is preserved rather than overflowing a signed 32-bit
+## field (fixed on dev, PR #632)
+DESCRIPTION="pull request 632: --fastx_uniques --sizeout preserves a size above 2^31"
+printf ">s;size=3000000000\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">s;size=3000000000" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="pull request 632: --fastx_uniques --sizeout sums abundances above 2^31"
+printf ">s1;size=2000000000\nACGT\n>s2;size=2000000000\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">s1;size=4000000000" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_uniques --sizeout missing size annotations are not added (no size)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
