@@ -428,6 +428,25 @@ printf "@q\n%s\n+\n%s\n" "${SEQ}" "${QUAL}" | \
         failure "${DESCRIPTION}"
 unset SEQ QUAL
 
+## the query file is parsed inside the worker threads; since vsearch commit
+## 5355315c an illegal query character is recorded and reported once from the
+## main thread after the pool joins, instead of calling std::exit() from a
+## worker while siblings are still writing (a data race). A malformed query
+## must therefore fail with the same message at --threads > 1 as it does
+## single-threaded ('-' is a fatal character in a query sequence).
+DESCRIPTION="--sintax reports an illegal query character at --threads 4"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\nAC-GT%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --threads 4 \
+        --tabbedout /dev/null 2>&1 >/dev/null | \
+    grep -q "Illegal character '-'" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
 ## all 9 taxonomy levels are reported
 DESCRIPTION="--sintax reports all 9 taxonomy levels"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
@@ -669,6 +688,77 @@ printf ">q\n%s\n" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset SEQ
+
+## --sintax_random resolves ties by a seed-dependent random draw, so two
+## different seeds break the same multi-way tie differently. Five identical
+## DB sequences with distinct taxa form a clean tie that the draw resolves,
+## making the classification (and its bootstrap support) depend on the seed.
+## This guards against the seed being ignored, which would let every
+## reproducibility test below pass vacuously.
+DESCRIPTION="--sintax_random tie-breaking depends on the --randseed value"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s1;tax=d:A\n%s\n>s2;tax=d:B\n%s\n>s3;tax=d:C\n%s\n>s4;tax=d:D\n%s\n>s5;tax=d:E\n%s\n" \
+    "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" > "${DB}"
+OUT1=$(printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_random \
+        --randseed 1 \
+        --threads 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null)
+OUT2=$(printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_random \
+        --randseed 2 \
+        --threads 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null)
+[ "${OUT1}" != "${OUT2}" ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB OUT1 OUT2
+
+## a fixed --randseed makes --sintax_random reproducible from run to run,
+## even when the random draw materially drives the result. Unlike the single
+## unambiguous reference used in other reproducibility tests, this five-way
+## tie forces the draw to choose the winner, so identical output on a repeat
+## run is a non-trivial check that the seeded stream is stable.
+DESCRIPTION="--sintax_random + fixed --randseed is reproducible (multi-way tie)"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+TABBEDOUT1=$(mktemp)
+TABBEDOUT2=$(mktemp)
+printf ">s1;tax=d:A\n%s\n>s2;tax=d:B\n%s\n>s3;tax=d:C\n%s\n>s4;tax=d:D\n%s\n>s5;tax=d:E\n%s\n" \
+    "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_random \
+        --randseed 42 \
+        --threads 1 \
+        --tabbedout "${TABBEDOUT1}" \
+        --quiet 2>/dev/null
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_random \
+        --randseed 42 \
+        --threads 1 \
+        --tabbedout "${TABBEDOUT2}" \
+        --quiet 2>/dev/null
+diff -q "${TABBEDOUT1}" "${TABBEDOUT2}" > /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${TABBEDOUT1}" "${TABBEDOUT2}"
+unset SEQ DB TABBEDOUT1 TABBEDOUT2
 
 ## default tie-breaking prefers the earlier DB sequence when same length
 DESCRIPTION="--sintax default tie-breaking prefers earlier DB sequence (same length)"
@@ -986,6 +1076,84 @@ diff -q "${TABBEDOUT1}" "${TABBEDOUT4}" > /dev/null && \
         failure "${DESCRIPTION}"
 rm -f "${DB}" "${TABBEDOUT1}" "${TABBEDOUT4}"
 unset PALQ PALREF DB TABBEDOUT1 TABBEDOUT4 QUERIES
+
+## the reproducible RNG (vsearch commit bdedadfd) seeds the random draw per
+## query rather than per thread, so --sintax_random classifications no longer
+## depend on the thread count. The five-way tie is resolved by the draw and
+## the eight queries are spread across the four threads; sorting removes the
+## processing-order differences the manual warns about, leaving only the
+## classifications to compare.
+DESCRIPTION="--sintax_random classification is identical for --threads 1 and 4"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+TABBEDOUT1=$(mktemp)
+TABBEDOUT4=$(mktemp)
+QUERIES=$(printf ">q%d\n${SEQ}\n" 1 2 3 4 5 6 7 8)
+printf ">s1;tax=d:A\n%s\n>s2;tax=d:B\n%s\n>s3;tax=d:C\n%s\n>s4;tax=d:D\n%s\n>s5;tax=d:E\n%s\n" \
+    "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" > "${DB}"
+printf "%s\n" "${QUERIES}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_random \
+        --randseed 7 \
+        --threads 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    sort > "${TABBEDOUT1}"
+printf "%s\n" "${QUERIES}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_random \
+        --randseed 7 \
+        --threads 4 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    sort > "${TABBEDOUT4}"
+diff -q "${TABBEDOUT1}" "${TABBEDOUT4}" > /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${TABBEDOUT1}" "${TABBEDOUT4}"
+unset SEQ DB TABBEDOUT1 TABBEDOUT4 QUERIES
+
+## before vsearch commit bdedadfd a multi-threaded run drew from a shared
+## generator, so with --threads > 1 the result varied from run to run even
+## with a fixed seed. Two --threads 4 runs of the seed-driven five-way tie
+## must now produce identical (sorted) classifications.
+DESCRIPTION="--sintax_random + --randseed is reproducible run to run at --threads 4"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+TABBEDOUT1=$(mktemp)
+TABBEDOUT2=$(mktemp)
+QUERIES=$(printf ">q%d\n${SEQ}\n" 1 2 3 4 5 6 7 8)
+printf ">s1;tax=d:A\n%s\n>s2;tax=d:B\n%s\n>s3;tax=d:C\n%s\n>s4;tax=d:D\n%s\n>s5;tax=d:E\n%s\n" \
+    "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" > "${DB}"
+printf "%s\n" "${QUERIES}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_random \
+        --randseed 7 \
+        --threads 4 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    sort > "${TABBEDOUT1}"
+printf "%s\n" "${QUERIES}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_random \
+        --randseed 7 \
+        --threads 4 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    sort > "${TABBEDOUT2}"
+diff -q "${TABBEDOUT1}" "${TABBEDOUT2}" > /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${TABBEDOUT1}" "${TABBEDOUT2}"
+unset SEQ DB TABBEDOUT1 TABBEDOUT2 QUERIES
 
 ## --threads is accepted
 DESCRIPTION="--threads is accepted"
