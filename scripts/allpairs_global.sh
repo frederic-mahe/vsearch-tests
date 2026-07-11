@@ -2034,6 +2034,246 @@ printf ">s1\n%s\n>s2\n%s\n" \
 
 #*****************************************************************************#
 #                                                                             #
+#               '*' infinite gap penalties forbid gaps (accept)              #
+#                                                                             #
+#*****************************************************************************#
+
+## The tests above (with --acceptall) check that the aligner *avoids* a
+## forbidden gap when a cheaper alternative exists. The tests below drop
+## --acceptall so the accept filter applies, and use pairs where the gap
+## is unavoidable: '*' must then reject the pair (no hit reported), which
+## is what makes '--gapopen *' truly forbid gap-opening. A '*' open
+## penalty forbids the gap class outright; a '*' extension penalty forbids
+## gaps of that class longer than one (a length-one gap is still allowed).
+## Both apply to the selected sequence (Q/T) and location (L/I/R/E).
+##
+## s1 (query) is one base longer than s2 (target) with identical flanks,
+## so the only 100% alignment carries a single interior deletion in the
+## target (cigar 10MD25M): a target-interior gap.
+
+DESCRIPTION="--allpairs_global interior indel matches at 100% with default penalties"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATCCAGTTGACCTGAAGGCATATCACG\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --gapopen '*I' forbids an unavoidable interior gap (no match)"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATCCAGTTGACCTGAAGGCATATCACG\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapopen "*I" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --gapopen '*' (bare) forbids the interior gap (no match)"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATCCAGTTGACCTGAAGGCATATCACG\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapopen "*" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## the interior gap is a deletion in the target (T), so '*IT' forbids it
+DESCRIPTION="--allpairs_global --gapopen '*IT' forbids the target-side interior gap (no match)"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATCCAGTTGACCTGAAGGCATATCACG\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapopen "*IT" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## the gap is not on the query side, so '*IQ' leaves the match untouched
+DESCRIPTION="--allpairs_global --gapopen '*IQ' does not forbid a target-side gap (match)"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATCCAGTTGACCTGAAGGCATATCACG\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapopen "*IQ" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a '*' extension penalty allows a length-one gap (only longer gaps are forbidden)
+DESCRIPTION="--allpairs_global --gapext '*I' allows a length-one interior gap (match)"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATCCAGTTGACCTGAAGGCATATCACG\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapext "*I" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## s1 (query) is two bases longer than s2 (target), a single length-two
+## interior deletion (non-repeated inserted bases, so it cannot split into
+## two length-one gaps): '*' extension must forbid it, a finite one must not
+DESCRIPTION="--allpairs_global --gapext '*I' forbids a length-two interior gap (no match)"
+printf ">s1\nGATTACAGATAGCCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATCCAGTTGACCTGAAGGCATATCACG\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapext "*I" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --gapext '2I' (finite) allows a length-two interior gap (match)"
+printf ">s1\nGATTACAGATAGCCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATCCAGTTGACCTGAAGGCATATCACG\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapext "2I" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a substring (prefix) match relies on a terminal gap; s2 is a prefix of s1
+## so the alignment carries a right-end deletion in the target
+DESCRIPTION="--allpairs_global a prefix matches at 100% with default penalties"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATACCAGTTGACC\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a bare '*' forbids every gap opening, terminal included, so the prefix
+## match (which needs a terminal gap) is rejected
+DESCRIPTION="--allpairs_global --gapopen '*' (bare) forbids the terminal gap of a prefix (no match)"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATACCAGTTGACC\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapopen "*" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global --gapopen '*E' forbids the terminal gap of a prefix (no match)"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATACCAGTTGACC\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapopen "*E" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## the terminal gap is a deletion at the right end of the target, so '*RT'
+## forbids it specifically
+DESCRIPTION="--allpairs_global --gapopen '*RT' forbids the right-end target gap of a prefix (no match)"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATACCAGTTGACC\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapopen "*RT" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## forbidding only interior openings leaves the terminal gap available, so
+## the prefix still matches
+DESCRIPTION="--allpairs_global --gapopen '*I' leaves a prefix terminal gap allowed (match)"
+printf ">s1\nGATTACAGATACCAGTTGACCTGAAGGCATATCACG\n>s2\nGATTACAGATACCAGTTGACC\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --qmask none \
+        --iddef 0 \
+        --id 1.00 \
+        --minseqlength 1 \
+        --gapopen "*I" \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -q "s2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                  long sequences (linear memory aligner)                     #
 #                                                                             #
 #*****************************************************************************#
