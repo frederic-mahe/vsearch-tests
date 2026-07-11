@@ -960,6 +960,24 @@ printf "@s1\nA\n+\n!\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## when --log is set, the below-qmin fatal error is also written to the log
+## file, not only to stderr (fixed on dev, commits 310e7de and 6dbba98). With
+## the default --fastq_ascii 33, '!' encodes Q0, which is below qmin 1.
+DESCRIPTION="--fastx_filter --fastq_qmin error is recorded in the log file"
+LOG=$(mktemp)
+printf "@s1\nA\n+\n!\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_qmin 1 \
+        --fastqout /dev/null \
+        --log "${LOG}" \
+        --quiet 2> /dev/null
+grep -q "below qmin" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LOG}"
+unset LOG
+
 ## --label_suffix
 DESCRIPTION="--fastx_filter --label_suffix appends a suffix to the header"
 printf ">s1\nA\n" | \
