@@ -597,6 +597,23 @@ printf "@s\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## The count table is sized and indexed as length_steps * ee_cutoffs_count.
+## Both the allocation size and the x * ee_count + y index used to be computed
+## in 32-bit arithmetic, so a table with more than 2^31 cells overflowed the
+## int (pull request 644 widens both to size_t):
+## https://github.com/torognes/vsearch/pull/644
+##
+## Triggering the overflow is impractical for a black-box test: length_steps is
+## capped by the actual longest read (min of the read length and the
+## --length_cutoffs maximum), so a huge declared --length_cutoffs range with a
+## short read does nothing. A genuine overflow needs either a ~2 Gb read or
+## tens of thousands of --ee_cutoffs values, i.e. an allocation on the order of
+## 16 Gb. Like issues 630 and 631, no deterministic test is written; this note
+## documents the fix. (A large-but-safe table, e.g. --length_cutoffs "1,20000,1"
+## with five --ee_cutoffs, stays below the 2^31 limit and so would pass on both
+## the buggy and the fixed build, making it a smoke test rather than a
+## regression test.)
+
 ## ---------------------------------------------------------------- fastq_ascii
 
 DESCRIPTION="--fastq_eestats2 --fastq_ascii is accepted"

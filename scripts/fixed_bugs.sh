@@ -21943,11 +21943,13 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTAC
 #    success "${DESCRIPTION}" || \
 #        failure "${DESCRIPTION}"
 
-# the 64-bit widening of the abundance, cluster-size (;seqs=) and
-# centroid-abundance fields in the same pull request cannot be exercised
-# by a black-box test: reaching the 32-bit limit needs more than 2^31
-# sequences in a single input or cluster. No deterministic test is
-# written for those changes.
+# the 64-bit widening of the abundance (;size=) field is exercised by
+# feeding a size above 2^31 with --sizein: see the "pull request 632"
+# tests in fastx_uniques.sh, sortbysize.sh and derep_fulllength.sh. The
+# cluster-size (;seqs=) and centroid-abundance fields are computed from
+# the input rather than read from it, so reaching the 32-bit limit would
+# need more than 2^31 sequences in a single input or cluster; those two
+# are not exercised by a black-box test.
 
 
 # The maximum length has been reduced to INT_MAX - buffer_headroom (2001),
