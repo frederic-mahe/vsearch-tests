@@ -470,6 +470,74 @@ printf ">foo_bar\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## An empty --label_word is a zero-length word, and the delimiter rule
+## decides where it can sit: between two delimiters, or between a
+## delimiter and an end of the header. In ">abc" no such position exists,
+## since every position has a letter on at least one side.
+DESCRIPTION="--label_word empty does not match a header made of a single word"
+printf ">abc\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_word "" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## the position just after a trailing delimiter is a valid one: the
+## delimiter is on the left and the end of the header on the right
+DESCRIPTION="--label_word empty matches at the end of a header ending with a delimiter"
+printf ">abc;\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_word "" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">abc;" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the two above, in one file: only the record ending with a delimiter is
+## kept. An empty needle used to match every record, because the search
+## ran past the end of the header and decided from bytes outside it.
+DESCRIPTION="--label_word empty selects only the records the delimiter rule allows"
+printf ">abc\nA\n>def;\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_word "" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -c "^>" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the record kept above is the one ending with a delimiter, not the other
+DESCRIPTION="--label_word empty keeps the record ending with a delimiter"
+printf ">abc\nA\n>def;\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_word "" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">def;" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a non-empty needle is unaffected by the bound: a word at the very end
+## of the header still matches
+DESCRIPTION="--label_word matches a word at the very end of the header"
+printf ">abc;def\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_word "def" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">abc;def" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --label_words
 DESCRIPTION="--label_words is accepted"
 TMP=$(mktemp)
