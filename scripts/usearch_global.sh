@@ -1398,6 +1398,108 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## --------------------------------------------------------- gapopen (empty)
+
+## vsearch always initialises the six gap-opening penalties to the defaults
+## (20I/2E) and the user then declares only the values to modify, so an empty
+## declaration is well defined: it modifies nothing. usearch accepts an empty
+## -gapopen the same way, while rejecting a malformed one. These checks pin
+## that, so the no-op is not mistaken for an argument being dropped.
+##
+## The query is SEQ with six bases inserted in the middle, which forces a
+## 6-nt internal gap (20M6D20M) and so makes the gap-opening penalty visible
+## in the raw alignment score.
+DESCRIPTION="--usearch_global --gapopen with an empty argument is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%sAAAAAA%s\n" "${SEQ:0:20}" "${SEQ:20}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --gapopen "" \
+        --userout /dev/null \
+        --userfields raw \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --gapopen with an empty argument keeps the default penalty"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%sAAAAAA%s\n" "${SEQ:0:20}" "${SEQ:20}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --gapopen "" \
+        --userout - \
+        --userfields raw \
+        --quiet 2> /dev/null | \
+    grep -qx "50" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the same score without the option at all, and with the default declared
+## explicitly: all three agree
+DESCRIPTION="--usearch_global scores the same without --gapopen"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%sAAAAAA%s\n" "${SEQ:0:20}" "${SEQ:20}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --userout - \
+        --userfields raw \
+        --quiet 2> /dev/null | \
+    grep -qx "50" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global scores the same with --gapopen 20I/2E declared explicitly"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%sAAAAAA%s\n" "${SEQ:0:20}" "${SEQ:20}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --gapopen "20I/2E" \
+        --userout - \
+        --userfields raw \
+        --quiet 2> /dev/null | \
+    grep -qx "50" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a different penalty changes the score, so the checks above are not vacuous
+DESCRIPTION="--usearch_global --gapopen 4I/2E changes the raw score"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%sAAAAAA%s\n" "${SEQ:0:20}" "${SEQ:20}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --gapopen "4I/2E" \
+        --userout - \
+        --userfields raw \
+        --quiet 2> /dev/null | \
+    grep -qx "66" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ------------------------------------------------------------------ hardmask
 
 DESCRIPTION="--usearch_global --hardmask is accepted"
