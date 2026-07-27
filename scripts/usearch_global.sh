@@ -411,6 +411,59 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## An empty argument is not a number. It used to be accepted and silently
+## read as 0, because the check tested std::sscanf's return value against 0
+## while sscanf returns EOF when the input ends before any conversion --- so
+## --id "" behaved as --id 0.0 and accepted every hit.
+DESCRIPTION="--usearch_global rejects an empty --id argument"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id "" \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global reports an illegal argument for an empty --id"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id "" \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep -qi "illegal option argument" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the same check for the integer parser, which shares the defect
+DESCRIPTION="--usearch_global rejects an empty --maxaccepts argument"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxaccepts "" \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep -qi "illegal option argument" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 DESCRIPTION="--usearch_global errors without any output option"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
