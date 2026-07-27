@@ -448,6 +448,46 @@ printf ">abcd\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## Digits are word characters, not delimiters: "sample" is not a word of
+## "sample1". This is a deliberate divergence from usearch, whose words
+## are delimited by anything that is not a letter, so that -label_word
+## sample does match sample1 there. vsearch's definition is the one
+## documented under --label_word in vsearch.1; do not "fix" it towards
+## usearch without changing the manual page first.
+DESCRIPTION="--label_word does not treat a digit as a delimiter"
+printf ">sample1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_word "sample" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--label_word does not treat a letter as a delimiter either"
+printf ">sample1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_word "1" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## the whole alphanumeric run is a word, so it matches
+DESCRIPTION="--label_word matches a word mixing letters and digits"
+printf ">sample1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_word "sample1" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">sample1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--label_word is case-sensitive"
 printf ">ABC\nA\n" | \
     "${VSEARCH}" \
