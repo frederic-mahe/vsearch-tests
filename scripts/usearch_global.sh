@@ -1083,6 +1083,41 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## --alnout renders the internal alignment, i.e. the one left after the
+## terminal gaps have been trimmed off, so a query one base longer than
+## the target is rendered from position 2
+DESCRIPTION="--usearch_global --alnout renders the query from position 2 after a terminal gap"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nG%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --alnout - \
+        --quiet | \
+    grep -qE "^Qry +2 \+ .* 41$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --alnout counts 40 columns when a terminal gap is trimmed off"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nG%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --alnout - \
+        --quiet | \
+    grep -qx "40 cols, 40 ids (100.0%), 0 gaps (0.0%)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ------------------------------------------------------------------ biomout
 
 DESCRIPTION="--usearch_global --biomout writes a JSON biom document"
@@ -3183,6 +3218,74 @@ printf ">q\nACGTACGTACGTACGTACGTCGTACGTACGTACGTACGT\n" | \
 rm -f "${DB}"
 unset DB
 
+## the SAM spec requires a count before every operation, so a run length
+## that is implicit in --userfields caln ("D40M") is written out here
+DESCRIPTION="--usearch_global --samout CIGAR writes out an implicit leading run length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nG%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($6 == "1I40M") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout CIGAR writes out an implicit trailing run length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%sG\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($6 == "40M1I") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout CIGAR writes out implicit run lengths at both ends"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nG%sG\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($6 == "1I40M1I") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## an operation whose run length is a deletion from the query's point of
+## view becomes D here, the CIGAR being target-relative (see issue 259)
+DESCRIPTION="--usearch_global --samout CIGAR writes out an implicit run length as D for a longer target"
+DB=$(mktemp)
+printf ">d\nG%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($6 == "1D40M") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ------ optional tags (perfect hit: AS, XN, XM, XO, XG, NM, MD, YT) ------
 
 DESCRIPTION="--usearch_global --samout appends AS:i:100 for a perfect match"
@@ -4266,6 +4369,79 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## In a CIGAR string a run length of 1 is implicit: vsearch's aligner
+## emits "D40M", not "1D40M". A query one base longer than the target
+## produces exactly that, at whichever end the extra base sits.
+DESCRIPTION="--usearch_global --userfields caln leaves a leading run length of 1 implicit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nG%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --userout - \
+        --userfields caln \
+        --quiet | \
+    grep -qx "D40M" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --userfields caln leaves a trailing run length of 1 implicit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%sG\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --userout - \
+        --userfields caln \
+        --quiet | \
+    grep -qx "40MD" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --userfields caln leaves both terminal run lengths of 1 implicit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nG%sG\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --userout - \
+        --userfields caln \
+        --quiet | \
+    grep -qx "D40MD" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a run length of 2 is written out, so the implicit form above is
+## specific to a run of 1
+DESCRIPTION="--usearch_global --userfields caln writes out a leading run length of 2"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nGG%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --userout - \
+        --userfields caln \
+        --quiet | \
+    grep -qx "2D40M" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ---------------------------------------------------------------------- qrow
 
 DESCRIPTION="--usearch_global --userfields qrow reports the aligned query"
@@ -4475,6 +4651,42 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## the leading terminal gap is trimmed off the internal alignment, so a
+## query one base longer than the target starts at position 2
+DESCRIPTION="--usearch_global --userfields qilo accounts for an implicit leading run length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nG%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --userout - \
+        --userfields qilo \
+        --quiet | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --userfields qilo accounts for an explicit leading run length of 2"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nGG%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --userout - \
+        --userfields qilo \
+        --quiet | \
+    grep -qx "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ---------------------------------------------------------------------- qihi
 
 DESCRIPTION="--usearch_global --userfields qihi reports the last aligned query position (no terminal gaps)"
@@ -4485,6 +4697,25 @@ printf ">q\n%s\n" "${SEQ}" | \
         --usearch_global - \
         --db "${DB}" \
         --id 1.0 \
+        --userout - \
+        --userfields qihi \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## symmetrically, a trailing terminal gap is trimmed off, so the internal
+## alignment of a 41-nt query against a 40-nt target ends at 40
+DESCRIPTION="--usearch_global --userfields qihi accounts for an implicit trailing run length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%sG\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
         --userout - \
         --userfields qihi \
         --quiet | \
@@ -4546,6 +4777,25 @@ printf ">q\n%s\n" "${SEQ}" | \
         --userfields tilo \
         --quiet | \
     grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the same trimming applies to the target when it is the longer of the
+## two, the implicit run length then being an insertion
+DESCRIPTION="--usearch_global --userfields tilo accounts for an implicit leading run length"
+DB=$(mktemp)
+printf ">d\nG%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --userout - \
+        --userfields tilo \
+        --quiet | \
+    grep -qx "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
