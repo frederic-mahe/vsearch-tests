@@ -465,6 +465,66 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## The grammar is exactly "shortest,longest,increment" (or "*" for the
+## longest), with no whitespace anywhere. std::sscanf used to tolerate it
+## wherever a %d conversion began, so "1,*, 10" parsed while "1, *, 10" did
+## not --- an artefact of the format string, not a documented grammar.
+DESCRIPTION="--fastq_eestats2 --length_cutoffs rejects whitespace before a value"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --length_cutoffs "1,*, 1" \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_eestats2 --length_cutoffs rejects whitespace after a separator"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --length_cutoffs "1, 1, 1" \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_eestats2 --length_cutoffs rejects a trailing separator"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --length_cutoffs "1,1,1," \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_eestats2 --length_cutoffs rejects an empty argument"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --length_cutoffs "" \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## a value that does not fit in an int is rejected rather than wrapping:
+## an out-of-range integer is undefined behaviour for the scanf family
+DESCRIPTION="--fastq_eestats2 --length_cutoffs rejects a value out of the int range"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --length_cutoffs "1,1,99999999999999999999" \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_eestats2 --length_cutoffs rejects * in the first field"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --length_cutoffs "*,1,1" \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--fastq_eestats2 --length_cutoffs accepts * as max"
 printf "@s\nAA\n+\nII\n" | \
     "${VSEARCH}" \
