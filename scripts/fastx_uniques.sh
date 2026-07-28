@@ -4095,6 +4095,18 @@ printf ">s;ee=1.00\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the exponent means the digits are not followed by ";" or the end
+DESCRIPTION="--xee keeps a value that is not followed by a separator or the end"
+printf ">s;ee=1.5e-2\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xee \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">s;ee=1.5e-2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------------- xlength
 
 DESCRIPTION="--fastx_uniques --xlength is accepted"
@@ -4138,6 +4150,18 @@ printf ">s;length=2\nA\n" | \
         --quiet \
         --fastaout - | \
     grep -qx ">s;length=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# a header too short to contain "length=" at all
+DESCRIPTION="--xlength leaves a header shorter than the annotation name"
+printf ">ab\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xlength \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">ab" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4327,6 +4351,109 @@ printf ">s;\nA\n" | \
     grep -qx ">s;" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+## where the annotation sits in the header, and what does not count as one
+
+DESCRIPTION="--xsize strips an annotation at the start of the header"
+printf ">size=2\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xsize \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize strips the size annotation and leaves the adjacent one"
+printf ">s;size=2;ee=0.5\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xsize \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">s;ee=0.5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize strips only the first of two size annotations"
+printf ">s;size=2;size=3\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xsize \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">s;size=3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# a header too short to contain "size=" at all
+DESCRIPTION="--xsize leaves a header shorter than the annotation name"
+printf ">ab\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xsize \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">ab" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize accepts an empty header"
+printf ">\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xsize \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize keeps an annotation with no digits"
+printf ">s;size=\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xsize \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">s;size=" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize keeps an annotation whose value is not a number"
+printf ">s;size=x\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xsize \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">s;size=x" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize keeps a name that only looks like the annotation"
+printf ">s;sizeX=7\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xsize \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">s;sizeX=7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--xsize keeps the annotation name inside a longer word"
+printf ">s;xsize=7\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --xsize \
+        --quiet \
+        --fastaout - | \
+    grep -qx ">s;xsize=7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 
 #*****************************************************************************#
