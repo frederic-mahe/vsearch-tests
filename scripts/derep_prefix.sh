@@ -2513,8 +2513,8 @@ printf ">s\nA\n" | \
         --derep_prefix - \
         --topn "-1" \
         --output /dev/null 2> /dev/null &&\
-    success "${DESCRIPTION}" || \
-	failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
 ## --topn zero should return no sequence or fail (only values > 0
 ## should be accepted)

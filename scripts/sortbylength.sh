@@ -506,6 +506,22 @@ printf ">s1;size=3\nAA\n" > "${INPUT}"
         success "${DESCRIPTION}"
 rm -f "${INPUT}"
 
+## the manual page specifies a positive integer, so a negative value is
+## an error too. It used to pass the guard and then read as "no limit"
+## through an unsigned cast, silently ignoring the option.
+DESCRIPTION="--sortbylength --topn rejects a negative value"
+INPUT=$(mktemp)
+printf ">s1;size=3\nAA\n" > "${INPUT}"
+"${VSEARCH}" \
+    --sortbylength "${INPUT}" \
+    --quiet \
+    --topn "-1" \
+    --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${INPUT}"
+unset INPUT
+
 DESCRIPTION="--sortbylength --topn can be larger than the number of entries"
 "${VSEARCH}" \
     --sortbylength <(printf ">s1;size=3\nAA\n") \
