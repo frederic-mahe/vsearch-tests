@@ -1189,6 +1189,48 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+## an abundance annotation is read as a 64-bit value, so values above
+## 4294967295 (2^32 - 1) must survive dereplication unchanged
+DESCRIPTION="--sizein --sizeout preserves an abundance larger than 2^32"
+printf ">s;size=5000000000\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --output - | \
+    grep -qx ">s;size=5000000000" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--sizein --sizeout sums abundances above 2^32"
+printf ">s1;size=3000000000\nA\n>s2;size=3000000000\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --output - | \
+    grep -qx ">s1;size=6000000000" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## an abundance that is an exact multiple of 2^32 must not vanish
+DESCRIPTION="--sizein --sizeout keeps an abundance that is a multiple of 2^32"
+printf ">s;size=4294967296\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --output - | \
+    grep -qx ">s;size=4294967296" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
