@@ -185,6 +185,32 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the sorted values are 64-bit wide: an abundance above 4294967295
+# (2^32 - 1) used to be truncated on its way into the sorting deck, which
+# sent the most abundant sequences to the bottom (;size=4294967297 was
+# truncated to 1, ranking below ;size=100)
+DESCRIPTION="--sortbysize sorts an abundance larger than 2^32 first"
+${VSEARCH} \
+    --sortbysize <(printf ">b;size=100\nT\n>a;size=4294967297\nA\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -qx ">a;size=4294967297A>b;size=100T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# an abundance that is an exact multiple of 2^32 used to be truncated to
+# zero, ranking below every other sequence
+DESCRIPTION="--sortbysize sorts an abundance that is a multiple of 2^32 first"
+${VSEARCH} \
+    --sortbysize <(printf ">b;size=2\nT\n>a;size=4294967296\nA\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -qx ">a;size=4294967296A>b;size=2T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------- median length
 
 # The sortbysize command outputs on the stderr or in a log file the
@@ -384,6 +410,86 @@ printf ">s1;size=6\nA\n>s2;size=2\nA\n" | \
         --topn 1 \
         --output /dev/null 2>&1 > /dev/null | \
     grep -qx "Median abundance: 4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# The median is computed from the same deck the sorting uses, so the
+# 32-bit truncation described above also skewed the reported median: a
+# lone ;size=4294967297 was reported as a median of 1.
+
+# 4294967295 (2^32 - 1) is the largest value that was never truncated
+DESCRIPTION="--sortbysize median abundance (single entry, 2^32 - 1)"
+printf ">s1;size=4294967295\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qx "Median abundance: 4294967295" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize median abundance (single entry, above 2^32)"
+printf ">s1;size=4294967297\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qx "Median abundance: 4294967297" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# an exact multiple of 2^32 used to be truncated to zero, so the median
+# was reported as 0
+DESCRIPTION="--sortbysize median abundance (single entry, multiple of 2^32)"
+printf ">s1;size=4294967296\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qx "Median abundance: 4294967296" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# odd-sized list of entries: the middle entry is returned as-is
+DESCRIPTION="--sortbysize median abundance (odd number of entries, above 2^32)"
+printf ">s1;size=8589934592\nA\n>s2;size=4294967296\nA\n>s3;size=1\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qx "Median abundance: 4294967296" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# even-sized list of entries: the average is computed as
+# "b + (a - b) / 2", so both terms must be 64-bit wide
+# (4294967296 + 4294967298) / 2 = 4294967297
+DESCRIPTION="--sortbysize median abundance (average of two entries above 2^32)"
+printf ">s1;size=4294967298\nA\n>s2;size=4294967296\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qx "Median abundance: 4294967297" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# even-sized list of entries straddling the boundary: only the larger
+# value was truncated, which used to yield a median of 2147483648
+# (4294967295 + 4294967297) / 2 = 4294967296
+DESCRIPTION="--sortbysize median abundance (average of two entries straddling 2^32)"
+printf ">s1;size=4294967297\nA\n>s2;size=4294967295\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qx "Median abundance: 4294967296" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# large abundances do not change how a remainder of 0.5 is printed:
+# (4294967297 + 4294967298) / 2 = 4294967297.5, and fprintf ("%.0f\n")
+# rounds half to the closest even value
+DESCRIPTION="--sortbysize median abundance (rounded average of two entries above 2^32)"
+printf ">s1;size=4294967298\nA\n>s2;size=4294967297\nA\n" | \
+    "${VSEARCH}" \
+        --sortbysize - \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qx "Median abundance: 4294967298" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
