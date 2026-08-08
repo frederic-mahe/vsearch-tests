@@ -1633,6 +1633,300 @@ DESCRIPTION="--sff_convert clipped values are lowercased (right)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## the two clipped ends and the kept window in a single read: clip_qual_left
+## = 2 puts the first kept base at position 1, clip_qual_right = 3 puts the
+## last kept base at position 2 (both 1-based), so of the four bases only the
+## first and the last are clipped
+DESCRIPTION="--sff_convert clipped values are lowercased (both ends of the same read)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x04"                 # number of bases before clipping
+    printf "%b" "\x00\x02"                         # clip qual left
+    printf "%b" "\x00\x03"                         # clip qual right
+    printf "%b" "\x00\x00"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01\x01\x01"
+    printf "ACGT"
+    printf "%b" "\x28\x28\x28\x28"
+    printf "%b" "\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qx "aCGt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the first kept base is at max(1, clip_qual_left, clip_adapter_left) - 1,
+## so a clip_qual_left of 1 (the first base is already the first kept base)
+## clips as little as a clip_qual_left of 0 (no clipping at all)
+DESCRIPTION="--sff_convert clip_qual_left = 1 clips nothing"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x04"                 # number of bases before clipping
+    printf "%b" "\x00\x01"                         # clip qual left
+    printf "%b" "\x00\x00"                         # clip qual right
+    printf "%b" "\x00\x00"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01\x01\x01"
+    printf "ACGT"
+    printf "%b" "\x28\x28\x28\x28"
+    printf "%b" "\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qx "ACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the adapter clipping fields drive the lowercasing exactly as the quality
+## clipping fields do, with the same 1-based positions
+DESCRIPTION="--sff_convert clipped values are lowercased (adapter clipping)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x04"                 # number of bases before clipping
+    printf "%b" "\x00\x00"                         # clip qual left
+    printf "%b" "\x00\x00"                         # clip qual right
+    printf "%b" "\x00\x02"                         # clip adapter left
+    printf "%b" "\x00\x03"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01\x01\x01"
+    printf "ACGT"
+    printf "%b" "\x28\x28\x28\x28"
+    printf "%b" "\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qx "aCGt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the kept window is the intersection of the two clipping regions. Here the
+## adapter fields are the tighter pair on both sides: clip_adapter_left = 3
+## keeps from position 2, clip_adapter_right = 3 keeps up to position 2
+DESCRIPTION="--sff_convert the tighter of the quality and adapter clipping wins (adapter)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x04"                 # number of bases before clipping
+    printf "%b" "\x00\x02"                         # clip qual left
+    printf "%b" "\x00\x04"                         # clip qual right
+    printf "%b" "\x00\x03"                         # clip adapter left
+    printf "%b" "\x00\x03"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01\x01\x01"
+    printf "ACGT"
+    printf "%b" "\x28\x28\x28\x28"
+    printf "%b" "\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qx "acGt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## and here the quality fields are the tighter pair: clip_qual_left = 2 keeps
+## from position 1, clip_qual_right = 2 keeps up to position 1
+DESCRIPTION="--sff_convert the tighter of the quality and adapter clipping wins (quality)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x04"                 # number of bases before clipping
+    printf "%b" "\x00\x02"                         # clip qual left
+    printf "%b" "\x00\x02"                         # clip qual right
+    printf "%b" "\x00\x01"                         # clip adapter left
+    printf "%b" "\x00\x04"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01\x01\x01"
+    printf "ACGT"
+    printf "%b" "\x28\x28\x28\x28"
+    printf "%b" "\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qx "aCgt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## SFF files usually store uppercase bases, but that is not mandatory: the
+## kept window is uppercased whatever case it comes in, and only the clipped
+## ends are left lowercase
+DESCRIPTION="--sff_convert the kept window is uppercased (lowercase input)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x04"                 # number of bases before clipping
+    printf "%b" "\x00\x02"                         # clip qual left
+    printf "%b" "\x00\x03"                         # clip qual right
+    printf "%b" "\x00\x00"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01\x01\x01"
+    printf "acgt"
+    printf "%b" "\x28\x28\x28\x28"
+    printf "%b" "\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qx "aCGt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## an inverted pair (clip_qual_left = 4 keeps from position 3,
+## clip_qual_right = 1 keeps up to position 0) leaves no kept window at all,
+## so the two clipped ends meet and every base is lowercased. Only --sff_clip
+## rejects such a file (see the --sff_clip section below)
+DESCRIPTION="--sff_convert an inverted clipping region lowercases the whole read"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x01"
+    printf "T"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00"
+    # read header section -----------------------
+    printf "%b" "\x00\x18"
+    printf "%b" "\x00\x01"
+    printf "%b" "\x00\x00\x00\x04"                 # number of bases before clipping
+    printf "%b" "\x00\x04"                         # clip qual left
+    printf "%b" "\x00\x01"                         # clip qual right
+    printf "%b" "\x00\x00"                         # clip adapter left
+    printf "%b" "\x00\x00"                         # clip adapter right
+    printf "s"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
+    # read data section -----------------------
+    printf "%b" "\x00\x64"
+    printf "%b" "\x01\x01\x01\x01"
+    printf "ACGT"
+    printf "%b" "\x28\x28\x28\x28"
+    printf "%b" "\x00\x00"
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout - | \
+    grep -qx "acgt" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------------------------------------------------------- read data section
 
 DESCRIPTION="--sff_convert rejects invalid SFF files (truncated flowgram values)"
