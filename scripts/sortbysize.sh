@@ -211,7 +211,7 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## -------------------------------------------------------------- median length
+## ----------------------------------------------------------- median abundance
 
 # The sortbysize command outputs on the stderr or in a log file the
 # median abundance value of processed fasta sequences. To refactor the
