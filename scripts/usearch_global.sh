@@ -4369,6 +4369,77 @@ for LEN in 3 8 ; do
 done
 unset LEN
 
+## a UDB stores the word length its index was built at, and that value
+## wins over --wordlength; the override is reported
+DESCRIPTION="--usearch_global warns when a UDB --db overrides --wordlength"
+DB=$(mktemp)
+UDB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB}" \
+    --output "${UDB}" \
+    --quiet 2> /dev/null
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${UDB}" \
+        --id 1.0 \
+        --wordlength 7 \
+        --blast6out /dev/null \
+        --quiet 2>&1 > /dev/null | \
+    grep -qx "WARNING: Wordlength adjusted to 8 as indicated in UDB file" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${UDB}"
+unset DB UDB
+
+## the same warning is written to the log file
+DESCRIPTION="--usearch_global warns in the log when a UDB --db overrides --wordlength"
+DB=$(mktemp)
+UDB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB}" \
+    --output "${UDB}" \
+    --quiet 2> /dev/null
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${UDB}" \
+        --id 1.0 \
+        --wordlength 7 \
+        --blast6out /dev/null \
+        --quiet \
+        --log - 2> /dev/null | \
+    grep -qx "WARNING: Wordlength adjusted to 8 as indicated in UDB file" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${UDB}"
+unset DB UDB
+
+## no override, no warning
+DESCRIPTION="--usearch_global does not warn when --wordlength matches the UDB"
+DB=$(mktemp)
+UDB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB}" \
+    --output "${UDB}" \
+    --quiet 2> /dev/null
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${UDB}" \
+        --id 1.0 \
+        --wordlength 8 \
+        --blast6out /dev/null \
+        --quiet 2>&1 > /dev/null | \
+    grep -qi "warning" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}" "${UDB}"
+unset DB UDB
+
 DESCRIPTION="--usearch_global --wordlength 2 is rejected"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
