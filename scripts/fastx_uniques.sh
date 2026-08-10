@@ -300,6 +300,44 @@ printf ">s\nACGTEEE\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the warning is composed once and emitted to both destinations, so it
+# must appear exactly once on stderr (it used to be written twice, by two
+# duplicated blocks)
+DESCRIPTION="--fastx_uniques does not duplicate the stripped-character warning on stderr"
+printf ">s\nACGTEEE\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastaout /dev/null \
+        --log /dev/null 2>&1 > /dev/null | \
+    grep -c "invalid characters stripped from FASTA file" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the reminder is not a warning, so it keeps its own prefix and is not
+# swallowed by the WARNING line
+DESCRIPTION="--fastx_uniques writes the amino-acid reminder on its own line"
+printf ">s\nACGTEEE\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastaout /dev/null 2>&1 > /dev/null | \
+    grep -qx "REMINDER: vsearch does not support amino acid sequences" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the count and the per-character tally are part of the message
+DESCRIPTION="--fastx_uniques reports the number of stripped characters and their tally"
+printf ">s\nACGTEEE\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastaout /dev/null 2>&1 > /dev/null | \
+    grep -qx "WARNING: 3 invalid characters stripped from FASTA file: E(3)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_uniques accepts a single fasta entry"
 printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
