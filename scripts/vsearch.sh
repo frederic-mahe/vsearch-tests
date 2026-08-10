@@ -76,6 +76,41 @@ DESCRIPTION="vsearch warns if an option is used without a command"
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+DESCRIPTION="vsearch names the missing command in that warning"
+"${VSEARCH}" \
+    --sizein 2>&1 > /dev/null | \
+    grep -qx "WARNING: Options given, but no valid command specified." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+## warnings emitted while parsing the command line reach stderr only:
+## --log is not open yet at that point
+DESCRIPTION="vsearch --log does not receive the no-command warning"
+"${VSEARCH}" \
+    --sizein \
+    --log - 2> /dev/null | \
+    grep -qi "warning" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+## --quiet does not suppress warnings ("suppress messages to stdout and
+## stderr, except for warnings and error messages")
+DESCRIPTION="vsearch --quiet does not suppress the no-command warning"
+"${VSEARCH}" \
+    --sizein \
+    --quiet 2>&1 > /dev/null | \
+    grep -qx "WARNING: Options given, but no valid command specified." && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="vsearch does not duplicate the no-command warning"
+"${VSEARCH}" \
+    --sizein 2>&1 > /dev/null | \
+    grep -c "WARNING: Options given, but no valid command specified." | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------- with extra commands
 
 DESCRIPTION="vsearch accepts duplicated commands"
