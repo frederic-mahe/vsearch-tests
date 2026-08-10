@@ -238,6 +238,64 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the abort message reports both counts and names the way out
+DESCRIPTION="--fastx_subsample over-request error reports both counts and the remedy"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 2 \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "Cannot subsample 2 reads from a sample of 1 (use --allow_fewer to keep them all)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# with --sizein the limit is the total abundance, not the number of
+# amplicons
+DESCRIPTION="--fastx_subsample --sample_size cannot exceed total abundance (--sizein)"
+printf ">s1;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 3 \
+        --sizein \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --sample_size can be equal to total abundance (--sizein)"
+printf ">s1;size=3\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 3 \
+        --sizein \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# an empty input has no read to sample, so any --sample_size is too large
+DESCRIPTION="--fastx_subsample --sample_size cannot exceed an empty input"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## output files are opened before the read count is known, so an aborted
+## run leaves them created but empty (same side effect as usearch)
+DESCRIPTION="--fastx_subsample --sample_size over-request leaves --fastaout empty"
+TMP=$(mktemp)
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 2 \
+        --fastaout "${TMP}" 2> /dev/null
+[[ -f "${TMP}" ]] && [[ ! -s "${TMP}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
 DESCRIPTION="--fastx_subsample --sample_size cannot be zero"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
