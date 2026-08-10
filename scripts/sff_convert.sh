@@ -874,6 +874,35 @@ DESCRIPTION="--sff_convert warns if partial index data padding (terminal index)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## the same warning is written to the log file
+DESCRIPTION="--sff_convert warns in the log if partial index data padding (terminal index)"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x28"
+    printf "%b" "\x00\x00\x00\x09"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"
+    # index section -----------------------------
+    printf ".srt"
+    printf "1.00"
+    printf "%b" "\x01"                          # index data (1 byte)
+    printf "%b" "\x00"                          # partial padding
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null \
+        --log - 2> /dev/null | \
+    grep -iq "^warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------- read header section
 
 # SFF file with an empty read (no nucleotides, no clipping)
@@ -2165,6 +2194,33 @@ DESCRIPTION="--sff_convert warns if file contains trailing data"
         --quiet \
         --fastqout /dev/null 2>&1 | \
     grep -iq "^warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the trailing-data warning is emitted once for both destinations, so it
+## must appear exactly once on stderr
+DESCRIPTION="--sff_convert does not duplicate the trailing-data warning on stderr"
+(
+    printf ".sff"
+    printf "%b" "\x00\x00\x00\x01"
+    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x00\x00\x00"
+    printf "%b" "\x00\x28"
+    printf "%b" "\x00\x04"
+    printf "%b" "\x00\x00"
+    printf "%b" "\x01"
+    printf "TCAG"
+    printf "%b" "\x00\x00\x00\x00\x00"  # padding
+    printf "%b" "\x00"                  # unexpected trailing byte
+) | \
+    "${VSEARCH}" \
+        --sff_convert - \
+        --quiet \
+        --fastqout /dev/null \
+        --log /dev/null 2>&1 > /dev/null | \
+    grep -c "WARNING: Additional data at end of SFF file ignored" | \
+    grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
