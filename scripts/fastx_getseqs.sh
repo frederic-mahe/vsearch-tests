@@ -1403,6 +1403,42 @@ grep -q "Labels longer than 1023 characters are not supported" "${LOG}" && \
 rm -f "${LABELS}" "${LOG}"
 unset LABELS LOG
 
+## --quiet exempts warnings ("suppress messages to stdout and stderr,
+## except for warnings and error messages"), so the warning stays on
+## stderr even when the routine output is silenced
+DESCRIPTION="--fastx_getseqs warns about long labels even with --quiet"
+LABELS=$(mktemp)
+printf '%01024d\n' 0 | tr '0' 'a' > "${LABELS}"  # a 1024-character label
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --labels "${LABELS}" \
+        --fastaout /dev/null \
+        --quiet 2>&1 > /dev/null | \
+    grep -qx "WARNING: Labels longer than 1023 characters are not supported" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LABELS}"
+unset LABELS
+
+## the warning is emitted once for both destinations, so it must appear
+## exactly once on stderr
+DESCRIPTION="--fastx_getseqs does not duplicate the long-label warning on stderr"
+LABELS=$(mktemp)
+printf '%01024d\n' 0 | tr '0' 'a' > "${LABELS}"  # a 1024-character label
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --labels "${LABELS}" \
+        --fastaout /dev/null \
+        --log /dev/null 2>&1 > /dev/null | \
+    grep -c "WARNING: Labels longer than 1023 characters" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LABELS}"
+unset LABELS
+
 ## a --label that does not have the same length as the header is not a
 ## match (case-insensitive whole-string comparison)
 DESCRIPTION="--fastx_getseqs --label does not match a header of a different length"
