@@ -466,9 +466,12 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# issue #628: with --quiet, the missing-abundance warning goes to the log
-# file only and is no longer duplicated on stderr
-DESCRIPTION="--rereplicate --quiet --log keeps the missing-abundance warning off stderr"
+# issue #628: with --quiet, the missing-abundance warning reaches both
+# destinations. --quiet documents an exception for warnings ("suppress
+# messages to stdout and stderr, except for warnings and error messages"),
+# so the warning stays on stderr; what #628 fixed was the routing to the
+# log file and the duplication on stderr, tested above and below
+DESCRIPTION="--rereplicate --quiet --log keeps the missing-abundance warning on stderr"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --rereplicate - \
@@ -476,8 +479,55 @@ printf ">s\nA\n" | \
         --output /dev/null \
         --log /dev/null 2>&1 > /dev/null | \
     grep -iq "warning" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --quiet suppresses the routine end-of-run report, but not the warning
+DESCRIPTION="--rereplicate --quiet keeps the missing-abundance warning on stderr"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --quiet \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -qx "WARNING: Missing abundance information for some input sequences, assumed 1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--rereplicate --quiet suppresses the rereplication report on stderr"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --quiet \
+        --output /dev/null 2>&1 > /dev/null | \
+    grep -q "Rereplicated" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+# the warning is emitted once for both destinations, so it must still
+# appear exactly once on stderr when --quiet is in effect
+DESCRIPTION="--rereplicate --quiet --log does not duplicate the warning on stderr"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --quiet \
+        --output /dev/null \
+        --log /dev/null 2>&1 > /dev/null | \
+    grep -c "WARNING: Missing abundance information" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--rereplicate --quiet --log does not duplicate the warning in the log"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --rereplicate - \
+        --quiet \
+        --output /dev/null \
+        --log - 2> /dev/null | \
+    grep -c "WARNING: Missing abundance information" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## ---------------------------------------------------------------- no_progress
 
