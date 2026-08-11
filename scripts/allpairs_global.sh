@@ -2347,6 +2347,47 @@ printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${LONGER}" | \
         failure "${DESCRIPTION}"
 unset LONG LONGER
 
+## the aln userfield writes the uncompressed alignment: implicit and
+## explicit run lengths are expanded (2I6M -> IIMMMMMM)
+DESCRIPTION="--allpairs_global userfields aln expands run lengths"
+printf ">s1\nAATTTT\n>s2\nAAGGTTTT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --minseqlength 1 \
+        --userfields aln \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "IIMMMMMM" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global userfields aln uses I for an insertion in the target"
+printf ">s1\nT\n>s2\nTT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --minseqlength 1 \
+        --userfields aln \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "IM" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global userfields aln uses D for a deletion in the target"
+printf ">s1\nTT\n>s2\nT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --minseqlength 1 \
+        --userfields aln \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "DM" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--allpairs_global (linear memory aligner) counts mismatches in large sequences"
 LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
 # substitute 5 nt in the second sequence (4 of them are true mismatches)
