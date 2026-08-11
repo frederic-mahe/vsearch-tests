@@ -21195,7 +21195,7 @@ printf ">s1\nGGTTCGACGGCAAACTGCGCCCCGATGAGA\n>s2\nCTCATCGGGGCGCAGGCCGTCGAACC\n" 
         success "${DESCRIPTION}"
 
 ## gap in target, no merging
-DESCRIPTION="issue 601: --cluster_fast merge all substrings (gaps in substring do not count)"
+DESCRIPTION="issue 601: --cluster_fast merge all substrings (a gap in the target prevents merging)"
 printf ">s1\nGGTTCGACGGCAAACTGCGCCCCGATGAGAGAGA\n>s2\nGGTTCGACGGAAAACCTGCGCCCCGATGAG\n" | \
     "${VSEARCH}" \
         --cluster_fast - \
@@ -21587,7 +21587,7 @@ printf ">query\nTT\n>target\nT\n" | \
         failure "${DESCRIPTION}"
 
 # deletion in target -> cigar: DM -> deletion in trow
-DESCRIPTION="issue 618: insertion in target, userout trow is correct"
+DESCRIPTION="issue 618: deletion in target, userout trow is correct"
 printf ">query\nTT\n>target\nT\n" | \
     ${VSEARCH} \
         --allpairs_global - \
@@ -21640,7 +21640,7 @@ printf ">query\nAAAAGGGGTTTT\n>target\nAAAATTTT\n" | \
         failure "${DESCRIPTION}"
 
 # deletion in target -> cigar: 4M4D4M -> deletion in trow
-DESCRIPTION="issue 618: insertion in target, userout trow is correct (middle gap)"
+DESCRIPTION="issue 618: deletion in target, userout trow is correct (middle gap)"
 printf ">query\nAAAAGGGGTTTT\n>target\nAAAATTTT\n" | \
     ${VSEARCH} \
         --allpairs_global - \
