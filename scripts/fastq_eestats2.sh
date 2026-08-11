@@ -454,6 +454,15 @@ printf "@s\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_eestats2 --ee_cutoffs rejects a non-numeric list"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --ee_cutoffs "abc" \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## ------------------------------------------------------------ length_cutoffs
 
 DESCRIPTION="--fastq_eestats2 --length_cutoffs is accepted"
