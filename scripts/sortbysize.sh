@@ -602,6 +602,24 @@ DESCRIPTION="--sortbysize --minsize greater than --maxsize (always empty output)
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--sortbysize rejects --minsize 0"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=2\nAA\n") \
+    --quiet \
+    --minsize 0 \
+    --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--sortbysize rejects --maxsize 0"
+"${VSEARCH}" \
+    --sortbysize <(printf ">s1;size=2\nAA\n") \
+    --quiet \
+    --maxsize 0 \
+    --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## ----------------------------------------------------------------------- topn
 DESCRIPTION="--sortbysize accepts --topn"
 "${VSEARCH}" \
