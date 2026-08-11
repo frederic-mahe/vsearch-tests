@@ -67,6 +67,13 @@ DESCRIPTION="fastq_mergepairs option reverse is accepted"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="fastq_mergepairs errors if --reverse is missing"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## --------------------------------------------- output option is mandatory ---
 
 # The SYNOPSIS specifies (--fastaout | --fastqout) as mandatory.
