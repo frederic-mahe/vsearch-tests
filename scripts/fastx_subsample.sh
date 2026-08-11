@@ -238,6 +238,64 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the abort message reports both counts and names the way out
+DESCRIPTION="--fastx_subsample over-request error reports both counts and the remedy"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 2 \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "Cannot subsample 2 reads from a sample of 1 (use --allow_fewer to keep them all)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# with --sizein the limit is the total abundance, not the number of
+# amplicons
+DESCRIPTION="--fastx_subsample --sample_size cannot exceed total abundance (--sizein)"
+printf ">s1;size=2\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 3 \
+        --sizein \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --sample_size can be equal to total abundance (--sizein)"
+printf ">s1;size=3\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 3 \
+        --sizein \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# an empty input has no read to sample, so any --sample_size is too large
+DESCRIPTION="--fastx_subsample --sample_size cannot exceed an empty input"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## output files are opened before the read count is known, so an aborted
+## run leaves them created but empty (same side effect as usearch)
+DESCRIPTION="--fastx_subsample --sample_size over-request leaves --fastaout empty"
+TMP=$(mktemp)
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 2 \
+        --fastaout "${TMP}" 2> /dev/null
+[[ -f "${TMP}" ]] && [[ ! -s "${TMP}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
 DESCRIPTION="--fastx_subsample --sample_size cannot be zero"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
@@ -777,6 +835,221 @@ unset SEED
 #                              core options                                   #
 #                                                                             #
 #*****************************************************************************#
+
+## ------------------------------------------------------------- allow_fewer
+
+DESCRIPTION="--fastx_subsample accepts --allow_fewer"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --allow_fewer \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer accepts an over-request"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 2 \
+        --allow_fewer \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer outputs all reads when fewer are available"
+printf ">s1\nA\n>s2\nC\n>s3\nG\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 10 \
+        --allow_fewer \
+        --quiet \
+        --fastaout - | \
+    awk '/^>/ {s += 1} END {exit s == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## sampling is without replacement: an over-request must not emit any
+## sequence twice
+DESCRIPTION="--fastx_subsample --allow_fewer does not duplicate reads"
+printf ">s1\nA\n>s2\nC\n>s3\nG\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 10 \
+        --allow_fewer \
+        --quiet \
+        --fastaout - | \
+    grep "^>" | \
+    sort -u | \
+    awk 'END {exit NR == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer leaves nothing discarded"
+printf ">s1\nA\n>s2\nC\n>s3\nG\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 10 \
+        --allow_fewer \
+        --quiet \
+        --fastaout /dev/null \
+        --fastaout_discarded - | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## the regression test for a clamp written as "if flag then n = mass_total":
+## --allow_fewer must be inert whenever the request already fits
+DESCRIPTION="--fastx_subsample --allow_fewer has no effect when the request fits"
+printf ">s1\nA\n>s2\nC\n>s3\nG\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --allow_fewer \
+        --quiet \
+        --fastaout - | \
+    awk '/^>/ {s += 1} END {exit s == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer keeps all reads at the boundary (N == input)"
+printf ">s1\nA\n>s2\nC\n>s3\nG\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 3 \
+        --allow_fewer \
+        --quiet \
+        --fastaout - | \
+    awk '/^>/ {s += 1} END {exit s == 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer clamps to the total abundance (--sizein)"
+printf ">s1;size=2\nA\n>s2;size=3\nC\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 100 \
+        --allow_fewer \
+        --sizein \
+        --sizeout \
+        --quiet \
+        --fastaout - | \
+    awk -F "=" '/^>/ {s += $2} END {exit s == 5 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer outputs all records in fastq"
+printf "@s1\nA\n+\nI\n@s2\nC\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 10 \
+        --allow_fewer \
+        --quiet \
+        --fastqout - | \
+    awk 'END {exit NR == 8 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the stats line reports the clamped count, not the request
+DESCRIPTION="--fastx_subsample --allow_fewer reports the clamped count"
+printf ">s1\nA\n>s2\nC\n>s3\nG\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 10 \
+        --allow_fewer \
+        --fastaout /dev/null 2>&1 | \
+    grep -qx "Subsampled 3 reads from 3 amplicons" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## an empty input clamps the request to zero, which no other combination
+## of options can produce (--sample_size 0 is rejected at parse time)
+DESCRIPTION="--fastx_subsample --allow_fewer accepts empty input"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --allow_fewer \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## empty input plus --sizein reads the first amplicon's abundance from an
+## empty database unless a request of zero reads short-circuits first
+DESCRIPTION="--fastx_subsample --allow_fewer accepts empty input (--sizein)"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --allow_fewer \
+        --sizein \
+        --quiet \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer outputs nothing from empty input"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --allow_fewer \
+        --quiet \
+        --fastaout - | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --allow_fewer is a no-op with --sample_pct, but the combination is
+## accepted (and warned about, see below)
+DESCRIPTION="--fastx_subsample --allow_fewer is accepted with --sample_pct"
+printf ">s1\nA\n>s2\nC\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct 50.0 \
+        --allow_fewer \
+        --quiet \
+        --fastaout - | \
+    awk '/^>/ {s += 1} END {exit s == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer warns when used with --sample_pct"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct 100.0 \
+        --allow_fewer \
+        --fastaout /dev/null 2>&1 | \
+    grep -qx "WARNING: Option --allow_fewer is ignored with --sample_pct" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer does not warn with --sample_size"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 2 \
+        --allow_fewer \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "WARNING" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## the clamp is deliberately silent: an over-request produces no warning
+## at all, only the usual stats lines
+DESCRIPTION="--fastx_subsample --allow_fewer clamps silently"
+printf ">s1\nA\n>s2\nC\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 10 \
+        --allow_fewer \
+        --fastaout /dev/null 2>&1 | \
+    grep -qiE "warning|fatal" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## --------------------------------------------------------- fastaout_discarded
 
@@ -2127,6 +2400,50 @@ printf ">s;size=1\nA\n" | \
 #                              invalid options                                #
 #                                                                             #
 #*****************************************************************************#
+
+## --allow_fewer must not weaken the other parse-time guards
+DESCRIPTION="--fastx_subsample --allow_fewer does not make --sample_size 0 valid"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 0 \
+        --allow_fewer \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer does not make --sample_pct 200 valid"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_pct 200.0 \
+        --allow_fewer \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --allow_fewer takes no argument, so a value after it is left over as a
+## stray string on the command line and rejected
+DESCRIPTION="--fastx_subsample --allow_fewer rejects an argument"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --allow_fewer 1 \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_subsample --allow_fewer with an argument names the stray string"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size 1 \
+        --allow_fewer 1 \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "Unrecognized string on command line (1)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
