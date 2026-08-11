@@ -1504,8 +1504,8 @@ DESCRIPTION="--sff_convert accepts SFF files with null clipping values"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# clip_qual_left and clip_adapter_left can have different values
-DESCRIPTION="--sff_convert accepts SFF files different clipping values (left)"
+# clip_qual_right and clip_adapter_right can have different values
+DESCRIPTION="--sff_convert accepts SFF files different clipping values (right)"
 (
     printf ".sff"
     printf "%b" "\x00\x00\x00\x01"
@@ -1544,8 +1544,8 @@ DESCRIPTION="--sff_convert accepts SFF files different clipping values (left)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# clip_qual_right and clip_adapter_right can have different values
-DESCRIPTION="--sff_convert accepts SFF files different clipping values (right)"
+# clip_qual_left and clip_adapter_left can have different values
+DESCRIPTION="--sff_convert accepts SFF files different clipping values (left)"
 (
     printf ".sff"
     printf "%b" "\x00\x00\x00\x01"
@@ -2245,46 +2245,6 @@ DESCRIPTION="--sff_convert --sff_clip is accepted"
     --quiet \
     --sff_clip \
     --fastqout /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
-# clip_qual_right and clip_adapter_right can have different values
-DESCRIPTION="--sff_convert accepts SFF files different clipping values (right)"
-(
-    printf ".sff"
-    printf "%b" "\x00\x00\x00\x01"
-    printf "%b" "\x00\x00\x00\x00\x00\x00\x00\x00"
-    printf "%b" "\x00\x00\x00\x00"
-    printf "%b" "\x00\x00\x00\x01"
-    printf "%b" "\x00\x28"
-    printf "%b" "\x00\x04"
-    printf "%b" "\x00\x01"
-    printf "%b" "\x01"
-    printf "T"
-    printf "TCAG"
-    printf "%b" "\x00\x00\x00\x00"
-    # read header section -----------------------
-    printf "%b" "\x00\x18"
-    printf "%b" "\x00\x01"
-    printf "%b" "\x00\x00\x00\x01"                 # number of bases before clipping
-    printf "%b" "\x00\x00"                         # clip qual left
-    printf "%b" "\x00\x00"                         # clip qual right
-    printf "%b" "\x00\x01"                         # clip adapter left
-    printf "%b" "\x00\x00"                         # clip adapter right
-    printf "s"
-    printf "%b" "\x00\x00\x00\x00\x00\x00\x00"
-    # read data section -----------------------
-    printf "%b" "\x00\x64"
-    printf "%b" "\x01"
-    printf "T"
-    printf "%b" "\x28"
-    printf "%b" "\x00\x00\x00"
-) | \
-    "${VSEARCH}" \
-        --sff_convert - \
-        --quiet \
-        --fastqout - | \
-    grep -qx "T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
