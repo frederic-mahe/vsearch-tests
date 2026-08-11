@@ -769,6 +769,18 @@ grep -q "sequences with less than" "${TMPLOG}" && \
 rm -f "${TMPLOG}"
 unset TMPLOG
 
+DESCRIPTION="--fastx_mask rejects --min_unmasked_pct greater than --max_unmasked_pct"
+printf ">s1\natGC\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastaout /dev/null \
+        --qmask soft \
+        --min_unmasked_pct 50 \
+        --max_unmasked_pct 10 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 # coverage: mask.cc (log message when max_unmasked_pct discards sequences)
 DESCRIPTION="--max_unmasked_pct discards are written to --log"
 TMPLOG=$(mktemp)
