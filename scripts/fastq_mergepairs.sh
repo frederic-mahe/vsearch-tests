@@ -4806,7 +4806,7 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
         failure "${DESCRIPTION}"
 
 ## sample names are parsed until the first blank characters
-DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (space)"
+DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (semicolon)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
