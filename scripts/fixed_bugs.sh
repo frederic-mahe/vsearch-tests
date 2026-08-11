@@ -14340,9 +14340,13 @@ printf "@s\nA\n+\n~\n" | \
 #    failure "${DESCRIPTION}" || \
 #        success "${DESCRIPTION}"
 
+## the input must survive the default --minseqlength (32), otherwise the
+## database is empty and vsearch refuses to write a UDB for it; the subject
+## here is the output being a seekable regular file, not the length filter
 DESCRIPTION="issue 523: makeudb_usearch can write to a regular file"
 TMP_UDB=$(mktemp)
-printf ">s1\nA\n" | \
+printf ">s1\n%32s\n" " " | \
+    tr " " "A" | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \
         --quiet \
