@@ -2412,6 +2412,15 @@ printf ">s1\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_subsample rejects a negative --sample_size"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_subsample - \
+        --sample_size -1 \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_subsample --allow_fewer does not make --sample_pct 200 valid"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
