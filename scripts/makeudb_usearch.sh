@@ -93,6 +93,101 @@ chmod u-r "${TMPFA}"
 chmod u+r "${TMPFA}" && rm -f "${TMPFA}"
 unset TMPFA
 
+## a UDB header stores the number of sequences, and a UDB declaring none is
+## rejected by every reader ("Invalid UDB file"), so vsearch refuses to write
+## one rather than hand back a file it cannot open again. usearch aborts here
+## too ("Empty database")
+DESCRIPTION="--makeudb_usearch errors with empty input"
+printf "" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --output /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--makeudb_usearch empty input error message names the empty database"
+printf "" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --output /dev/null 2>&1 | \
+    grep -q "Cannot write a UDB file for an empty database" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the same situation without an empty input: --minseqlength defaults to 32
+## for this command, so a shorter sequence leaves nothing to index
+DESCRIPTION="--makeudb_usearch errors when every sequence is discarded by --minseqlength"
+printf ">s\nACGTACGT\n" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --output /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## the discard report still comes before the error, so the user can see why
+## the database ended up empty
+DESCRIPTION="--makeudb_usearch reports the discarded sequences before the error"
+printf ">s\nACGTACGT\n" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --output /dev/null 2>&1 | \
+    grep -qE "minseqlength[[:space:]]+32:[[:space:]]+1[[:space:]]+sequence[[:space:]]+discarded" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the guard must not be wider than that: the very same input is indexed
+## normally once the threshold lets it through
+DESCRIPTION="--makeudb_usearch accepts a short sequence with --minseqlength 1"
+printf ">s\nACGTACGT\n" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --minseqlength 1 \
+        --output /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## and the UDB it produces can be read back as a --db (the round trip the
+## empty database broke)
+DESCRIPTION="--makeudb_usearch --minseqlength 1 writes a UDB that can be read back"
+TMPFA=$(mktemp)
+TMPUDB=$(mktemp)
+printf ">s\nACGTACGT\n" > "${TMPFA}"
+"${VSEARCH}" \
+    --makeudb_usearch "${TMPFA}" \
+    --minseqlength 1 \
+    --output "${TMPUDB}" \
+    --quiet 2> /dev/null
+printf ">q\nACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${TMPUDB}" \
+        --id 0.9 \
+        --minseqlength 1 \
+        --blast6out - \
+        --quiet 2> /dev/null | \
+    grep -qw "q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}" "${TMPUDB}"
+unset TMPFA TMPUDB
+
+## --output is opened before the input is read, so an aborted run leaves it
+## created but empty (same side effect as usearch)
+DESCRIPTION="--makeudb_usearch empty input leaves --output empty"
+TMPUDB=$(mktemp)
+printf "" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --output "${TMPUDB}" 2> /dev/null
+[[ -f "${TMPUDB}" ]] && [[ ! -s "${TMPUDB}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
 DESCRIPTION="--makeudb_usearch errors with non-fasta input"
 printf "not a fasta file\n" | \
     "${VSEARCH}" \
