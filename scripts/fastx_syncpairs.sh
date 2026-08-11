@@ -272,6 +272,91 @@ printf "" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## when both inputs are empty the format cannot be determined, and fastq
+## output is accepted (and remains empty)
+DESCRIPTION="--fastx_syncpairs accepts empty forward and reverse with --fastqout"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "") \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the effective format follows the non-empty input file: an empty
+## forward with a fastq reverse allows fastq output
+DESCRIPTION="--fastx_syncpairs allows fastq output when only the reverse is non-empty"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@r\nTT\n+\nII\n") \
+        --fastqout_rev /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs writes fastq reverse orphans when the forward is empty"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@r\nTT\n+\nII\n") \
+        --fastqout_orphans_rev - 2> /dev/null | \
+    grep -qx "@r" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs rejects fastq output when the non-empty input is fasta"
+printf "" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf ">r\nTT\n") \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs errors if the forward input file does not exist"
+"${VSEARCH}" \
+    --fastx_syncpairs /no/such/file \
+    --reverse <(printf "@s\nA\n+\nI\n") \
+    --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs errors if the reverse input file does not exist"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse /no/such/file \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs errors if the forward input file is not readable"
+FORWARD=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${FORWARD}"
+chmod u-r "${FORWARD}"
+"${VSEARCH}" \
+    --fastx_syncpairs "${FORWARD}" \
+    --reverse <(printf "@s\nA\n+\nI\n") \
+    --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+r "${FORWARD}" && rm -f "${FORWARD}"
+unset FORWARD
+
+DESCRIPTION="--fastx_syncpairs errors if the reverse input file is not readable"
+REVERSE=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${REVERSE}"
+chmod u-r "${REVERSE}"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse "${REVERSE}" \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+chmod u+r "${REVERSE}" && rm -f "${REVERSE}"
+unset REVERSE
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -325,6 +410,53 @@ printf "@a 1:N:0:1\nAA\n+\nII\n@b 1:N:0:1\nCC\n+\nII\n" | \
         --reverse <(printf "@a 2:N:0:1\nTT\n+\nII\n") \
         --fastaout - 2> /dev/null | \
     grep -qx ">a 1:N:0:1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs writes all four fastq lines for a synced read"
+printf "@s\nACGT\n+\nHHII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@s\nTGCA\n+\nIIHH\n") \
+        --fastqout - 2> /dev/null | \
+    tr '\n' ' ' | \
+    grep -qx "@s ACGT + HHII " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## reordering the reverse reads must keep each quality string attached
+## to its own read
+DESCRIPTION="--fastx_syncpairs keeps each reverse quality with its read when reordering"
+printf "@a\nAA\n+\nII\n@b\nCC\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@b\nTT\n+\nJJ\n@a\nGG\n+\nHH\n") \
+        --fastqout /dev/null \
+        --fastqout_rev - 2> /dev/null | \
+    tr '\n' ' ' | \
+    grep -qx "@a GG + HH @b TT + JJ " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## final report on stderr: "n pairs synchronized, x forward and y
+## reverse orphan reads"
+DESCRIPTION="--fastx_syncpairs reports pairs and orphans on stderr"
+printf "@a\nAA\n+\nII\n@b\nCC\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a\nTT\n+\nII\n@z\nGG\n+\nII\n") \
+        --fastaout /dev/null 2>&1 > /dev/null | \
+    grep -q "1 pairs synchronized, 1 forward and 1 reverse orphan reads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs reports zero pairs when no reads match"
+printf "@a\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@z\nTT\n+\nII\n") \
+        --fastaout /dev/null 2>&1 > /dev/null | \
+    grep -q "0 pairs synchronized, 1 forward and 1 reverse orphan reads" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -420,6 +552,32 @@ printf "@a 1:N:0:1\nAA\n+\nII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## forward orphans are written in the order of the forward file
+DESCRIPTION="--fastx_syncpairs writes forward orphans in forward-file order"
+printf "@b\nAA\n+\nII\n@a\nCC\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@z\nTT\n+\nII\n") \
+        --fastaout_orphans - 2> /dev/null | \
+    grep "^>" | \
+    tr -d '\n' | \
+    grep -qx ">b>a" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## reverse orphans are written in the order of the reverse file
+DESCRIPTION="--fastx_syncpairs writes reverse orphans in reverse-file order"
+printf "@m\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@d\nTT\n+\nII\n@c\nGG\n+\nII\n") \
+        --fastaout_orphans_rev - 2> /dev/null | \
+    grep "^>" | \
+    tr -d '\n' | \
+    grep -qx ">d>c" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -496,6 +654,108 @@ printf "@a/1\nAA\n+\nII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## a tab, like a space, always ends the matching key
+DESCRIPTION="--fastx_syncpairs matches headers that differ after a tab"
+printf "@a\t1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a\t2\nTT\n+\nII\n") \
+        --fastaout /dev/null \
+        --fastaout_orphans - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## the mate number is only stripped when preceded by a separator
+## character: a1 and a2 are distinct keys
+DESCRIPTION="--fastx_syncpairs does not strip a mate number without its separator"
+printf "@a1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a2\nTT\n+\nII\n") \
+        --fastaout /dev/null \
+        --fastaout_orphans - 2> /dev/null | \
+    grep -qx ">a1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## only 1 and 2 are mate numbers: /3 is kept verbatim in the key, so
+## two reads labelled a/3 share the key a/3 and form a pair
+DESCRIPTION="--fastx_syncpairs does not treat /3 as a mate marker"
+printf "@a/3\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a/3\nTT\n+\nII\n") \
+        --fastaout - 2> /dev/null | \
+    grep -qx ">a/3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a/1 strips to the key a, so it pairs with a read labelled just a
+DESCRIPTION="--fastx_syncpairs matches a /1 read with a bare label"
+printf "@a/1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a\nTT\n+\nII\n") \
+        --fastaout /dev/null \
+        --fastaout_orphans - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## corner case: a label that is only a mate marker strips to an empty
+## key, so /1 and /2 pair with each other
+DESCRIPTION="--fastx_syncpairs pairs reads whose whole label is a mate marker"
+printf "@/1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@/2\nTT\n+\nII\n") \
+        --fastaout - 2> /dev/null | \
+    grep -qx ">/1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --read_separators accepts a set of characters, any of which may
+## introduce the mate number
+DESCRIPTION="--fastx_syncpairs --read_separators accepts a set of separators"
+printf "@a_1\nAA\n+\nII\n@b:1\nCC\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a_2\nTT\n+\nII\n@b:2\nGG\n+\nII\n") \
+        --read_separators "_:" \
+        --fastaout - 2> /dev/null | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## an empty separator set disables mate-marker stripping entirely
+DESCRIPTION="--fastx_syncpairs --read_separators empty string disables stripping"
+printf "@a/1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a/2\nTT\n+\nII\n") \
+        --read_separators "" \
+        --fastaout /dev/null \
+        --fastaout_orphans - 2> /dev/null | \
+    grep -qx ">a/1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## whitespace always ends the matching key, even when --read_separators
+## names a different separator set
+DESCRIPTION="--fastx_syncpairs --read_separators does not disable whitespace handling"
+printf "@a 1:N:0:1\nAA\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a 2:N:0:1\nTT\n+\nII\n") \
+        --read_separators "_" \
+        --fastaout /dev/null \
+        --fastaout_orphans - 2> /dev/null | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -557,6 +817,27 @@ printf "@s\nAAAAAA\n+\nIIIIII\n" | \
         --fasta_width 3 \
         --fastaout - 2> /dev/null | \
     awk '/^>/ {next} {if (length($0) > 3) exit 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs --fasta_width 0 does not wrap fasta output"
+printf "@s\nAAAAAAAAAA\n+\nIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@s\nAAAAAAAAAA\n+\nIIIIIIIIII\n") \
+        --fasta_width 0 \
+        --fastaout - 2> /dev/null | \
+    grep -qx "AAAAAAAAAA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs --fastq_ascii 33 is accepted"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@s\nA\n+\nI\n") \
+        --fastq_ascii 33 \
+        --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -650,6 +931,80 @@ printf "@s\nA\n+\nI\n" | \
 rm -f "${LOG}"
 unset LOG
 
+DESCRIPTION="--fastx_syncpairs --log reports pairs and orphans"
+LOG=$(mktemp)
+printf "@a\nAA\n+\nII\n@b\nCC\n+\nII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@a\nTT\n+\nII\n@z\nGG\n+\nII\n") \
+        --fastaout /dev/null \
+        --log "${LOG}" 2> /dev/null
+grep -q "1 pairs synchronized, 1 forward and 1 reverse orphan reads" "${LOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${LOG}"
+unset LOG
+
+DESCRIPTION="--fastx_syncpairs --no_progress is accepted"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@s\nA\n+\nI\n") \
+        --no_progress \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## when stderr is not a terminal, the progress indicator is limited to a
+## final "100%" line whether or not --no_progress is used, so only the
+## integrity of the output can be checked here
+DESCRIPTION="--fastx_syncpairs --no_progress does not corrupt the output"
+printf "@s\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@s\nACGT\n+\nIIII\n") \
+        --no_progress \
+        --fastqout - 2> /dev/null | \
+    tr '\n' ' ' | \
+    grep -qx "@s ACGT + IIII " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the command is not multithreaded: --threads is accepted but has no
+## effect
+DESCRIPTION="--fastx_syncpairs --threads is accepted"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@s\nA\n+\nI\n") \
+        --threads 1 \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs --threads does not corrupt the output"
+printf "@s\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@s\nACGT\n+\nIIII\n") \
+        --threads 1 \
+        --fastqout - 2> /dev/null | \
+    tr '\n' ' ' | \
+    grep -qx "@s ACGT + IIII " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs --threads 2 warns that only one thread is used"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@s\nA\n+\nI\n") \
+        --threads 2 \
+        --fastqout /dev/null 2>&1 > /dev/null | \
+    grep -q "does not support multithreading" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastx_syncpairs --quiet runs silently on stderr"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
@@ -667,6 +1022,26 @@ printf "@s\nA\n+\nI\n" | \
 #                              invalid options                                #
 #                                                                             #
 #*****************************************************************************#
+
+DESCRIPTION="--fastx_syncpairs rejects --fastq_ascii values other than 33 or 64"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@s\nA\n+\nI\n") \
+        --fastq_ascii 42 \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_syncpairs rejects --threads values greater than 1024"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse <(printf "@s\nA\n+\nI\n") \
+        --threads 1025 \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_syncpairs rejects an unrelated option (--join_padgap)"
 REVERSE=$(mktemp)
