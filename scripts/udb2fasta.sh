@@ -133,6 +133,54 @@ printf '\377\377\377\377' | \
 rm -f "${TMPUDB}"
 unset TMPUDB
 
+## a UDB file cut in half passes the header checks but a later section
+## read comes up short
+DESCRIPTION="--udb2fasta rejects a UDB file truncated after the header"
+TMPUDB=$(mktemp)
+TMPTRUNC=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
+head -c "$(($(wc -c < "${TMPUDB}") / 2))" "${TMPUDB}" > "${TMPTRUNC}"
+"${VSEARCH}" \
+    --udb2fasta "${TMPTRUNC}" \
+    --output /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPTRUNC}"
+unset TMPUDB TMPTRUNC
+
+## the sections described by the header must add up to the exact file
+## size; trailing bytes are an error
+DESCRIPTION="--udb2fasta rejects a UDB file with trailing garbage"
+TMPUDB=$(mktemp)
+TMPBAD=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
+cat "${TMPUDB}" "${TMPUDB}" > "${TMPBAD}"
+"${VSEARCH}" \
+    --udb2fasta "${TMPBAD}" \
+    --output /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPBAD}"
+unset TMPUDB TMPBAD
+
+## corrupting the tail of the k-mer count table desynchronizes the
+## per-word counts from the sections that follow
+DESCRIPTION="--udb2fasta rejects a UDB file with a corrupted k-mer count table"
+TMPUDB=$(mktemp)
+printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
+printf '\377\377\377\377' | \
+    dd of="${TMPUDB}" bs=1 seek="$(($(wc -c < "${TMPUDB}") - 300))" count=4 conv=notrunc 2> /dev/null
+"${VSEARCH}" \
+    --udb2fasta "${TMPUDB}" \
+    --output /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
 ## UDB files cannot be read from a pipe (udb_read requires xstat).
 ## 'cat file |' is needed to create an actual FIFO on stdin; a redirect
 ## '< file' would leave stdin as a seekable regular file and not trigger
