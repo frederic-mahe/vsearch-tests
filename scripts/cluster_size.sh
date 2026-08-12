@@ -1215,6 +1215,31 @@ printf ">s1;size=3\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--cluster_size --xee is accepted"
+printf ">s1;ee=1.5\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 1.0 \
+        --minseqlength 1 \
+        --xee \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_size --xee strips an ee= annotation"
+printf ">s1;ee=1.5\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 1.0 \
+        --minseqlength 1 \
+        --xee \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------- alignment parameters ----------
 
 for OPT in --gapext --gapopen --idprefix --idsuffix --match --mismatch --mincols --minwordmatches ; do
