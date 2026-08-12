@@ -228,7 +228,7 @@ rm -f "${DB}"
 unset DB
 
 ## each listed output option accepted as sole output option
-for OPT in --chimeras --nonchimeras --uchimealns --uchimeout ; do
+for OPT in --borderline --chimeras --nonchimeras --uchimealns --uchimeout ; do
     DESCRIPTION="--uchime_ref accepts ${OPT} as sole output option"
     DB=$(mktemp)
     printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
@@ -244,22 +244,6 @@ for OPT in --chimeras --nonchimeras --uchimealns --uchimeout ; do
     unset DB
 done
 unset OPT
-
-## --borderline is listed in the manpage as an output option, but it
-## cannot be used alone: vsearch reports "No output files specified"
-DESCRIPTION="--uchime_ref --borderline is not accepted as sole output option"
-DB=$(mktemp)
-printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
-printf ">s\n%s\n" "${PARENT_A}" | \
-    "${VSEARCH}" \
-        --uchime_ref - \
-        --db "${DB}" \
-        --borderline /dev/null \
-        --quiet 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
-rm -f "${DB}"
-unset DB
 
 DESCRIPTION="--uchime_ref --borderline is accepted together with another output option"
 DB=$(mktemp)

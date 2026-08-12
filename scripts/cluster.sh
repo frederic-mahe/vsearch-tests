@@ -75,32 +75,14 @@ SEQ="ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT"
 ## each output option fails if its target file cannot be opened for
 ## writing (write-protected file)
 for OPT in --centroids --uc --alnout --samout --userout --blast6out \
-           --matched --notmatched --otutabout --mothur_shared_out --biomout ; do
+           --matched --notmatched --otutabout --mothur_shared_out --biomout \
+           --fastapairs --qsegout --tsegout ; do
     DESCRIPTION="--cluster_fast ${OPT} errors if unable to open output file for writing"
     TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
     printf ">q\n%s\n" "${SEQ}" | \
         "${VSEARCH}" \
             --cluster_fast - \
             --id 0.97 \
-            "${OPT}" "${TMP}" \
-            --quiet 2> /dev/null && \
-        failure "${DESCRIPTION}" || \
-            success "${DESCRIPTION}"
-    rm -f "${TMP}"
-    unset TMP
-done
-unset OPT
-
-## --fastapairs, --qsegout and --tsegout cannot be used alone, so they
-## are paired with a writable --alnout
-for OPT in --fastapairs --qsegout --tsegout ; do
-    DESCRIPTION="--cluster_fast ${OPT} errors if unable to open output file for writing"
-    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
-    printf ">q\n%s\n" "${SEQ}" | \
-        "${VSEARCH}" \
-            --cluster_fast - \
-            --id 0.97 \
-            --alnout /dev/null \
             "${OPT}" "${TMP}" \
             --quiet 2> /dev/null && \
         failure "${DESCRIPTION}" || \

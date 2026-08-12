@@ -165,7 +165,7 @@ printf ">s;size=1\n%s\n" "${PARENT_A}" | \
         success "${DESCRIPTION}"
 
 ## each listed output option accepted as sole output option
-for OPT in --chimeras --nonchimeras --uchimealns --uchimeout ; do
+for OPT in --borderline --chimeras --nonchimeras --uchimealns --uchimeout ; do
     DESCRIPTION="--uchime_denovo accepts ${OPT} as sole output option"
     printf ">s;size=1\n%s\n" "${PARENT_A}" | \
         "${VSEARCH}" \
@@ -176,17 +176,6 @@ for OPT in --chimeras --nonchimeras --uchimealns --uchimeout ; do
             failure "${DESCRIPTION}"
 done
 unset OPT
-
-## --borderline is listed in the manpage as an output option, but it
-## cannot be used alone: vsearch reports "No output files specified"
-DESCRIPTION="--uchime_denovo --borderline is not accepted as sole output option"
-printf ">s;size=1\n%s\n" "${PARENT_A}" | \
-    "${VSEARCH}" \
-        --uchime_denovo - \
-        --borderline /dev/null \
-        --quiet 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
 
 DESCRIPTION="--uchime_denovo --borderline is accepted together with another output option"
 printf ">s;size=1\n%s\n" "${PARENT_A}" | \

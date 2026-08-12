@@ -224,11 +224,10 @@ rm -f "${DB}"
 unset DB
 
 ## each output option listed in the synopsis can be used as the sole
-## output option, with the exception of --qsegout and --tsegout (see
-## below)
+## output option
 for OPT in --alnout --biomout --blast6out --fastapairs --matched \
-           --mothur_shared_out --notmatched --otutabout \
-           --samout --uc --userout ; do
+           --mothur_shared_out --notmatched --otutabout --qsegout \
+           --samout --tsegout --uc --userout ; do
     DESCRIPTION="--search_exact accepts ${OPT} as sole output option"
     DB=$(mktemp)
     printf ">d\n%s\n" "${SEQ}" > "${DB}"
@@ -245,32 +244,11 @@ for OPT in --alnout --biomout --blast6out --fastapairs --matched \
 done
 unset OPT
 
-## manpage claims --qsegout and --tsegout can be used as sole output
-## options, but vsearch rejects them with "No output files
-## specified". They can still be used alongside another output option
-## (see secondary options section). To be reviewed.
-for OPT in --qsegout --tsegout ; do
-    DESCRIPTION="--search_exact rejects ${OPT} as sole output option"
-    DB=$(mktemp)
-    printf ">d\n%s\n" "${SEQ}" > "${DB}"
-    printf ">q\n%s\n" "${SEQ}" | \
-        "${VSEARCH}" \
-            --search_exact - \
-            --db "${DB}" \
-            "${OPT}" /dev/null \
-            --quiet 2> /dev/null && \
-        failure "${DESCRIPTION}" || \
-            success "${DESCRIPTION}"
-    rm -f "${DB}"
-    unset DB
-done
-unset OPT
-
 ## each output option fails if its target file cannot be opened for
 ## writing (write-protected file)
 for OPT in --alnout --biomout --blast6out --fastapairs --matched \
-           --mothur_shared_out --notmatched --otutabout \
-           --samout --uc --userout --dbmatched --dbnotmatched ; do
+           --mothur_shared_out --notmatched --otutabout --qsegout \
+           --samout --tsegout --uc --userout --dbmatched --dbnotmatched ; do
     DESCRIPTION="--search_exact ${OPT} errors if unable to open output file for writing"
     DB=$(mktemp)
     printf ">d\n%s\n" "${SEQ}" > "${DB}"
@@ -279,27 +257,6 @@ for OPT in --alnout --biomout --blast6out --fastapairs --matched \
         "${VSEARCH}" \
             --search_exact - \
             --db "${DB}" \
-            "${OPT}" "${TMP}" \
-            --quiet 2> /dev/null && \
-        failure "${DESCRIPTION}" || \
-            success "${DESCRIPTION}"
-    rm -f "${TMP}" "${DB}"
-    unset TMP DB
-done
-unset OPT
-
-## --qsegout and --tsegout cannot be used alone, so they are paired
-## with a writable --alnout
-for OPT in --qsegout --tsegout ; do
-    DESCRIPTION="--search_exact ${OPT} errors if unable to open output file for writing"
-    DB=$(mktemp)
-    printf ">d\n%s\n" "${SEQ}" > "${DB}"
-    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
-    printf ">q\n%s\n" "${SEQ}" | \
-        "${VSEARCH}" \
-            --search_exact - \
-            --db "${DB}" \
-            --alnout /dev/null \
             "${OPT}" "${TMP}" \
             --quiet 2> /dev/null && \
         failure "${DESCRIPTION}" || \
@@ -855,55 +812,6 @@ printf ">q\n%s\n" "${SEQ}" | \
         --matched - \
         --quiet | \
     grep -qx ">q;x=1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm -f "${DB}"
-unset DB
-
-## --------------------------------------------------------------- lca_cutoff
-
-DESCRIPTION="--search_exact --lca_cutoff is accepted"
-DB=$(mktemp)
-printf ">d;tax=k:A\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\n%s\n" "${SEQ}" | \
-    "${VSEARCH}" \
-        --search_exact - \
-        --db "${DB}" \
-        --lca_cutoff 1.0 \
-        --lcaout /dev/null \
-        --blast6out /dev/null \
-        --quiet && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm -f "${DB}"
-unset DB
-
-## ------------------------------------------------------------------- lcaout
-
-DESCRIPTION="--search_exact --lcaout is accepted"
-DB=$(mktemp)
-printf ">d;tax=k:A\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\n%s\n" "${SEQ}" | \
-    "${VSEARCH}" \
-        --search_exact - \
-        --db "${DB}" \
-        --lcaout /dev/null \
-        --quiet && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-rm -f "${DB}"
-unset DB
-
-DESCRIPTION="--search_exact --lcaout writes the taxonomic lineage"
-DB=$(mktemp)
-printf ">d;tax=k:Archaea\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\n%s\n" "${SEQ}" | \
-    "${VSEARCH}" \
-        --search_exact - \
-        --db "${DB}" \
-        --lcaout - \
-        --quiet | \
-    awk -F'\t' '{exit ($1 == "q" && $2 ~ /Archaea/) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -1848,6 +1756,29 @@ for OPT_PAIR in "--id 1.0" "--maxaccepts 1" "--maxrejects 1" ; do
 done
 unset OPT_PAIR OPT_NAME
 
+## LCA output is only implemented for --usearch_global: --search_exact
+## used to accept --lcaout (and --lca_cutoff, which only modifies that
+## output), silently write nothing and exit with a zero status
+for OPT_PAIR in "--lcaout /dev/null" "--lca_cutoff 1.0" ; do
+    OPT_NAME="${OPT_PAIR%% *}"
+    DESCRIPTION="--search_exact rejects ${OPT_NAME}"
+    DB=$(mktemp)
+    printf ">d;tax=k:Archaea\n%s\n" "${SEQ}" > "${DB}"
+    # shellcheck disable=SC2086
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --search_exact - \
+            --db "${DB}" \
+            ${OPT_PAIR} \
+            --blast6out /dev/null \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+    rm -f "${DB}"
+    unset DB
+done
+unset OPT_PAIR OPT_NAME
+
 
 ## clean up common variables before the fixed bugs and memory leaks sections
 unset SEQ
@@ -1933,13 +1864,14 @@ if which valgrind > /dev/null 2>&1 ; then
         --dbmatched /dev/null \
         --dbnotmatched /dev/null \
         --fastapairs /dev/null \
-        --lcaout /dev/null \
         --log /dev/null \
         --matched /dev/null \
         --mothur_shared_out /dev/null \
         --notmatched /dev/null \
         --otutabout /dev/null \
+        --qsegout /dev/null \
         --samout /dev/null \
+        --tsegout /dev/null \
         --strand both \
         --uc /dev/null \
         --userout /dev/null \

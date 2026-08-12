@@ -217,7 +217,9 @@ printf ">s1\nAAAA\n" | \
         success "${DESCRIPTION}"
 
 ## each listed output option accepted alone (--clusters uses a prefix path)
-for OPT in --alnout --biomout --blast6out --centroids --mothur_shared_out --msaout --otutabout --profile --samout --uc --userout ; do
+for OPT in --alnout --biomout --blast6out --centroids --fastapairs \
+           --mothur_shared_out --msaout --otutabout --profile --qsegout \
+           --samout --tsegout --uc --userout ; do
     DESCRIPTION="--cluster_fast accepts ${OPT} as sole output option"
     printf ">s1\nAAAA\n" | \
         "${VSEARCH}" \

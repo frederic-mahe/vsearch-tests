@@ -171,7 +171,9 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
         failure "${DESCRIPTION}"
 
 ## each listed output option accepted alone
-for OPT in --alnout --biomout --blast6out --centroids --mothur_shared_out --msaout --otutabout --profile --samout --uc --userout ; do
+for OPT in --alnout --biomout --blast6out --centroids --fastapairs \
+           --mothur_shared_out --msaout --otutabout --profile --qsegout \
+           --samout --tsegout --uc --userout ; do
     DESCRIPTION="--cluster_unoise accepts ${OPT} as sole output option"
     printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
         "${VSEARCH}" \
