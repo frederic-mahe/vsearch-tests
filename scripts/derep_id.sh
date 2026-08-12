@@ -1437,6 +1437,57 @@ printf "" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## --------------------------------------------------------------- label_suffix
+
+DESCRIPTION="--derep_id --label_suffix is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --minseqlength 1 \
+        --quiet \
+        --label_suffix "suffix" \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_id --label_suffix adds suffix (fasta in, fasta out)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --minseqlength 1 \
+        --quiet \
+        --label_suffix ";suffix" \
+        --output - | \
+    grep -qx ">s;suffix" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_id --label_suffix adds suffix (empty suffix string)"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --minseqlength 1 \
+        --quiet \
+        --label_suffix "" \
+        --output - | \
+    grep -qx ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the suffix is inserted before the size annotation
+DESCRIPTION="--derep_id --label_suffix --sizeout adds suffix before size annotation"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --minseqlength 1 \
+        --quiet \
+        --label_suffix ";suffix" \
+        --sizeout \
+        --output - | \
+    grep -qx ">s;suffix;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ------------------------------------------------------------------ lengthout
 
 DESCRIPTION="--derep_id --lengthout is accepted"
