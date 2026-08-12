@@ -175,10 +175,9 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         success "${DESCRIPTION}"
 
 ## each output option listed in the synopsis can be used as the sole
-## output option, with the exception of --qsegout and --tsegout (see
-## below)
+## output option
 for OPT in --alnout --blast6out --fastapairs --matched --notmatched \
-           --samout --uc --userout ; do
+           --qsegout --samout --tsegout --uc --userout ; do
     DESCRIPTION="--allpairs_global accepts ${OPT} as sole output option"
     printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         "${VSEARCH}" \
@@ -191,50 +190,16 @@ for OPT in --alnout --blast6out --fastapairs --matched --notmatched \
 done
 unset OPT
 
-## manpage claims --qsegout and --tsegout can be used as sole output
-## options, but vsearch rejects them with "No output files
-## specified". They can still be used alongside another output option
-## (see secondary options section). To be reviewed.
-for OPT in --qsegout --tsegout ; do
-    DESCRIPTION="--allpairs_global rejects ${OPT} as sole output option"
-    printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
-        "${VSEARCH}" \
-            --allpairs_global - \
-            --acceptall \
-            "${OPT}" /dev/null \
-            --quiet 2> /dev/null && \
-        failure "${DESCRIPTION}" || \
-            success "${DESCRIPTION}"
-done
-unset OPT
-
 ## each output option fails if its target file cannot be opened for
-## writing (write-protected file). --qsegout and --tsegout cannot be
-## used alone, so they are paired with a writable --alnout.
+## writing (write-protected file)
 for OPT in --alnout --blast6out --fastapairs --matched --notmatched \
-           --samout --uc --userout ; do
+           --qsegout --samout --tsegout --uc --userout ; do
     DESCRIPTION="--allpairs_global ${OPT} errors if unable to open output file for writing"
     TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
     printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
         "${VSEARCH}" \
             --allpairs_global - \
             --acceptall \
-            "${OPT}" "${TMP}" \
-            --quiet 2> /dev/null && \
-        failure "${DESCRIPTION}" || \
-            success "${DESCRIPTION}"
-    rm -f "${TMP}"
-done
-unset OPT
-
-for OPT in --qsegout --tsegout ; do
-    DESCRIPTION="--allpairs_global ${OPT} errors if unable to open output file for writing"
-    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
-    printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
-        "${VSEARCH}" \
-            --allpairs_global - \
-            --acceptall \
-            --alnout /dev/null \
             "${OPT}" "${TMP}" \
             --quiet 2> /dev/null && \
         failure "${DESCRIPTION}" || \

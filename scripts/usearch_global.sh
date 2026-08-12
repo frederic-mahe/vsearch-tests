@@ -635,11 +635,10 @@ rm -f "${DB}"
 unset DB
 
 ## each output option listed in the synopsis can be used as the sole
-## output option, with the exception of --qsegout and --tsegout (see
-## below)
+## output option
 for OPT in --alnout --biomout --blast6out --fastapairs --matched \
-           --mothur_shared_out --notmatched --otutabout \
-           --samout --uc --userout ; do
+           --mothur_shared_out --notmatched --otutabout --qsegout \
+           --samout --tsegout --uc --userout ; do
     DESCRIPTION="--usearch_global accepts ${OPT} as sole output option"
     DB=$(mktemp)
     printf ">d\n%s\n" "${SEQ}" > "${DB}"
@@ -657,33 +656,11 @@ for OPT in --alnout --biomout --blast6out --fastapairs --matched \
 done
 unset OPT
 
-## manpage claims --qsegout and --tsegout can be used as sole output
-## options, but vsearch rejects them with "No output files
-## specified". They can still be used alongside another output option
-## (see secondary options section). To be reviewed.
-for OPT in --qsegout --tsegout ; do
-    DESCRIPTION="--usearch_global rejects ${OPT} as sole output option"
-    DB=$(mktemp)
-    printf ">d\n%s\n" "${SEQ}" > "${DB}"
-    printf ">q\n%s\n" "${SEQ}" | \
-        "${VSEARCH}" \
-            --usearch_global - \
-            --db "${DB}" \
-            --id 1.0 \
-            "${OPT}" /dev/null \
-            --quiet 2> /dev/null && \
-        failure "${DESCRIPTION}" || \
-            success "${DESCRIPTION}"
-    rm -f "${DB}"
-    unset DB
-done
-unset OPT
-
 ## each output option fails if its target file cannot be opened for
 ## writing (write-protected file)
 for OPT in --alnout --biomout --blast6out --fastapairs --lcaout --matched \
-           --mothur_shared_out --notmatched --otutabout \
-           --samout --uc --userout --dbmatched --dbnotmatched ; do
+           --mothur_shared_out --notmatched --otutabout --qsegout \
+           --samout --tsegout --uc --userout --dbmatched --dbnotmatched ; do
     DESCRIPTION="--usearch_global ${OPT} errors if unable to open output file for writing"
     DB=$(mktemp)
     printf ">d\n%s\n" "${SEQ}" > "${DB}"
@@ -693,28 +670,6 @@ for OPT in --alnout --biomout --blast6out --fastapairs --lcaout --matched \
             --usearch_global - \
             --db "${DB}" \
             --id 1.0 \
-            "${OPT}" "${TMP}" \
-            --quiet 2> /dev/null && \
-        failure "${DESCRIPTION}" || \
-            success "${DESCRIPTION}"
-    rm -f "${TMP}" "${DB}"
-    unset TMP DB
-done
-unset OPT
-
-## --qsegout and --tsegout cannot be used alone, so they are paired
-## with a writable --alnout
-for OPT in --qsegout --tsegout ; do
-    DESCRIPTION="--usearch_global ${OPT} errors if unable to open output file for writing"
-    DB=$(mktemp)
-    printf ">d\n%s\n" "${SEQ}" > "${DB}"
-    TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
-    printf ">q\n%s\n" "${SEQ}" | \
-        "${VSEARCH}" \
-            --usearch_global - \
-            --db "${DB}" \
-            --id 1.0 \
-            --alnout /dev/null \
             "${OPT}" "${TMP}" \
             --quiet 2> /dev/null && \
         failure "${DESCRIPTION}" || \
