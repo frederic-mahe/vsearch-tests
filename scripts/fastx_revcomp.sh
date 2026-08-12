@@ -554,6 +554,16 @@ printf ">s\nACGTACGTACGTACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_revcomp rejects a negative --fasta_width"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastaout /dev/null \
+        --fasta_width -1 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 # width of 1 puts each base on its own line
 DESCRIPTION="--fasta_width 1 produces one base per line"
 printf ">s\nACGT\n" | \
