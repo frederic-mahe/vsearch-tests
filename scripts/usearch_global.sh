@@ -133,6 +133,162 @@ chmod u-r "${QUERY}"
 chmod u+r "${QUERY}" && rm -f "${QUERY}" "${DB}"
 unset DB QUERY
 
+## a malformed query file is a fatal error, whether the malformation is
+## detected on the main thread or on a reader thread (the error is then
+## reported at the end of the run)
+
+DESCRIPTION="--usearch_global rejects a fasta query with a gap character"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nAAAA-AAAAAAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a fasta query with an unprintable character"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nAAAA\001AAAAAAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a fasta query header without a newline (EOF)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a fasta query with an unprintable header character"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\001x\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a fastq query truncated in the header"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "@q" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a fastq query truncated in the sequence"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "@q\nAAAAAAAAAAAA" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a fastq query with an illegal sequence character"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "@q\nAAAA!AAAAAAA\n+\nIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a fastq query truncated at the plus line"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "@q\nAAAAAAAAAAAA\n+" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a fastq query whose plus line differs from header"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "@q\nAAAAAAAAAAAA\n+zzz\nIIIIIIIIIIII\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a fastq query with an illegal quality character"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf "@q\nAAAAAAAAAAAA\n+\nIIIII IIIIII\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 DESCRIPTION="--usearch_global accepts empty query input"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
@@ -919,6 +1075,37 @@ printf ">q\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
 unset DB
+
+## candidate database sequences are collected in a bounded heap sized by
+## --maxaccepts + --maxrejects (plus a small slack): when the database
+## holds more candidates than the heap, a better candidate arriving
+## later must replace the current worst. The database lists 56 sequences
+## sharing a growing prefix (9 to 64 nt) with the 64-nt query, worst
+## first; the best hit (d56, identical to the query) must be reported.
+DESCRIPTION="--usearch_global reports the best hit even when candidates overflow the heap"
+Q="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+awk -v q="${Q}" 'BEGIN {
+    for (i = 1; i <= 56; i++) {
+        s = substr(q, 1, 8 + i)
+        while (length(s) < 64) { s = s "T" }
+        printf(">d%02d\n%s\n", i, s)
+    }}' > "${DB}"
+printf ">q\n%s\n" "${Q}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.3 \
+        --maxaccepts 1 \
+        --maxrejects 4 \
+        --quiet \
+        --blast6out - 2> /dev/null | \
+    cut -f2 | \
+    grep -qx "d56" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset Q DB
 
 ## -------------------------------------------------------------------- qmask
 
