@@ -1310,6 +1310,31 @@ printf ">s1;size=3\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--cluster_fast --xee is accepted"
+printf ">s1;ee=1.5\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 1.0 \
+        --minseqlength 1 \
+        --xee \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --xee strips an ee= annotation"
+printf ">s1;ee=1.5\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 1.0 \
+        --minseqlength 1 \
+        --xee \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------- alignment parameters ----------
 
 DESCRIPTION="--cluster_fast --gapext accepts a penalty string"
