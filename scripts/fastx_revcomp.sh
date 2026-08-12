@@ -606,6 +606,22 @@ printf "@s\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## a gzip file whose deflate stream is damaged (bytes overwritten right
+## after the 10-byte gzip header) triggers a decompression error
+DESCRIPTION="--fastx_revcomp errors on a corrupted gzip input file"
+TMPGZ=$(mktemp)
+printf ">s\nACGTACGTACGTACGTACGTACGTACGT\n" | gzip > "${TMPGZ}"
+printf '\377\377\377\377' | \
+    dd of="${TMPGZ}" bs=1 seek=10 count=4 conv=notrunc 2> /dev/null
+"${VSEARCH}" \
+    --fastx_revcomp "${TMPGZ}" \
+    --fastaout /dev/null \
+    --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPGZ}"
+unset TMPGZ
+
 ## --label_suffix
 
 DESCRIPTION="--label_suffix appends suffix to sequence header"
