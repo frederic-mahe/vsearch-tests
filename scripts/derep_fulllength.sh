@@ -1101,6 +1101,38 @@ printf ">s1;size=1;\nA\n>s2;size=1;\nT\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+## all 4,096 hexamers collapse into 2,080 strand-insensitive clusters:
+## 64 hexamers are their own reverse complement, the other 4,032 pair up
+## two by two ((4096 - 64) / 2 + 64 = 2080). The large input also forces
+## hash collisions in the reverse-complement lookups.
+DESCRIPTION="--strand both merges each hexamer with its reverse complement"
+awk 'BEGIN {
+    b = "ACGT"
+    n = 0
+    for (i = 0; i < 4; i++)
+        for (j = 0; j < 4; j++)
+            for (k = 0; k < 4; k++)
+                for (l = 0; l < 4; l++)
+                    for (m = 0; m < 4; m++)
+                        for (o = 0; o < 4; o++) {
+                            n++
+                            printf(">s%d\n%s%s%s%s%s%s\n", n,
+                                   substr(b, i + 1, 1), substr(b, j + 1, 1),
+                                   substr(b, k + 1, 1), substr(b, l + 1, 1),
+                                   substr(b, m + 1, 1), substr(b, o + 1, 1))
+                        }
+    }' | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --strand both \
+        --quiet \
+        --output - | \
+    grep -c "^>" | \
+    grep -qx "2080" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --strand plus does not change default behaviour
 DESCRIPTION="--strand plus does not change default behaviour"
 printf ">s1;size=1;\nA\n>s2;size=1;\nA\n" | \
