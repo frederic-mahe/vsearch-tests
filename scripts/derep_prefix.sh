@@ -3178,11 +3178,17 @@ fi
 # fastq" input); the output is always fasta. See the "accepts fastq
 # input" test.
 
-# note: --strand is listed as plus|both in the manpage, but
-# --derep_prefix rejects it with a fatal error (see the "--strand is
-# rejected" test in the invalid options section). This is a manpage /
-# behaviour discrepancy: the option should either be supported or
-# removed from the --derep_prefix manpage. Flagged for human review.
+# note: --strand is restricted to plus for --derep_prefix, which
+# rejects '--strand both' with a fatal error (see the "--strand is
+# rejected" test in the invalid options section). This was reviewed
+# and is the intended behaviour, not an oversight: usearch rejects it
+# the same way ("-strand both not supported by this command"), and
+# reverse-complementation does not preserve the prefix relation (a
+# prefix on the minus strand is a suffix on the plus strand), so
+# prefix groups would depend on the input order. The manpage no
+# longer advertises plus|both here: it documents plus only, and points
+# at --orient for reads in mixed orientations. Full-length
+# dereplication is unaffected and still supports both strands.
 
 # note: vsearch performs no validation when a minimum threshold is set
 # higher than its matching maximum (--minuniquesize > --maxuniquesize,
