@@ -2848,7 +2848,7 @@ printf ">s extra\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques truncates fastq headers (tab)"
+DESCRIPTION="--fastx_uniques truncates fastq headers (space)"
 printf "@s header\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -2879,7 +2879,7 @@ printf "@s extra\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques --notrunclabels preserves full fastq headers (space)"
+DESCRIPTION="--fastx_uniques --notrunclabels preserves full fastq headers (tab)"
 printf "@s\textra\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
