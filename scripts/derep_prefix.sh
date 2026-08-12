@@ -2468,6 +2468,57 @@ printf ">s;size=2\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --------------------------------------------------------------------- strand
+
+DESCRIPTION="--strand plus is accepted"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --minseqlength 1 \
+        --strand plus \
+        --quiet \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--strand plus does not change default behaviour"
+printf ">s1\nAA\n>s2\nA\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --minseqlength 1 \
+        --sizeout \
+        --strand plus \
+        --quiet \
+        --output - | \
+    grep -qx ">s1;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## revcomp(TTTT) is AAAA, a prefix of AAAACCCG, but --derep_prefix only
+## ever checks the plus strand, so the two sequences are not merged
+DESCRIPTION="--strand plus does not merge reverse-complementary prefixes"
+printf ">s1\nAAAACCCG\n>s2\nTTTT\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --minseqlength 1 \
+        --strand plus \
+        --quiet \
+        --output - | \
+    awk '/^>/ {counter++} END {exit counter == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--strand errors if an unknown argument is given"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --minseqlength 1 \
+        --strand unknown \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## -------------------------------------------------------------------- threads
 
 DESCRIPTION="--derep_prefix --threads is accepted"
