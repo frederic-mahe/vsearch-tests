@@ -1126,6 +1126,32 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--cluster_unoise --xee is accepted"
+printf ">s1;size=16;ee=1.5\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --sizein \
+        --minseqlength 1 \
+        --xee \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the size annotation is kept, the ee annotation is stripped
+DESCRIPTION="--cluster_unoise --xee strips an ee= annotation"
+printf ">s1;size=16;ee=1.5\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --sizein \
+        --minseqlength 1 \
+        --xee \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;size=16" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------- alignment parameters ----------
 
 for OPT in --gapext --gapopen --idprefix --idsuffix --match --mismatch --mincols --minwordmatches ; do
