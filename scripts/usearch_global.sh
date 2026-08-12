@@ -2899,8 +2899,6 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
-## --maxrejects -1 is silently replaced by the default value (32), so
-## the rejection of negative values can only be tested with -2 or less
 DESCRIPTION="--usearch_global rejects a negative --maxrejects"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
@@ -2911,6 +2909,26 @@ printf ">q\n%s\n" "${SEQ}" | \
         --id 1.0 \
         --blast6out /dev/null \
         --maxrejects -2 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## -1 is also the internal "not set" sentinel for --maxrejects (resolved
+## later to 8 for --cluster_fast, 32 otherwise), so it needs a test of its
+## own: it used to be indistinguishable from an omitted option and was
+## silently accepted as the default, while -2 and below were already fatal
+DESCRIPTION="--usearch_global rejects --maxrejects -1 (the unset sentinel)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --maxrejects -1 \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
