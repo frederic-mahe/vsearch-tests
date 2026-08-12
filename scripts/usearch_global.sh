@@ -2709,6 +2709,108 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+DESCRIPTION="--usearch_global rejects a negative --rowlen"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --alnout /dev/null \
+        --rowlen -1 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a negative --maxhits"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --maxhits -1 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global rejects a negative --minwordmatches"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --minwordmatches -1 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --maxrejects -1 is silently replaced by the default value (32), so
+## the rejection of negative values can only be tested with -2 or less
+DESCRIPTION="--usearch_global rejects a negative --maxrejects"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --maxrejects -2 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## gap penalties can be limited to the left (L) or right (R) end of
+## sequences (see vsearch-pairwise_alignment_parameters(7))
+DESCRIPTION="--usearch_global --gapopen accepts an L (left) penalty modifier"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --gapopen "20L" \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## E (end) is a shorthand for both L and R, so combining E with L or R
+## is ambiguous and rejected
+DESCRIPTION="--usearch_global --gapopen rejects combining E with L"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --gapopen "20EL" \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ---------------------------------------------------------------- samheader
 
 DESCRIPTION="--usearch_global --samheader adds @HD lines to --samout"
