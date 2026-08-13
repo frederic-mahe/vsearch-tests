@@ -616,13 +616,18 @@ printf "@s\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## a gzip file whose deflate stream is damaged (bytes overwritten right
-## after the 10-byte gzip header) triggers a decompression error
+## a gzip file whose stored CRC32 is damaged (the four bytes preceding
+## the final four-byte length field) triggers a decompression error.
+## Corrupting the CRC rather than the start of the deflate stream is
+## deliberate: FreeBSD's zlib (1.3.2 development snapshot) silently
+## treats a gzip member that fails before producing any output as
+## trailing garbage (empty input, exit code 0), whereas a CRC mismatch
+## is reported on every platform
 DESCRIPTION="--fastx_revcomp errors on a corrupted gzip input file"
 TMPGZ=$(mktemp)
 printf ">s\nACGTACGTACGTACGTACGTACGTACGT\n" | gzip > "${TMPGZ}"
 printf '\377\377\377\377' | \
-    dd of="${TMPGZ}" bs=1 seek=10 count=4 conv=notrunc 2> /dev/null
+    dd of="${TMPGZ}" bs=1 seek=$(( $(wc -c < "${TMPGZ}") - 8 )) count=4 conv=notrunc 2> /dev/null
 "${VSEARCH}" \
     --fastx_revcomp "${TMPGZ}" \
     --fastaout /dev/null \
