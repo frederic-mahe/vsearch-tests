@@ -196,7 +196,7 @@ echo -e ">ø\nA\n" | \
 # 10: "\n"
 # 13: "\r"
 # and ACGTUacgtu
-for i in 0 {9..13} {32..44} {47..127} ; do
+for i in {9..13} {32..44} {47..127} ; do
     DESCRIPTION="ascii character ${i} is allowed in fasta sequences"
     OCTAL=$(printf "\%04o" "${i}")
     echo -e ">s\nA${OCTAL}A\n" | \
@@ -213,7 +213,7 @@ unset OCTAL
 # most invisible chars
 # 45: '-'
 # 46: '.'
-for i in {1..8} {14..31} 45 46 ; do
+for i in {0..8} {14..31} 45 46 ; do
     DESCRIPTION="ascii character ${i} is not allowed in fasta sequences"
     OCTAL=$(printf "\%04o" "${i}")
     echo -e ">s\nA${OCTAL}A\n" | \
