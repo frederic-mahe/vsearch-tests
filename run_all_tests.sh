@@ -36,6 +36,7 @@ for test_script in vsearch.sh \
                        help.sh \
                        makeudb_usearch.sh \
                        maskfasta.sh \
+                       orient.sh \
                        rereplicate.sh \
                        search_exact.sh \
                        sff_convert.sh \
@@ -64,8 +65,5 @@ for test_script in fastq_parsing.sh \
     bash "./scripts/${test_script}" "${1}" || exit 1
     echo
 done
-
-## slow tests
-# bash ./scripts/orient.sh "${1}" || exit 1
 
 exit 0
