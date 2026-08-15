@@ -770,6 +770,19 @@ printf "@s1\nT\n+\nI\n" > "${REVERSE}"
 rm -f "${FORWARD}" "${REVERSE}"
 unset FORWARD REVERSE
 
+# the manual says the reverse output options require --reverse; without
+# it, a *_rev option given as the sole output used to be silently
+# accepted: vsearch processed the input, created no file, and exited 0
+# (fails with vsearch 2.31.0 and older, which accept the combination)
+DESCRIPTION="--fastq_filter --fastqout_rev errors without --reverse"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastqout_rev /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 DESCRIPTION="--fastq_filter: if forward read is rejected, both reads of the pair are discarded"
 FORWARD=$(mktemp)
 REVERSE=$(mktemp)

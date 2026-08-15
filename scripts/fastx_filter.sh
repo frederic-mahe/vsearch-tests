@@ -708,6 +708,24 @@ for OPT in --fastaout_rev --fastqout_rev \
 done
 unset OPT
 
+# the manual says the reverse output options require --reverse; without
+# it, a *_rev option given as the sole output used to be silently
+# accepted: vsearch processed the input, created no file, and exited 0
+# (these tests fail with vsearch 2.31.0 and older, which accept the
+# combination)
+for OPT in --fastaout_rev --fastqout_rev \
+           --fastaout_discarded_rev --fastqout_discarded_rev ; do
+    DESCRIPTION="--fastx_filter ${OPT} errors without --reverse"
+    printf "@s1\nACGT\n+\nIIII\n" | \
+        "${VSEARCH}" \
+            --fastx_filter - \
+            "${OPT}" /dev/null \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+done
+unset OPT
+
 ## the forward and reverse inputs must be in the same format
 DESCRIPTION="--fastx_filter errors if forward and reverse files are in different formats"
 FORWARD=$(mktemp)
