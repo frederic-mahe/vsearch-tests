@@ -1863,6 +1863,28 @@ DESCRIPTION="fastq_mergepairs option fastq_maxdiffpct is accepted"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the manual says --fastq_maxdiffpct is a percentage (0.0 to 100.0);
+# out-of-range values were silently accepted, and a negative value
+# silently rejected every pair (the two tests below fail with vsearch
+# 2.31.0 and older, which accept these values)
+DESCRIPTION="fastq_mergepairs --fastq_maxdiffpct rejects values greater than 100.0"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffpct 150.0 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --fastq_maxdiffpct rejects negative values"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffpct -10.0 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## ----------------------------------------------- --fastq_maxdiffpct effect ---
 
 # 15-nt pair, 1 mismatch in the overlap = 6.67%.

@@ -604,6 +604,33 @@ printf "@s\nT\n+\nI\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+# the manual says the default quality padding is a string of I's of the
+# same length as the sequence padding string; a --join_padgap of a
+# length other than 8 without an explicit --join_padgapq used to be a
+# fatal length-mismatch error (fails with vsearch 2.31.0 and older)
+DESCRIPTION="--fastq_join --join_padgap alone derives a matching quality padding"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --join_padgap "NNNN" \
+        --fastqout - 2> /dev/null | \
+    grep -qx "ANNNNA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_join --join_padgap alone pads qualities with I (Q40)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nT\n+\nI\n") \
+        --join_padgap "NNNN" \
+        --fastqout - 2> /dev/null | \
+    tail -n 1 | \
+    grep -qx "IIIIII" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 for S in A C G T U B D H K M N R S V W Y a c g t u b d h k m n r s v w y ; do
     DESCRIPTION="--fastq_join --join_padgap accepts all IUPAC symbols (${S})"
     REVERSE=$(mktemp)
