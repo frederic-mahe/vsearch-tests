@@ -1699,6 +1699,26 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+# the manual says --idprefix takes a positive integer; a negative value
+# used to crash (out-of-bounds read; assertion failure in debug builds)
+# instead of being rejected (fails with vsearch 2.31.0 and older, which
+# crash or silently accept the value)
+DESCRIPTION="--usearch_global --idprefix rejects negative values"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --idprefix -1 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## --idprefix rejects matches where the first N nt of the target do not
 ## match the query
 DESCRIPTION="--usearch_global --idprefix rejects mismatched prefix"
@@ -1733,6 +1753,26 @@ printf ">q\n%s\n" "${SEQ}" | \
         --quiet && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+# the manual says --idsuffix takes a positive integer; a negative value
+# used to crash (out-of-bounds read; assertion failure in debug builds)
+# instead of being rejected (fails with vsearch 2.31.0 and older, which
+# crash or silently accept the value)
+DESCRIPTION="--usearch_global --idsuffix rejects negative values"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --idsuffix -1 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 rm -f "${DB}"
 unset DB
 
@@ -1979,6 +2019,25 @@ printf ">q\n%s\n" "${SEQ}" | \
         --quiet && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+# the manual says --maxdiffs takes a positive integer; a negative value
+# silently rejected every hit (fails with vsearch 2.31.0 and older,
+# which accept the value)
+DESCRIPTION="--usearch_global --maxdiffs rejects negative values"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxdiffs -5 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 rm -f "${DB}"
 unset DB
 
@@ -2662,6 +2721,41 @@ printf ">q\n%s\n" "${SEQ}" | \
         --quiet && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+# the manual says --query_cov ranges from 0.0 to 1.0; larger values
+# made the filter silently unsatisfiable (fails with vsearch 2.31.0 and
+# older, which accept the value)
+DESCRIPTION="--usearch_global --query_cov rejects values greater than 1.0"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --query_cov 1.5 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --query_cov rejects negative values"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --query_cov -0.5 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 rm -f "${DB}"
 unset DB
 
