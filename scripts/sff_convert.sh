@@ -331,6 +331,18 @@ DESCRIPTION="--sff_convert reports to stderr (Key sequence)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the reported key must be the file's actual 4-nucleotide key (TCAG);
+# reading sizeof(struct) = 32 bytes for the 31-byte on-disk header
+# shifted the report by one byte, printing 'CAG' plus a stray byte
+# (fails with vsearch 2.31.0 and older)
+DESCRIPTION="--sff_convert reports the complete key sequence (TCAG)"
+"${VSEARCH}" \
+    --sff_convert - \
+    --fastqout /dev/null 2>&1 > /dev/null < "${SFF}" | \
+    grep -iq "^key sequence.*TCAG$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--sff_convert does not report to stderr (Index type if no index)"
 "${VSEARCH}" \
     --sff_convert - \
