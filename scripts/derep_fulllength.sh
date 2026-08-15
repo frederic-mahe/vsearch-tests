@@ -821,6 +821,23 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
+# --minuniquesize filters the fasta output only: the --uc output always
+# lists all clusters, including those below the threshold (here the
+# singleton s3 is absent from --output but still has a C record)
+DESCRIPTION="--minuniquesize does not filter the --uc output"
+printf ">s1\nAAAA\n>s2\nAAAA\n>s3\nTTTT\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --minuniquesize 2 \
+        --quiet \
+        --output /dev/null \
+        --uc - | \
+    awk '$1 == "C" {clusters += 1}
+         END {exit clusters == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--minuniquesize accepts equal dereplicated sizes (=)"
 printf ">s\nA\n>s\nA\n" | \
     "${VSEARCH}" \

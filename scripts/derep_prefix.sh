@@ -290,6 +290,23 @@ printf ">s1\nAG\n>s2\nACG\n>s3\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# size annotations are parsed unconditionally: length ties are resolved
+# by decreasing annotation-derived abundance even without --sizein
+# (--sizein only controls abundance counting, so the merged cluster
+# reports size=2, not size=10)
+DESCRIPTION="--derep_prefix length ties use size annotations even without --sizein"
+printf ">x;size=1\nAAAA\n>y;size=9\nAAAA\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --minseqlength 1 \
+        --quiet \
+        --sizeout \
+        --output - | \
+    head -n 1 | \
+    grep -qx ">y;size=2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--derep_prefix merges with the most abundant if equally long"
 printf ">s1;size=2\nAC\n>s2;size=1\nAG\n>s3;size=1\nA\n" | \
     "${VSEARCH}" \

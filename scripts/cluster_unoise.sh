@@ -245,6 +245,38 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# a variant with zero mismatches (an alignment containing only indels)
+# is always merged into the centroid, regardless of the abundance skew:
+# the UNOISE distance counts substitutions only. Here v (39 nt) is c
+# (40 nt) minus its first base; with skew = 60/100 = 0.6 above
+# beta(d=0) = 0.5, the skew rule alone would make v a second centroid
+DESCRIPTION="--cluster_unoise always merges gap-only variants whatever the skew"
+printf ">c;size=100\nAAGGTTCCTAGGATCCAAGGCTCCAAGGTTGCAATGTTCC\n>v;size=60\nAGGTTCCTAGGATCCAAGGCTCCAAGGTTGCAATGTTCC\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    awk '/^>/ {centroids += 1}
+         END {exit centroids == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# size annotations are parsed unconditionally: the default minsize=8
+# filter discards u2 (size=2) but keeps u1 (size=10) even without
+# --sizein (if annotations were ignored, both would count as size=1 and
+# be discarded)
+DESCRIPTION="--cluster_unoise --minsize uses size annotations even without --sizein"
+printf ">u1;size=10\nAAGGTTCCTAGGATCCAAGGCTCCAAGGTTGCAATGTTCC\n>u2;size=2\nCCTTAAGGATCCTAGGTTCCGAGGTTCCAACGTTAAGGCA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    awk '/^>/ {centroids += 1}
+         END {exit centroids == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## Default masking is dust: output sequences are lowercased.
 DESCRIPTION="--cluster_unoise default masking is dust (output is lowercased)"
 printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
