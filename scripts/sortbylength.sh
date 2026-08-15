@@ -207,6 +207,20 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# length ties are broken by decreasing abundance, even above 2^32
+# (a 32-bit abundance field truncated size=4294967297 to size=1,
+# sorting 'big' below 'small'; fixed after the 2026-08-15
+# documentation audit, fails with vsearch 2.31.0 and older)
+DESCRIPTION="--sortbylength breaks length ties with abundances above 2^32"
+${VSEARCH} \
+    --sortbylength <(printf ">small;size=2\nACGT\n>big;size=4294967297\nACGT\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -qx ">big;size=4294967297ACGT>small;size=2ACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------- median length
 
 # The sortbylength command outputs on the stderr or in a log file the
