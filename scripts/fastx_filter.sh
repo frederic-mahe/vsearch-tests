@@ -417,6 +417,21 @@ printf "@s1\nACGT\n+\nII!!\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# fasta input + --fastq_truncqual is fatal, like the other
+# quality-dependent options (the fatal message always listed
+# fastq_truncqual, but an always-false comparison let it through
+# silently; fixed after the 2026-08-15 documentation audit, so this
+# test fails against released binaries, which silently ignore it)
+DESCRIPTION="--fastx_filter rejects --fastq_truncqual with fasta input"
+printf ">s1\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_truncqual 10 \
+        --fastaout /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## ---------- filtering ----------
 
 ## --fastq_maxee (requires quality; rejected with fasta input)

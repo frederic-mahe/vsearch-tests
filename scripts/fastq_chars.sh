@@ -144,6 +144,28 @@ printf "@s\nCBA\n+\nIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# MaxRun is the number of consecutive repetitions after the first
+# occurrence (the longest run length minus one): AAAA scores 3. Same
+# semantics as usearch, except that vsearch also counts a run ending
+# with the read (usearch 11 reports 0 for AAAA). Passes against
+# released binaries
+DESCRIPTION="--fastq_chars MaxRun counts repetitions after the first (AAAA is 3)"
+printf "@s\nAAAA\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -qE "[[:blank:]]A[[:blank:]]+4[[:blank:]]+100\.0%[[:blank:]]+3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# a symbol that never appears twice in a row scores 0
+DESCRIPTION="--fastq_chars MaxRun is 0 without consecutive repetitions"
+printf "@s\nATATA\n+\nIIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -qE "[[:blank:]]A[[:blank:]]+3[[:blank:]]+60\.0%[[:blank:]]+0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastq_chars counts each sequence symbol (one A)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
