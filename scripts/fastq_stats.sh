@@ -47,38 +47,56 @@ DESCRIPTION="check if vsearch is executable"
 
 ## ----------------------------------------------------- test general behaviour
 
-DESCRIPTION="--fastq_stats is a valid command"
+# the manpage lists --log under 'mandatory options'; vsearch 2.31.0 and
+# older did not enforce it (the run read the input, computed every
+# statistic, discarded all of them, and exited 0). The gate was added
+# after the 2026-08-15 documentation audit, so this test fails against
+# released binaries; every other test in this script now passes
+# --log /dev/null for the same reason
+DESCRIPTION="--fastq_stats requires --log"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats is a valid command"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats accepts empty input"
 printf "" | \
     "${VSEARCH}" \
-        --fastq_stats - 2> /dev/null && \
+        --fastq_stats - \
+        --log /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats accepts empty read"
 printf "@s\n\n+\n\n" | \
     "${VSEARCH}" \
-        --fastq_stats - 2> /dev/null && \
+        --fastq_stats - \
+        --log /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats rejects fasta input"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
-        --fastq_stats - 2> /dev/null && \
+        --fastq_stats - \
+        --log /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
 DESCRIPTION="--fastq_stats does not write stats to stdout"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
-        --fastq_stats - 2> /dev/null | \
+        --fastq_stats - \
+        --log /dev/null 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -129,7 +147,8 @@ printf "@s\nA\n+\nI\n" | \
 DESCRIPTION="--fastq_stats writes the number of reads to stderr (one read)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
-        --fastq_stats - 2>&1 | \
+        --fastq_stats - \
+        --log /dev/null 2>&1 | \
     grep -qw "Read 1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -137,7 +156,8 @@ printf "@s\nA\n+\nI\n" | \
 DESCRIPTION="--fastq_stats writes the number of reads to stderr (two reads)"
 printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
     "${VSEARCH}" \
-        --fastq_stats - 2>&1 | \
+        --fastq_stats - \
+        --log /dev/null 2>&1 | \
     grep -qw "Read 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -145,7 +165,8 @@ printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n" | \
 DESCRIPTION="--fastq_stats writes the number of reads to stderr (no read)"
 printf "" | \
     "${VSEARCH}" \
-        --fastq_stats - 2>&1 | \
+        --fastq_stats - \
+        --log /dev/null 2>&1 | \
     grep -qw "Read 0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1686,6 +1707,7 @@ LENGTH=512
 ) | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1701,6 +1723,7 @@ LENGTH=513
 ) | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1717,6 +1740,7 @@ LENGTH=514
 ) | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1735,6 +1759,7 @@ DESCRIPTION="--fastq_stats --fastq_ascii is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet \
         --fastq_ascii 33 && \
     success "${DESCRIPTION}" || \
@@ -1744,6 +1769,7 @@ DESCRIPTION="--fastq_stats --fastq_ascii accepts 33"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet \
         --fastq_ascii 33 && \
     success "${DESCRIPTION}" || \
@@ -1753,6 +1779,7 @@ DESCRIPTION="--fastq_stats --fastq_ascii accepts 64"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet \
         --fastq_ascii 64 && \
     success "${DESCRIPTION}" || \
@@ -1762,6 +1789,7 @@ DESCRIPTION="--fastq_stats --fastq_ascii rejects other values (45)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet \
         --fastq_ascii 45 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -1808,6 +1836,7 @@ DESCRIPTION="--fastq_stats --fastq_qmax is accepted"
 printf "@s\nA\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmax 41 \
         --quiet && \
     success "${DESCRIPTION}" || \
@@ -1839,6 +1868,7 @@ DESCRIPTION="--fastq_stats --fastq_qmax rejects higher quality values (J = 41)"
 printf "@s\nA\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmax 40 \
         --quiet 2> /dev/null && \
      failure "${DESCRIPTION}" || \
@@ -1848,6 +1878,7 @@ DESCRIPTION="--fastq_stats --fastq_qmax must be a positive integer"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmax -1 \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -1857,6 +1888,7 @@ DESCRIPTION="--fastq_stats --fastq_qmax can be set to zero"
 printf "@s\nA\n+\n!\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmax 0 \
         --quiet 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -1866,6 +1898,7 @@ DESCRIPTION="--fastq_stats --fastq_qmax can be set to 93 (offset 33)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_ascii 33 \
         --fastq_qmax 93 \
         --quiet 2> /dev/null && \
@@ -1876,6 +1909,7 @@ DESCRIPTION="--fastq_stats --fastq_qmax cannot be greater than 93 (offset 33)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_ascii 33 \
         --fastq_qmax 94 \
         --quiet 2> /dev/null && \
@@ -1886,6 +1920,7 @@ DESCRIPTION="--fastq_stats --fastq_qmax can be set to 62 (offset 64)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_ascii 64 \
         --fastq_qmax 62 \
         --quiet 2> /dev/null && \
@@ -1896,6 +1931,7 @@ DESCRIPTION="--fastq_stats --fastq_qmax cannot be greater than 62 (offset 64)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_ascii 64 \
         --fastq_qmax 63 \
         --quiet 2> /dev/null && \
@@ -1955,6 +1991,7 @@ DESCRIPTION="--fastq_stats --fastq_qmin is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmin 0 \
         --quiet && \
     success "${DESCRIPTION}" || \
@@ -1986,6 +2023,7 @@ DESCRIPTION="--fastq_stats --fastq_qmin rejects lower quality values (0 = 15)"
 printf "@s\nA\n+\n0\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmin 16 \
         --quiet 2> /dev/null && \
      failure "${DESCRIPTION}" || \
@@ -1995,6 +2033,7 @@ DESCRIPTION="--fastq_stats --fastq_qmin must be a positive integer"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmin -1 \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -2004,6 +2043,7 @@ DESCRIPTION="--fastq_stats --fastq_qmin can be set to zero (default)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmin 0 \
         --quiet && \
     success "${DESCRIPTION}" || \
@@ -2013,6 +2053,7 @@ DESCRIPTION="--fastq_stats --fastq_qmin can be lower than fastq_qmax (41 by defa
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmin 40 \
         --quiet && \
     success "${DESCRIPTION}" || \
@@ -2023,6 +2064,7 @@ DESCRIPTION="--fastq_stats --fastq_qmin can be equal to fastq_qmax (41 by defaul
 printf "@s\nA\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmin 41 \
         --quiet && \
     success "${DESCRIPTION}" || \
@@ -2032,6 +2074,7 @@ DESCRIPTION="--fastq_stats --fastq_qmin cannot be higher than fastq_qmax (41 by 
 printf "@s\nA\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_qmin 42 \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -2043,6 +2086,7 @@ DESCRIPTION="--fastq_stats --fastq_qmin can be set to 93 (offset 33)"
 printf "@s\nA\n+\n~\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_ascii 33 \
         --fastq_qmin 93 \
         --fastq_qmax 93 \
@@ -2055,6 +2099,7 @@ DESCRIPTION="--fastq_stats --fastq_qmin can be set to 62 (offset 64)"
 printf "@s\nA\n+\n~\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --fastq_ascii 64 \
         --fastq_qmin 62 \
         --fastq_qmax 62 \
@@ -2080,6 +2125,7 @@ printf "" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --bzip2_decompress \
         --quiet && \
     success "${DESCRIPTION}" || \
@@ -2090,6 +2136,7 @@ printf "@s\nA\n+\nI\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -2099,6 +2146,7 @@ printf "@s\nA\n+\nI\n" | \
     bzip2 | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --bzip2_decompress \
         --quiet && \
     success "${DESCRIPTION}" || \
@@ -2108,6 +2156,7 @@ DESCRIPTION="--fastq_stats --bzip2_decompress rejects uncompressed stdin"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --bzip2_decompress \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -2121,6 +2170,7 @@ printf "" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --gzip_decompress \
         --quiet && \
     success "${DESCRIPTION}" || \
@@ -2131,6 +2181,7 @@ printf "@s\nA\n+\nI\n" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -2140,6 +2191,7 @@ printf "@s\nA\n+\nI\n" | \
     gzip | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --gzip_decompress \
         --quiet && \
     success "${DESCRIPTION}" || \
@@ -2150,6 +2202,7 @@ DESCRIPTION="--fastq_stats --gzip_decompress accepts uncompressed stdin"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --gzip_decompress \
         --quiet 2> /dev/null && \
     success "${DESCRIPTION}" || \
@@ -2159,6 +2212,7 @@ DESCRIPTION="--fastq_stats rejects --bzip2_decompress + --gzip_decompress"
 printf "" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --bzip2_decompress \
         --gzip_decompress \
         --quiet 2> /dev/null && \
@@ -2213,6 +2267,7 @@ DESCRIPTION="--fastq_stats --no_progress is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet \
         --no_progress && \
     success "${DESCRIPTION}" || \
@@ -2222,6 +2277,7 @@ DESCRIPTION="--fastq_stats --no_progress removes progressive report on stderr (n
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --no_progress 2>&1 | \
     grep -iq "^reading" && \
     success "${DESCRIPTION}" || \
@@ -2234,6 +2290,7 @@ DESCRIPTION="--fastq_stats --quiet is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -2242,6 +2299,7 @@ DESCRIPTION="--fastq_stats --quiet eliminates all (normal) messages to stderr"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet 2>&1 | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
@@ -2251,6 +2309,7 @@ DESCRIPTION="--fastq_stats --quiet allows error messages to be sent to stderr"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --quiet \
         --quiet2 2>&1 | \
     grep -q "." && \
@@ -2264,6 +2323,7 @@ DESCRIPTION="--fastq_stats --threads is accepted"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --threads 1 \
         --quiet && \
     success "${DESCRIPTION}" || \
@@ -2273,6 +2333,7 @@ DESCRIPTION="--fastq_stats --threads > 1 triggers a warning (not multithreaded)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
+        --log /dev/null \
         --threads 2 \
         --quiet 2>&1 | \
     grep -iq "warning" && \
