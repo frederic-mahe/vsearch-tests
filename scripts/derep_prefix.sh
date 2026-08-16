@@ -48,15 +48,26 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-## missing check!
-# ## --derep_prefix requires --output
-# DESCRIPTION="--derep_prefix requires --output"
-# printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
-#     "${VSEARCH}" \
-#         --derep_prefix - \
-#         2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
+# the check below was missing in vsearch 2.31.0 and older (running
+# with neither --output nor --uc exited 0 and produced nothing); the
+# gate was added after the 2026-08-15 documentation audit, mirroring
+# derep_fulllength, so this test fails against released binaries
+DESCRIPTION="--derep_prefix requires --output or --uc"
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--derep_prefix accepts --uc as its only output option"
+printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --quiet \
+        --uc /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
 DESCRIPTION="--derep_prefix errors if unable to open output file for writing"
 TMP=$(mktemp) && chmod u-w "${TMP}"  # remove write permission
@@ -3235,12 +3246,13 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-# note: vsearch does not require an output option. Running
-# --derep_prefix with neither --output nor --uc exits 0 and produces
-# nothing (see the commented "requires --output" block near the top:
-# this check is missing in vsearch). When an output file is requested
-# but cannot be opened, vsearch does fail with a fatal error (covered
-# by the --output and --uc "unable to open ... for writing" tests).
+# note: vsearch requires --output or --uc since the 2026-08-15
+# documentation audit (in 2.31.0 and older, running --derep_prefix
+# with neither option exited 0 and produced nothing; see the "requires
+# --output or --uc" test near the top). When an output file is
+# requested but cannot be opened, vsearch fails with a fatal error
+# (covered by the --output and --uc "unable to open ... for writing"
+# tests).
 
 # note: fastq input is accepted (the manpage documents "fasta or
 # fastq" input); the output is always fasta. See the "accepts fastq
