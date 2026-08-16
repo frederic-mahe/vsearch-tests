@@ -121,13 +121,28 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_uniques tabbedout requires fastq input"
+# --tabbedout used to require fastq input, but none of its six columns
+# depends on quality data, so the restriction was lifted after the
+# 2026-08-15 documentation audit (maintainer decision; flipping this
+# test was explicitly authorized). The two tests below fail against
+# vsearch 2.31.0 and older, which reject the combination
+DESCRIPTION="--fastx_uniques tabbedout accepts fasta input"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
         --tabbedout /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques tabbedout writes the 6-column table for fasta input"
+printf ">a\nACGT\n>b\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --tabbedout - | \
+    awk -F'\t' 'NF != 6 {bad = 1} END {exit bad ? 1 : 0}' && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques requires an output file (fastq in, tabbedout)"
 printf "@s\nA\n+\nI\n" | \
