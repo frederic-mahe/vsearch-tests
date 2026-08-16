@@ -1099,6 +1099,30 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+# masking excludes masked regions from the k-mer pre-filter only; the
+# pairwise alignment ignores case, so a fully-lowercase query under
+# soft masking samples no k-mers, is compared against every database
+# sequence, and still produces its hit (the manpage documents this;
+# release-safe, long-standing behaviour)
+DESCRIPTION="--usearch_global --qmask soft: a fully-masked query still hits"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    tr "ACGT" "acgt" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --qmask soft \
+        --dbmask soft \
+        --quiet \
+        --blast6out - | \
+    grep -q "^q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ------------------------------------------------------------------- strand
 
 DESCRIPTION="--usearch_global --strand plus is accepted"
