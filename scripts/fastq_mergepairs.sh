@@ -288,15 +288,23 @@ DESCRIPTION="fastq_mergepairs quiet does not writes header to stderr"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs quiet writes stats to stderr"
+# --quiet suppresses the final statistics block on stderr (the report
+# is still written to --log when given). vsearch 2.31.0 and older
+# printed it regardless of --quiet, and an earlier version of this
+# test pinned that; the maintainer decided during the 2026-08-16
+# documentation-audit review to honour --quiet, knowing this diverges
+# from the always-on report chosen when fixing issue 527, and
+# explicitly authorized flipping this test, which now fails against
+# released binaries
+DESCRIPTION="fastq_mergepairs quiet suppresses stats on stderr"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
     --quiet \
     --fastaout /dev/null 2>&1 | \
     grep -q "^Statistics" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## ---------------------------------------------------------------- overhanging
 
@@ -1873,6 +1881,25 @@ DESCRIPTION="fastq_mergepairs --fastq_maxdiffpct rejects values greater than 100
     --reverse <(printf "@s\nT\n+\nI\n") \
     --fastq_maxdiffpct 150.0 \
     --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# --fastq_maxlen applies to the truncated read lengths ('reads too
+# long (after truncation)'), not the raw lengths: both 10-nt reads are
+# truncated to 4 nt by --fastq_truncqual 5 (quality '#' = Q2 at
+# position 5), which is within --fastq_maxlen 6, so the pair must not
+# be discarded as too long (it fails later for a different reason).
+# vsearch 2.31.0 and older checked the raw lengths, so this test fails
+# against released binaries
+DESCRIPTION="fastq_mergepairs applies --fastq_maxlen after truncation"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@f\nAAAACCCCGG\n+\nIIII#IIIII\n") \
+    --reverse <(printf "@f\nCCGGTTTTAA\n+\nIIII#IIIII\n") \
+    --fastq_truncqual 5 \
+    --fastq_maxlen 6 \
+    --fastq_minlen 1 \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "too long" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 

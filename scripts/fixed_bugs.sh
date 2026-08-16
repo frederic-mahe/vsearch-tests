@@ -14585,15 +14585,22 @@ DESCRIPTION="issue 527: fastq_mergepairs quiet does not writes header to stderr"
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="issue 527: fastq_mergepairs quiet writes stats to stderr"
+# amended after the 2026-08-16 documentation-audit review: the
+# issue-527 fix kept the stats block on stderr even under --quiet, but
+# the maintainer has since decided that --quiet must suppress it (as
+# the quiet option documents, and as fastq_filter and fastq_join
+# behave); the rest of the issue-527 behaviour (no stdout output,
+# report on stderr or in --log) is unchanged and still tested above.
+# This flipped test fails against vsearch 2.31.0 and older
+DESCRIPTION="issue 527 (amended): fastq_mergepairs quiet suppresses stats on stderr"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
     --quiet \
     --fastaout /dev/null 2>&1 | \
     grep -q "^Statistics" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 ## -------------------------------------------------- quiet = false, log = true
