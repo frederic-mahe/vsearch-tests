@@ -2329,6 +2329,25 @@ printf "@s\nA\n+\nJ\n@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# a member grouped through its reverse complement (--strand both) has
+# its quality string read reversed during merging: seed AACG (qualities
+# 5555) groups with member CGTT (qualities !!II), whose reversed
+# qualities II!! give max(5,I) max(5,I) max(5,!) max(5,!) = II55.
+# vsearch 2.31.0 and older merged the qualities unreversed (55II), so
+# this test fails against released binaries
+DESCRIPTION="--fastx_uniques --fastq_qout_max reverses minus-strand member qualities"
+printf "@s1\nAACG\n+\n5555\n@s2\nCGTT\n+\n!!II\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --strand both \
+        --fastq_qout_max \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s1@AACG@+@II55@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## take into account 'K' (Q42), but limit best value to 'J' Q41?
 DESCRIPTION="--fastx_uniques --fastq_qout_max reports highest quality score (cap values at 41 by default)"
 printf "@s\nA\n+\nK\n@s\nA\n+\nI\n" | \

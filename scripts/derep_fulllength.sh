@@ -1482,6 +1482,34 @@ printf "" | \
 
 ## ------------------------------------------------------------------ lengthout
 
+# --label_suffix was rejected by derep_fulllength alone in vsearch
+# 2.31.0 and older (its four sibling commands accepted it); the option
+# was added after the 2026-08-15 documentation audit, so these two
+# tests fail against released binaries
+DESCRIPTION="--derep_fulllength --label_suffix is accepted"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --label_suffix ";x" \
+        --output /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_fulllength --label_suffix appends the suffix to output headers"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --quiet \
+        --label_suffix ";x" \
+        --output - | \
+    head -n 1 | \
+    grep -qx ">s;x" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
 DESCRIPTION="--derep_fulllength --lengthout is accepted"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
