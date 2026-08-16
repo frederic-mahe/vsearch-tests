@@ -1907,11 +1907,19 @@ printf ">s;size=1\nA\n" | \
 
 #*****************************************************************************#
 #                                                                             #
-#                              invalid options                                #
+#                              ignored options                                #
 #                                                                             #
 #*****************************************************************************#
 
-DESCRIPTION="--cut --threads is rejected"
+# cut is not multithreaded: --threads is accepted and ignored (with a
+# warning above 1), as the manpage documents and as every other
+# single-threaded command behaves. vsearch 2.31.0 and older rejected
+# the option ('Invalid options to command cut'), and an earlier
+# version of this test pinned that rejection; the maintainer decided
+# during the 2026-08-16 documentation-audit review to accept the
+# option instead and explicitly authorized flipping this test, which
+# now fails against released binaries
+DESCRIPTION="--cut --threads is accepted (and ignored)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --cut - \
@@ -1919,8 +1927,20 @@ printf ">s\nA\n" | \
         --threads 1 \
         --quiet \
         --fastaout_discarded /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut --threads 2 warns that only 1 thread is used"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern G^AATT_C \
+        --threads 2 \
+        --quiet \
+        --fastaout_discarded /dev/null 2>&1 | \
+    grep -qi "does not support multithreading" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
 
 
 #*****************************************************************************#
