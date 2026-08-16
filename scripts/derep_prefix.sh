@@ -305,6 +305,23 @@ printf ">s1\nAG\n>s2\nACG\n>s3\nA\n" | \
 # by decreasing annotation-derived abundance even without --sizein
 # (--sizein only controls abundance counting, so the merged cluster
 # reports size=2, not size=10)
+# --minuniquesize filters the fasta output only: the --uc output
+# always lists all clusters, including those below the threshold
+# (derep_prefix has its own writer, separate from derep_fulllength's)
+DESCRIPTION="--derep_prefix --minuniquesize does not filter the --uc output"
+printf ">s1\nAAAA\n>s2\nAAAA\n>s3\nTTTT\n" | \
+    "${VSEARCH}" \
+        --derep_prefix - \
+        --minseqlength 1 \
+        --minuniquesize 2 \
+        --quiet \
+        --output /dev/null \
+        --uc - | \
+    awk '$1 == "C" {clusters += 1}
+         END {exit clusters == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--derep_prefix length ties use size annotations even without --sizein"
 printf ">x;size=1\nAAAA\n>y;size=9\nAAAA\n" | \
     "${VSEARCH}" \

@@ -753,8 +753,9 @@ unset TMP
 #                                                                             #
 #*****************************************************************************#
 
-## makeudb_usearch reads fasta (not fastq), so fastq-related options are
-## rejected
+## makeudb_usearch accepts fastq *data* (quality values are ignored,
+## see the acceptance test above), but the fastq-related *options* are
+## rejected by the option matrix
 DESCRIPTION="--fastq_ascii is rejected"
 printf ">s\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \

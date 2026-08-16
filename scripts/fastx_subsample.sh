@@ -460,16 +460,19 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# note: null percentage outputs nothing to fastaout_discarded
-DESCRIPTION="--fastx_subsample --sample_pct accepts a null value"
+# 0.0 is indistinguishable from the option being unset and is always
+# fatal ("Specify either --sample_pct or --sample_size"); an earlier
+# version of this test asserted acceptance and passed vacuously
+# because the pipe masked vsearch's exit status. Rewritten during the
+# 2026-08-15 documentation audit (edit authorized)
+DESCRIPTION="--fastx_subsample --sample_pct rejects a null value"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --fastx_subsample - \
         --sample_pct 0.0 \
-        --fastaout - 2> /dev/null | \
-    awk '/^>/ {s += 1} END {exit s == 0 ? 0 : 1}' && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_subsample --sample_pct accepts floats (100.0)"
 printf ">s\nA\n" | \

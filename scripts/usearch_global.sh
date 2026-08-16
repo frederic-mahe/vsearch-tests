@@ -2397,7 +2397,12 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
-DESCRIPTION="--usearch_global --minseqlength discards shorter query sequences"
+# --minseqlength (and --maxseqlength) filter *database* sequences
+# only; query sequences are never length-filtered. An earlier version
+# of this test claimed queries were discarded and passed for the wrong
+# reason (its 60-nt db sequence was discarded, emptying the database);
+# rewritten during the 2026-08-15 documentation audit (edit authorized)
+DESCRIPTION="--usearch_global --minseqlength discards shorter database sequences"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
@@ -2411,6 +2416,23 @@ printf ">q\n%s\n" "${SEQ}" | \
     grep -q "q" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --minseqlength does not filter query sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --minseqlength "${#SEQ}" \
+        --blast6out - \
+        --quiet 2> /dev/null | \
+    grep -q "^q" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm -f "${DB}"
 unset DB
 

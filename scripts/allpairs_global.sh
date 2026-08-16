@@ -1707,16 +1707,23 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## --weak_id reports pairs above the weak threshold that fall below --id
-DESCRIPTION="--allpairs_global --weak_id reports pairs between weak_id and id"
-printf ">s1\nAAAA\n>s2\nAATT\n" | \
+# --weak_id is ignored by allpairs_global: only accepted alignments
+# are reported, weak hits never are (the manpage lists the option
+# under "ignored options"). An earlier version of this test claimed
+# weak pairs were reported and passed for the wrong reason (its
+# AAAA/AATT pair reaches 100% iddef-2 identity with terminal gaps and
+# was simply accepted); rewritten during the 2026-08-15 documentation
+# audit (edit authorized). The pair below is at 90% identity with
+# spread mismatches, so only N records are expected
+DESCRIPTION="--allpairs_global --weak_id is ignored (weak pairs are not reported)"
+printf ">p1\nAAGGTTCCTAGGATCCAAGGCTCCAAGGTTGCAATGTTCC\n>p2\nATGGTTCCTAGCATCCAAGGCTCGAAGGTTGCAATGTTCA\n" | \
     "${VSEARCH}" \
         --allpairs_global - \
-        --id 0.9 \
-        --weak_id 0.4 \
-        --blast6out - \
+        --id 0.95 \
+        --weak_id 0.5 \
+        --uc - \
         --quiet | \
-    grep -qw "s1" && \
+    awk '$1 == "H" {hits += 1} END {exit hits == 0 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
