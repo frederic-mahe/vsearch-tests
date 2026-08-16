@@ -156,6 +156,17 @@ printf "not a fasta or fastq file\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# the manpage documents that fastq input is accepted (quality values
+# are ignored; the input goes through the same reader as fasta)
+DESCRIPTION="--uchime_denovo accepts fastq input"
+printf "@s;size=10\n%s\n+\n%s\n" "${PARENT_A}" "${PARENT_A//?/I}" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --quiet \
+        --chimeras /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--uchime_denovo errors without any output option"
 printf ">s;size=1\n%s\n" "${PARENT_A}" | \
     "${VSEARCH}" \

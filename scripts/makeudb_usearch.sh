@@ -732,6 +732,21 @@ printf ">s\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 
 
+# the manpage documents that fastq input is accepted (quality values
+# are ignored and are not stored in the database)
+DESCRIPTION="--makeudb_usearch accepts fastq input"
+TMP=$(mktemp)
+printf "@s\n%s\n+\n%s\n" "${SEQ}" "${SEQ//?/I}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --quiet \
+        --output "${TMP}" 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+
 #*****************************************************************************#
 #                                                                             #
 #                              invalid options                                #
