@@ -167,6 +167,27 @@ for i in {1..8} 11 12 {14..31} 127 ; do
 done
 unset OCTAL
 
+# the character check covers the part of the header the command
+# retains: the filtering commands read headers untruncated, so the
+# whole line is scanned (as above), while search commands scan only
+# the truncated label - the same control character after a space is
+# silently accepted by --usearch_global (documented in fasta.5/fastq.5
+# since the 2026-08-15 audit; release-safe, long-standing behaviour)
+DESCRIPTION="ascii character 1 after a space is accepted by search commands (label-only scan)"
+TMP=$(mktemp)
+printf ">d\nACGTACGTAAACCCGGGTTTACGTACGTAAAC\n" > "${TMP}"
+printf ">q \001x\nACGTACGTAAACCCGGGTTTACGTACGTAAAC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${TMP}" \
+        --id 1.0 \
+        --quiet \
+        --blast6out /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
 ## when --log is set, the fatal error caused by an unprintable header
 ## character is also written to the log file
 DESCRIPTION="unprintable fasta header character fatal error is recorded in the log file"
