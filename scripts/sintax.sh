@@ -724,6 +724,77 @@ OUT2=$(printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset SEQ DB OUT1 OUT2
 
+## with a fixed seed the classification is reproducible whatever the
+## thread count: each query's random generator is seeded from its own
+## substream, independent of which thread processes it (release-safe;
+## the manpage documents the guarantee)
+DESCRIPTION="--sintax --randseed gives identical results whatever the thread count"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB=$(mktemp)
+printf ">s1;tax=d:A\n%s\n>s2;tax=d:B\n%s\n>s3;tax=d:C\n%s\n" \
+    "${SEQ}" "${SEQ}" "${SEQ}" > "${DB}"
+OUT1=$(printf ">q1\n%s\n>q2\n%s\n>q3\n%s\n" "${SEQ}" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_random \
+        --randseed 42 \
+        --threads 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | sort)
+OUT2=$(printf ">q1\n%s\n>q2\n%s\n>q3\n%s\n" "${SEQ}" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB}" \
+        --sintax_random \
+        --randseed 42 \
+        --threads 4 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | sort)
+[ -n "${OUT1}" ] && [ "${OUT1}" = "${OUT2}" ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset SEQ DB OUT1 OUT2
+
+## the stale warning 'randseed ... may not work as intended with
+## multiple threads' was removed after the 2026-08-15 documentation
+## audit (the reproducibility guarantee above holds); this test fails
+## against vsearch 2.31.0 and older, which still print it
+DESCRIPTION="--sintax --randseed with multiple threads does not warn"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s1;tax=d:A\n%s\n" "${SEQ}") \
+        --randseed 42 \
+        --threads 2 \
+        --tabbedout /dev/null 2>&1 | \
+    grep -qi "may not work as intended" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+unset SEQ
+
+## taxon names end at the ';' closing the tax= field: a comma in a
+## later header field must not extend the last taxon name across the
+## ';'. vsearch 2.31.0 and older scanned to the end of the header
+## (yielding 'p:BBB;foo=1' here), so this test fails against released
+## binaries
+DESCRIPTION="--sintax stops taxon names at the end of the tax= field"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">r1;tax=d:AAA,p:BBB;foo=1,2\n%s\n" "${SEQ}") \
+        --randseed 42 \
+        --quiet \
+        --tabbedout - | \
+    cut -f 2 | \
+    grep -qx "d:AAA(1.00),p:BBB(1.00)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
 ## a fixed --randseed makes --sintax_random reproducible from run to run,
 ## even when the random draw materially drives the result. Unlike the single
 ## unambiguous reference used in other reproducibility tests, this five-way

@@ -1553,6 +1553,32 @@ unset TMPLOG
 
 ## --no_progress
 
+# --maxseqlength/--minseqlength were rejected by orient until the
+# 2026-08-15 documentation audit, although the 50000-nt default cap
+# was silently applied to the database by the shared reader; the two
+# tests below fail against vsearch 2.31.0 and older
+DESCRIPTION="--orient --maxseqlength is accepted"
+printf ">q\nACGTACGTAAACCCGGGTTTACGTACGTAAAC\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">d\nACGTACGTAAACCCGGGTTTACGTACGTAAAC\n") \
+        --maxseqlength 100000 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--orient --minseqlength is accepted"
+printf ">q\nACGTACGTAAACCCGGGTTTACGTACGTAAAC\n" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">d\nACGTACGTAAACCCGGGTTTACGTACGTAAAC\n") \
+        --minseqlength 1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--no_progress is accepted"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
@@ -2271,8 +2297,12 @@ printf ">s\nACGT\n" | \
         success "${DESCRIPTION}"
 rm -f "${DB}"
 
-# --minseqlength is a filter option; not listed in the --orient manpage
-DESCRIPTION="--orient rejects --minseqlength"
+# --minseqlength used to be rejected; it is accepted since the
+# 2026-08-15 documentation audit (the 50000-nt default cap was always
+# silently applied to the database, and the maintainer decided to make
+# both length options adjustable, as for maskfasta and sintax; this
+# flipped test fails against vsearch 2.31.0 and older)
+DESCRIPTION="--orient accepts --minseqlength"
 DB=$(mktemp)
 printf ">s\nACGT\n" > "${DB}"
 printf ">s\nACGT\n" | \
@@ -2282,8 +2312,8 @@ printf ">s\nACGT\n" | \
         --fastaout /dev/null \
         --minseqlength 1 \
         --quiet 2>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm -f "${DB}"
 
 

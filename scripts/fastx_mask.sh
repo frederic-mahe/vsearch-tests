@@ -1143,6 +1143,32 @@ unset TMPLOG
 
 ## --no_progress
 
+# --maxseqlength/--minseqlength were rejected by fastx_mask until the
+# 2026-08-15 documentation audit, although the 50000-nt default cap
+# was silently applied by the shared database reader; the two tests
+# below fail against vsearch 2.31.0 and older
+DESCRIPTION="--fastx_mask --maxseqlength retains sequences longer than 50000"
+(printf ">long\n"; head -c 60000 /dev/zero | tr "\0" "A"; printf "\n") | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --qmask none \
+        --maxseqlength 100000 \
+        --quiet \
+        --fastaout - | \
+    awk '/^>/ {headers += 1} END {exit headers == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_mask --minseqlength is accepted"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --minseqlength 1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--no_progress is accepted"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \
