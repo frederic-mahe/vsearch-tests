@@ -245,6 +245,24 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# --weak_id sets the identity floor of the denoising step (default
+# 0.90): a variant at ~98% identity merges by default but becomes its
+# own centroid when the floor is raised above its identity. vsearch
+# 2.31.0 and older silently overwrote a user-supplied --weak_id with
+# 0.90, so this test fails against released binaries
+DESCRIPTION="--cluster_unoise --weak_id raises the identity floor"
+printf ">c;size=100\nAAGGTTCCTAGGATCCAAGGCTCCAAGGTTGCAATGTTCC\n>v;size=1\nAAGGTTCCTAGCATCCAAGGCTCCAAGGTTGCAATGTTCC\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --weak_id 0.99 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    awk '/^>/ {centroids += 1}
+         END {exit centroids == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # a variant with zero mismatches (an alignment containing only indels)
 # is always merged into the centroid, regardless of the abundance skew:
 # the UNOISE distance counts substitutions only. Here v (39 nt) is c

@@ -767,23 +767,47 @@ rm -f "${DB}"
 unset DB
 
 ## --selfid ignores reference entries whose nucleotide sequence is
-## strictly identical to the query. When the reference database
-## contains a sequence identical to the query, --selfid excludes the
-## self-hit from being reported as a top parent
+## strictly identical to the query. With both parents and a reference
+## identical to the query in the database, the identical reference
+## wins every smoothing window and suppresses detection, unless
+## --selfid excludes it. vsearch 2.31.0 and older compared the
+## reference against a query *part* (always shorter), so --selfid
+## never excluded anything and this test - strengthened from an
+## earlier single-entry-database version that passed vacuously - fails
+## against released binaries
 DESCRIPTION="--uchime_ref --selfid excludes the identical reference match"
 DB=$(mktemp)
-printf ">ref\n%s\n" "${PARENT_A}" > "${DB}"
-printf ">query\n%s\n" "${PARENT_A}" | \
+printf ">pa\n%s\n>pb\n%s\n>other\n%s\n" \
+       "${PARENT_A}" "${PARENT_B}" "${CHIMERA_AB}" > "${DB}"
+printf ">query\n%s\n" "${CHIMERA_AB}" | \
     "${VSEARCH}" \
         --uchime_ref - \
         --db "${DB}" \
         --selfid \
         --uchimeout - \
         --quiet | \
-    awk -F'\t' '{print $5}' | \
-    grep -qw "ref" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    awk -F'\t' '{exit $NF == "Y" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+# without --selfid, the identical reference is a perfect full-length
+# match and the query is classified non-chimeric (passes against
+# released binaries too)
+DESCRIPTION="--uchime_ref: an identical reference suppresses detection without --selfid"
+DB=$(mktemp)
+printf ">pa\n%s\n>pb\n%s\n>other\n%s\n" \
+       "${PARENT_A}" "${PARENT_B}" "${CHIMERA_AB}" > "${DB}"
+printf ">query\n%s\n" "${CHIMERA_AB}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --uchimeout - \
+        --quiet | \
+    awk -F'\t' '{exit $NF == "N" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm -f "${DB}"
 unset DB
 
