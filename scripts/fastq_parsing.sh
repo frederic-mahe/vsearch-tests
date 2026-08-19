@@ -62,4 +62,54 @@ find ./data/ -name "error*.fastq" -print | \
     done
 
 
+#*****************************************************************************#
+#                                                                             #
+#                        Illegal character diagnostics                        #
+#                                                                             #
+#*****************************************************************************#
+
+## The four wordings the FASTQ parser can emit. Each is pinned in full,
+## including the reported line number, because the message is assembled from
+## three places: the wording, the printable/unprintable branch, and
+## fastq_fatal()'s "Invalid line N in FASTQ file: " prefix.
+
+DESCRIPTION="fastq parsing: an illegal printable sequence character is named"
+printf '@s\nAZA\n+\nIII\n' | \
+    "${VSEARCH}" \
+        --fastq_chars - \
+        --quiet 2>&1 > /dev/null | \
+    grep -qx "Fatal error: Invalid line 2 in FASTQ file: Illegal sequence character 'Z'" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq parsing: an illegal unprintable sequence character is reported by number"
+printf '@s\nA\x01A\n+\nIII\n' | \
+    "${VSEARCH}" \
+        --fastq_chars - \
+        --quiet 2>&1 > /dev/null | \
+    grep -qx "Fatal error: Invalid line 2 in FASTQ file: Illegal sequence character (unprintable, no 1)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a space is the *only* printable character a quality line can reject: every
+## other byte from 33 to 126 is a legal quality symbol
+DESCRIPTION="fastq parsing: a space in a quality line is named as an illegal character"
+printf '@s\nAAA\n+\nI I\n' | \
+    "${VSEARCH}" \
+        --fastq_chars - \
+        --quiet 2>&1 > /dev/null | \
+    grep -qx "Fatal error: Invalid line 4 in FASTQ file: Illegal quality character ' '" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq parsing: an illegal unprintable quality character is reported by number"
+printf '@s\nAAA\n+\nI\x01I\n' | \
+    "${VSEARCH}" \
+        --fastq_chars - \
+        --quiet 2>&1 > /dev/null | \
+    grep -qx "Fatal error: Invalid line 4 in FASTQ file: Illegal quality character (unprintable, no 1)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
