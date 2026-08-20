@@ -197,7 +197,7 @@ printf ">s\001x\nA\n" | \
         --fastx_filter - \
         --fastaout /dev/null \
         --log "${LOG}" 2> /dev/null
-grep -q "Unprintable ASCII character" "${LOG}" && \
+grep -q "Illegal header character (unprintable" "${LOG}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${LOG}"
@@ -435,7 +435,7 @@ printf "@s\b\nA\n+\nI\n" | \
         --fastx_filter - \
         --quiet \
         --fastqout /dev/null 2>&1 | \
-    grep -iq "character no 8" && \
+    grep -iq "unprintable, no 8" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

@@ -70,7 +70,10 @@ find ./data/ -name "error*.fastq" -print | \
 
 ## The four wordings the FASTQ parser can emit. Each is pinned in full,
 ## including the reported line number, because the message is assembled from
-## three places: the wording, the printable/unprintable branch, and
+## three parts: the field noun (sequence or quality), the
+## printable/unprintable branch, and the trailing location clause. All four
+## follow the single template shared with the FASTA and header parsers
+## (vsearch's core/illegal_character.hpp), which is why none of them carries
 ## fastq_fatal()'s "Invalid line N in FASTQ file: " prefix.
 
 DESCRIPTION="fastq parsing: an illegal printable sequence character is named"
@@ -78,7 +81,7 @@ printf '@s\nAZA\n+\nIII\n' | \
     "${VSEARCH}" \
         --fastq_chars - \
         --quiet 2>&1 > /dev/null | \
-    grep -qx "Fatal error: Invalid line 2 in FASTQ file: Illegal sequence character 'Z'" && \
+    grep -qx "Fatal error: Illegal sequence character 'Z' on line 2 of FASTQ file" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -87,7 +90,7 @@ printf '@s\nA\x01A\n+\nIII\n' | \
     "${VSEARCH}" \
         --fastq_chars - \
         --quiet 2>&1 > /dev/null | \
-    grep -qx "Fatal error: Invalid line 2 in FASTQ file: Illegal sequence character (unprintable, no 1)" && \
+    grep -qx "Fatal error: Illegal sequence character (unprintable, no 1) on line 2 of FASTQ file" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -98,7 +101,7 @@ printf '@s\nAAA\n+\nI I\n' | \
     "${VSEARCH}" \
         --fastq_chars - \
         --quiet 2>&1 > /dev/null | \
-    grep -qx "Fatal error: Invalid line 4 in FASTQ file: Illegal quality character ' '" && \
+    grep -qx "Fatal error: Illegal quality character ' ' on line 4 of FASTQ file" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -107,7 +110,7 @@ printf '@s\nAAA\n+\nI\x01I\n' | \
     "${VSEARCH}" \
         --fastq_chars - \
         --quiet 2>&1 > /dev/null | \
-    grep -qx "Fatal error: Invalid line 4 in FASTQ file: Illegal quality character (unprintable, no 1)" && \
+    grep -qx "Fatal error: Illegal quality character (unprintable, no 1) on line 4 of FASTQ file" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

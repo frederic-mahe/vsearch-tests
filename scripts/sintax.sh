@@ -442,7 +442,7 @@ printf ">q\nAC-GT%s\n" "${SEQ}" | \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
         --threads 4 \
         --tabbedout /dev/null 2>&1 >/dev/null | \
-    grep -q "Illegal character '-'" && \
+    grep -q "Illegal sequence character '-'" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset SEQ

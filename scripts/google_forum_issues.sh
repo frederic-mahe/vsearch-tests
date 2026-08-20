@@ -132,7 +132,7 @@ printf ">s1\nAC\001GT\n" | \
         --cluster_fast - \
         --id 0.97 \
         --centroids /dev/null 2>&1 | \
-    grep -qi "Illegal unprintable ASCII character no 1" && \
+    grep -qi "Illegal sequence character (unprintable, no 1)" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2554,7 +2554,7 @@ printf ">s1\nACG-TACGTACGTACGTACGTACGTACGTACGT\n" | \
     ${VSEARCH} \
         --uchime_denovo - \
         --nonchimeras /dev/null 2>&1 | \
-    grep -q "Illegal character '-'" && \
+    grep -q "Illegal sequence character '-'" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset DESCRIPTION
@@ -2564,7 +2564,7 @@ printf ">s1\nACG.TACGTACGTACGTACGTACGTACGTACGT\n" | \
     ${VSEARCH} \
         --uchime_denovo - \
         --nonchimeras /dev/null 2>&1 | \
-    grep -q "Illegal character '\.'" && \
+    grep -q "Illegal sequence character '\.'" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset DESCRIPTION

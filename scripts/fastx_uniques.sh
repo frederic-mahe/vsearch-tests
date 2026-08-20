@@ -286,7 +286,7 @@ printf '>s\x01x\nACGT\n' | \
         --fastx_uniques - \
         --quiet \
         --fastaout /dev/null 2>&1 > /dev/null | \
-    grep -q "Illegal character encountered" && \
+    grep -q "Illegal header character" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
