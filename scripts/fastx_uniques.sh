@@ -746,6 +746,98 @@ printf "@s\nA\n+\n\"\n@s\nA\n+\n\"\n" | \
         failure "${DESCRIPTION}"
 
 
+# merging converts each quality symbol to an error probability and back,
+# and the trip is not reversible: -10 * log10(10^-0.2) evaluates to
+# 1.999999999999999778, so a truncating conversion reported Q1 for two
+# merged Q2 bases. vsearch 2.31.0 and older report '"' here, so this test
+# fails against released binaries
+DESCRIPTION="--fastx_uniques reports average quality score (doubleton, Q2 + Q2)"
+printf "@s\nA\n+\n#\n@s\nA\n+\n#\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@#@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Q0 and Q1 share the same error probability (0.75, see the special case
+# above), so both are only representable as the Q1 that 0.75 floors to
+DESCRIPTION="--fastx_uniques reports average quality score (doubleton, Q0 + Q0)"
+printf "@s\nA\n+\n!\n@s\nA\n+\n!\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@\"@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# two *different* symbols are still averaged and truncated, so the Q2 case
+# above does not leak into mixed pairs:
+# p = (10^-0.2 + 10^-4.1) / 2 = 0.3155183887
+# Q = -10 log p = 5.0097 -> Q5 ('&')
+DESCRIPTION="--fastx_uniques reports average quality score (doubleton, Q2 + Q41)"
+printf "@s\nA\n+\n#\n@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@&@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# when both members carry the same quality, the merged quality is that
+# quality whatever their abundances: the weighted mean of two equal
+# probabilities is not bit-exactly that probability, and a truncating
+# conversion crossed the threshold for some abundance pairs. vsearch 2.31.0
+# and older report Q9 ('*') for sizes 1+2 at Q10, so this test fails against
+# released binaries
+DESCRIPTION="--fastx_uniques average quality score is abundance-independent (Q10, sizes 1+2)"
+printf "@s;size=1\nA\n+\n+\n@s;size=2\nA\n+\n+\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --sizein \
+        --sizeout \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s;size=3@A@+@+@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## same, at Q8: vsearch 2.31.0 and older report Q7 ('(') for sizes 1+6
+DESCRIPTION="--fastx_uniques average quality score is abundance-independent (Q8, sizes 1+6)"
+printf "@s;size=1\nA\n+\n)\n@s;size=6\nA\n+\n)\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --sizein \
+        --sizeout \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s;size=7@A@+@)@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## same, at Q17: vsearch 2.31.0 and older report Q16 ('1') for sizes 1+14
+DESCRIPTION="--fastx_uniques average quality score is abundance-independent (Q17, sizes 1+14)"
+printf "@s;size=1\nA\n+\n2\n@s;size=14\nA\n+\n2\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --sizein \
+        --sizeout \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s;size=15@A@+@2@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## --------------------------------------------------------------------- median
 
 DESCRIPTION="--fastx_unique outputs a median cluster size"
@@ -2375,6 +2467,40 @@ printf "@s\nA\n+\nK\n@s\nA\n+\nI\n" | \
     grep -qx "@s@A@+@J@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+# --fastq_qout_max keeps the highest quality, so two Q2 bases merge to Q2.
+# vsearch 2.31.0 and older report '"' (Q1) here, because they took the
+# quality through an error probability and back: -10 * log10(10^-0.2)
+# evaluates to 1.999999999999999778 and was truncated. This test fails
+# against released binaries
+DESCRIPTION="--fastx_uniques --fastq_qout_max reports highest quality score (doubleton, Q2 + Q2)"
+printf "@s\nA\n+\n#\n@s\nA\n+\n#\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qout_max \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@#@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --fastq_qout_max keeps a quality value, never averages, so abundances
+## cannot change the result
+DESCRIPTION="--fastx_uniques --fastq_qout_max ignores abundances (Q10, sizes 1+2)"
+printf "@s;size=1\nA\n+\n+\n@s;size=2\nA\n+\n+\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qout_max \
+        --quiet \
+        --sizein \
+        --sizeout \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s;size=3@A@+@+@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 ## ------------------------------------------------------------ gzip_decompress
 
