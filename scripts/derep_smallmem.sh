@@ -2272,33 +2272,31 @@ printf ">s\n%81s\n" " " | tr " " "A" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-# ## missing check in vsearch code!
-# DESCRIPTION="--derep_smallmem --maxseqlength must be a positive integer"
-# TMP=$(mktemp)
-# printf ">s\n%81s\n" " " | tr " " "A" > "${TMP}"
-# "${VSEARCH}" \
-#     --derep_smallmem "${TMP}" \
-#     --maxseqlength -1 \
-#     --quiet \
-#     --fastaout /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
-# rm -f "${TMP}"
-# unset TMP
+DESCRIPTION="--derep_smallmem --maxseqlength must be a positive integer"
+TMP=$(mktemp)
+printf ">s\n%81s\n" " " | tr " " "A" > "${TMP}"
+"${VSEARCH}" \
+    --derep_smallmem "${TMP}" \
+    --maxseqlength -1 \
+    --quiet \
+    --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
 
-# ## missing check in vsearch code! 
-# DESCRIPTION="--derep_smallmem --maxseqlength must be greater than zero"
-# TMP=$(mktemp)
-# printf ">s\n%81s\n" " " | tr " " "A" > "${TMP}"
-# "${VSEARCH}" \
-#     --derep_smallmem "${TMP}" \
-#     --maxseqlength 0 \
-#     --quiet \
-#     --fastaout /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
-# rm -f "${TMP}"
-# unset TMP
+DESCRIPTION="--derep_smallmem --maxseqlength must be greater than zero"
+TMP=$(mktemp)
+printf ">s\n%81s\n" " " | tr " " "A" > "${TMP}"
+"${VSEARCH}" \
+    --derep_smallmem "${TMP}" \
+    --maxseqlength 0 \
+    --quiet \
+    --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
 
 ## --------------------------------------------------------------- minseqlength
 
@@ -2411,20 +2409,6 @@ printf ">s\nA\n" > "${TMP}"
 	success "${DESCRIPTION}"
 rm -f "${TMP}"
 unset TMP
-
-## missing check in vsearch code!
-# DESCRIPTION="--derep_smallmem --minseqlength must be greater than zero"
-# TMP=$(mktemp)
-# printf ">s\nA\n" > "${TMP}"
-# "${VSEARCH}" \
-#     --derep_smallmem "${TMP}" \
-#     --minseqlength 0 \
-#     --quiet \
-#     --fastaout /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
-# rm -f "${TMP}"
-# unset TMP
 
 # combine min/maxseqlength (normal, equal, swapped)
 DESCRIPTION="--derep_smallmem --minseqlength --maxseqlength (normal usage)"
