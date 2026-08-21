@@ -1891,6 +1891,69 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# When stderr is not a terminal (redirected to a file, as under Slurm),
+# progress is reported as newline-terminated "prompt N%" lines while the
+# command runs (vsearch commit fba1b33b, restored by 697377ca after the
+# Progress-class rewrite silently reverted it). The reported position
+# advances with the reader's buffer refills, so assert an intermediate
+# percentage rather than a specific value.
+DESCRIPTION="--derep_fulllength redirected stderr gets intermediate progress lines"
+TMP=$(mktemp)
+printf ">s%s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" $(seq 1 2000) > "${TMP}"
+"${VSEARCH}" \
+    --derep_fulllength "${TMP}" \
+    --minseqlength 1 \
+    --output /dev/null 2>&1 | \
+    grep -Eq "^Dereplicating file .* [1-9][0-9]?%$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+# done() owns the final line, so each percentage appears exactly once
+# (v2.31.0 logged the 100% of the reading phase twice)
+DESCRIPTION="--derep_fulllength redirected stderr logs each percentage exactly once"
+TMP=$(mktemp)
+printf ">s%s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" $(seq 1 200) > "${TMP}"
+"${VSEARCH}" \
+    --derep_fulllength "${TMP}" \
+    --minseqlength 1 \
+    --output /dev/null 2>&1 | \
+    grep -c "^Dereplicating file .* 100%$" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--derep_fulllength --no_progress leaves only the final 100% line"
+TMP=$(mktemp)
+printf ">s%s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" $(seq 1 200) > "${TMP}"
+"${VSEARCH}" \
+    --derep_fulllength "${TMP}" \
+    --minseqlength 1 \
+    --no_progress \
+    --output /dev/null 2>&1 | \
+    grep -c "^Dereplicating file" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+# reading a pipe, the total size is unknown: no percent steps to report,
+# only the opening 0% and the closing 100%
+DESCRIPTION="--derep_fulllength progress on a pipe is only 0% and 100%"
+printf ">s%s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" $(seq 1 200) | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength 1 \
+        --output /dev/null 2>&1 | \
+    grep -c "^Dereplicating file" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## -------------------------------------------------------------- notrunclabels
 
 DESCRIPTION="--derep_fulllength --notrunclabels is accepted"
