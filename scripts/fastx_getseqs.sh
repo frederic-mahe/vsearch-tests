@@ -612,9 +612,10 @@ printf ">s1\nA\n" | \
 rm -f "${TMP}"
 unset TMP
 
-## Note: vsearch 2.30.6 appears to silently skip the first line of a
-## --label_words file (see 'notes' at the end of this script). Tests below
-## use a throwaway first line so the target words are on lines 2+.
+## Note: vsearch 2.30.6 silently skipped the first line of a
+## --label_words file; fixed in v2.31.0 (see 'notes' at the end of this
+## script). Tests below keep their historical throwaway first line: it
+## matches no header, so it is harmless either way.
 DESCRIPTION="--label_words extracts entries matching any of the listed words"
 TMP=$(mktemp)
 printf "ignored_first_line\nabc\nxyz\n" > "${TMP}"
@@ -786,8 +787,9 @@ printf ">xtargetx\nA\n" | \
         success "${DESCRIPTION}"
 
 ## --label_words combined with --label_field
-# (note: --label_words silently skips the first line of the file, so a
-# throwaway first line is used; see 'notes' at the end of this script)
+# (note: the throwaway first line is a historical workaround for
+# vsearch 2.30.6, which silently skipped the first line of the file;
+# fixed in v2.31.0, see 'notes' at the end of this script)
 DESCRIPTION="--label_words matches a word inside a named field"
 TMP=$(mktemp)
 printf "ignored_first_line\n123\n" > "${TMP}"
@@ -1531,12 +1533,14 @@ printf ">s1234\nACGT\n" | \
 #                                                                             #
 #*****************************************************************************#
 
-## vsearch 2.30.6 (Jan 2026) silently ignores the first word in a
+## vsearch 2.30.6 (Jan 2026) silently ignored the first word in a
 ## --label_words file: with a single-word file 'abc\n' the header '>s1;abc'
-## does not match, but with 'xyz\nabc\n' it does. A leading empty line in
-## the same file triggers a segmentation fault. Tests above work around
-## this by placing the target words on line 2 and later; the behaviour
-## should be flagged for human review.
+## did not match, but with 'xyz\nabc\n' it did. A leading empty line in
+## the same file triggered a segmentation fault. Both issues were fixed
+## in v2.31.0 (commits 1b4ae10 and 6cf306c) and are pinned by regression
+## tests above. Some older tests still place their target words on line 2
+## and later (a workaround from the 2.30.6 era); the extra first word
+## matches no header, so those tests remain valid.
 
 
 exit 0
