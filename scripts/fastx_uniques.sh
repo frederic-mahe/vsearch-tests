@@ -2072,18 +2072,17 @@ printf "@s\nA\n+\nJ\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# ## fastq_qmaxout has no effect!
-# DESCRIPTION="--fastx_uniques --fastq_qmaxout caps output quality values at 40"
-# printf "@s\nA\n+\nJ\n" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --fastq_qmaxout 40 \
-#         --quiet \
-#         --fastqout - | \
-#     tr "\n" "@" | \
-#     grep -qx "@s@A@+@I@" && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+DESCRIPTION="--fastx_uniques --fastq_qmaxout caps output quality values at 40"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmaxout 40 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@I@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques --fastq_qmaxout must be a positive integer"
 printf "@s\nA\n+\nI\n" | \
@@ -2131,24 +2130,25 @@ DESCRIPTION="--fastx_uniques --fastq_qmaxout can be set to 62 (offset 64)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --fastq_ascii 64 \
+        --fastq_asciiout 64 \
         --fastq_qmaxout 62 \
         --quiet \
         --fastqout /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# ## missing check in vsearch!
-# DESCRIPTION="--fastx_uniques --fastq_qmaxout cannot be greater than 62 (offset 64)"
-# printf "@s\nA\n+\nI\n" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --fastq_ascii 64 \
-#         --fastq_qmaxout 63 \
-#         --quiet \
-#         --fastqout /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-#         success "${DESCRIPTION}"
+# the boundary is set by the output offset: --fastq_asciiout plus
+# --fastq_qmaxout may not exceed 126, the last printable ASCII character
+DESCRIPTION="--fastx_uniques --fastq_qmaxout cannot be greater than 62 (offset 64)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_asciiout 64 \
+        --fastq_qmaxout 63 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques --fastq_qmaxout can be greater than fastq_qmax"
 printf "@s\nA\n+\nI\n" | \
@@ -2341,18 +2341,18 @@ printf "@s\nA\n+\nJ\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# ## fastq_qminout has no effect!
-# DESCRIPTION="--fastx_uniques --fastq_qminout floors output quality values at 16 (0 = 15)"
-# printf "@s\nA\n+\n0\n" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --fastq_qminout 16 \
-#         --quiet \
-#         --fastqout - | \
-#     tr "\n" "@" | \
-#     grep -qx "@s@A@+@I@" && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
+# raising Q15 ('0') to the floor of 16 gives Q16 ('1')
+DESCRIPTION="--fastx_uniques --fastq_qminout floors output quality values at 16 (0 = 15)"
+printf "@s\nA\n+\n0\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qminout 16 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@1@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## fix: should vsearch accept negative values? 
 DESCRIPTION="--fastx_uniques --fastq_qminout must be a positive integer"
@@ -2422,7 +2422,7 @@ DESCRIPTION="--fastx_uniques --fastq_qminout can be set to 62 (offset 64)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --fastq_ascii 64 \
+        --fastq_asciiout 64 \
         --fastq_qminout 62 \
         --fastq_qmaxout 62 \
         --quiet \
@@ -2430,18 +2430,19 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## missing check in vsearch!
-# DESCRIPTION="--fastx_uniques --fastq_qminout cannot be greater than 62 (offset 64)"
-# printf "@s\nA\n+\nI\n" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --fastq_ascii 64 \
-#         --fastq_qminout 63 \
-#         --fastq_qmaxout 63 \
-#         --quiet \
-#         --fastqout /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-#         success "${DESCRIPTION}"
+# --fastq_qminout 63 forces --fastq_qmaxout >= 63, whose sum with the
+# output offset 64 exceeds 126, the last printable ASCII character
+DESCRIPTION="--fastx_uniques --fastq_qminout cannot be greater than 62 (offset 64)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_asciiout 64 \
+        --fastq_qminout 63 \
+        --fastq_qmaxout 63 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques --fastq_qminout can be greater than fastq_qmax"
 printf "@s\nA\n+\nI\n" | \
