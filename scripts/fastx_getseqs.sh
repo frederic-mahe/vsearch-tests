@@ -390,6 +390,25 @@ printf ">s1\nA\n" | \
 rm -f "${TMP}"
 unset TMP
 
+## empty lines in a --labels file are silently skipped (vsearch commit
+## 6cf306c, v2.30.6..v2.31.0): they must neither crash vsearch nor be
+## stored as empty labels
+DESCRIPTION="--labels tolerates empty lines around a label"
+TMP=$(mktemp)
+printf "\ns1\n\n" > "${TMP}"
+printf ">s1\nA\n>s2\nC\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --labels "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    awk '/^>/ {headers += 1 ; if ($0 != ">s1") {wrong = 1}}
+         END {exit (headers == 1 && wrong == 0) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
 DESCRIPTION="--labels errors if the labels file does not exist"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
@@ -636,6 +655,59 @@ printf ">s1\nA\n" | \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+## regression guard for vsearch commit 1b4ae10 (v2.30.6..v2.31.0): the
+## first word of a --label_words file was silently ignored, so a
+## single-word file never matched anything
+DESCRIPTION="--label_words matches the word on the first line of the file"
+TMP=$(mktemp)
+printf "abc\n" > "${TMP}"
+printf ">s1;abc\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;abc" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+## regression guard for vsearch commit 6cf306c (v2.30.6..v2.31.0): a
+## leading empty line in a --label_words file crashed vsearch
+## (segmentation fault); empty lines are now silently skipped
+DESCRIPTION="--label_words tolerates a leading empty line in the file"
+TMP=$(mktemp)
+printf "\nabc\n" > "${TMP}"
+printf ">s1;abc\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;abc" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+## empty lines are skipped, not stored as empty words: an empty word
+## would otherwise match every header
+DESCRIPTION="--label_words empty lines in the file do not match every header"
+TMP=$(mktemp)
+printf "\nxyz\n\n" > "${TMP}"
+printf ">s1;abc\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
 
 ## --label_field
 DESCRIPTION="--label_field is accepted"
