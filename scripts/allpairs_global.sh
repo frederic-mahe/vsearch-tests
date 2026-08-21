@@ -2376,6 +2376,93 @@ printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${MUTATED}" | \
         failure "${DESCRIPTION}"
 unset LONG MUTATED
 
+## The linear memory aligner scores ambiguity symbols with its own copy
+## of the 16x16 score matrix (a column aligned to an N or another
+## ambiguity code scores 0, --n_mismatch turns every N column into a
+## mismatch). The five tests below pin that scoring on the fallback
+## path, where the small inputs used by the ambiguity tests elsewhere
+## cannot reach it.
+
+DESCRIPTION="--allpairs_global (linear memory aligner) N columns are not mismatches by default"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+# replace 5 nt of the second sequence with N (aligned to A, C, G, T, A)
+MUTATED="${LONG:0:1000}NNNNN${LONG:1005}"
+printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${MUTATED}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userfields mism+ids \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx $'0\t5010' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG MUTATED
+
+DESCRIPTION="--allpairs_global (linear memory aligner) --n_mismatch turns N columns into mismatches"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+MUTATED="${LONG:0:1000}NNNNN${LONG:1005}"
+printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${MUTATED}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --n_mismatch \
+        --userfields mism+ids \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx $'5\t5005' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG MUTATED
+
+DESCRIPTION="--allpairs_global (linear memory aligner) compatible ambiguity codes are not mismatches"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+# R, Y, S, W include the A, C, G, T they align to; K = {G,T} does not
+# include the A it aligns to, and is the only mismatch
+MUTATED="${LONG:0:1000}RYSWK${LONG:1005}"
+printf ">s1\n%s\n>s2\n%s\n" "${LONG}" "${MUTATED}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userfields mism+ids \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx $'1\t5009' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG MUTATED
+
+DESCRIPTION="--allpairs_global (linear memory aligner) N aligned to N is not a mismatch by default"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+MUTATED="${LONG:0:1000}NNNNN${LONG:1005}"
+printf ">s1\n%s\n>s2\n%s\n" "${MUTATED}" "${MUTATED}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userfields mism+ids \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx $'0\t5010' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG MUTATED
+
+DESCRIPTION="--allpairs_global (linear memory aligner) --n_mismatch counts N aligned to N as a mismatch"
+LONG=$(printf 'ACGTACGTAC%.0s' {1..501})
+MUTATED="${LONG:0:1000}NNNNN${LONG:1005}"
+printf ">s1\n%s\n>s2\n%s\n" "${MUTATED}" "${MUTATED}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --n_mismatch \
+        --userfields mism+ids \
+        --userout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx $'5\t5005' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG MUTATED
+
 
 #*****************************************************************************#
 #                                                                             #
