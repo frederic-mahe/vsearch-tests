@@ -995,6 +995,23 @@ printf ">a;size=5\nAAAAAAAAAAAA\n>b;size=3\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## centroid abundances above UINT_MAX are printed in full (regression
+## guard for vsearch commit 290174b, post-2.31.0: ;centroid_size= was
+## truncated to 32 bits)
+DESCRIPTION="--cluster_size --centroid_sizeout prints abundances above 2^32 in full"
+printf ">s1;size=8589934592\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 1.0 \
+        --sizein \
+        --minseqlength 1 \
+        --centroid_sizeout \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -qx ">s1;size=8589934592;centroid_size=8589934592" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## without --sizein all abundances default to 1
 DESCRIPTION="--cluster_size --centroid_sizeout defaults centroid_size to 1 without --sizein"
 printf ">s1\nAAAAAAAAAAAA\n" | \

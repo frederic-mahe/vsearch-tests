@@ -400,6 +400,34 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## since vsearch commit 5b62cd8 (post-2.31.0), --db accepts '-' and
+## reads the database from standard input, like the other input options
+DESCRIPTION="--usearch_global --db - reads the database from stdin"
+printf ">d\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global <(printf ">q\n%s\n" "${SEQ}") \
+        --db - \
+        --id 1.0 \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -qx "q	d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## '-' for both the query and --db is ambiguous (two readers racing over
+## the same stream) and is rejected up front (issue 506, commit 5b62cd8)
+DESCRIPTION="--usearch_global rejects '-' for both the query and --db"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db - \
+        --id 1.0 \
+        --userout /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## --db can also be a UDB file produced by --makeudb_usearch
 DESCRIPTION="--usearch_global accepts a UDB --db"
 DB=$(mktemp)
@@ -2212,6 +2240,27 @@ printf ">q;size=5\n%s\n" "${SEQ}" | \
     grep -q "q" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the default --maxqsize is int64 max, so queries with an abundance
+## above ~2.1e9 are searched, not silently dropped (regression guard for
+## vsearch commit b9bf88b, post-2.31.0: the old default was int32 max)
+DESCRIPTION="--usearch_global searches queries with an abundance above 2^31 by default"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q;size=3000000000\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --sizein \
+        --quiet \
+        --userfields query+target \
+        --userout - 2> /dev/null | \
+    grep -qw "d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm -f "${DB}"
 unset DB
 

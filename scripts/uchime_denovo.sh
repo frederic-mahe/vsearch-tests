@@ -409,6 +409,40 @@ printf ">s;size=1\n%s\n" "${PARENT_A}" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## the abskew comparison is exact for abundances above 2^53, where
+## double arithmetic starts rounding integers (regression guard for
+## vsearch commit b9bf88b, post-2.31.0). Here the query abundance is
+## 2^53 + 1 and the parents' is 2^54, one short of twice the query:
+## rounded double math would accept the parents and flag the chimera.
+DESCRIPTION="--uchime_denovo --abskew 2 compares abundances above 2^53 exactly (no chimera)"
+printf ">parentA;size=18014398509481984\n%s\n>parentB;size=18014398509481984\n%s\n>chimeraAB;size=9007199254740993\n%s\n" \
+    "${PARENT_A}" "${PARENT_B}" "${CHIMERA_AB}" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --abskew 2 \
+        --uchimeout - \
+        --quiet | \
+    awk -F'\t' '$NF == "Y"' | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## same abundance scale, but the parents reach exactly twice the query
+## abundance (2^54 + 2): the chimera must be detected, showing that the
+## huge abundances are compared, not dropped or capped
+DESCRIPTION="--uchime_denovo --abskew 2 detects the chimera at abundances above 2^53"
+printf ">parentA;size=18014398509481986\n%s\n>parentB;size=18014398509481986\n%s\n>chimeraAB;size=9007199254740993\n%s\n" \
+    "${PARENT_A}" "${PARENT_B}" "${CHIMERA_AB}" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --abskew 2 \
+        --uchimeout - \
+        --quiet | \
+    awk -F'\t' '$NF == "Y"' | \
+    grep -qw "chimeraAB;size=9007199254740993" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ------------------------------------------------------------------------ dn
 
 DESCRIPTION="--uchime_denovo --dn is accepted"
