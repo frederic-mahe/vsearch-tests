@@ -1762,7 +1762,13 @@ printf "@s\nA\n+\nI\n" | \
 ## ------------------------------------------------------------- fastq_asciiout
 
 # --fastq_asciiout positive integer
-#          When using --fastq_convert, --sff_convert or --fasta2fastq, define the ASCII character number used as the basis for the FASTQ quality score when writing FASTQ output files.  The  default is 33. Only 33 and 64 are valid arguments.
+#          Specify the offset used as the basis for the fastq quality score
+#          when writing fastq output files. The offset value is either 33 or
+#          64, default is 33. (vsearch-fastx_uniques(1): output quality
+#          scores are encoded with the --fastq_asciiout offset and clamped
+#          to the range defined by --fastq_qminout and --fastq_qmaxout; a
+#          quality score of 0 is written as 1, since both stand for the same
+#          uninformative error probability.)
 
 DESCRIPTION="--fastx_uniques --fastq_asciiout is accepted"
 printf "@s\nA\n+\nI\n" | \
@@ -1821,8 +1827,8 @@ DESCRIPTION="--fastx_uniques --fastq_asciiout (64 in, 64 out)"
 printf "@s\nA\n+\nh\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
-        --fastq_ascii 33 \
-        --fastq_asciiout 33 \
+        --fastq_ascii 64 \
+        --fastq_asciiout 64 \
         --quiet \
         --fastqout - | \
     tr "\n" "@" | \
@@ -1830,12 +1836,10 @@ printf "@s\nA\n+\nh\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# --fastq_asciiout only re-encodes quality values for --fastq_convert,
-# --sff_convert and --fasta2fastq (see the manpage excerpt above). With
-# --fastx_uniques the option is accepted but the quality string is
-# written verbatim: 'I' (Q40 in offset 33) is NOT rewritten as 'h'
-# (Q40 in offset 64).
-DESCRIPTION="--fastx_uniques --fastq_asciiout does not re-encode qualities (33 in, 64 out)"
+# every output quality symbol is re-encoded with the --fastq_asciiout
+# offset, whether or not the sequence was grouped with others: 'I' (Q40
+# in offset 33) is rewritten as 'h' (Q40 in offset 64)
+DESCRIPTION="--fastx_uniques --fastq_asciiout re-encodes qualities (33 in, 64 out)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -1844,13 +1848,13 @@ printf "@s\nA\n+\nI\n" | \
         --quiet \
         --fastqout - | \
     tr "\n" "@" | \
-    grep -qx "@s@A@+@I@" &&\
+    grep -qx "@s@A@+@h@" &&\
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# same in the other direction: 'h' (Q40 in offset 64) is NOT rewritten
-# as 'I' (Q40 in offset 33)
-DESCRIPTION="--fastx_uniques --fastq_asciiout does not re-encode qualities (64 in, 33 out)"
+# same in the other direction: 'h' (Q40 in offset 64) is rewritten as
+# 'I' (Q40 in offset 33)
+DESCRIPTION="--fastx_uniques --fastq_asciiout re-encodes qualities (64 in, 33 out)"
 printf "@s\nA\n+\nh\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
@@ -1859,7 +1863,78 @@ printf "@s\nA\n+\nh\n" | \
         --quiet \
         --fastqout - | \
     tr "\n" "@" | \
-    grep -qx "@s@A@+@h@" &&\
+    grep -qx "@s@A@+@I@" &&\
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# grouped and ungrouped sequences use the same encoding, so one output
+# file never mixes two offsets: the doubleton and the singleton are
+# both written as 'h' (Q40 in offset 64)
+DESCRIPTION="--fastx_uniques --fastq_asciiout re-encodes merged and unmerged alike (33 in, 64 out)"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n@t1\nC\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --fastq_asciiout 64 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s1@A@+@h@@t1@C@+@h@" &&\
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# three identical Q40 reads stay Q40: the second merge must not decode
+# the already re-encoded symbol with the input offset again (that gave
+# Q71, clamped to 'i' = Q41 in offset 64)
+DESCRIPTION="--fastx_uniques --fastq_asciiout abundance >= 3 does not inflate quality (33 in, 64 out)"
+printf "@s1\nA\n+\nI\n@s2\nA\n+\nI\n@s3\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --fastq_asciiout 64 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s1@A@+@h@" &&\
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Q0 and Q1 both stand for the uninformative error probability 0.75,
+# which is only representable as Q1, for unmerged sequences too
+DESCRIPTION="--fastx_uniques writes a quality score of 0 as 1 (singleton)"
+printf "@s\nA\n+\n!\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx '@s@A@+@"@' &&\
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the --fastq_qmaxout ceiling applies to unmerged sequences too:
+# 'h' read with offset 33 is Q71, written as Q41 ('J')
+DESCRIPTION="--fastx_uniques clamps singleton qualities to fastq_qmaxout (default 41)"
+printf "@s\nA\n+\nh\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@J@" &&\
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques clamps singleton qualities to an explicit fastq_qmaxout"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmaxout 30 \
+        --quiet \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@?@" &&\
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
