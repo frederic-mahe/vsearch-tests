@@ -179,6 +179,62 @@ for PAIR in "--fastq_maxee 0" "--fastq_maxee_rate -1" "--fastq_truncee -1" \
 done
 unset PAIR
 
+## overflowing numeric arguments are rejected instead of silently
+## saturating to INT64_MAX/DBL_MAX (regression guard for vsearch commit
+## a4c6fcb, v2.30.6..v2.31.0)
+DESCRIPTION="--fastq_filter rejects --fastq_maxns 2^63 (integer overflow)"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_maxns 9223372036854775808 \
+        --fastqout /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_filter accepts --fastq_maxns 2^63 - 1 (INT64_MAX)"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_maxns 9223372036854775807 \
+        --fastqout /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_filter rejects --fastq_maxee 1e999 (double overflow)"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_maxee 1e999 \
+        --fastqout /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_filter accepts --fastq_maxee 1e308 (largest normal magnitude)"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_maxee 1e308 \
+        --fastqout /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## side effect of the same ERANGE check: values that underflow to a
+## subnormal double (< ~2.2e-308) are rejected as well, even though they
+## are positive reals; flagged for human review
+DESCRIPTION="--fastq_filter rejects --fastq_maxee 1e-320 (subnormal, underflow)"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_maxee 1e-320 \
+        --fastqout /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
