@@ -1651,27 +1651,25 @@ printf ">s\n%81s\n" " " | tr " " "A" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-# ## missing check in vsearch code!
-# DESCRIPTION="--derep_id --maxseqlength must be a positive integer"
-# printf ">s\n%81s\n" " " | tr " " "A" | \
-#     "${VSEARCH}" \
-#         --derep_id - \
-#         --maxseqlength -1 \
-#         --quiet \
-#         --output /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
+DESCRIPTION="--derep_id --maxseqlength must be a positive integer"
+printf ">s\n%81s\n" " " | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --maxseqlength -1 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
-# ## missing check in vsearch code! 
-# DESCRIPTION="--derep_id --maxseqlength must be greater than zero"
-# printf ">s\n%81s\n" " " | tr " " "A" | \
-#     "${VSEARCH}" \
-#         --derep_id - \
-#         --maxseqlength 0 \
-#         --quiet \
-#         --output /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
+DESCRIPTION="--derep_id --maxseqlength must be greater than zero"
+printf ">s\n%81s\n" " " | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_id - \
+        --maxseqlength 0 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
 ## --------------------------------------------------------------- minseqlength
 
@@ -1760,17 +1758,6 @@ printf ">s\nA\n" | \
         --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
-
-# ## missing check in vsearch code!
-# DESCRIPTION="--derep_id --minseqlength must be greater than zero"
-# printf ">s\nA\n" | \
-#     "${VSEARCH}" \
-#         --derep_id - \
-#         --minseqlength 0 \
-#         --quiet \
-#         --output /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
 
 # combine min/maxseqlength (normal, equal, swapped)
 DESCRIPTION="--derep_id --minseqlength --maxseqlength (normal usage)"
