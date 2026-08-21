@@ -1671,27 +1671,25 @@ printf ">s\n%81s\n" " " | tr " " "A" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-# ## missing check in vsearch code!
-# DESCRIPTION="--derep_fulllength --maxseqlength must be a positive integer"
-# printf ">s\n%81s\n" | tr " " "A" | \
-#     "${VSEARCH}" \
-#         --derep_fulllength - \
-#         --maxseqlength -1 \
-#         --quiet \
-#         --output /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
+DESCRIPTION="--derep_fulllength --maxseqlength must be a positive integer"
+printf ">s\n%81s\n" " " | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --maxseqlength -1 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
-# ## missing check in vsearch code! 
-# DESCRIPTION="--derep_fulllength --maxseqlength must be greater than zero"
-# printf ">s\n%81s\n" | tr " " "A" | \
-#     "${VSEARCH}" \
-#         --derep_fulllength - \
-#         --maxseqlength 0 \
-#         --quiet \
-#         --output /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
+DESCRIPTION="--derep_fulllength --maxseqlength must be greater than zero"
+printf ">s\n%81s\n" " " | tr " " "A" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --maxseqlength 0 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
 ## --------------------------------------------------------------- minseqlength
 
@@ -1771,27 +1769,15 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-# ## missing check in vsearch code!
-# DESCRIPTION="--derep_fulllength --minseqlength must be a positive integer"
-# printf ">s\nA\n" | \
-#     "${VSEARCH}" \
-#         --derep_fulllength - \
-#         --minseqlength -1 \
-#         --quiet \
-#         --output /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
-
-# ## missing check in vsearch code!
-# DESCRIPTION="--derep_fulllength --minseqlength must be greater than zero"
-# printf ">s\nA\n" | \
-#     "${VSEARCH}" \
-#         --derep_fulllength - \
-#         --minseqlength 0 \
-#         --quiet \
-#         --output /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
+DESCRIPTION="--derep_fulllength --minseqlength must be a positive integer"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --derep_fulllength - \
+        --minseqlength -1 \
+        --quiet \
+        --output /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
 # combine min/maxseqlength (normal, equal, swapped)
 DESCRIPTION="--derep_fulllength --minseqlength --maxseqlength (normal usage)"
