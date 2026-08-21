@@ -222,14 +222,28 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## side effect of the same ERANGE check: values that underflow to a
-## subnormal double (< ~2.2e-308) are rejected as well, even though they
-## are positive reals; flagged for human review
-DESCRIPTION="--fastq_filter rejects --fastq_maxee 1e-320 (subnormal, underflow)"
+## values that underflow to a subnormal double (< ~2.2e-308) are accepted
+## as round-to-nearest, like the rounding every decimal argument undergoes;
+## vsearch 2.31.0 and older rejected them on glibc (strtod sets ERANGE on
+## underflow there, which is implementation-defined), so this test fails
+## against released binaries
+DESCRIPTION="--fastq_filter accepts --fastq_maxee 1e-320 (subnormal, underflow)"
 printf "@s1\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastq_filter - \
         --fastq_maxee 1e-320 \
+        --fastqout /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## complete underflow rounds to 0.0, which the per-option check then
+## rejects with the more precise "must be positive" message
+DESCRIPTION="--fastq_filter rejects --fastq_maxee 1e-999 (underflows to zero)"
+printf "@s1\nACGT\n+\nIIII\n" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --fastq_maxee 1e-999 \
         --fastqout /dev/null \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
