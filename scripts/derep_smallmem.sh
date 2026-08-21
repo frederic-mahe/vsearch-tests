@@ -1256,7 +1256,7 @@ printf ">s\nA\n>s\nA\n>s\nA\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-# should warn that minuniquesize > maxuniquesize (output always empty)?
+# vsearch warns when minuniquesize > maxuniquesize (fasta output always empty)
 DESCRIPTION="--minuniquesize --maxuniquesize rejects dereplicated sizes (swapped threshold)"
 TMP=$(mktemp)
 printf ">s\nA\n>s\nA\n>s\nA\n" > "${TMP}"
@@ -1267,6 +1267,36 @@ printf ">s\nA\n>s\nA\n>s\nA\n" > "${TMP}"
     --quiet \
     --fastaout - | \
     grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--minuniquesize larger than --maxuniquesize triggers a warning"
+TMP=$(mktemp)
+printf ">s\nA\n>s\nA\n>s\nA\n" > "${TMP}"
+"${VSEARCH}" \
+    --derep_smallmem "${TMP}" \
+    --minuniquesize 3 \
+    --maxuniquesize 2 \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^WARNING: --minuniquesize is larger than --maxuniquesize" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--minuniquesize smaller than --maxuniquesize triggers no warning"
+TMP=$(mktemp)
+printf ">s\nA\n>s\nA\n>s\nA\n" > "${TMP}"
+"${VSEARCH}" \
+    --derep_smallmem "${TMP}" \
+    --minuniquesize 2 \
+    --maxuniquesize 3 \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^WARNING" && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -2451,6 +2481,36 @@ printf ">s\nAA\n" > "${TMP}"
     --quiet \
     --fastaout - 2> /dev/null | \
     grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--derep_smallmem --minseqlength larger than --maxseqlength triggers a warning"
+TMP=$(mktemp)
+printf ">s\nAA\n" > "${TMP}"
+"${VSEARCH}" \
+    --derep_smallmem "${TMP}" \
+    --minseqlength 2 \
+    --maxseqlength 1 \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^WARNING: --minseqlength is larger than --maxseqlength" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--derep_smallmem --minseqlength smaller than --maxseqlength triggers no warning"
+TMP=$(mktemp)
+printf ">s\nAA\n" > "${TMP}"
+"${VSEARCH}" \
+    --derep_smallmem "${TMP}" \
+    --minseqlength 1 \
+    --maxseqlength 2 \
+    --quiet \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "^WARNING" && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 rm -f "${TMP}"
@@ -3672,12 +3732,11 @@ fi
 # approximately 1e-21. Memory footprint is appr. 24 bytes times the
 # number of unique sequence.
 
-# note: vsearch performs no validation when a minimum threshold is set
+# note: vsearch (post-v2.31.0) warns when a minimum threshold is set
 # higher than its matching maximum (--minuniquesize > --maxuniquesize,
-# or --minseqlength > --maxseqlength). No warning or error is emitted;
-# the command silently produces an empty output. This current
-# behaviour is covered by the "swapped threshold" tests above. Adding
-# an explicit check (or warning) would be an upstream change in
-# vsearch.
+# or --minseqlength > --maxseqlength). The run still succeeds and the
+# output is empty, except for a --uc output which is not
+# abundance-filtered. This behaviour is covered by the "swapped
+# threshold" and warning tests above.
 
 exit 0
