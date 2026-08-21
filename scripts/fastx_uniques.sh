@@ -1366,7 +1366,7 @@ printf ">s\nA\n>s\nA\n>s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-# should warn that minuniquesize > maxuniquesize (output always empty)?
+# vsearch warns when minuniquesize > maxuniquesize (fasta output always empty)
 DESCRIPTION="--minuniquesize --maxuniquesize rejects dereplicated sizes (swapped threshold)"
 printf ">s\nA\n>s\nA\n>s\nA\n" | \
     "${VSEARCH}" \
@@ -1376,6 +1376,30 @@ printf ">s\nA\n>s\nA\n>s\nA\n" | \
         --quiet \
         --fastaout - | \
     grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize larger than --maxuniquesize triggers a warning"
+printf ">s\nA\n>s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minuniquesize 3 \
+        --maxuniquesize 2 \
+        --quiet \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "^WARNING: --minuniquesize is larger than --maxuniquesize" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--minuniquesize smaller than --maxuniquesize triggers no warning"
+printf ">s\nA\n>s\nA\n>s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minuniquesize 2 \
+        --maxuniquesize 3 \
+        --quiet \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "^WARNING" && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
@@ -2945,6 +2969,30 @@ printf ">s\nAA\n" | \
         --quiet \
         --fastaout - 2> /dev/null | \
     grep -q "." && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --minseqlength larger than --maxseqlength triggers a warning"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minseqlength 2 \
+        --maxseqlength 1 \
+        --quiet \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "^WARNING: --minseqlength is larger than --maxseqlength" && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --minseqlength smaller than --maxseqlength triggers no warning"
+printf ">s\nAA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minseqlength 1 \
+        --maxseqlength 2 \
+        --quiet \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "^WARNING" && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
@@ -4701,13 +4749,12 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-# note: vsearch performs no validation when a minimum threshold is set
+# note: vsearch (post-v2.31.0) warns when a minimum threshold is set
 # higher than its matching maximum (--minuniquesize > --maxuniquesize,
-# or --minseqlength > --maxseqlength). No warning or error is emitted;
-# the command silently produces an empty output. This current
-# behaviour is covered by the "swapped threshold" tests above. Adding
-# an explicit check (or warning) would be an upstream change in
-# vsearch.
+# or --minseqlength > --maxseqlength). The run still succeeds and the
+# output is empty, except for a --uc output which is not
+# abundance-filtered. This behaviour is covered by the "swapped
+# threshold" and warning tests above.
 
 # note: --fastq_asciiout does not re-encode quality values in
 # --fastx_uniques (it is accepted but has no observable effect on the
