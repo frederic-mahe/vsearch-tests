@@ -4872,6 +4872,29 @@ DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence h
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## the sample name is truncated at the first ';', keeping the prefix
+## (regression guard for vsearch commit 41ee9d3, v2.30.6..v2.31.0)
+DESCRIPTION="fastq_mergepairs option sample keeps the prefix before the first ';'"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample="AB;CD" \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s;sample=AB" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the sample name is truncated at the first blank, keeping the prefix
+DESCRIPTION="fastq_mergepairs option sample keeps the prefix before the first blank"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sample="AB CD" \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s;sample=AB" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="fastq_mergepairs option sample adds identifier to merged sequence headers (non-ascii)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
@@ -4959,6 +4982,73 @@ DESCRIPTION="fastq_mergepairs --sizein --sizeout reports the input abundance"
     --quiet \
     --fastaout - 2> /dev/null | \
     grep -qx ">s;size=7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --sizeout is honored by the fastq output too (regression guard for
+## vsearch commit d4844e2, v2.30.6..v2.31.0: --sizeout used to be
+## silently ignored for merged and notmerged output)
+DESCRIPTION="fastq_mergepairs --sizein --sizeout reports the abundance in fastqout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s;size=7\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s;size=7\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --sizein \
+    --sizeout \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    grep -qx "@s;size=7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --sizeout is honored by the notmerged outputs (same regression
+## guard); the fully mismatching pair below cannot be merged
+DESCRIPTION="fastq_mergepairs --sizeout alone adds ;size=1 to notmerged forward reads"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@f\nAAAAAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@r\nCCCCCCCCCC\n+\nIIIIIIIIII\n") \
+    --sizeout \
+    --quiet \
+    --fastaout_notmerged_fwd - 2> /dev/null | \
+    grep -qx ">f;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the notmerged forward output carries the forward read's abundance
+DESCRIPTION="fastq_mergepairs --sizein --sizeout reports the forward abundance (notmerged fwd)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@f;size=3\nAAAAAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@r;size=9\nCCCCCCCCCC\n+\nIIIIIIIIII\n") \
+    --sizein \
+    --sizeout \
+    --quiet \
+    --fastaout_notmerged_fwd - 2> /dev/null | \
+    grep -qx ">f;size=3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the notmerged reverse output carries the reverse read's abundance
+DESCRIPTION="fastq_mergepairs --sizein --sizeout reports the reverse abundance (notmerged rev)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@f;size=3\nAAAAAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@r;size=9\nCCCCCCCCCC\n+\nIIIIIIIIII\n") \
+    --sizein \
+    --sizeout \
+    --quiet \
+    --fastaout_notmerged_rev - 2> /dev/null | \
+    grep -qx ">r;size=9" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## same behaviour for the fastq flavour of the notmerged outputs
+DESCRIPTION="fastq_mergepairs --sizein --sizeout reports the abundance in fastqout_notmerged_fwd"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@f;size=3\nAAAAAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@r;size=9\nCCCCCCCCCC\n+\nIIIIIIIIII\n") \
+    --sizein \
+    --sizeout \
+    --quiet \
+    --fastqout_notmerged_fwd - 2> /dev/null | \
+    grep -qx "@f;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
