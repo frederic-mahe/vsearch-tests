@@ -137,6 +137,29 @@ printf ">s1\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## out-of-range arguments to the numeric filtering/trimming options are
+## rejected (each entry is "option invalid_value"); fastx_filter shares
+## this validation with fastq_filter (vsearch commit 3f5dace,
+## v2.30.6..v2.31.0)
+for PAIR in "--fastq_maxee 0" "--fastq_maxee_rate -1" "--fastq_truncee -1" \
+            "--fastq_maxlen 0" "--fastq_maxns -1" "--fastq_minlen -1" \
+            "--fastq_trunclen 0" "--fastq_trunclen_keep 0" \
+            "--fastq_truncqual 94" "--fastq_stripleft -1" \
+            "--fastq_stripright -1" ; do
+    # shellcheck disable=SC2086
+    set -- ${PAIR}
+    DESCRIPTION="--fastx_filter rejects ${1} ${2}"
+    printf "@s1\nACGT\n+\nIIII\n" | \
+        "${VSEARCH}" \
+            --fastx_filter - \
+            "${1}" "${2}" \
+            --fastqout /dev/null \
+            --quiet 2> /dev/null && \
+        failure "${DESCRIPTION}" || \
+            success "${DESCRIPTION}"
+done
+unset PAIR
+
 ## each of the four output options (fasta-compatible) is accepted
 ## as sole output option for fasta input
 for OPT in --fastaout --fastaout_discarded ; do
