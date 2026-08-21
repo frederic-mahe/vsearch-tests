@@ -1265,7 +1265,7 @@ printf ">s\nA\n>s\nA\n>s\nA\n" > "${TMP}"
     --minuniquesize 3 \
     --maxuniquesize 2 \
     --quiet \
-    --fastaout - | \
+    --fastaout - 2> /dev/null | \
     grep -q "^>" && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"

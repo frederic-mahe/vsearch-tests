@@ -1091,7 +1091,7 @@ printf ">s\nA\n>s\nA\n>s\nA\n" | \
         --minuniquesize 3 \
         --maxuniquesize 2 \
         --quiet \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -q "^>" && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
