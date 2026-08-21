@@ -2803,27 +2803,25 @@ printf ">s\nACGT\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-# ## missing check in vsearch code!
-# DESCRIPTION="--fastx_uniques --maxseqlength must be a positive integer"
-# printf ">s\n%81s\n" " " | tr " " "A" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --maxseqlength -1 \
-#         --quiet \
-#         --fastaout /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
+DESCRIPTION="--fastx_uniques --maxseqlength must be a positive integer"
+printf ">s\n%81s\n" " " | tr " " "A" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --maxseqlength -1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
-# ## missing check in vsearch code! 
-# DESCRIPTION="--fastx_uniques --maxseqlength must be greater than zero"
-# printf ">s\n%81s\n" " " | tr " " "A" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --maxseqlength 0 \
-#         --quiet \
-#         --fastaout /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
+DESCRIPTION="--fastx_uniques --maxseqlength must be greater than zero"
+printf ">s\n%81s\n" " " | tr " " "A" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --maxseqlength 0 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
 ## --------------------------------------------------------------- minseqlength
 
@@ -2903,27 +2901,15 @@ printf ">s\nA\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
-# ## missing check in vsearch code!
-# DESCRIPTION="--fastx_uniques --minseqlength must be a positive integer"
-# printf ">s\nA\n" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --minseqlength -1 \
-#         --quiet \
-#         --fastaout /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
-
-# ## missing check in vsearch code!
-# DESCRIPTION="--fastx_uniques --minseqlength must be greater than zero"
-# printf ">s\nA\n" | \
-#     "${VSEARCH}" \
-#         --fastx_uniques - \
-#         --minseqlength 0 \
-#         --quiet \
-#         --fastaout /dev/null 2> /dev/null && \
-#     failure "${DESCRIPTION}" || \
-# 	success "${DESCRIPTION}"
+DESCRIPTION="--fastx_uniques --minseqlength must be a positive integer"
+printf ">s\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minseqlength -1 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+	success "${DESCRIPTION}"
 
 # combine min/maxseqlength (normal, equal, swapped)
 DESCRIPTION="--fastx_uniques --minseqlength --maxseqlength (normal usage)"
