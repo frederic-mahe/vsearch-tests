@@ -417,6 +417,13 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (10 nucleotides)"
 ## notes:
 # - could not find a single indel case in all my sequencing runs:
 #   find . -name "*.log" -exec grep -H -m 1 "indel errors" '{}' \;
+#   that search could never match: nothing in vsearch ever assigned that
+#   discard reason. It was introduced already unassigned in 2017, together
+#   with its counter and its report line, by the switch to an ungapped local
+#   alignment -- which by construction cannot detect an indel. The counter and
+#   the report line were dropped in 2026-08.
+# - an indel in the overlap is reported as "alignment score too low, or score
+#   drop too high", which is what the (still commented out) case below emits.
 
 # 1...5...10...15...20...25
 # AAATAAAAAACGCGAAAAAATAAA
