@@ -423,7 +423,7 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (10 nucleotides)"
 #   alignment -- which by construction cannot detect an indel. The counter and
 #   the report line were dropped in 2026-08.
 # - an indel in the overlap is reported as "alignment score too low, or score
-#   drop too high", which is what the (still commented out) case below emits.
+#   drop too high", which is what the case below checks.
 
 # 1...5...10...15...20...25
 # AAATAAAAAACGCGAAAAAATAAA
@@ -431,11 +431,14 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (10 nucleotides)"
 # AAATAAAAAA----AAAAAATAAA
 #
 # IIIIIIIIIIIIIIIIIIIIIIII
-# DESCRIPTION="fastq_mergepairs indel in overlap"
-# "${VSEARCH}" \
-#     --fastq_mergepairs <(printf "@s\nAAATAAAAAACGAAAAAATAAA\n+\nIIIIIIIIIIIIIIIIIIIIII\n") \
-#     --reverse <(printf "@s\nTTTATTTTTTCTTTTTTATTT\n+\nIIIIIIIIIIIIIIIIIIIII\n") \
-#     --fastaout -
+DESCRIPTION="fastq_mergepairs merging rejected: indel in overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAACGAAAAAATAAA\n+\nIIIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTATTTTTTCTTTTTTATTT\n+\nIIIIIIIIIIIIIIIIIIIII\n") \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "alignment score too low" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 ## ------------------------------------------------------------------- chunking
