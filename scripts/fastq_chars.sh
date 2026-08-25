@@ -870,6 +870,17 @@ printf "@s\nAA\n+\n;h\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## the Solexa encoding is solexa+64, not phred+64: it shares the offset
+## with Illumina 1.3+ but defines its scores as -10 log10(p / (1 - p)),
+## and vsearch has only the Phred formula
+DESCRIPTION="--fastq_chars names the Solexa encoding solexa+64, not supported"
+printf "@s\nAA\n+\n;h\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -q "^Guess: Solexa format (solexa+64, not supported)$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--fastq_chars reports the most likely version (ascii 64 to 104 -> Illumina 1.3 +64)"
 printf "@s\nAA\n+\n@h\n" | \
     "${VSEARCH}" \
