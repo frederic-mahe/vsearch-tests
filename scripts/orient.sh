@@ -1148,12 +1148,36 @@ unset SEQ
 
 ## --bzip2_decompress
 #
-# NOTE for human review: --bzip2_decompress is listed as a secondary option
-# for --orient in the manpage, but invoking it on bzip2-compressed stdin pipe
-# systematically fails here ("Fatal error: Unable to read from bzip2 compressed
-# file") while the same pipe works with --fastx_revcomp and --fastx_filter.
-# The happy-path test is therefore omitted; the tests below verify only that
-# the option is recognized by the parser.
+# (an earlier note here reported a systematic failure on bzip2-compressed
+# stdin for --orient specifically; that was traced to the test invocation
+# redirecting stdin from a regular file, 'vsearch --orient - < file.bz2',
+# which failed for every command, not just --orient. A true compressed
+# pipe works, as pinned below; the redirection case is pinned in
+# fastx_revcomp.sh once fixed in vsearch.)
+
+DESCRIPTION="--bzip2_decompress reads bzip2-compressed fasta from stdin"
+printf ">s\nACGT\n" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\nACGT\n") \
+        --fastaout /dev/null \
+        --bzip2_decompress \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--bzip2_decompress reads bzip2-compressed fastq from stdin"
+printf "@s\nACGT\n+\nIIII\n" | \
+    bzip2 | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\nACGT\n") \
+        --fastqout /dev/null \
+        --bzip2_decompress \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--bzip2_decompress errors on uncompressed input"
 DB=$(mktemp)
