@@ -425,12 +425,13 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (10 nucleotides)"
 # - an indel in the overlap is reported as "alignment score too low, or score
 #   drop too high", which is what the case below checks.
 
-# 1...5...10...15...20...25
-# AAATAAAAAACGCGAAAAAATAAA
-# ||||||||||    ||||||||||
-# AAATAAAAAA----AAAAAATAAA
-#
-# IIIIIIIIIIIIIIIIIIIIIIII
+# forward read, and the reverse read shown reverse-complemented: they overlap
+# over their whole length, with a single-nucleotide indel (the forward read's
+# extra C). Both reads are uniformly 'I' (Q40), so quality plays no part.
+# 1...5...10...15...20..
+# AAATAAAAAACGAAAAAATAAA
+# |||||||||| |||||||||||
+# AAATAAAAAA-GAAAAAATAAA
 DESCRIPTION="fastq_mergepairs merging rejected: indel in overlap"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAACGAAAAAATAAA\n+\nIIIIIIIIIIIIIIIIIIIIII\n") \
