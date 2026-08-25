@@ -30,6 +30,21 @@ DESCRIPTION="check if vsearch is executable"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## valgrind is only useful here if it can actually run the binary under
+## test. When it dies before reaching main -- a uprobe on the dynamic
+## loader does that, and so does a sanitizer-instrumented binary -- it
+## still reports "ERROR SUMMARY: 0 errors" and "in use at exit: 0
+## bytes", which would silently turn every valgrind check below into a
+## pass. Probe it once here, so those checks are skipped, not passed.
+VALGRIND_WORKS=false
+if which valgrind > /dev/null 2>&1 ; then
+    VALGRIND_PROBE=$(valgrind "${VSEARCH}" --version 2>&1)
+    [[ "${VALGRIND_PROBE}" == *"ERROR SUMMARY"* && \
+       "${VALGRIND_PROBE}" != *"Process terminating"* ]] && \
+        VALGRIND_WORKS=true
+    unset VALGRIND_PROBE
+fi
+
 
 ## helper: build a UDB file from a fasta string passed on stdin
 ## (--dbmask none to keep the sequence unmasked and predictable)
@@ -950,7 +965,7 @@ unset TMPUDB
 #*****************************************************************************#
 
 ## valgrind: search for errors and memory leaks
-if which valgrind > /dev/null 2>&1 ; then
+if [[ "${VALGRIND_WORKS}" == "true" ]] ; then
 
     LOG=$(mktemp)
     UDB=$(mktemp)
