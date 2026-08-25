@@ -854,6 +854,105 @@ printf ">xtargetx\nA\n" | \
 rm -f "${TMP}"
 unset TMP
 
+## a listed "word" may itself contain a delimiter character; it can then
+## never equal a single header token, but it still matches when the
+## characters just before and just after the occurrence are delimiters
+DESCRIPTION="--label_words: a word containing a delimiter matches when delimited"
+TMP=$(mktemp)
+printf "a-b\n" > "${TMP}"
+printf ">x;a-b;y\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">x;a-b;y" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--label_words: a word containing a delimiter does not match when embedded"
+TMP=$(mktemp)
+printf "a-b\n" > "${TMP}"
+printf ">xa-bx\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -q "^>" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--label_words: plain and delimiter-containing words can share a file"
+TMP=$(mktemp)
+printf "plain\na-b\n" > "${TMP}"
+printf ">has;a-b;end\nA\n>plain;x\nC\n>neither\nG\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--label_words matches a word at the very start of the header"
+TMP=$(mktemp)
+printf "target\n" > "${TMP}"
+printf ">target;rest\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">target;rest" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+DESCRIPTION="--label_words matches a word spanning the whole header"
+TMP=$(mktemp)
+printf "target\n" > "${TMP}"
+printf ">target\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">target" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+## with --label_field the needle is "name=value" and the delimiter is ';';
+## a value that itself contains a semicolon straddles two header fields,
+## yet it matches as long as the occurrence is bounded by ';' or by the
+## header ends (an oddity of the delimited search, pinned here)
+DESCRIPTION="--label_words with --label_field: a value with a semicolon matches across fields"
+TMP=$(mktemp)
+printf "5;x\n" > "${TMP}"
+printf ">a;size=5;x\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_getseqs - \
+        --label_words "${TMP}" \
+        --label_field size \
+        --fastaout - \
+        --quiet 2> /dev/null | \
+    grep -qx ">a;size=5;x" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
 ## --label_substr_match
 DESCRIPTION="--label_substr_match is accepted"
 printf ">abc\nA\n" | \
