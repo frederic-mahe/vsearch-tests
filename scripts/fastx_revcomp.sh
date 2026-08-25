@@ -69,6 +69,24 @@ printf ">s\nACGT\n" > "${TMPFA}"
 rm -f "${TMPFA}"
 unset TMPFA
 
+# regression test: needs a vsearch more recent than v2.31.0. Up to that
+# release, stdin redirected from a regular file was reopened mid-file
+# after format autodetection (dup()ed descriptors share one file
+# offset), so a small fasta file silently produced empty output
+DESCRIPTION="--fastx_revcomp reads from a regular file redirected to stdin"
+TMPFA=$(mktemp)
+printf ">s\nAAGG\n" > "${TMPFA}"
+"${VSEARCH}" \
+    --fastx_revcomp - \
+    --fastaout - \
+    --fasta_width 0 \
+    --quiet < "${TMPFA}" 2>/dev/null | \
+    grep -qx "CCTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}"
+unset TMPFA
+
 DESCRIPTION="--fastx_revcomp errors if input file does not exist"
 "${VSEARCH}" \
     --fastx_revcomp /no/such/file \
@@ -496,6 +514,75 @@ printf "@s\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# regression test: needs a vsearch more recent than v2.31.0 (see the
+# redirected-stdin note in the mandatory-options section)
+DESCRIPTION="--bzip2_decompress reads a bzip2-compressed file redirected to stdin"
+TMPBZ=$(mktemp)
+printf ">s\nAAGG\n" | \
+    bzip2 > "${TMPBZ}"
+"${VSEARCH}" \
+    --fastx_revcomp - \
+    --fastaout - \
+    --bzip2_decompress \
+    --fasta_width 0 \
+    --quiet < "${TMPBZ}" 2>/dev/null | \
+    grep -qx "CCTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPBZ}"
+unset TMPBZ
+
+# regression test: needs a vsearch more recent than v2.31.0. Redirected
+# regular files are autodetected like named files, so the option is not
+# needed
+DESCRIPTION="a bzip2-compressed file redirected to stdin is autodetected"
+TMPBZ=$(mktemp)
+printf ">s\nAAGG\n" | \
+    bzip2 > "${TMPBZ}"
+"${VSEARCH}" \
+    --fastx_revcomp - \
+    --fastaout - \
+    --fasta_width 0 \
+    --quiet < "${TMPBZ}" 2>/dev/null | \
+    grep -qx "CCTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPBZ}"
+unset TMPBZ
+
+# regression test: needs a vsearch more recent than v2.31.0. On a
+# seekable stdin the detected format wins over a contradicting option,
+# which is reported on stderr
+DESCRIPTION="--bzip2_decompress on an uncompressed file redirected to stdin warns"
+TMPFA=$(mktemp)
+printf ">s\nAAGG\n" > "${TMPFA}"
+"${VSEARCH}" \
+    --fastx_revcomp - \
+    --fastaout /dev/null \
+    --bzip2_decompress \
+    --quiet < "${TMPFA}" 2>&1 > /dev/null | \
+    grep -q "ignoring --bzip2_decompress" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}"
+unset TMPFA
+
+# regression test: needs a vsearch more recent than v2.31.0
+DESCRIPTION="--bzip2_decompress on an uncompressed file redirected to stdin still writes the output"
+TMPFA=$(mktemp)
+printf ">s\nAAGG\n" > "${TMPFA}"
+"${VSEARCH}" \
+    --fastx_revcomp - \
+    --fastaout - \
+    --bzip2_decompress \
+    --fasta_width 0 \
+    --quiet < "${TMPFA}" 2>/dev/null | \
+    grep -qx "CCTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}"
+unset TMPFA
+
 DESCRIPTION="--bzip2_decompress errors on uncompressed input"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
@@ -615,6 +702,24 @@ printf "@s\nACGT\n+\nIIII\n" | \
     grep -qx "@s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+# regression test: needs a vsearch more recent than v2.31.0 (see the
+# redirected-stdin note in the mandatory-options section)
+DESCRIPTION="--gzip_decompress reads a gzip-compressed file redirected to stdin"
+TMPGZ=$(mktemp)
+printf ">s\nAAGG\n" | \
+    gzip > "${TMPGZ}"
+"${VSEARCH}" \
+    --fastx_revcomp - \
+    --fastaout - \
+    --gzip_decompress \
+    --fasta_width 0 \
+    --quiet < "${TMPGZ}" 2>/dev/null | \
+    grep -qx "CCTT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPGZ}"
+unset TMPGZ
 
 ## a gzip file whose stored CRC32 is damaged (the four bytes preceding
 ## the final four-byte length field) triggers a decompression error.
