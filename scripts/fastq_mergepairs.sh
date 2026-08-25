@@ -417,18 +417,29 @@ DESCRIPTION="fastq_mergepairs reverse read 5' overhanging (10 nucleotides)"
 ## notes:
 # - could not find a single indel case in all my sequencing runs:
 #   find . -name "*.log" -exec grep -H -m 1 "indel errors" '{}' \;
+#   that search could never match: nothing in vsearch ever assigned that
+#   discard reason. It was introduced already unassigned in 2017, together
+#   with its counter and its report line, by the switch to an ungapped local
+#   alignment -- which by construction cannot detect an indel. The counter and
+#   the report line were dropped in 2026-08.
+# - an indel in the overlap is reported as "alignment score too low, or score
+#   drop too high", which is what the case below checks.
 
-# 1...5...10...15...20...25
-# AAATAAAAAACGCGAAAAAATAAA
-# ||||||||||    ||||||||||
-# AAATAAAAAA----AAAAAATAAA
-#
-# IIIIIIIIIIIIIIIIIIIIIIII
-# DESCRIPTION="fastq_mergepairs indel in overlap"
-# "${VSEARCH}" \
-#     --fastq_mergepairs <(printf "@s\nAAATAAAAAACGAAAAAATAAA\n+\nIIIIIIIIIIIIIIIIIIIIII\n") \
-#     --reverse <(printf "@s\nTTTATTTTTTCTTTTTTATTT\n+\nIIIIIIIIIIIIIIIIIIIII\n") \
-#     --fastaout -
+# forward read, and the reverse read shown reverse-complemented: they overlap
+# over their whole length, with a single-nucleotide indel (the forward read's
+# extra C). Both reads are uniformly 'I' (Q40), so quality plays no part.
+# 1...5...10...15...20..
+# AAATAAAAAACGAAAAAATAAA
+# |||||||||| |||||||||||
+# AAATAAAAAA-GAAAAAATAAA
+DESCRIPTION="fastq_mergepairs merging rejected: indel in overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAACGAAAAAATAAA\n+\nIIIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTATTTTTTCTTTTTTATTT\n+\nIIIIIIIIIIIIIIIIIIIII\n") \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "alignment score too low" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 ## ------------------------------------------------------------------- chunking

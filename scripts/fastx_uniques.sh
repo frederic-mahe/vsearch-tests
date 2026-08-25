@@ -1914,11 +1914,15 @@ printf "@s\nA\n+\n!\n" | \
 
 # the --fastq_qmaxout ceiling applies to unmerged sequences too:
 # 'h' read with offset 33 is Q71, written as Q41 ('J')
+## --fastq_qmax 71 admits the input: since the input range is checked
+## (v2.31.0 accepted the option without applying it), reaching the
+## fastq_qmaxout clamp requires letting the Q71 symbol in first
 DESCRIPTION="--fastx_uniques clamps singleton qualities to fastq_qmaxout (default 41)"
 printf "@s\nA\n+\nh\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
         --fastq_ascii 33 \
+        --fastq_qmax 71 \
         --quiet \
         --fastqout - | \
     tr "\n" "@" | \
@@ -1972,17 +1976,30 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## fastq_qmax does not reject higher quality values (J = 41)
-DESCRIPTION="--fastx_uniques --fastq_qmax is ignored and has no effect"
+## fastq_qmax rejects higher quality values (J = 41). Up to v2.31.0 the
+## option was accepted and never applied, so the entry went through
+## unremarked and its quality was silently clamped on output
+DESCRIPTION="--fastx_uniques --fastq_qmax rejects higher quality values (J = 41)"
 printf "@s\nA\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
         --fastq_qmax 40 \
         --quiet \
-        --fastqout - | \
-     grep -qx "@s" && \
-     success "${DESCRIPTION}" || \
-         failure "${DESCRIPTION}"
+        --fastqout /dev/null 2> /dev/null && \
+     failure "${DESCRIPTION}" || \
+         success "${DESCRIPTION}"
+
+## the error names the option to raise, as in the other fastq commands
+DESCRIPTION="--fastx_uniques --fastq_qmax error suggests a large enough value"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmax 40 \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -q "please use the option --fastq_qmax 41" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques --fastq_qmax must be a positive integer"
 printf "@s\nA\n+\nI\n" | \
@@ -1994,8 +2011,10 @@ printf "@s\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## the input is Q0 ('!'), as in the fastq_stats test of the same name:
+## with the bound applied, a Q40 input would now be rejected by it
 DESCRIPTION="--fastx_uniques --fastq_qmax can be set to zero"
-printf "@s\nA\n+\nI\n" | \
+printf "@s\nA\n+\n!\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
         --fastq_qmax 0 \
@@ -2228,17 +2247,80 @@ printf "@s\nA\n+\n0\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-## fastq_qmin does not reject lower quality values (0 = 15)
-DESCRIPTION="--fastx_uniques --fastq_qmin is ignored and has no effect"
+## fastq_qmin rejects lower quality values (0 = 15). Up to v2.31.0 the
+## option was accepted and never applied, so the entry went through
+## unremarked
+DESCRIPTION="--fastx_uniques --fastq_qmin rejects lower quality values (0 = 15)"
 printf "@s\nA\n+\n0\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
         --fastq_qmin 16 \
         --quiet \
-        --fastqout - | \
-     grep -qx "@s" && \
-     success "${DESCRIPTION}" || \
-         failure "${DESCRIPTION}"
+        --fastqout /dev/null 2> /dev/null && \
+     failure "${DESCRIPTION}" || \
+         success "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques --fastq_qmin error names the bound"
+printf "@s\nA\n+\n0\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmin 16 \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -q "FASTQ quality value (15) below qmin (16)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the check applies to the input, so it fires with fasta output too --
+## as it does for fastx_filter
+DESCRIPTION="--fastx_uniques --fastq_qmax applies with --fastaout"
+printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_qmax 40 \
+        --quiet \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## a wrong --fastq_ascii is what the two bounds are there to catch: a
+## phred+64 file read at the default offset 33 decodes to Q71 and used to
+## dereplicate to fabricated qualities with exit 0
+DESCRIPTION="--fastx_uniques --fastq_qmax catches a phred+64 file read at offset 33"
+printf "@s\nACGT\n+\nhhhh\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --fastqout /dev/null 2>&1 | \
+    grep -q "FASTQ quality value (71) above qmax (41)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## only the offending record stops the run: a legal string of any length
+## passes, including the widest window the sum rules allow
+DESCRIPTION="--fastx_uniques accepts the widest legal window (offset 33, qmin 0, qmax 93)"
+printf "@s\nAA\n+\n!~\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 33 \
+        --fastq_qmin 0 \
+        --fastq_qmax 93 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_uniques accepts the widest legal window (offset 64, qmin -31, qmax 62)"
+printf "@s\nAA\n+\n!~\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastq_ascii 64 \
+        --fastq_qmin -31 \
+        --fastq_qmax 62 \
+        --quiet \
+        --fastqout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--fastx_uniques --fastq_qmin must be a positive integer"
 printf "@s\nA\n+\nI\n" | \
@@ -2271,8 +2353,10 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 ## allows to select only reads with a specific Q value
+## the input is Q41 ('J'), as in the fastq_stats test of the same name:
+## with the bound applied, a Q40 input would now fall below qmin
 DESCRIPTION="--fastx_uniques --fastq_qmin can be equal to fastq_qmax (41 by default)"
-printf "@s\nA\n+\nI\n" | \
+printf "@s\nA\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
         --fastq_qmin 41 \
@@ -2292,8 +2376,9 @@ printf "@s\nA\n+\nI\n" | \
         success "${DESCRIPTION}"
 
 # but not higher, as it cannot be greater than qmax
+## the input is Q93 ('~'), as in the fastq_stats test of the same name
 DESCRIPTION="--fastx_uniques --fastq_qmin can be set to 93 (offset 33)"
-printf "@s\nA\n+\nI\n" | \
+printf "@s\nA\n+\n~\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
         --fastq_ascii 33 \
@@ -2305,8 +2390,10 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 # but not higher, as it cannot be greater than qmax
+## the input is Q62 ('~' at offset 64), as in the fastq_stats test of
+## the same name
 DESCRIPTION="--fastx_uniques --fastq_qmin can be set to 62 (offset 64)"
-printf "@s\nA\n+\nI\n" | \
+printf "@s\nA\n+\n~\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
         --fastq_ascii 64 \
@@ -2556,11 +2643,15 @@ printf "@s1\nAACG\n+\n5555\n@s2\nCGTT\n+\n!!II\n" | \
         failure "${DESCRIPTION}"
 
 ## take into account 'K' (Q42), but limit best value to 'J' Q41?
+## --fastq_qmax 42 admits the Q42 input ('K'): the cap being tested here
+## is the output one (--fastq_qmaxout, 41 by default), and reaching it
+## now requires letting the input past the input bound first
 DESCRIPTION="--fastx_uniques --fastq_qout_max reports highest quality score (cap values at 41 by default)"
 printf "@s\nA\n+\nK\n@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastx_uniques - \
         --fastq_qout_max \
+        --fastq_qmax 42 \
         --quiet \
         --fastqout - | \
     tr "\n" "@" | \

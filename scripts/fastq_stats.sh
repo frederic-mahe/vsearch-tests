@@ -2107,6 +2107,96 @@ printf "@s\nA\n+\n~\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## negative quality scores
+##
+## the only lower bound is the sum rule (--fastq_ascii + --fastq_qmin
+## must be at least 33, the first printable ASCII character), so with an
+## offset of 64 the option accepts values down to -31. Old Solexa
+## (Illumina 1.0) fastq files use that range: ';' is Q-5
+
+DESCRIPTION="--fastq_stats --fastq_qmin accepts a negative value (offset 64)"
+printf "@s\nA\n+\nh\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log /dev/null \
+        --fastq_ascii 64 \
+        --fastq_qmin -5 \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats --fastq_qmin can be set to -31 (offset 64)"
+printf "@s\nA\n+\nh\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log /dev/null \
+        --fastq_ascii 64 \
+        --fastq_qmin -31 \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats --fastq_qmin cannot be set to -32 (offset 64)"
+printf "@s\nA\n+\nh\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log /dev/null \
+        --fastq_ascii 64 \
+        --fastq_qmin -32 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## a negative bound must not reject the scores that are above it
+DESCRIPTION="--fastq_stats a negative --fastq_qmin accepts a positive score (h = Q40)"
+printf "@s\nA\n+\nh\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --fastq_ascii 64 \
+        --fastq_qmin -5 \
+        --quiet \
+        --log - | \
+    grep -qE "^[[:blank:]]+h[[:blank:]]+40[[:blank:]]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_stats reports a negative quality score (; = Q-5, offset 64)"
+printf "@s\nA\n+\n;\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --fastq_ascii 64 \
+        --fastq_qmin -5 \
+        --quiet \
+        --log - | \
+    grep -qE "^[[:blank:]]+;[[:blank:]]+-5[[:blank:]]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## Solexa scores are read with the Phred formula (Pe = 10^-(Q/10)), which
+## for a negative score yields a value greater than 1.0
+DESCRIPTION="--fastq_stats Pe is 3.16228 for Q-5 (offset 64)"
+printf "@s\nA\n+\n;\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --fastq_ascii 64 \
+        --fastq_qmin -5 \
+        --quiet \
+        --log - | \
+    grep -qE "^[[:blank:]]+;[[:blank:]]+-5[[:blank:]]+3\.16228[[:blank:]]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a negative score is out of range unless --fastq_qmin is lowered
+DESCRIPTION="--fastq_stats rejects Q-5 when --fastq_qmin is 0 (default)"
+printf "@s\nA\n+\n;\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log /dev/null \
+        --fastq_ascii 64 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
