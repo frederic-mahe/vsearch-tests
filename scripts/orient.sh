@@ -1057,6 +1057,88 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${TMPUDB}"
 unset TMPUDB SEQ
 
+## vsearch selects different internal k-mer counting structures depending on
+## the word length (boundaries at 9/10 and 12/13 as of 2026-08); orientation
+## must not depend on which structure is in use, so check both strands on
+## each side of the boundaries and at the largest accepted (and odd) width
+SEQ="GACAGGTACAAGCTTGCATCACTGGATCCTAGCAATCGTG"
+RC_SEQ="CACGATTGCTAGGATCCAGTGATGCAAGCTTGTACCTGTC"  # reverse-complement of SEQ
+for WORDLENGTH in 9 10 12 13 15 ; do
+    DESCRIPTION="--wordlength ${WORDLENGTH}: a query identical to db is oriented forward (+)"
+    printf ">q\n%s\n" "${SEQ}" | \
+        "${VSEARCH}" \
+            --orient - \
+            --db <(printf ">s\n%s\n" "${SEQ}") \
+            --qmask none \
+            --dbmask none \
+            --wordlength "${WORDLENGTH}" \
+            --tabbedout - \
+            --quiet 2>/dev/null | \
+        awk -F'\t' '{exit $2 == "+" ? 0 : 1}' && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+
+    DESCRIPTION="--wordlength ${WORDLENGTH}: a query that is the revcomp of db is oriented reverse (-)"
+    printf ">q\n%s\n" "${RC_SEQ}" | \
+        "${VSEARCH}" \
+            --orient - \
+            --db <(printf ">s\n%s\n" "${SEQ}") \
+            --qmask none \
+            --dbmask none \
+            --wordlength "${WORDLENGTH}" \
+            --tabbedout - \
+            --quiet 2>/dev/null | \
+        awk -F'\t' '{exit $2 == "-" ? 0 : 1}' && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+done
+unset SEQ RC_SEQ WORDLENGTH
+
+## a query made of a repeated unit yields few distinct k-mers, each occurring
+## several times; the deduplication of k-mers must not affect orientation
+## (repeats are low-complexity, so masking must be disabled)
+DESCRIPTION="a tandem-repeat query that is the revcomp of db is oriented reverse (-)"
+SEQ="GACAGGTACAAGCTTGACAGGTACAAGCTTGACAGGTACAAGCTT"
+RC_SEQ="AAGCTTGTACCTGTCAAGCTTGTACCTGTCAAGCTTGTACCTGTC"  # reverse-complement of SEQ
+printf ">q\n%s\n" "${RC_SEQ}" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\n%s\n" "${SEQ}") \
+        --qmask none \
+        --dbmask none \
+        --tabbedout - \
+        --quiet 2>/dev/null | \
+    awk -F'\t' '{exit $2 == "-" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ RC_SEQ
+
+## with no input sequence the summary prints plain zero counts, without the
+## parenthesized percentages (there is nothing to divide by)
+DESCRIPTION="empty input: summary counts are zero and carry no percentage"
+printf "" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\nGACAGGTACAAG\n") \
+        --tabbedout /dev/null 2>&1 | \
+    grep -qx "Forward oriented sequences: 0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="summary reports percentages with two decimals"
+SEQ="GACAGGTACAAGCTTGCATCACTGGATCCTAGCAATCGTG"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db <(printf ">s\n%s\n" "${SEQ}") \
+        --qmask none \
+        --dbmask none \
+        --tabbedout /dev/null 2>&1 | \
+    grep -qx "Forward oriented sequences: 1 (100.00%)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
 
 #*****************************************************************************#
 #                                                                             #
