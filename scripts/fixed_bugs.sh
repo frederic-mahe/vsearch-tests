@@ -9155,9 +9155,10 @@ printf "@r\nCGATTCACACTGGGCCAACAAGTTTCGTGCTGACGTGTAT\n+\nIIIIIIIIIIIIIIIIIIIIIII
         failure "${DESCRIPTION}"
 rm -f "${FWD}" "${REV}"
 
-## since 3.0 --fastq_qmaxout defaults to 93, so the posterior is not
-## clipped: the same two Q40 reads merge to Q85 ('v') in the overlap
-DESCRIPTION="issue 326: --fastq_mergepairs reports the unclipped posterior with the 3.0 defaults"
+## with --fastq_qmaxout 93 the posterior is not clipped: the same two Q40
+## reads merge to Q85 ('v') in the overlap. --fastq_mergepairs keeps a
+## default of 41, unlike the commands that pass an input quality through
+DESCRIPTION="issue 326: --fastq_mergepairs reports the unclipped posterior with --fastq_qmaxout 93"
 FWD=$(mktemp)
 REV=$(mktemp)
 printf "@r\nGCTAAAGACAATTACATAACATACACGTCAGCACGAAACT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${FWD}"
@@ -9166,6 +9167,7 @@ printf "@r\nCGATTCACACTGGGCCAACAAGTTTCGTGCTGACGTGTAT\n+\nIIIIIIIIIIIIIIIIIIIIIII
     --fastq_mergepairs "${FWD}" \
     --reverse "${REV}" \
     --fastqout - \
+    --fastq_qmaxout 93 \
     --quiet 2>/dev/null | \
     sed -n "4p" | \
     grep -q "v" && \

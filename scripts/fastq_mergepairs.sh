@@ -4333,15 +4333,27 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is shorter tha
         success "${DESCRIPTION}"
 
 
-## since 3.0 --fastq_qmaxout defaults to 93, so a merged position is no
-## longer clamped to Q41: two agreeing Q40 bases give the full posterior
-## quality Q85 ('v') of Edgar & Flyvbjerg (2015)
-DESCRIPTION="fastq_mergepairs does not clamp merged qualities with the default fastq_qmaxout"
+## --fastq_mergepairs keeps a --fastq_qmaxout default of 41 where the
+## commands that pass an input quality through raised theirs to 93, so
+## the full Edgar & Flyvbjerg (2015) posterior of two agreeing Q40 bases,
+## Q85 ('v'), has to be asked for
+DESCRIPTION="fastq_mergepairs reports the unclamped posterior with --fastq_qmaxout 93"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAA\n+\nIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTATTT\n+\nIIIIIIIIIIII\n") \
+    --fastq_qmaxout 93 \
+    --fastqout - 2> /dev/null | \
+    grep -qx "vvvvvvvvvvvv" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## and the default stays clamped at Q41 ('J')
+DESCRIPTION="fastq_mergepairs clamps merged qualities to 41 by default"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAA\n+\nIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTATTT\n+\nIIIIIIIIIIII\n") \
     --fastqout - 2> /dev/null | \
-    grep -qx "vvvvvvvvvvvv" && \
+    grep -qx "JJJJJJJJJJJJ" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
