@@ -6235,11 +6235,14 @@ printf ">a\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n>b\nGGGGGGGGGGGGGGGGTTTTTTTTTTTTTT
 ## the error message for out-of-range FASTQ quality values was improved to
 ## indicate the offending value and the accepted range (fixed in 2.0.4),
 ## pointing users towards the --fastq_qmax and related options
+## (--fastq_qmax 41 is explicit since 3.0: the default is now the highest
+## score the offset can represent, 62 at offset 64, so '~' is accepted)
 DESCRIPTION="issue 174: out-of-range FASTQ quality gives an informative error (value and range)"
 printf "@s1\nACGT\n+\n~~~~\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --fastq_ascii 64 \
+        --fastq_qmax 41 \
         --log /dev/null 2>&1 | \
     grep -q "out of range (0-41)" && \
     success "${DESCRIPTION}" || \
@@ -6672,17 +6675,31 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
 ## https://github.com/torognes/vsearch/issues/194
 
 ## not a bug: with phred+64 full-range FASTQ files the quality values can
-## exceed the default maximum (41), so --fastq_qmax must be raised. Without
-## it the command fails; with --fastq_qmax 62 it succeeds.
-DESCRIPTION="issue 194: --fastq_stats errors on out-of-range quality without --fastq_qmax"
+## exceed the old default maximum (41), so --fastq_qmax had to be raised.
+## Without it the command failed; with --fastq_qmax 62 it succeeded.
+## Version 3.0 removed the need: --fastq_qmax now defaults to the highest
+## score the offset can represent, which is exactly 62 at offset 64, so
+## the file that prompted the issue is read without any option.
+DESCRIPTION="issue 194: --fastq_stats errors on out-of-range quality with --fastq_qmax 41"
+printf "@s1\nACGT\n+\n~~~~\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --fastq_ascii 64 \
+        --fastq_qmax 41 \
+        --log /dev/null \
+        --quiet 2>/dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 194: --fastq_stats reads the same phred+64 file with the 3.0 defaults"
 printf "@s1\nACGT\n+\n~~~~\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --fastq_ascii 64 \
         --log /dev/null \
         --quiet 2>/dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="issue 194: --fastq_stats succeeds on the same file with --fastq_qmax 62"
 printf "@s1\nACGT\n+\n~~~~\n" | \
@@ -9119,9 +9136,28 @@ printf ">s1;size=5\nA\n>s2;size=3\nA\n" | \
 
 ## not a bug: in the overlap region the merged quality scores increase (more
 ## certainty from two reads), as described by Edgar & Flyvbjerg (2015). Here
-## two Q40 ('I') reads merge to Q41 ('J') in the overlap (clipped at the
-## default --fastq_qmax of 41).
+## two Q40 ('I') reads merge to Q41 ('J') in the overlap when the output is
+## clipped at --fastq_qmaxout 41, which was the default until 3.0.
 DESCRIPTION="issue 326: --fastq_mergepairs increases quality scores in the overlap"
+FWD=$(mktemp)
+REV=$(mktemp)
+printf "@r\nGCTAAAGACAATTACATAACATACACGTCAGCACGAAACT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${FWD}"
+printf "@r\nCGATTCACACTGGGCCAACAAGTTTCGTGCTGACGTGTAT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${REV}"
+"${VSEARCH}" \
+    --fastq_mergepairs "${FWD}" \
+    --reverse "${REV}" \
+    --fastqout - \
+    --fastq_qmaxout 41 \
+    --quiet 2>/dev/null | \
+    sed -n "4p" | \
+    grep -q "J" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${FWD}" "${REV}"
+
+## since 3.0 --fastq_qmaxout defaults to 93, so the posterior is not
+## clipped: the same two Q40 reads merge to Q85 ('v') in the overlap
+DESCRIPTION="issue 326: --fastq_mergepairs reports the unclipped posterior with the 3.0 defaults"
 FWD=$(mktemp)
 REV=$(mktemp)
 printf "@r\nGCTAAAGACAATTACATAACATACACGTCAGCACGAAACT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" > "${FWD}"
@@ -9132,7 +9168,7 @@ printf "@r\nCGATTCACACTGGGCCAACAAGTTTCGTGCTGACGTGTAT\n+\nIIIIIIIIIIIIIIIIIIIIIII
     --fastqout - \
     --quiet 2>/dev/null | \
     sed -n "4p" | \
-    grep -q "J" && \
+    grep -q "v" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${FWD}" "${REV}"
@@ -10001,13 +10037,15 @@ printf ">q;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 ##
 ## https://github.com/torognes/vsearch/issues/368
 
-## a quality value above the default --fastq_qmax (41) now produces an
-## informative error suggesting the --fastq_qmax option (fixed in 2.13.0).
-## Here 'K' encodes a quality of 42.
+## a quality value above --fastq_qmax now produces an informative error
+## suggesting the --fastq_qmax option (fixed in 2.13.0). Here 'K' encodes
+## a quality of 42, and the bound is explicit since 3.0 raised its default
+## from 41 to 93.
 DESCRIPTION="issue 368: an informative error is given when a quality value exceeds qmax"
 printf "@s\nA\n+\nK\n" | \
     "${VSEARCH}" \
         --fastq_filter - \
+        --fastq_qmax 41 \
         --fastqout /dev/null 2>&1 | \
     grep -q "above qmax" && \
     success "${DESCRIPTION}" || \
@@ -14269,18 +14307,42 @@ printf "@s\nA\n+\nJ\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="issue 522: Q values above 41 rejected by default"
+## this is what the issue was about, and version 3.0 answered it: the
+## default --fastq_qmax is now the highest score the offset can represent
+## (93 at offset 33), so a Q42 symbol is no longer a fatal error. The
+## rejection has to be asked for.
+DESCRIPTION="issue 522: Q values above 41 accepted by default since 3.0"
 printf "@s\nA\n+\nK\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
         --fastaout /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
-DESCRIPTION="issue 522: Q values above 41 rejected by default (quiet on stderr)"
+DESCRIPTION="issue 522: Q values above 41 accepted by default since 3.0 (quiet on stderr)"
 printf "@s\nA\n+\nK\n" | \
     "${VSEARCH}" \
         --fastx_filter - \
+        --quiet \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 522: Q values above 41 rejected with --fastq_qmax 41"
+printf "@s\nA\n+\nK\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_qmax 41 \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 522: Q values above 41 rejected with --fastq_qmax 41 (quiet on stderr)"
+printf "@s\nA\n+\nK\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_qmax 41 \
         --quiet \
         --fastaout /dev/null 2>&1 | \
     grep -q "." && \

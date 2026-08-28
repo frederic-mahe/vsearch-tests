@@ -662,14 +662,28 @@ printf "@s\nA\n+\nJ\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# Default qmax is 41: 'K' (Phred 42) fails
-DESCRIPTION="--fastq_convert rejects quality above default qmax (Phred 42 = K)"
+# With --fastq_qmax 41 (the pre-3.0 default): 'K' (Phred 42) fails
+DESCRIPTION="--fastq_convert rejects quality above an explicit qmax (Phred 42 = K)"
 printf "@s\nA\n+\nK\n" | \
     "${VSEARCH}" \
         --fastq_convert - \
+        --fastq_qmax 41 \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+# Since 3.0 the default qmax is 93, and qmaxout follows it: 'K' passes
+# through unchanged instead of being rejected (or silently clamped)
+DESCRIPTION="--fastq_convert passes Phred 42 (K) through with the default bounds"
+printf "@s\nA\n+\nK\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastqout - \
+        --quiet 2> /dev/null | \
+    tr "\n" "@" | \
+    grep -qx "@s@A@+@K@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 # With --fastq_qmax 50: 'S' (ASCII 83 = Phred 50 with offset 33) passes
 DESCRIPTION="--fastq_qmax 50 accepts quality at 50 (S)"

@@ -1921,7 +1921,7 @@ printf "@s\nA\n+\nI\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--derep_smallmem --fastq_qmin can be lower than fastq_qmax (41 by default)"
+DESCRIPTION="--derep_smallmem --fastq_qmin can be lower than fastq_qmax (93 by default)"
 TMP=$(mktemp)
 printf "@s\nA\n+\nI\n" > "${TMP}"
 "${VSEARCH}" \
@@ -1935,7 +1935,7 @@ rm -f "${TMP}"
 unset TMP
 
 ## allows to select only reads with a specific Q value
-DESCRIPTION="--derep_smallmem --fastq_qmin can be equal to fastq_qmax (41 by default)"
+DESCRIPTION="--derep_smallmem --fastq_qmin can be lower than the default fastq_qmax (93)"
 TMP=$(mktemp)
 printf "@s\nA\n+\nI\n" > "${TMP}"
 "${VSEARCH}" \
@@ -1948,7 +1948,23 @@ printf "@s\nA\n+\nI\n" > "${TMP}"
 rm -f "${TMP}"
 unset TMP
 
-DESCRIPTION="--derep_smallmem --fastq_qmin cannot be higher than fastq_qmax (41 by default)"
+DESCRIPTION="--derep_smallmem --fastq_qmin cannot be higher than fastq_qmax"
+TMP=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${TMP}"
+"${VSEARCH}" \
+    --derep_smallmem "${TMP}" \
+    --fastq_qmax 41 \
+    --fastq_qmin 42 \
+    --quiet \
+    --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMP}"
+unset TMP
+
+## since 3.0 --fastq_qmax defaults to 93, not 41, so a qmin of 42 is
+## below the ceiling and accepted
+DESCRIPTION="--derep_smallmem --fastq_qmin 42 is accepted with the default fastq_qmax (93)"
 TMP=$(mktemp)
 printf "@s\nA\n+\nI\n" > "${TMP}"
 "${VSEARCH}" \
@@ -1956,8 +1972,8 @@ printf "@s\nA\n+\nI\n" > "${TMP}"
     --fastq_qmin 42 \
     --quiet \
     --fastaout /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm -f "${TMP}"
 unset TMP
 

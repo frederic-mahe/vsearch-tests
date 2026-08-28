@@ -850,11 +850,14 @@ printf "@a\nAC\n+\nII\n@b\nACGTACGT\n+\nIIIIIIII\n" | \
 
 ## a quality value above qmax is a fatal error; with --log set the
 ## message is also written to the log file
+## (--fastq_qmax 41 is explicit since 3.0: the default is now 93, the
+## highest score offset 33 can represent, so 'z' (Q89) is accepted)
 DESCRIPTION="--fastq_eestats fatal above-qmax error is recorded in the log file"
 LOG=$(mktemp)
 printf "@s\nACGT\n+\nzzzz\n" | \
     "${VSEARCH}" \
         --fastq_eestats - \
+        --fastq_qmax 41 \
         --output /dev/null \
         --log "${LOG}" \
         --quiet 2> /dev/null
@@ -863,6 +866,16 @@ grep -q "above qmax" "${LOG}" && \
         failure "${DESCRIPTION}"
 rm -f "${LOG}"
 unset LOG
+
+## since 3.0 the default --fastq_qmax is 93, so the same input is accepted
+DESCRIPTION="--fastq_eestats accepts Q89 with the default fastq_qmax (93)"
+printf "@s\nACGT\n+\nzzzz\n" | \
+    "${VSEARCH}" \
+        --fastq_eestats - \
+        --output /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## a quality value below qmin is a fatal error; with --log set the
 ## message is also written to the log file

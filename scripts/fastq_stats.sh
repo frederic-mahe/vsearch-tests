@@ -195,7 +195,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats accepts ASCII values inside of the 0-41 range (! = 0)"
+DESCRIPTION="--fastq_stats accepts ASCII values inside of the accepted range (! = 0)"
 printf "@s\nA\n+\n!\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -203,7 +203,7 @@ printf "@s\nA\n+\n!\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats accepts ASCII values inside of the 0-41 range (J = 41)"
+DESCRIPTION="--fastq_stats accepts ASCII values inside of the accepted range (J = 41)"
 printf "@s\nA\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -211,7 +211,7 @@ printf "@s\nA\n+\nJ\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats rejects ASCII values outside of the 0-41 range (SPACE = -1)"
+DESCRIPTION="--fastq_stats rejects ASCII values below qmin (SPACE = -1)"
 printf "@s\nA\n+\n \n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -219,13 +219,24 @@ printf "@s\nA\n+\n \n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats rejects ASCII values outside of the 0-41 range (K = 42)"
+DESCRIPTION="--fastq_stats rejects ASCII values outside of an explicit 0-41 range (K = 42)"
+printf "@s\nA\n+\nK\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --fastq_qmax 41 \
+        --log /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## since 3.0 the default --fastq_qmax is 93 (the highest score offset 33
+## can represent), so a Phred 42 symbol is accepted without any option
+DESCRIPTION="--fastq_stats accepts Phred 42 (K) with the default fastq_qmax (93)"
 printf "@s\nA\n+\nK\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 ## --------------------------------------------------- Read length distribution
@@ -2064,7 +2075,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats --fastq_qmin can be lower than fastq_qmax (41 by default)"
+DESCRIPTION="--fastq_stats --fastq_qmin can be lower than fastq_qmax (93 by default)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -2075,7 +2086,7 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 ## allows to select only reads with a specific Q value
-DESCRIPTION="--fastq_stats --fastq_qmin can be equal to fastq_qmax (41 by default)"
+DESCRIPTION="--fastq_stats --fastq_qmin can be lower than the default fastq_qmax (93)"
 printf "@s\nA\n+\nJ\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
@@ -2085,15 +2096,28 @@ printf "@s\nA\n+\nJ\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_stats --fastq_qmin cannot be higher than fastq_qmax (41 by default)"
+DESCRIPTION="--fastq_stats --fastq_qmin cannot be higher than fastq_qmax"
 printf "@s\nA\n+\nJ\n" | \
+    "${VSEARCH}" \
+        --fastq_stats - \
+        --log /dev/null \
+        --fastq_qmax 41 \
+        --fastq_qmin 42 \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## since 3.0 --fastq_qmax defaults to 93, not 41, so a qmin of 42 is
+## below the ceiling and accepted
+DESCRIPTION="--fastq_stats --fastq_qmin 42 is accepted with the default fastq_qmax (93)"
+printf "@s\nA\n+\nK\n" | \
     "${VSEARCH}" \
         --fastq_stats - \
         --log /dev/null \
         --fastq_qmin 42 \
         --quiet 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 # but not higher, as it cannot be greater than qmax

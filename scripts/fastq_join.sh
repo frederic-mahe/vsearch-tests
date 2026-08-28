@@ -1333,7 +1333,7 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join --fastq_qmin can be lower than fastq_qmax (41 by default)"
+DESCRIPTION="--fastq_join --fastq_qmin can be lower than fastq_qmax (93 by default)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -1344,7 +1344,7 @@ printf "@s\nA\n+\nI\n" | \
         failure "${DESCRIPTION}"
 
 ## allows to select only reads with a specific Q value
-DESCRIPTION="--fastq_join --fastq_qmin can be equal to fastq_qmax (41 by default)"
+DESCRIPTION="--fastq_join --fastq_qmin can be lower than the default fastq_qmax (93)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --fastq_join - \
@@ -1354,7 +1354,24 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastq_join --fastq_qmin cannot be higher than fastq_qmax (41 by default)"
+DESCRIPTION="--fastq_join --fastq_qmin cannot be higher than fastq_qmax"
+REVERSE=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${REVERSE}"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse "${REVERSE}" \
+        --fastq_qmax 41 \
+        --fastq_qmin 42 \
+        --quiet \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${REVERSE}"
+
+## since 3.0 --fastq_qmax defaults to 93, not 41, so a qmin of 42 is
+## below the ceiling and accepted
+DESCRIPTION="--fastq_join --fastq_qmin 42 is accepted with the default fastq_qmax (93)"
 REVERSE=$(mktemp)
 printf "@s\nA\n+\nI\n" > "${REVERSE}"
 printf "@s\nA\n+\nI\n" | \
@@ -1364,8 +1381,8 @@ printf "@s\nA\n+\nI\n" | \
         --fastq_qmin 42 \
         --quiet \
         --fastqout /dev/null 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm -f "${REVERSE}"
 
 # but not higher, as it cannot be greater than qmax

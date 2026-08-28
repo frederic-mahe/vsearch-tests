@@ -1042,18 +1042,32 @@ printf "@s1\nACGT\n+\nIIII\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-# the minimum accepted quality score cannot exceed the maximum (default
-# --fastq_qmax is 41)
+# the minimum accepted quality score cannot exceed the maximum
+# (--fastq_qmax is explicit since 3.0, which raised its default to 93)
 DESCRIPTION="--fastq_qmin greater than --fastq_qmax errors"
 printf "@s1\nACGT\n+\nIIII\n" | \
     "${VSEARCH}" \
         --fastx_mask - \
         --fastqout /dev/null \
         --qmask none \
+        --fastq_qmax 41 \
         --fastq_qmin 50 \
         --quiet 2>/dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+## since 3.0 --fastq_qmax defaults to 93, so a qmin of 50 is below the
+## ceiling and accepted
+DESCRIPTION="--fastq_qmin 50 is accepted with the default --fastq_qmax (93)"
+printf "@s1\nACGT\n+\nSSSS\n" | \
+    "${VSEARCH}" \
+        --fastx_mask - \
+        --fastqout /dev/null \
+        --qmask none \
+        --fastq_qmin 50 \
+        --quiet 2>/dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 # with default offset 33, fastq_qmin must keep the ASCII sum >= 33
 DESCRIPTION="--fastq_qmin below 0 (with default offset 33) errors"

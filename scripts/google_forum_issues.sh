@@ -2895,13 +2895,28 @@ printf ">q\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
 ## Q: fastx_filter on Ion Torrent fails: "FASTQ quality value (43) above qmax (41)".
 ## A: Quality scores exceed the default --fastq_qmax 41; raise it (e.g. --fastq_qmax 43).
 
-## a quality above the default qmax (41) is a fatal error in fastx_filter
-DESCRIPTION="forum (2018-03-20): fastx_filter fatal error when quality value exceeds default qmax 41"
+## a quality above qmax 41 is a fatal error in fastx_filter. 41 was the
+## default when the question was asked; since 3.0 it has to be requested,
+## the default being 93 (see the next test)
+DESCRIPTION="forum (2018-03-20): fastx_filter fatal error when quality value exceeds qmax 41"
 printf "@s1\nACGT\n+\nLLLL\n" | \
     ${VSEARCH} \
         --fastx_filter - \
+        --fastq_qmax 41 \
         --fastaout /dev/stdout 2>&1 | \
     grep -q "above qmax (41)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## since 3.0 the default --fastq_qmax is 93, so the Ion Torrent file that
+## prompted the question is accepted without any option at all
+DESCRIPTION="forum (2018-03-20): fastx_filter accepts the same input with the 3.0 default qmax"
+printf "@s1\nACGT\n+\nLLLL\n" | \
+    ${VSEARCH} \
+        --fastx_filter - \
+        --fastaout /dev/stdout \
+        --quiet 2> /dev/null | \
+    grep -qx "ACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3541,14 +3556,27 @@ unset DESCRIPTION UDB
 ## https://groups.google.com/g/vsearch-forum/c/03lC9IpMPY0
 ## 2019-04-07
 ## Q: fastq_filter aborts with "FASTQ quality value (42) above qmax (41)".
-## A: The default qmax is 41; pass --fastq_qmax 42 (or higher) to accept the higher quality scores.
-DESCRIPTION="forum (2019-04-07): a quality value of 42 is rejected with default qmax 41"
+## A: The default qmax was 41; pass --fastq_qmax 42 (or higher) to accept the higher quality scores.
+## Since 3.0 the default is 93 and the question no longer arises, so the
+## historical error is reproduced with an explicit --fastq_qmax 41
+DESCRIPTION="forum (2019-04-07): a quality value of 42 is rejected with qmax 41"
 printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n+\nKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK\n" | \
     ${VSEARCH} \
         --fastq_filter - \
         --fastq_maxee 1 \
+        --fastq_qmax 41 \
         --fastqout /dev/null 2>&1 | \
     grep -qx "Fatal error: FASTQ quality value (42) above qmax (41)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset DESCRIPTION
+
+DESCRIPTION="forum (2019-04-07): the same read passes with the 3.0 default qmax (93)"
+printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n+\nKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK\n" | \
+    ${VSEARCH} \
+        --fastq_filter - \
+        --fastq_maxee 1 \
+        --fastqout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset DESCRIPTION
@@ -4777,11 +4805,13 @@ printf ">a;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=3\nACGTACGTACGTACGT
 ## Q: fastq_filter fails with quality values outside qmin/qmax bounds.
 ## A: a quality value above qmax or below qmin is a fatal error; adjust --fastq_qmax / --fastq_qmin to the data.
 
-## a quality value above the default qmax (41) is a fatal error
+## a quality value above qmax is a fatal error (41 was the default when
+## the question was asked; since 3.0 it has to be requested)
 DESCRIPTION="forum (2024-07-10): fastq_filter errors when a quality value exceeds qmax"
 printf "@s1\nACGT\n+\nKKKK\n" | \
     "${VSEARCH}" \
         --fastq_filter - \
+        --fastq_qmax 41 \
         --fastqout /dev/null 2>&1 | \
     grep -q "above qmax (41)" && \
     success "${DESCRIPTION}" || \

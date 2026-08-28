@@ -2729,7 +2729,26 @@ DESCRIPTION="fastq_mergepairs --fastq_ascii 64 changes the Q value decoding"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="fastq_mergepairs --fastq_ascii 33 rejects high ASCII (chars > offset + qmax)"
+## 'h' read with offset 33 is Q71. --fastq_qmax 41 is explicit since 3.0:
+## the default is now 93, the highest score offset 33 can represent, so no
+## printable symbol can exceed it and the guard has to be asked for.
+DESCRIPTION="fastq_mergepairs --fastq_ascii 33 rejects chars above an explicit qmax"
+FORWARD=$(mktemp)
+printf "@s\nAAATAAAAAA\n+\nhhhhhhhhhh\n" > "${FORWARD}"
+REVERSE=$(mktemp)
+printf "@s\nTTTTTTATTT\n+\nhhhhhhhhhh\n" > "${REVERSE}"
+"${VSEARCH}" \
+    --fastq_mergepairs "${FORWARD}" \
+    --reverse "${REVERSE}" \
+    --fastq_ascii 33 \
+    --fastq_qmax 41 \
+    --fastaout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${FORWARD}" "${REVERSE}"
+
+## since 3.0 the default --fastq_qmax is 93, so the same pair merges
+DESCRIPTION="fastq_mergepairs --fastq_ascii 33 accepts Q71 with the default qmax (93)"
 FORWARD=$(mktemp)
 printf "@s\nAAATAAAAAA\n+\nhhhhhhhhhh\n" > "${FORWARD}"
 REVERSE=$(mktemp)
@@ -2739,8 +2758,8 @@ printf "@s\nTTTTTTATTT\n+\nhhhhhhhhhh\n" > "${REVERSE}"
     --reverse "${REVERSE}" \
     --fastq_ascii 33 \
     --fastaout /dev/null > /dev/null 2>&1 && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm -f "${FORWARD}" "${REVERSE}"
 
 
@@ -4173,6 +4192,14 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual set to 40 (Q = 40), trunc b
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## The tests below pin merged quality strings, so they pass
+## --fastq_qmaxout 41 explicitly. Since 3.0 that option defaults to 93
+## (the highest score the output offset can represent) instead of 41, and
+## the Edgar & Flyvbjerg posterior for two agreeing Q40 bases is Q85 ('v'),
+## not the clamped Q41 ('J') drawn in the diagrams. The truncation
+## positions these tests are about are unaffected; see the dedicated test
+## after this block for the 3.0 default.
+
 ## forward read is truncated from 5' to 3'
 # 1...5...10..              after truncation:     merging (fastq):
 # AAATAAAAAAAA <= low Q     AAATAAAAAAA           AAATAAAAAAAA
@@ -4183,6 +4210,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is truncated f
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAA\n+\nIIIIIIIIIII+\n") \
     --reverse <(printf "@s\nTTTTTTTTATTT\n+\nIIIIIIIIIIII\n") \
     --fastq_truncqual 10 \
+    --fastq_qmaxout 41 \
     --fastqout - 2> /dev/null | \
     grep -qx "JJJJJJJJJJJI" && \
     success "${DESCRIPTION}" || \
@@ -4199,6 +4227,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is truncated f
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIII+II\n") \
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
     --fastq_truncqual 10 \
+    --fastq_qmaxout 41 \
     --fastqout - 2> /dev/null | \
     grep -qx "JJJJJJJJJJIII" && \
     success "${DESCRIPTION}" || \
@@ -4215,6 +4244,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is too short f
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIII+IIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
     --fastq_truncqual 10 \
+    --fastq_qmaxout 41 \
     --fastqout - 2> /dev/null | \
     grep -qx "JJJJJJJJIIIII" && \
     failure "${DESCRIPTION}" || \
@@ -4226,6 +4256,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is longer than
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
     --fastq_truncqual 10 \
     --fastq_minlen 10 \
+    --fastq_qmaxout 41 \
     --fastqout - 2> /dev/null | \
     grep -qx "JJJJJJJJJJJII" && \
     success "${DESCRIPTION}" || \
@@ -4237,6 +4268,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual forward read is shorter tha
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIIIII\n") \
     --fastq_truncqual 10 \
     --fastq_minlen 12 \
+    --fastq_qmaxout 41 \
     --fastqout - 2> /dev/null | \
     grep -qx "JJJJJJJJJJJII" && \
     failure "${DESCRIPTION}" || \
@@ -4253,6 +4285,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is truncated f
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIII+II\n") \
     --fastq_truncqual 10 \
+    --fastq_qmaxout 41 \
     --fastqout - 2> /dev/null | \
     grep -qx "IIIJJJJJJJJJJ" && \
     success "${DESCRIPTION}" || \
@@ -4269,6 +4302,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is too short f
     --fastq_mergepairs <(printf "@s\nAAATAAAAAAAAA\n+\nIIIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIII+IIII\n") \
     --fastq_truncqual 10 \
+    --fastq_qmaxout 41 \
     --fastqout - 2> /dev/null | \
     grep -qx "IIIIIJJJJJJJJ" && \
     failure "${DESCRIPTION}" || \
@@ -4280,6 +4314,7 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is longer than
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIII+I\n") \
     --fastq_truncqual 10 \
     --fastq_minlen 10 \
+    --fastq_qmaxout 41 \
     --fastqout - 2> /dev/null | \
     grep -qx "IIJJJJJJJJJJJ" && \
     success "${DESCRIPTION}" || \
@@ -4291,11 +4326,24 @@ DESCRIPTION="fastq_mergepairs option fastq_truncqual reverse read is shorter tha
     --reverse <(printf "@s\nTTTTTTTTTATTT\n+\nIIIIIIIIIII+I\n") \
     --fastq_truncqual 10 \
     --fastq_minlen 12 \
+    --fastq_qmaxout 41 \
     --fastqout - 2> /dev/null | \
     grep -qx "IIJJJJJJJJJJJ" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+
+## since 3.0 --fastq_qmaxout defaults to 93, so a merged position is no
+## longer clamped to Q41: two agreeing Q40 bases give the full posterior
+## quality Q85 ('v') of Edgar & Flyvbjerg (2015)
+DESCRIPTION="fastq_mergepairs does not clamp merged qualities with the default fastq_qmaxout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAAAA\n+\nIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTATTT\n+\nIIIIIIIIIIII\n") \
+    --fastqout - 2> /dev/null | \
+    grep -qx "vvvvvvvvvvvv" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs option fastq_truncqual is accepted"
 "${VSEARCH}" \
