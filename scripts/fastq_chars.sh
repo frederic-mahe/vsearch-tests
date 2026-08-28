@@ -1394,6 +1394,89 @@ fi
 
 #*****************************************************************************#
 #                                                                             #
+#                    suspicious quality offset (warning)                      #
+#                                                                             #
+#*****************************************************************************#
+
+## Since 3.0 --fastq_qmax accepts every score the encoding can represent, so a
+## phred+64 file read at the default offset 33 is no longer stopped by the
+## bound. The reader instead warns when the quality symbols it saw contradict
+## --fastq_ascii, using the same heuristic --fastq_chars prints its guess from.
+
+## a phred+64 file ('h' is Q40 at offset 64) read at the default offset 33
+DESCRIPTION="a phred+64 file read at offset 33 triggers a warning"
+awk 'BEGIN {for (i = 1; i <= 200; i++) printf "@r%d\nACGTACGTAC\n+\nhhhhhhhhhh\n", i}' | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "which looks like phred+64" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the same file read with the right offset says nothing
+DESCRIPTION="a phred+64 file read at offset 64 triggers no warning"
+awk 'BEGIN {for (i = 1; i <= 200; i++) printf "@r%d\nACGTACGTAC\n+\nhhhhhhhhhh\n", i}' | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_ascii 64 \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "which looks like" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## an ordinary Sanger file says nothing
+DESCRIPTION="a phred+33 file read at offset 33 triggers no warning"
+awk 'BEGIN {for (i = 1; i <= 200; i++) printf "@r%d\nACGTACGTAC\n+\nIIII#IIIII\n", i}' | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "which looks like" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --quiet never suppresses a warning (see option_quiet.md)
+DESCRIPTION="the suspicious-offset warning survives --quiet"
+awk 'BEGIN {for (i = 1; i <= 200; i++) printf "@r%d\nACGTACGTAC\n+\nhhhhhhhhhh\n", i}' | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --quiet \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "which looks like phred+64" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## too few records is not evidence: a heuristic needs a sample, and small
+## hand-made files would otherwise warn constantly
+DESCRIPTION="a file below the sampling threshold triggers no warning"
+printf "@r1\nACGTACGTAC\n+\nhhhhhhhhhh\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "which looks like" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --fastq_chars is the diagnostic itself and prints its own guess, so it must
+## not also emit the reader's warning
+DESCRIPTION="--fastq_chars reports its guess without the reader warning"
+awk 'BEGIN {for (i = 1; i <= 200; i++) printf "@r%d\nACGTACGTAC\n+\nhhhhhhhhhh\n", i}' | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -q "which looks like" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_chars still guesses phred+64 for the same input"
+awk 'BEGIN {for (i = 1; i <= 200; i++) printf "@r%d\nACGTACGTAC\n+\nhhhhhhhhhh\n", i}' | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -q "phred+64" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                                    notes                                    #
 #                                                                             #
 #*****************************************************************************#
