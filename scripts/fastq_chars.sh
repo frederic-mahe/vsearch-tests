@@ -1445,6 +1445,26 @@ awk 'BEGIN {for (i = 1; i <= 200; i++) printf "@r%d\nACGTACGTAC\n+\nhhhhhhhhhh\n
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## the threshold is a record count, not an ordinal: exactly 100 records is
+## enough evidence, 99 is not
+DESCRIPTION="the suspicious-offset warning fires at exactly 100 records"
+awk 'BEGIN {for (i = 1; i <= 100; i++) printf "@r%d\nACGTACGTAC\n+\nhhhhhhhhhh\n", i}' | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "which looks like phred+64" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="the suspicious-offset warning is silent at 99 records"
+awk 'BEGIN {for (i = 1; i <= 99; i++) printf "@r%d\nACGTACGTAC\n+\nhhhhhhhhhh\n", i}' | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "which looks like" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## too few records is not evidence: a heuristic needs a sample, and small
 ## hand-made files would otherwise warn constantly
 DESCRIPTION="a file below the sampling threshold triggers no warning"
