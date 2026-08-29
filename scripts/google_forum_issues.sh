@@ -3558,7 +3558,9 @@ unset DESCRIPTION UDB
 ## Q: fastq_filter aborts with "FASTQ quality value (42) above qmax (41)".
 ## A: The default qmax was 41; pass --fastq_qmax 42 (or higher) to accept the higher quality scores.
 ## Since 3.0 the default is 93 and the question no longer arises, so the
-## historical error is reproduced with an explicit --fastq_qmax 41
+## historical error is reproduced with an explicit --fastq_qmax 41. The
+## message also names the record and the line since 3.0; the whole-line
+## match below is kept, being the only test that pins the message exactly
 DESCRIPTION="forum (2019-04-07): a quality value of 42 is rejected with qmax 41"
 printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n+\nKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK\n" | \
     ${VSEARCH} \
@@ -3566,7 +3568,7 @@ printf "@s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n+\nKKKKKKKKKKKKKKKKKKKKKKKKKK
         --fastq_maxee 1 \
         --fastq_qmax 41 \
         --fastqout /dev/null 2>&1 | \
-    grep -qx "Fatal error: FASTQ quality value (42) above qmax (41)" && \
+    grep -qx "Fatal error: FASTQ quality value (42) above qmax (41) in entry no 1 starting on line 1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset DESCRIPTION

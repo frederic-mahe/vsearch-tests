@@ -6237,6 +6237,9 @@ printf ">a\nAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCC\n>b\nGGGGGGGGGGGGGGGGTTTTTTTTTTTTTT
 ## pointing users towards the --fastq_qmax and related options
 ## (--fastq_qmax 41 is explicit since 3.0: the default is now the highest
 ## score the offset can represent, 62 at offset 64, so '~' is accepted)
+## the message names the offending value and the bound it broke. Since 3.0
+## --fastq_stats uses the wording shared by every command that checks the
+## window, instead of its own "out of range (0-41)" phrasing
 DESCRIPTION="issue 174: out-of-range FASTQ quality gives an informative error (value and range)"
 printf "@s1\nACGT\n+\n~~~~\n" | \
     "${VSEARCH}" \
@@ -6244,7 +6247,7 @@ printf "@s1\nACGT\n+\n~~~~\n" | \
         --fastq_ascii 64 \
         --fastq_qmax 41 \
         --log /dev/null 2>&1 | \
-    grep -q "out of range (0-41)" && \
+    grep -q "FASTQ quality value (62) above qmax (41)" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
