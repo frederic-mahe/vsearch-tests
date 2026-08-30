@@ -6400,6 +6400,162 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
 rm -f "${DB}"
 unset DB
 
+## ------------------------------------------------------------------ qrowdots
+
+DESCRIPTION="--usearch_global --userfields qrowdots is all dots for an exact match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qrowdots \
+        --quiet | \
+    grep -qx "\.\{40\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a differing column keeps its own nucleotide, on both sides
+DESCRIPTION="--usearch_global --userfields qrowdots writes the query nucleotide at a mismatch"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields qrowdots \
+        --quiet | \
+    grep -qx "\.\{32\}T\.\{31\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields trowdots writes the target nucleotide at a mismatch"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields trowdots \
+        --quiet | \
+    grep -qx "\.\{32\}A\.\{31\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## a gap is never dotted: qrowdots keeps the gap character where the
+## query has a deletion, and trowdots shows the target nucleotide there
+DESCRIPTION="--usearch_global --userfields qrowdots keeps the gap character"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields qrowdots \
+        --quiet | \
+    grep -qx "\.\{31\}-\.\{32\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields trowdots shows the nucleotide facing a query gap"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields trowdots \
+        --quiet | \
+    grep -qx "\.\{31\}A\.\{32\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## the comparison is on nucleotides, not on bytes: with the query
+## soft-masked (lower case) and the target not, every column is still
+## identical, so both dot rows are all dots
+DESCRIPTION="--usearch_global --userfields qrowdots dots a masked column"
+SEQ55="AAAAAAAAAAAAAAAAAAAAACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGG"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ55}" > "${DB}"
+printf ">q\n%s\n" "${SEQ55}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --qmask dust \
+        --dbmask none \
+        --userout - \
+        --userfields "qrow+qrowdots" \
+        --quiet | \
+    grep -qx "a\{21\}CGTAGGCTTAACCGGATCCGATCAGCTTGCAAGG	\.\{55\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ55
+
+## an ambiguous nucleotide is dotted only against the same symbol: N
+## facing A is written out, even though the alignment counts that
+## column as a match (ids is 64 here, not 63)
+DESCRIPTION="--usearch_global --userfields qrowdots writes an ambiguous nucleotide"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}N${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields "ids+qrowdots" \
+        --quiet | \
+    grep -qx "64	\.\{32\}N\.\{31\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields qrowdots and trowdots are empty on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields "target+qrowdots+trowdots" \
+        --quiet | \
+    grep -qx "\*		" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## --userfields rejects unknown field names
 DESCRIPTION="--usearch_global --userfields rejects unknown field"
 DB=$(mktemp)
