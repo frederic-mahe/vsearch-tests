@@ -6141,6 +6141,123 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
 rm -f "${DB}"
 unset DB
 
+## ----------------------------------------------------------------------- mid
+
+DESCRIPTION="--usearch_global --userfields mid reports 100.0 for an exact match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields mid \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## mid is a percentage, not a fraction: 63 matching columns out of 64
+## letter pairs is 98.4, not 0.984
+DESCRIPTION="--usearch_global --userfields mid is a percentage"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields mid \
+        --quiet | \
+    grep -qx "98.4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## mid ignores gaps entirely: an alignment whose only difference is a
+## deletion has no mismatching letter pair, so mid is 100.0 while id,
+## which divides by the alignment length, is not
+DESCRIPTION="--usearch_global --userfields mid ignores gaps (id does not)"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields "id+mid" \
+        --quiet | \
+    grep -qx "98.4	100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## mid is the quantity --mid is compared against
+DESCRIPTION="--usearch_global --userfields mid agrees with --mid (accepted)"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --mid 98.4 \
+        --userout - \
+        --userfields mid \
+        --quiet | \
+    grep -qx "98.4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields mid agrees with --mid (rejected)"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --mid 98.5 \
+        --userout - \
+        --userfields mid \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields mid is 0.0 on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields "target+mid" \
+        --quiet | \
+    grep -qx "\*	0.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## --userfields rejects unknown field names
 DESCRIPTION="--usearch_global --userfields rejects unknown field"
 DB=$(mktemp)
