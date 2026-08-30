@@ -892,7 +892,18 @@ DESCRIPTION="--fastq_chars names the Solexa encoding solexa+64, not supported"
 printf "@s\nAA\n+\n;h\n" | \
     "${VSEARCH}" \
         --fastq_chars - 2>&1 | \
-    grep -q "^Guess: Solexa format (solexa+64, not supported)$" && \
+    grep -q "^Guess: Solexa format (solexa+64, not supported;$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## reading such a file directly is still wrong; --fastq_convert
+## --fastq_solexa rewrites the scores onto the Phred scale, and is the only
+## command that understands the Solexa score definition
+DESCRIPTION="--fastq_chars points at --fastq_convert --fastq_solexa"
+printf "@s\nAA\n+\n;h\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - 2>&1 | \
+    grep -qx "       convert with --fastq_convert --fastq_solexa)" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
