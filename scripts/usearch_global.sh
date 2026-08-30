@@ -6258,6 +6258,148 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
 rm -f "${DB}"
 unset DB
 
+## ---------------------------------------------------------------------- qseq
+
+## grep is case-insensitive here because the default --qmask dust
+## soft-masks low-complexity regions in place, and qseq reports the
+## query as the search saw it
+DESCRIPTION="--usearch_global --userfields qseq reports the query sequence"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qseq \
+        --quiet | \
+    grep -qix "${SEQ}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## qseq reports the whole query, not the aligned segment: here the
+## query is 12 nt longer than the target, so qseq is longer than qrow
+DESCRIPTION="--usearch_global --userfields qseq is longer than qrow when the query overhangs"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%sTTGCAACCGGTT\n" "${SEQ64}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields "qrow+qseq" \
+        --quiet | \
+    awk -F'\t' '{exit (length($1) == 64 && length($2) == 76) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## on a minus-strand hit, qseq is the reverse complement of the query,
+## the orientation the alignment was made in (and the one qrow reports)
+DESCRIPTION="--usearch_global --userfields qseq is reverse-complemented on a minus-strand hit"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\nTTGGCCGGTTAACCGGTAAATCCTGTAAGCCTTGCAAGCTGATCGGATCCGGTTAAGCCTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --strand both \
+        --userout - \
+        --userfields "qstrand+qseq" \
+        --quiet | \
+    grep -qix -- "-	${SEQ64}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## the query is known even when nothing matched, so qseq is written,
+## as ql already reports the real query length there
+DESCRIPTION="--usearch_global --userfields qseq is written on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields qseq \
+        --quiet | \
+    grep -qix "CGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- tseq
+
+DESCRIPTION="--usearch_global --userfields tseq reports the target sequence"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields tseq \
+        --quiet | \
+    grep -qix "${SEQ}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## tseq reports the whole target, including the part outside the
+## alignment, which is what separates it from trow
+DESCRIPTION="--usearch_global --userfields tseq is longer than trow when the target overhangs"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%sTTGCAACCGGTT\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields "trow+tseq" \
+        --quiet | \
+    awk -F'\t' '{exit (length($1) == 64 && length($2) == 76) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## there is no target on a no-hit row, so tseq is empty (next to tl
+## reporting 0)
+DESCRIPTION="--usearch_global --userfields tseq is empty on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields "tl+tseq" \
+        --quiet | \
+    grep -qx "0	" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## --userfields rejects unknown field names
 DESCRIPTION="--usearch_global --userfields rejects unknown field"
 DB=$(mktemp)
