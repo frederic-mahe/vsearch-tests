@@ -593,6 +593,200 @@ printf "@s\nA\n+\n!\n" | \
         failure "${DESCRIPTION}"
 
 
+## --------------------------------------------------------------- fastq_solexa
+
+## Solexa (Illumina 1.0) shares the ASCII offset 64 with phred+64 but not
+## the score definition: a Solexa score is -10 log10(p / (1 - p)), while
+## every score vsearch understands is a Phred score, -10 log10(p).
+## --fastq_solexa converts, with Q_phred = 10 log10(10^(Q_solexa / 10) + 1).
+## The mapping is the identity from Solexa 10 upward, so all of the
+## substance is in the fifteen symbols below it.
+
+DESCRIPTION="--fastq_solexa is accepted (with --fastq_ascii 64)"
+printf "@s\nA\n+\nh\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# all 68 representable Solexa symbols (scores -5 to 62) fit in one record,
+# so this pins the entire conversion table rather than a sample of it
+DESCRIPTION="--fastq_solexa converts all 68 Solexa symbols (default output bounds)"
+SOLEXA_QUALITY=';<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
+SEQUENCE='AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+EXPECTED='""##$$%%&&'"'"'()*++,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_'
+printf "@s\n%s\n+\n%s\n" "${SEQUENCE}" "${SOLEXA_QUALITY}" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF "${EXPECTED}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SOLEXA_QUALITY SEQUENCE EXPECTED
+
+# --fastq_qmaxout defaults to 126 - --fastq_asciiout (93 here), which carries
+# every converted score; an explicit 41 clamps the tail instead
+DESCRIPTION="--fastq_solexa with --fastq_qmaxout 41 clamps the converted tail"
+SOLEXA_QUALITY=';<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
+SEQUENCE='AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+EXPECTED='""##$$%%&&'"'"'()*++,-./0123456789:;<=>?@ABCDEFGHIJJJJJJJJJJJJJJJJJJJJJJ'
+printf "@s\n%s\n+\n%s\n" "${SEQUENCE}" "${SOLEXA_QUALITY}" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --fastq_qmaxout 41 \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF "${EXPECTED}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SOLEXA_QUALITY SEQUENCE EXPECTED
+
+# 'h' = ASCII 104 = Solexa 40; the two scales agree there, so the symbol is
+# only rebased (40 + 33 = 73 = 'I'), exactly as without the option
+DESCRIPTION="--fastq_solexa is the identity from Solexa 10 upward"
+printf "@s\nACGT\n+\nhhhh\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF "IIII" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the conversion is lossy: six Solexa pairs collapse onto one Phred score
+# each ({-5,-4} -> 1, {-3,-2} -> 2, {-1,0} -> 3, {1,2} -> 4, {3,4} -> 5,
+# {9,10} -> 10), which is inherent to the two scales
+DESCRIPTION="--fastq_solexa collapses the six Solexa pairs onto one symbol each"
+printf "@s\nAAAAAAAAAAAA\n+\n;<=>?@ABCDIJ\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF '""##$$%%&&++' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the bug --fastq_solexa fixes, stated as two runs over the same input:
+# without the option the offset is rebased and the scores are left alone,
+# so the six negative Solexa scores all clamp to --fastq_qminout (0)
+DESCRIPTION="without --fastq_solexa the fifteen low symbols are only rebased"
+printf "@s\nAAAAAAAAAAAAAAA\n+\n;<=>?@ABCDEFGHI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_qmin -5 \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF '!!!!!!"#$%&'"'"'()*' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_solexa converts the fifteen low symbols instead"
+printf "@s\nAAAAAAAAAAAAAAA\n+\n;<=>?@ABCDEFGHI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF '""##$$%%&&'"'"'()*+' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# Solexa shares the offset 64 and nothing else, so converting from any
+# other offset is meaningless and is refused at parse time
+DESCRIPTION="--fastq_solexa is rejected with --fastq_ascii 33"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 33 \
+        --fastq_solexa \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# --fastq_ascii defaults to 33, so omitting it is the mistake a user will
+# actually make; it must not quietly succeed
+DESCRIPTION="--fastq_solexa is rejected without --fastq_ascii 64"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_solexa \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# ';' = ASCII 59 = Solexa -5, the floor of the scale
+DESCRIPTION="--fastq_solexa converts the lowest Solexa symbol (; = Q-5 -> Q1)"
+printf "@s\nA\n+\n;\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF '"' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# '~' = ASCII 126 = Solexa 62, the ceiling the offset can represent
+DESCRIPTION="--fastq_solexa converts the highest Solexa symbol (~ = Q62 -> Q62)"
+printf "@s\nA\n+\n~\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF "_" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# no quality symbol to convert: the empty record is passed through
+DESCRIPTION="--fastq_solexa accepts an entry with empty sequence and quality"
+printf "@s\n\n+\n\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    awk 'NR==1 {exit /^@s$/ ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# there is no quality to convert in a fasta file: still refused as input
+DESCRIPTION="--fastq_solexa does not make a fasta input acceptable"
+printf ">s\nACGT\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 #*****************************************************************************#
 #                                                                             #
 #                            secondary options                                #
@@ -716,6 +910,20 @@ printf "@s\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# --fastq_qmax already defaults to 126 - --fastq_ascii, so --fastq_ascii 64
+# brings 62 with it and --fastq_solexa needs no ceiling of its own. Pinned
+# here because the option relies on it.
+DESCRIPTION="--fastq_ascii 64 gives --fastq_solexa a --fastq_qmax of 62"
+printf "@s\nA\n+\n~\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## ----------------------------------------------------------------- fastq_qmin
 
 DESCRIPTION="--fastq_qmin is accepted"
@@ -766,6 +974,46 @@ printf "@s\nA\n+\n\045\n" | \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+# --fastq_solexa implies --fastq_qmin -5 (the floor of the Solexa scale),
+# so a genuine Solexa file does not stop on its first low-quality symbol.
+# The input range check runs on the raw Solexa score, before the conversion.
+DESCRIPTION="--fastq_solexa implies --fastq_qmin -5"
+printf "@s\nA\n+\n;\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the implication is a default, not an override: an explicit --fastq_qmin wins
+DESCRIPTION="--fastq_solexa does not override an explicit --fastq_qmin"
+printf "@s\nA\n+\n;\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --fastq_qmin 0 \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_solexa with an explicit --fastq_qmin -5 converts as implied"
+printf "@s\nA\n+\n;\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --fastq_qmin -5 \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF '"' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 ## ------------------------------------------------------------ gzip_decompress
 
@@ -1336,6 +1584,71 @@ printf "@s\nACGT\n+\nhhhh\n" | \
         --quiet \
         --fastqout - 2> /dev/null | \
     awk 'NR==1 {h=$0} NR==4 {exit (h == "@seq1;size=1;length=4" && $0 == "IIII") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+# the conversion happens before the output clamps, not after: ';' (Solexa -5)
+# converts to Phred 1 and is then raised to --fastq_qminout 3 ('$' = 36).
+# Clamping first would raise -5 to 3 and convert 3 to 5 ('&') instead.
+DESCRIPTION="--fastq_solexa converts before --fastq_qminout clamps"
+printf "@s\nA\n+\n;\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --fastq_qminout 3 \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF '$' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# converting and writing back at offset 64 yields a phred+64 file, not the
+# input file: ';' (Solexa -5) becomes Phred 1, written as 'A' (64 + 1)
+DESCRIPTION="--fastq_solexa with --fastq_asciiout 64 writes Phred, not Solexa"
+printf "@s\nA\n+\n;\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --fastq_asciiout 64 \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF "A" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --fastq_solexa touches quality only; the header options are unaffected
+DESCRIPTION="--fastq_solexa with --relabel, --sizeout and --lengthout"
+printf "@s\nACGT\n+\nhhhh\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --relabel "seq" \
+        --sizeout \
+        --lengthout \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    awk 'NR==1 {h=$0} NR==4 {exit (h == "@seq1;size=1;length=4" && $0 == "IIII") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_solexa converts a gzip-compressed Solexa stream"
+printf "@s\nA\n+\n;\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --gzip_decompress \
+        --fastq_ascii 64 \
+        --fastq_solexa \
+        --quiet \
+        --fastqout - 2> /dev/null | \
+    sed -n '4p' | \
+    grep -qxF '"' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

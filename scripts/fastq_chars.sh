@@ -1363,6 +1363,20 @@ printf "@s\nA\n+\nI\n" | \
 #                                                                             #
 #*****************************************************************************#
 
+## --fastq_chars is the command that names the Solexa encoding in its own
+## output ("Guess: Solexa format"), so it is where a user meets the format
+## and reaches for --fastq_solexa next. That option belongs to
+## --fastq_convert alone, which is the only command that converts a Solexa
+## score to a Phred one; every other command still refuses Solexa data.
+DESCRIPTION="--fastq_chars rejects --fastq_solexa (--fastq_convert only)"
+printf "@s\nA\n+\nh\n" | \
+    "${VSEARCH}" \
+        --fastq_chars - \
+        --fastq_solexa \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #

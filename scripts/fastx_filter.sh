@@ -1304,6 +1304,20 @@ printf ">s1\nA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## Solexa scores are not Phred scores, and the fifteen symbols the two
+## scales disagree on are exactly the ones a quality filter acts on -- so
+## this is where a user with a Solexa file reaches for --fastq_solexa. It
+## belongs to --fastq_convert alone: convert the file first, then filter it.
+DESCRIPTION="--fastx_filter rejects --fastq_solexa (--fastq_convert only)"
+printf "@s\nA\n+\nh\n" | \
+    "${VSEARCH}" \
+        --fastx_filter - \
+        --fastq_solexa \
+        --fastqout /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## options that belong to other commands
 DESCRIPTION="--fastx_filter rejects --label (belongs to fastx_getseq)"
 printf ">s1\nA\n" | \
