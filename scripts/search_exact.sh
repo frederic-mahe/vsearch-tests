@@ -1647,6 +1647,56 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## --search_exact only ever reports identical sequences, so the new
+## alignment fields all report their perfect-match values
+DESCRIPTION="--search_exact --userfields diffs and mid report a perfect match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields "diffs+mid" \
+        --quiet | \
+    grep -qx "0	100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --userfields qrowdots and trowdots are all dots"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields "qrowdots+trowdots" \
+        --quiet | \
+    grep -qx "\.\{20\}	\.\{20\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--search_exact --userfields qseq and tseq report both sequences"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields "qseq+tseq" \
+        --quiet | \
+    grep -qix "${SEQ}	${SEQ}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ---------------------------------------------------------------------- xee
 
 DESCRIPTION="--search_exact --xee strips ;ee=float from headers"
