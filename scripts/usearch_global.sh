@@ -6556,6 +6556,103 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
 rm -f "${DB}"
 unset DB
 
+## --------------------------------------------------- qlor, qhir, tlor, thir
+
+## the 0-based counterparts of qlo, qhi, tlo and thi
+DESCRIPTION="--usearch_global --userfields qlor, qhir, tlor and thir are 0-based"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields "qlo+qlor+qhi+qhir+tlo+tlor+thi+thir" \
+        --quiet | \
+    grep -qx "1	0	40	39	1	0	40	39" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## qlo and qhi are swapped on a minus-strand hit, and the 0-based
+## variants follow them
+DESCRIPTION="--usearch_global --userfields qlor and qhir follow the minus-strand swap"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\nTTGGCCGGTTAACCGGTAAATCCTGTAAGCCTTGCAAGCTGATCGGATCCGGTTAAGCCTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --strand both \
+        --userout - \
+        --userfields "qstrand+qlo+qlor+qhi+qhir" \
+        --quiet | \
+    grep -qx -- "-	64	63	1	0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields qlor, qhir, tlor and thir are zero on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields "target+qlor+qhir+tlor+thir" \
+        --quiet | \
+    grep -qx "\*	0	0	0	0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------- all fields together
+
+## the ten fields above, requested in one go
+DESCRIPTION="--usearch_global --userfields accepts the ten fields together"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields "diffs+mid+qseq+tseq+qrowdots+trowdots+qlor+qhir+tlor+thir" \
+        --quiet | \
+    awk -F'\t' '{exit (NF == 10) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## every field name the parser knows, in table order
+DESCRIPTION="--usearch_global --userfields accepts all 53 field names at once"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields "query+target+evalue+id+pctpv+pctgaps+pairs+gaps+qlo+qhi+tlo+thi+pv+ql+tl+qs+ts+alnlen+opens+exts+raw+bits+aln+caln+qstrand+tstrand+qrow+trow+qframe+tframe+mism+ids+qcov+tcov+id0+id1+id2+id3+id4+qilo+qihi+tilo+tihi+diffs+mid+qseq+tseq+qrowdots+trowdots+qlor+qhir+tlor+thir" \
+        --quiet | \
+    awk -F'\t' '{exit (NF == 53) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## --userfields rejects unknown field names
 DESCRIPTION="--usearch_global --userfields rejects unknown field"
 DB=$(mktemp)
