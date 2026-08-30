@@ -6011,6 +6011,136 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## ---------------------------------------------------------------- new fields
+
+## The fields below need alignments that are not perfect matches, which
+## the 40-nt SEQ cannot provide: it is a ten-fold repeat of "ACGT", so a
+## query carrying a single difference shares too few *unique* k-mers with
+## the target to be found at all. Tests that need a mismatch or a gap use
+## a non-repetitive 64-nt sequence instead, and derive the query from it
+## so that the difference is visible in the test itself.
+
+## --------------------------------------------------------------------- diffs
+
+## diffs is mism + gaps: zero for a full-length exact match
+DESCRIPTION="--usearch_global --userfields diffs reports zero for an exact match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields diffs \
+        --quiet | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## one substitution is one difference
+DESCRIPTION="--usearch_global --userfields diffs counts a mismatch"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+## position 33 (A) replaced by T
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields diffs \
+        --quiet | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## one internal deletion is one difference too, which is what separates
+## diffs from mism (mism is 0 here)
+DESCRIPTION="--usearch_global --userfields diffs counts an internal deletion"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+## position 33 (A) deleted
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields "mism+gaps+diffs" \
+        --quiet | \
+    grep -qx "0	1	1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## diffs is the quantity --maxdiffs is compared against: a hit with one
+## difference passes --maxdiffs 1
+DESCRIPTION="--usearch_global --userfields diffs agrees with --maxdiffs (accepted)"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --maxdiffs 1 \
+        --userout - \
+        --userfields diffs \
+        --quiet | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## ... and is rejected by --maxdiffs 0
+DESCRIPTION="--usearch_global --userfields diffs agrees with --maxdiffs (rejected)"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --maxdiffs 0 \
+        --userout - \
+        --userfields diffs \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## no-hit rows report zero, like every other numeric field
+DESCRIPTION="--usearch_global --userfields diffs is zero on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields "target+diffs" \
+        --quiet | \
+    grep -qx "\*	0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## --userfields rejects unknown field names
 DESCRIPTION="--usearch_global --userfields rejects unknown field"
 DB=$(mktemp)
