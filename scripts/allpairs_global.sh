@@ -1695,6 +1695,77 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --acceptall aligns any pair, so this command can pin the new
+## alignment fields on differences that a k-mer index would not let
+## through on such short sequences
+
+## one substitution: one difference, and mid drops with it
+DESCRIPTION="--allpairs_global --userfields diffs and mid count a mismatch"
+printf ">s1\nACGTACGTACGTACGTACGT\n>s2\nACGTTCGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userout - \
+        --userfields "diffs+mid" \
+        --quiet | \
+    grep -qx "1	95.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the two dot rows show that substitution from each side
+DESCRIPTION="--allpairs_global --userfields qrowdots and trowdots show a mismatch"
+printf ">s1\nACGTACGTACGTACGTACGT\n>s2\nACGTTCGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userout - \
+        --userfields "qrowdots+trowdots" \
+        --quiet | \
+    grep -qx "\.\{4\}A\.\{15\}	\.\{4\}T\.\{15\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## one insertion in the target: still one difference, but no mismatching
+## letter pair, so mid stays at 100.0 where id does not
+DESCRIPTION="--allpairs_global --userfields diffs counts a gap that mid ignores"
+printf ">s1\nACGATCGATCGATCGATCGA\n>s2\nACGATCGATCGGATCGATCGA\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userout - \
+        --userfields "gaps+diffs+mid" \
+        --quiet | \
+    grep -qx "1	1	100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the query keeps its gap character, the target shows the nucleotide
+## facing it
+DESCRIPTION="--allpairs_global --userfields qrowdots keeps a gap, trowdots shows the nucleotide"
+printf ">s1\nACGATCGATCGATCGATCGA\n>s2\nACGATCGATCGGATCGATCGA\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userout - \
+        --userfields "qrowdots+trowdots" \
+        --quiet | \
+    grep -qx "\.\{10\}-\.\{10\}	\.\{10\}G\.\{10\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## qseq and tseq report the two sequences at their own lengths
+DESCRIPTION="--allpairs_global --userfields qseq and tseq report both sequences in full"
+printf ">s1\nACGATCGATCGATCGATCGA\n>s2\nACGATCGATCGGATCGATCGA\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --userout - \
+        --userfields "qseq+tseq" \
+        --quiet | \
+    grep -qix "ACGATCGATCGATCGATCGA	ACGATCGATCGGATCGATCGA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ------------------------------------------------------------------ userout
 
 DESCRIPTION="--allpairs_global --userout writes requested fields"

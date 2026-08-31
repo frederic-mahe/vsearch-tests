@@ -1060,6 +1060,38 @@ printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## the clustering commands reach the same --userout writer, so the new
+## alignment fields are available there too. A 64-nt pair differing at
+## one position: s2 joins the cluster of s1, and the hit line reports
+## the difference
+DESCRIPTION="--cluster_fast --userfields reports diffs, mid and the dotted query row"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+printf ">s1\n%s\n>s2\n%sT%s\n" "${SEQ64}" "${SEQ64:0:32}" "${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.9 \
+        --userfields "query+target+diffs+mid+qrowdots" \
+        --userout - \
+        --quiet 2> /dev/null | \
+    grep -qx "s2	s1	1	98.4	\.\{32\}T\.\{31\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ64
+
+DESCRIPTION="--cluster_fast --userfields reports qseq and tseq"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+printf ">s1\n%s\n>s2\n%sT%s\n" "${SEQ64}" "${SEQ64:0:32}" "${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.9 \
+        --userfields "qseq+tseq" \
+        --userout - \
+        --quiet 2> /dev/null | \
+    grep -qix "${SEQ64:0:32}T${SEQ64:33}	${SEQ64}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ64
+
 ## ---------- header manipulation ----------
 
 DESCRIPTION="--cluster_fast --centroid_sizeout is accepted"

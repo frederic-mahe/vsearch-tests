@@ -6011,6 +6011,648 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## ---------------------------------------------------------------- new fields
+
+## The fields below need alignments that are not perfect matches, which
+## the 40-nt SEQ cannot provide: it is a ten-fold repeat of "ACGT", so a
+## query carrying a single difference shares too few *unique* k-mers with
+## the target to be found at all. Tests that need a mismatch or a gap use
+## a non-repetitive 64-nt sequence instead, and derive the query from it
+## so that the difference is visible in the test itself.
+
+## --------------------------------------------------------------------- diffs
+
+## diffs is mism + gaps: zero for a full-length exact match
+DESCRIPTION="--usearch_global --userfields diffs reports zero for an exact match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields diffs \
+        --quiet | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## one substitution is one difference
+DESCRIPTION="--usearch_global --userfields diffs counts a mismatch"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+## position 33 (A) replaced by T
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields diffs \
+        --quiet | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## one internal deletion is one difference too, which is what separates
+## diffs from mism (mism is 0 here)
+DESCRIPTION="--usearch_global --userfields diffs counts an internal deletion"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+## position 33 (A) deleted
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields "mism+gaps+diffs" \
+        --quiet | \
+    grep -qx "0	1	1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## diffs is the quantity --maxdiffs is compared against: a hit with one
+## difference passes --maxdiffs 1
+DESCRIPTION="--usearch_global --userfields diffs agrees with --maxdiffs (accepted)"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --maxdiffs 1 \
+        --userout - \
+        --userfields diffs \
+        --quiet | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## ... and is rejected by --maxdiffs 0
+DESCRIPTION="--usearch_global --userfields diffs agrees with --maxdiffs (rejected)"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --maxdiffs 0 \
+        --userout - \
+        --userfields diffs \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## no-hit rows report zero, like every other numeric field
+DESCRIPTION="--usearch_global --userfields diffs is zero on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields "target+diffs" \
+        --quiet | \
+    grep -qx "\*	0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ----------------------------------------------------------------------- mid
+
+DESCRIPTION="--usearch_global --userfields mid reports 100.0 for an exact match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields mid \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## mid is a percentage, not a fraction: 63 matching columns out of 64
+## letter pairs is 98.4, not 0.984
+DESCRIPTION="--usearch_global --userfields mid is a percentage"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields mid \
+        --quiet | \
+    grep -qx "98.4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## mid ignores gaps entirely: an alignment whose only difference is a
+## deletion has no mismatching letter pair, so mid is 100.0 while id,
+## which divides by the alignment length, is not
+DESCRIPTION="--usearch_global --userfields mid ignores gaps (id does not)"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields "id+mid" \
+        --quiet | \
+    grep -qx "98.4	100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## mid is the quantity --mid is compared against
+DESCRIPTION="--usearch_global --userfields mid agrees with --mid (accepted)"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --mid 98.4 \
+        --userout - \
+        --userfields mid \
+        --quiet | \
+    grep -qx "98.4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields mid agrees with --mid (rejected)"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --mid 98.5 \
+        --userout - \
+        --userfields mid \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields mid is 0.0 on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields "target+mid" \
+        --quiet | \
+    grep -qx "\*	0.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- qseq
+
+## grep is case-insensitive here because the default --qmask dust
+## soft-masks low-complexity regions in place, and qseq reports the
+## query as the search saw it
+DESCRIPTION="--usearch_global --userfields qseq reports the query sequence"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qseq \
+        --quiet | \
+    grep -qix "${SEQ}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## qseq reports the whole query, not the aligned segment: here the
+## query is 12 nt longer than the target, so qseq is longer than qrow
+DESCRIPTION="--usearch_global --userfields qseq is longer than qrow when the query overhangs"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%sTTGCAACCGGTT\n" "${SEQ64}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields "qrow+qseq" \
+        --quiet | \
+    awk -F'\t' '{exit (length($1) == 64 && length($2) == 76) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## on a minus-strand hit, qseq is the reverse complement of the query,
+## the orientation the alignment was made in (and the one qrow reports)
+DESCRIPTION="--usearch_global --userfields qseq is reverse-complemented on a minus-strand hit"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\nTTGGCCGGTTAACCGGTAAATCCTGTAAGCCTTGCAAGCTGATCGGATCCGGTTAAGCCTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --strand both \
+        --userout - \
+        --userfields "qstrand+qseq" \
+        --quiet | \
+    grep -qix -- "-	${SEQ64}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## the query is known even when nothing matched, so qseq is written,
+## as ql already reports the real query length there
+DESCRIPTION="--usearch_global --userfields qseq is written on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields qseq \
+        --quiet | \
+    grep -qix "CGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- tseq
+
+DESCRIPTION="--usearch_global --userfields tseq reports the target sequence"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields tseq \
+        --quiet | \
+    grep -qix "${SEQ}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## tseq reports the whole target, including the part outside the
+## alignment, which is what separates it from trow
+DESCRIPTION="--usearch_global --userfields tseq is longer than trow when the target overhangs"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%sTTGCAACCGGTT\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields "trow+tseq" \
+        --quiet | \
+    awk -F'\t' '{exit (length($1) == 64 && length($2) == 76) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## there is no target on a no-hit row, so tseq is empty (next to tl
+## reporting 0)
+DESCRIPTION="--usearch_global --userfields tseq is empty on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields "tl+tseq" \
+        --quiet | \
+    grep -qx "0	" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------------------ qrowdots
+
+DESCRIPTION="--usearch_global --userfields qrowdots is all dots for an exact match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields qrowdots \
+        --quiet | \
+    grep -qx "\.\{40\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a differing column keeps its own nucleotide, on both sides
+DESCRIPTION="--usearch_global --userfields qrowdots writes the query nucleotide at a mismatch"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields qrowdots \
+        --quiet | \
+    grep -qx "\.\{32\}T\.\{31\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields trowdots writes the target nucleotide at a mismatch"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}T${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields trowdots \
+        --quiet | \
+    grep -qx "\.\{32\}A\.\{31\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## a gap is never dotted: qrowdots keeps the gap character where the
+## query has a deletion, and trowdots shows the target nucleotide there
+DESCRIPTION="--usearch_global --userfields qrowdots keeps the gap character"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields qrowdots \
+        --quiet | \
+    grep -qx "\.\{31\}-\.\{32\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields trowdots shows the nucleotide facing a query gap"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields trowdots \
+        --quiet | \
+    grep -qx "\.\{31\}A\.\{32\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+## the comparison is on nucleotides, not on bytes: with the query
+## soft-masked (lower case) and the target not, every column is still
+## identical, so both dot rows are all dots
+DESCRIPTION="--usearch_global --userfields qrowdots dots a masked column"
+SEQ55="AAAAAAAAAAAAAAAAAAAAACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGG"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ55}" > "${DB}"
+printf ">q\n%s\n" "${SEQ55}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --qmask dust \
+        --dbmask none \
+        --userout - \
+        --userfields "qrow+qrowdots" \
+        --quiet | \
+    grep -qx "a\{21\}CGTAGGCTTAACCGGATCCGATCAGCTTGCAAGG	\.\{55\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ55
+
+## an ambiguous nucleotide is dotted only against the same symbol: N
+## facing A is written out, even though the alignment counts that
+## column as a match (ids is 64 here, not 63)
+DESCRIPTION="--usearch_global --userfields qrowdots writes an ambiguous nucleotide"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\n%s\n" "${SEQ64:0:32}N${SEQ64:33}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.8 \
+        --userout - \
+        --userfields "ids+qrowdots" \
+        --quiet | \
+    grep -qx "64	\.\{32\}N\.\{31\}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields qrowdots and trowdots are empty on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields "target+qrowdots+trowdots" \
+        --quiet | \
+    grep -qx "\*		" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --------------------------------------------------- qlor, qhir, tlor, thir
+
+## the 0-based counterparts of qlo, qhi, tlo and thi
+DESCRIPTION="--usearch_global --userfields qlor, qhir, tlor and thir are 0-based"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields "qlo+qlor+qhi+qhir+tlo+tlor+thi+thir" \
+        --quiet | \
+    grep -qx "1	0	40	39	1	0	40	39" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## qlo and qhi are swapped on a minus-strand hit, and the 0-based
+## variants follow them
+DESCRIPTION="--usearch_global --userfields qlor and qhir follow the minus-strand swap"
+SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ64}" > "${DB}"
+printf ">q\nTTGGCCGGTTAACCGGTAAATCCTGTAAGCCTTGCAAGCTGATCGGATCCGGTTAAGCCTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --strand both \
+        --userout - \
+        --userfields "qstrand+qlo+qlor+qhi+qhir" \
+        --quiet | \
+    grep -qx -- "-	64	63	1	0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB SEQ64
+
+DESCRIPTION="--usearch_global --userfields qlor, qhir, tlor and thir are zero on a no-hit row"
+DB=$(mktemp)
+printf ">d\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" > "${DB}"
+printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields "target+qlor+qhir+tlor+thir" \
+        --quiet | \
+    grep -qx "\*	0	0	0	0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ------------------------------------------------------- all fields together
+
+## the ten fields above, requested in one go
+DESCRIPTION="--usearch_global --userfields accepts the ten fields together"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields "diffs+mid+qseq+tseq+qrowdots+trowdots+qlor+qhir+tlor+thir" \
+        --quiet | \
+    awk -F'\t' '{exit (NF == 10) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## every field name the parser knows, in table order
+DESCRIPTION="--usearch_global --userfields accepts all 53 field names at once"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields "query+target+evalue+id+pctpv+pctgaps+pairs+gaps+qlo+qhi+tlo+thi+pv+ql+tl+qs+ts+alnlen+opens+exts+raw+bits+aln+caln+qstrand+tstrand+qrow+trow+qframe+tframe+mism+ids+qcov+tcov+id0+id1+id2+id3+id4+qilo+qihi+tilo+tihi+diffs+mid+qseq+tseq+qrowdots+trowdots+qlor+qhir+tlor+thir" \
+        --quiet | \
+    awk -F'\t' '{exit (NF == 53) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## --userfields rejects unknown field names
 DESCRIPTION="--usearch_global --userfields rejects unknown field"
 DB=$(mktemp)
