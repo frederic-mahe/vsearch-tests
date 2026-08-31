@@ -532,16 +532,161 @@ SECOND=$(printf ">s1\nACGTACGTAC\n" | \
         failure "${DESCRIPTION}"
 unset FIRST SECOND
 
-## k-mer-count-preserving scrambling (k >= 2) is documented as not
-## supported yet: a surprising refusal worth pinning
-DESCRIPTION="--scramble rejects --scramble_kmer 2 (not supported yet)"
+DESCRIPTION="--scramble accepts --scramble_kmer 2"
+printf ">s\nACGTACGTAC\n" | \
+    "${VSEARCH}" \
+        --scramble - \
+        --quiet \
+        --scramble_kmer 2 \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--scramble accepts --scramble_kmer 9 (upper bound)"
+printf ">s\nACGTACGTAC\n" | \
+    "${VSEARCH}" \
+        --scramble - \
+        --quiet \
+        --scramble_kmer 9 \
+        --fastaout /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## vertex ids of the sampler's de Bruijn graph are (k-1)-mers packed
+## into 8 bytes, hence the documented cap of 9: a surprising refusal
+## worth pinning
+DESCRIPTION="--scramble rejects --scramble_kmer 10 (above the documented cap)"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
         --scramble - \
-        --scramble_kmer 2 \
+        --scramble_kmer 10 \
         --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+## GATTACA's dinucleotide de Bruijn graph admits exactly two Eulerian
+## paths, spelling GATTACA and GACATTA: any other output would break
+## the dinucleotide-count contract
+DESCRIPTION="--scramble --scramble_kmer 2 samples an Eulerian path (GATTACA)"
+printf ">s\nGATTACA\n" | \
+    "${VSEARCH}" \
+        --scramble - \
+        --quiet \
+        --scramble_kmer 2 \
+        --fastaout - | \
+    awk 'NR == 2' | \
+    grep -Eqx "GATTACA|GACATTA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## at k = 3, GATTACA's Eulerian path is unique: output equal to input
+## is the documented, correct behaviour
+DESCRIPTION="--scramble --scramble_kmer 3 unique-path sequence passes through"
+printf ">s\nGATTACA\n" | \
+    "${VSEARCH}" \
+        --scramble - \
+        --quiet \
+        --scramble_kmer 3 \
+        --fastaout - | \
+    tr -d "\n" | \
+    grep -qx ">sGATTACA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a sequence holding at most one k-mer (length <= k) is documented to
+## pass through unchanged
+DESCRIPTION="--scramble --scramble_kmer 9 short sequence passes through"
+printf ">s\nGATTACA\n" | \
+    "${VSEARCH}" \
+        --scramble - \
+        --quiet \
+        --scramble_kmer 9 \
+        --fastaout - | \
+    tr -d "\n" | \
+    grep -qx ">sGATTACA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--scramble --scramble_kmer 2 preserves dinucleotide counts"
+SEQ="AACGTTGCAAGGCTATTCGACCTGAAACGTGTTCAAGCATGACCGTTAGGCATCAATGCC"
+OUTPUT=$(printf ">s\n%s\n" "${SEQ}" | \
+             "${VSEARCH}" \
+                 --scramble - \
+                 --quiet \
+                 --scramble_kmer 2 \
+                 --fastaout - | \
+             awk 'NR == 2')
+diff \
+    <(echo "${SEQ}" | \
+          awk '{for (i = 1; i < length($0); i++) print substr($0, i, 2)}' | sort) \
+    <(echo "${OUTPUT}" | \
+          awk '{for (i = 1; i < length($0); i++) print substr($0, i, 2)}' | sort) \
+    > /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ OUTPUT
+
+## the first and last k-1 nucleotides spell the start and end vertices
+## of the Eulerian path: they always keep their positions
+DESCRIPTION="--scramble --scramble_kmer 3 preserves the first and last 2 nt"
+printf ">s\nAACGTTGCAAGGCTATTCGACCTGAAACGTGTTCAAGCATGACCGTTAGGCATCAATGCC\n" | \
+    "${VSEARCH}" \
+        --scramble - \
+        --quiet \
+        --scramble_kmer 3 \
+        --fastaout - | \
+    awk 'NR == 2' | \
+    grep -Eqx "AA.*CC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--scramble --scramble_kmer 2 a fixed --randseed produces constant output"
+FIRST=$(printf ">s\nAACGTTGCAAGGCTATTCGACCTGAAACGTGTTCAAGCATGACC\n" | \
+            "${VSEARCH}" \
+                --scramble - \
+                --quiet \
+                --randseed 7 \
+                --scramble_kmer 2 \
+                --fastaout -)
+SECOND=$(printf ">s\nAACGTTGCAAGGCTATTCGACCTGAAACGTGTTCAAGCATGACC\n" | \
+             "${VSEARCH}" \
+                 --scramble - \
+                 --quiet \
+                 --randseed 7 \
+                 --scramble_kmer 2 \
+                 --fastaout -)
+[[ "${FIRST}" == "${SECOND}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset FIRST SECOND
+
+## same portable-RNG binding as the k = 1 pin above, now also covering
+## the arborescence and slice-shuffling draws of the Eulerian sampler
+DESCRIPTION="--scramble --scramble_kmer 2 --randseed 1 fixed, cross-platform output"
+printf ">s1\nAAACCCGGGTTTACGTACGTAC\n" | \
+    "${VSEARCH}" \
+        --scramble - \
+        --quiet \
+        --randseed 1 \
+        --scramble_kmer 2 \
+        --fastaout - | \
+    tr -d "\n" | \
+    grep -qx ">s1AACCCGTTAACGGTTACGGTAC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--scramble --scramble_kmer 2 copies the quality string through unchanged"
+printf "@s1\nAACGTTGCAAGGCTATTCGA\n+\nIIHHGGFFEEDDCCBBAA98\n" | \
+    "${VSEARCH}" \
+        --scramble - \
+        --quiet \
+        --randseed 1 \
+        --scramble_kmer 2 \
+        --fastqout - | \
+    awk 'NR == 4' | \
+    grep -qx "IIHHGGFFEEDDCCBBAA98" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--scramble rejects --scramble_kmer 0"
 printf ">s\nACGT\n" | \
@@ -857,10 +1002,12 @@ fi
 #                                                                             #
 #*****************************************************************************#
 
-## - the pinned cross-platform output (">s1GACCTTCAGA...") binds the
-##   in-house portable generator (utils/random.hpp), the per-entry
-##   sub-stream seeding, and the Fisher-Yates loop; it was generated
-##   with the first --scramble implementation (2026-08-31)
+## - the pinned cross-platform outputs (">s1GACCTTCAGA..." at k = 1,
+##   ">s1AACCCGTTAACGGTTACGGTAC" at k = 2) bind the in-house portable
+##   generator (utils/random.hpp), the per-entry sub-stream seeding,
+##   the Fisher-Yates loop, and (k = 2) the Eulerian sampler's
+##   arborescence and slice-shuffling draws; both were generated with
+##   the first --scramble implementation (2026-08-31)
 ## - this script must not be added to run_all_tests.sh before a
 ##   vsearch release ships --scramble: every test would fail with
 ##   "unknown option" against released binaries
