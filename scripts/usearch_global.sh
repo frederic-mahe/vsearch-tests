@@ -6083,6 +6083,9 @@ unset DB SEQ64
 
 ## diffs is the quantity --maxdiffs is compared against: a hit with one
 ## difference passes --maxdiffs 1
+## (gate and field share one definition in vsearch since API 0.23.0 --
+## difference_count() -- so this pair pins the shared expression's meaning
+## rather than two copies agreeing)
 DESCRIPTION="--usearch_global --userfields diffs agrees with --maxdiffs (accepted)"
 SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
 DB=$(mktemp)
@@ -6202,6 +6205,9 @@ rm -f "${DB}"
 unset DB SEQ64
 
 ## mid is the quantity --mid is compared against
+## (gate and field share one definition in vsearch since API 0.23.0 --
+## letter_pair_identity() -- so this pair pins the shared expression's
+## meaning rather than two copies agreeing)
 DESCRIPTION="--usearch_global --userfields mid agrees with --mid (accepted)"
 SEQ64="ACGTAGGCTTAACCGGATCCGATCAGCTTGCAAGGCTTACAGGATTTACCGGTTAACCGGCCAA"
 DB=$(mktemp)
@@ -6648,6 +6654,26 @@ printf ">q\n%s\n" "${SEQ}" | \
         --userfields "query+target+evalue+id+pctpv+pctgaps+pairs+gaps+qlo+qhi+tlo+thi+pv+ql+tl+qs+ts+alnlen+opens+exts+raw+bits+aln+caln+qstrand+tstrand+qrow+trow+qframe+tframe+mism+ids+qcov+tcov+id0+id1+id2+id3+id4+qilo+qihi+tilo+tihi+diffs+mid+qseq+tseq+qrowdots+trowdots+qlor+qhir+tlor+thir" \
         --quiet | \
     awk -F'\t' '{exit (NF == 53) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## fields are written in the order requested, not in the order the parser's
+## table lists them (thir, query and diffs appear in reverse table order
+## here); nothing else pins this
+DESCRIPTION="--usearch_global --userfields keeps the requested field order"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields "thir+query+diffs" \
+        --quiet | \
+    grep -qx "39	q	0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
