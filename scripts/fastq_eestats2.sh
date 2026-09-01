@@ -906,6 +906,21 @@ printf "@s\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# the "N reads" summary above the cutoff table used to print
+# "0 reads, max len 0, avg -nan" in the log on an empty input, while
+# --output correctly printed "0 reads"; both destinations now share
+# the --output form (regression test: needs a vsearch more recent
+# than v2.31.0)
+DESCRIPTION="--fastq_eestats2 --log header on an empty input is 0 reads"
+printf "" | \
+    "${VSEARCH}" \
+        --fastq_eestats2 - \
+        --output /dev/null \
+        --log - 2> /dev/null | \
+    grep -qx "0 reads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------------------------------------------------------------- no_progress
 
 DESCRIPTION="--fastq_eestats2 --no_progress is accepted"
