@@ -4368,8 +4368,11 @@ printf ">s;size=1\nA\n" | \
         failure "${DESCRIPTION}"
 
 
+# the input sequence must be long enough to yield k-mers: a sequence
+# shorter than the word length contributes none to the index, which is a
+# warning, and warnings are not eliminated by --quiet (see the next test)
 DESCRIPTION="chimeras_denovo: option quiet eliminates stderr messages"
-printf ">s;size=1\nA\n" | \
+printf ">s;size=1\nGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --chimeras /dev/null \
@@ -4377,6 +4380,17 @@ printf ">s;size=1\nA\n" | \
     grep --quiet "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: option quiet does not eliminate the no-k-mer warning"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --chimeras /dev/null \
+        --quiet 2>&1 |
+    grep --quiet "yielded no k-mer for the index" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 
 # use fake option --quiet2 to trigger an error

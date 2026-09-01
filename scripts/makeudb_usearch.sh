@@ -660,9 +660,12 @@ printf ">s\n%s\n" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the shared SEQ cannot be used here: it is a four-nucleotide repeat, which
+# dust masking masks from end to end, so it yields no k-mer for the index,
+# which is now a warning, and warnings are not silenced by --quiet
 DESCRIPTION="--quiet suppresses stderr output"
 TMPERR=$(mktemp)
-printf ">s\n%s\n" "${SEQ}" | \
+printf ">s\n%s\n" "GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC" | \
     "${VSEARCH}" \
         --makeudb_usearch - \
         --output /dev/null \

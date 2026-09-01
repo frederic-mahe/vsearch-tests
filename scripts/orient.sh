@@ -809,11 +809,14 @@ printf "@q\n%s\n+\n%s\n" "${REV}" "${QUAL_IN}" | \
 unset SEQ REV QUAL_IN QUAL_OUT
 
 # stderr summary: not printed when --quiet is used
+# (the sequences must be at least as long as the word length: a shorter one
+# yields no k-mer for the index, which is a warning, and warnings are not
+# silenced by --quiet)
 DESCRIPTION="stderr summary is not printed with --quiet"
-printf ">s\nACGT\n" | \
+printf ">s\n%s\n" "GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db <(printf ">s\n%s\n" "GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC") \
         --fastaout /dev/null \
         --quiet 2>&1 | \
     grep -q "." && \
@@ -1832,11 +1835,13 @@ printf ">s\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# sequences at least as long as the word length, so that no "no k-mer for
+# the index" warning is emitted (warnings survive --quiet)
 DESCRIPTION="--quiet suppresses stderr output"
-printf ">s\nACGT\n" | \
+printf ">s\n%s\n" "GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC" | \
     "${VSEARCH}" \
         --orient - \
-        --db <(printf ">s\nACGT\n") \
+        --db <(printf ">s\n%s\n" "GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC") \
         --fastaout /dev/null \
         --quiet 2>&1 | \
     grep -q "." && \
