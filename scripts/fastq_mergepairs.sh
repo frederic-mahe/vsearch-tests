@@ -4036,6 +4036,19 @@ DESCRIPTION="fastq_mergepairs writes the below-qmin fatal error to the log file"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# since 3.0 the out-of-range message names the offending record and
+# the line it starts on (regression test: needs a vsearch more recent
+# than v2.31.0)
+DESCRIPTION="fastq_mergepairs below-qmin error names the entry and the line"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\n0\n") \
+    --reverse <(printf "@s\nT\n+\n0\n") \
+    --fastq_qmin 16 \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "below qmin (16) in entry no 1 starting on line 1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="fastq_mergepairs option fastq_qmin must be smaller than fastq_qmax"
 FORWARD=$(mktemp)
 printf "@s\nA\n+\nJ\n" > "${FORWARD}"
@@ -4544,6 +4557,20 @@ grep -q "^Statistics" "${TMP}" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP}"
+
+# --log used to steal the whole statistics block from stderr (an
+# "else" chose one destination or the other); both copies are written
+# now, like every other command (regression test: needs a vsearch more
+# recent than v2.31.0)
+DESCRIPTION="fastq_mergepairs writes stats to stderr (with --log)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastaout /dev/null \
+    --log /dev/null 2>&1 | \
+    grep -q "^Statistics" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="fastq_mergepairs writes time and memory to log file"
 TMP=$(mktemp)

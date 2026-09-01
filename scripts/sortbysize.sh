@@ -200,6 +200,19 @@ ${VSEARCH} \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the label comparison is not limited to the first eight bytes (a
+# cached 8-byte prefix speeds up the common case): labels sharing an
+# 8-byte prefix are still ordered by the bytes that follow
+DESCRIPTION="--sortbysize orders labels that share an 8-byte prefix"
+${VSEARCH} \
+    --sortbysize <(printf ">AAAAAAAAXb;size=1\nT\n>AAAAAAAAXa;size=1\nA\n") \
+    --quiet \
+    --output - | \
+    tr -d "\n" | \
+    grep -qx ">AAAAAAAAXa;size=1A>AAAAAAAAXb;size=1T" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 # the sorted values are 64-bit wide: an abundance above 4294967295
 # (2^32 - 1) used to be truncated on its way into the sorting deck, which
 # sent the most abundant sequences to the bottom (;size=4294967297 was

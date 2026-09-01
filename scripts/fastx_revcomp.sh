@@ -608,6 +608,21 @@ printf ">s\nACGT\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# compressed data arriving on a pipe other than stdin (process
+# substitution, a named FIFO) is read as plain: the decompress options
+# describe stdin only. The error must not advise the very option that
+# is already on the command line; it names what works instead
+# (regression test: needs a vsearch more recent than v2.31.0)
+DESCRIPTION="--bzip2_decompress on a bzip2-compressed non-stdin pipe names what works"
+"${VSEARCH}" \
+    --fastx_revcomp <(printf ">s\nAAGG\n" | bzip2) \
+    --fastaout /dev/null \
+    --bzip2_decompress \
+    --quiet 2>&1 | \
+    grep -q "works only on stdin ('-') or on a named file" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--bzip2_decompress and --gzip_decompress together is rejected"
 printf ">s\nACGT\n" | \
     "${VSEARCH}" \
@@ -756,6 +771,52 @@ printf '\377\377\377\377' | \
         success "${DESCRIPTION}"
 rm -f "${TMPGZ}"
 unset TMPGZ
+
+# regression test: needs a vsearch more recent than v2.31.0. On a
+# seekable stdin the detected format wins over a contradicting option,
+# which is reported on stderr (gzip counterpart of the bzip2 test in
+# the bzip2_decompress section)
+DESCRIPTION="--gzip_decompress on an uncompressed file redirected to stdin warns"
+TMPFA=$(mktemp)
+printf ">s\nAAGG\n" > "${TMPFA}"
+"${VSEARCH}" \
+    --fastx_revcomp - \
+    --fastaout /dev/null \
+    --gzip_decompress \
+    --quiet < "${TMPFA}" 2>&1 > /dev/null | \
+    grep -q "ignoring --gzip_decompress" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}"
+unset TMPFA
+
+# compressed data arriving on a pipe other than stdin (process
+# substitution, a named FIFO) is read as plain: the decompress options
+# describe stdin only. The error must not advise the very option that
+# is already on the command line; it names what works instead
+# (regression test: needs a vsearch more recent than v2.31.0)
+DESCRIPTION="--gzip_decompress on a gzip-compressed non-stdin pipe names what works"
+"${VSEARCH}" \
+    --fastx_revcomp <(printf ">s\nAAGG\n" | gzip) \
+    --fastaout /dev/null \
+    --gzip_decompress \
+    --quiet 2>&1 | \
+    grep -q "works only on stdin ('-') or on a named file" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# gzip-compressed data on piped stdin without the option keeps the old
+# advice, which is correct there
+DESCRIPTION="gzip-compressed piped stdin without --gzip_decompress advises the option"
+printf ">s\nAAGG\n" | \
+    gzip | \
+    "${VSEARCH}" \
+        --fastx_revcomp - \
+        --fastaout /dev/null \
+        --quiet 2>&1 | \
+    grep -q "Please use --gzip_decompress" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 ## --label_suffix
 
