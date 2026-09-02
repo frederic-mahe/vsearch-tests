@@ -1311,6 +1311,52 @@ printf ">q\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 unset SEQ
 
+## issue 570: an all-lowercase reference database is silently unusable
+## with --sintax, which never runs DUST, so dust (the default) behaves
+## like soft and masks every reference k-mer. The reference then holds no
+## k-mer at all and every query comes back unclassified. vsearch warns.
+DESCRIPTION="issue 570: --sintax warns about an all-lowercase reference database"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" | tr "ACGT" "acgt") \
+        --tabbedout /dev/null \
+        --quiet 2>&1 | \
+    grep --quiet "1 of 1 sequences yielded no k-mer for the index" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset SEQ
+
+## same reference, --dbmask none: lowercase is indexed, no warning
+DESCRIPTION="--sintax --dbmask none does not warn about a lowercase reference"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" | tr "ACGT" "acgt") \
+        --dbmask none \
+        --tabbedout /dev/null \
+        --quiet 2>&1 | \
+    grep --quiet "yielded no k-mer for the index" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+unset SEQ
+
+## an ordinary reference database must not trigger the warning
+DESCRIPTION="--sintax does not warn about an indexable reference database"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}") \
+        --tabbedout /dev/null \
+        --quiet 2>&1 | \
+    grep --quiet "yielded no k-mer for the index" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+unset SEQ
+
 ## --wordlength is accepted (uses default value of 8)
 DESCRIPTION="--wordlength is accepted"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"

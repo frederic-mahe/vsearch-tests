@@ -1745,8 +1745,11 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# input changed from a homopolymer: dust masking (the default) masks it
+# from end to end, so it yields no k-mer for the index, which is now a
+# warning, and warnings are not silenced by --quiet
 DESCRIPTION="--cluster_fast --quiet silences stderr messages"
-printf ">s1\nAAAAAAAAAAAA\n" | \
+printf ">s1\n%s\n" "GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC" | \
     "${VSEARCH}" \
         --cluster_fast - \
         --id 1.0 \

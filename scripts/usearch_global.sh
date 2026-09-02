@@ -929,6 +929,82 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+# a lowercase database sequence contributes no k-mer to the index under
+# soft masking, so it can never be reported as a hit: vsearch says so
+# (torognes/vsearch#570). The warning goes to stderr, --quiet or not
+DESCRIPTION="--usearch_global --dbmask soft warns about an all-lowercase database"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" | tr "ACGT" "acgt" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --dbmask soft \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep --quiet "1 of 1 sequences yielded no k-mer for the index" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+# same database, masking suppressed: the sequence is indexed, no warning
+DESCRIPTION="--usearch_global --dbmask none does not warn about lowercase"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" | tr "ACGT" "acgt" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --dbmask none \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep --quiet "yielded no k-mer for the index" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+# an ambiguous-only database sequence yields no k-mer at any masking
+# setting, because the index only accepts A, C, G, T and U
+DESCRIPTION="--usearch_global warns about an all-N database sequence"
+DB=$(mktemp)
+printf ">d\nNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN\n" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --dbmask none \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep --quiet "1 of 1 sequences yielded no k-mer for the index" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+# an ordinary database must not trigger the warning. The shared SEQ
+# cannot be used here: it is a four-nucleotide repeat, which the default
+# dust masking masks from end to end, so it yields no k-mer either
+DESCRIPTION="--usearch_global does not warn about an indexable database"
+DB=$(mktemp)
+printf ">d\nGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC\n" > "${DB}"
+printf ">q\nGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep --quiet "yielded no k-mer for the index" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## -------------------------------------------------------------------- iddef
 
 for DEF in 0 1 2 3 4 ; do
@@ -2871,10 +2947,13 @@ unset DB
 
 ## -------------------------------------------------------------------- quiet
 
+# the shared SEQ cannot be used here: it is a four-nucleotide repeat, which
+# dust masking masks from end to end, so it yields no k-mer for the index,
+# which is now a warning, and warnings are not silenced by --quiet
 DESCRIPTION="--usearch_global --quiet suppresses messages on stderr"
 DB=$(mktemp)
-printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\n%s\n" "${SEQ}" | \
+printf ">d\n%s\n" "GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC" > "${DB}"
+printf ">q\n%s\n" "GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
