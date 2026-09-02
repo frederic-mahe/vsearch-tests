@@ -1467,6 +1467,136 @@ printf "@s\nACGT\n+\nIIII\n" | \
 
 #*****************************************************************************#
 #                                                                             #
+#                    several outputs naming the same target                   #
+#                                                                             #
+#*****************************************************************************#
+
+## NOTE: this section pins behaviour introduced after v2.31.0 (one std::FILE
+## per output target, so that outputs naming the same target share a buffer).
+## All but the last test fail against v2.31.0 and earlier, on purpose: what
+## those releases produce here is spliced or mutually overwritten output. Do
+## not "fix" them to match an older binary -- they are the regression guard
+## for that fix. The exception is the final test, which pins a deliberate
+## limitation of the mechanism rather than the fix, and passes against those
+## releases too.
+
+## Every output option given as "-" writes through the same stdout stream, so
+## the records of the two formats interleave whole, in the order they were
+## emitted. When each option had its own buffered stream on its own duplicate
+## of fd 1, the two flushed in 4 KiB chunks and spliced together wherever a
+## buffer happened to fill: mid-line, with no newline inserted, producing
+## lines that are neither valid fasta nor valid fastq (a quality line cut
+## short with a fasta header welded onto its tail). It takes more than one
+## buffer's worth of output to see it, hence 400 records.
+DESCRIPTION="--fastx_revcomp writes whole records when fastaout and fastqout are both stdout"
+FASTQ=$(mktemp)
+(for i in {1..400} ; do
+     printf "@s%d\n" "${i}"
+     printf "A%.0s" {1..80} ; printf "\n+\n"
+     printf "I%.0s" {1..80} ; printf "\n"
+ done) > "${FASTQ}"
+[[ $("${VSEARCH}" \
+         --fastx_revcomp "${FASTQ}" \
+         --fastaout - \
+         --fastqout - \
+         --quiet 2> /dev/null | \
+         grep -cvE '^([>@]s[0-9]+|[ACGT]{80}|I{80}|\+)$') == "0" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${FASTQ}"
+
+## Two outputs naming the same file share one stream for the same reason, so
+## both record sets reach the file. They used to be two independent streams
+## opened for writing on one path, each with its own file offset starting at
+## zero, overwriting each other's bytes.
+DESCRIPTION="--fastx_revcomp keeps both record sets when fastaout and fastqout name one file"
+FASTQ=$(mktemp)
+OUTPUT=$(mktemp)
+printf "@s1\nAAAA\n+\nIIII\n@s2\nCCCC\n+\nIIII\n" > "${FASTQ}"
+"${VSEARCH}" \
+    --fastx_revcomp "${FASTQ}" \
+    --fastaout "${OUTPUT}" \
+    --fastqout "${OUTPUT}" \
+    --quiet 2> /dev/null
+[[ $(grep -c "^>s" "${OUTPUT}") == "2" ]] && \
+    [[ $(grep -c "^@s" "${OUTPUT}") == "2" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${FASTQ}" "${OUTPUT}"
+
+## --log is opened by the same opener as the sequence outputs, so "--log -"
+## shares stdout with them too. One buffer puts the log's banner -- written
+## before the command runs -- ahead of the records, where a reader of the
+## stream expects it; a separate buffer used to flush it last, landing the
+## banner after every record.
+DESCRIPTION="--fastx_revcomp writes the log banner before the records when both go to stdout"
+FASTQ=$(mktemp)
+OUTPUT=$(mktemp)
+printf "@s1\nAAAA\n+\nIIII\n" > "${FASTQ}"
+"${VSEARCH}" \
+    --fastx_revcomp "${FASTQ}" \
+    --fastaout - \
+    --log - \
+    --quiet > "${OUTPUT}" 2> /dev/null
+head -n 1 "${OUTPUT}" | \
+    grep -q "^vsearch v" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${FASTQ}" "${OUTPUT}"
+
+## Whether two names are recognised as one target is decided from the names
+## alone -- the lookup has to happen before the file is opened, because
+## opening for writing truncates -- so it is deliberately conservative:
+## only rewrites that cannot make two *different* files look like the same
+## one are applied. Collapsing a run of "/" in the middle of a name is one
+## of them.
+DESCRIPTION="--fastx_revcomp treats an interior double slash as the same output target"
+FASTQ=$(mktemp)
+DIR=$(mktemp -d)
+printf "@s1\nAAAA\n+\nIIII\n@s2\nCCCC\n+\nIIII\n" > "${FASTQ}"
+"${VSEARCH}" \
+    --fastx_revcomp "${FASTQ}" \
+    --fastaout "${DIR}//f" \
+    --fastqout "${DIR}/f" \
+    --quiet 2> /dev/null
+[[ $(grep -c "^>s" "${DIR}/f") == "2" ]] && \
+    [[ $(grep -c "^@s" "${DIR}/f") == "2" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${FASTQ}" "${DIR}"
+
+## A *leading* run of slashes is the exception, and is kept verbatim: POSIX
+## leaves a pathname beginning with exactly two slashes implementation-defined,
+## so a system may resolve "//a/b" and "/a/b" to different files, and merging
+## them would write both record sets into one of the two and leave the other
+## unwritten -- a worse failure than the overwriting this whole mechanism
+## exists to prevent. Linux resolves the two to the same file, so what is
+## pinned here is only that they are not merged; the two streams overwrite
+## each other exactly as they did before the mechanism existed.
+##
+## This is a documented limitation, not a target: should the key ever be
+## computed by a real path resolver (realpath() on the directory plus the
+## basename, GetFullPathName on Windows), these two spellings would resolve
+## to one file on this platform and merging them would then be correct. Change
+## this test with that change, do not work around it.
+DESCRIPTION="--fastx_revcomp does not merge output targets differing by a leading double slash"
+FASTQ=$(mktemp)
+DIR=$(mktemp -d)
+printf "@s1\nAAAA\n+\nIIII\n@s2\nCCCC\n+\nIIII\n" > "${FASTQ}"
+"${VSEARCH}" \
+    --fastx_revcomp "${FASTQ}" \
+    --fastaout "/${DIR}/g" \
+    --fastqout "${DIR}/g" \
+    --quiet 2> /dev/null
+[[ $(grep -c "^>s" "${DIR}/g") == "2" ]] && \
+    [[ $(grep -c "^@s" "${DIR}/g") == "2" ]] && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -rf "${FASTQ}" "${DIR}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                               memory leaks                                  #
 #                                                                             #
 #*****************************************************************************#
