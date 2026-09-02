@@ -3961,6 +3961,78 @@ DESCRIPTION="fastq_mergepairs explicit --fastq_qmaxout 93 overrides the default"
         failure "${DESCRIPTION}"
 
 
+## ------------------------------------ --fastq_qminout and --fastq_ascii ---
+
+# The floor rule follows the same offset as the ceiling, for the same reason.
+# Stated against --fastq_asciiout (always 33 here) it erred the other way from
+# the ceiling: it refused a --fastq_qminout that offset 64 represents
+# perfectly well, since 64 - 31 is 33, the first printable byte.
+
+DESCRIPTION="fastq_mergepairs accepts --fastq_ascii 64 with --fastq_qminout -31"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nh\n") \
+    --reverse <(printf "@s\nT\n+\nh\n") \
+    --fastq_ascii 64 \
+    --fastq_qminout -31 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 64 - 32 = 32 is one below the first printable byte
+DESCRIPTION="fastq_mergepairs rejects --fastq_ascii 64 with --fastq_qminout -32"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nh\n") \
+    --reverse <(printf "@s\nT\n+\nh\n") \
+    --fastq_ascii 64 \
+    --fastq_qminout -32 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# at the default offset the bound is unchanged: 33 - 1 = 32 is still refused
+DESCRIPTION="fastq_mergepairs rejects --fastq_qminout -1 at the default offset"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qminout -1 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs floor rule names --fastq_ascii, not --fastq_asciiout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qminout -1 \
+    --fastqout /dev/null 2>&1 | \
+    grep -q -- "--fastq_ascii and --fastq_qminout" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the relaxed bound must still produce printable output
+DESCRIPTION="fastq_mergepairs merged quality stays printable at --fastq_qminout -31"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nhhhhhhhhhh\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nhhhhhhhhhh\n") \
+    --fastq_ascii 64 \
+    --fastq_qminout -31 \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    awk 'NR == 4 {exit $0 == "iiiiiiiiii" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs rejects --fastq_qminout above --fastq_qmaxout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_qminout 50 \
+    --fastq_qmaxout 40 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 #*****************************************************************************#
 #                                                                             #
 #                                --fastq_qmin                                 #
