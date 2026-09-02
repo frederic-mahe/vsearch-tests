@@ -3869,6 +3869,98 @@ DESCRIPTION="fastq_mergepairs default --fastq_qmaxout leaves combined Q unclampe
         success "${DESCRIPTION}"
 
 
+## ------------------------------------ --fastq_qmaxout and --fastq_ascii ---
+
+# fastq_mergepairs writes the merged quality with --fastq_ascii, not with
+# --fastq_asciiout (which it does not accept), so the sum rule that keeps a
+# quality symbol printable has to be stated against --fastq_ascii here. It
+# used to be stated against --fastq_asciiout for every command, which is
+# always 33 on this one: that left 63..93 unguarded and let the merged symbol
+# leave printable ASCII entirely.
+
+DESCRIPTION="fastq_mergepairs rejects --fastq_ascii 64 with --fastq_qmaxout 93"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nh\n") \
+    --reverse <(printf "@s\nT\n+\nh\n") \
+    --fastq_ascii 64 \
+    --fastq_qmaxout 93 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs sum rule names --fastq_ascii, not --fastq_asciiout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nh\n") \
+    --reverse <(printf "@s\nT\n+\nh\n") \
+    --fastq_ascii 64 \
+    --fastq_qmaxout 93 \
+    --fastqout /dev/null 2>&1 | \
+    grep -q -- "--fastq_ascii and --fastq_qmaxout" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 64 + 62 = 126 is the last printable byte, so the boundary itself is legal
+DESCRIPTION="fastq_mergepairs accepts --fastq_ascii 64 with --fastq_qmaxout 62"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nh\n") \
+    --reverse <(printf "@s\nT\n+\nh\n") \
+    --fastq_ascii 64 \
+    --fastq_qmaxout 62 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ... and one past it is not
+DESCRIPTION="fastq_mergepairs rejects --fastq_ascii 64 with --fastq_qmaxout 63"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nh\n") \
+    --reverse <(printf "@s\nT\n+\nh\n") \
+    --fastq_ascii 64 \
+    --fastq_qmaxout 63 \
+    --fastqout /dev/null > /dev/null 2>&1 && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# two agreeing Q40 bases ('h' at offset 64) merge to Q85; at the default
+# ceiling of 41 that is written as 64 + 41 = 105 = 'i', and every symbol
+# stays inside printable ASCII
+DESCRIPTION="fastq_mergepairs merged quality stays printable at --fastq_ascii 64"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nhhhhhhhhhh\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nhhhhhhhhhh\n") \
+    --fastq_ascii 64 \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    awk 'NR == 4 {exit $0 == "iiiiiiiiii" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the default ceiling is 41 whatever the offset: this command computes the
+# score it clamps rather than passing one through
+DESCRIPTION="fastq_mergepairs default --fastq_qmaxout is 41, not 126 - offset"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    awk 'NR == 4 {exit $0 == "JJJJJJJJJJ" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# an explicit --fastq_qmaxout is honoured rather than replaced by the
+# command's default: at 93 the same pair scores Q85 (33 + 85 = 118 = 'v')
+DESCRIPTION="fastq_mergepairs explicit --fastq_qmaxout 93 overrides the default"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --fastq_qmaxout 93 \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    awk 'NR == 4 {exit $0 == "vvvvvvvvvv" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 #*****************************************************************************#
 #                                                                             #
 #                                --fastq_qmin                                 #
