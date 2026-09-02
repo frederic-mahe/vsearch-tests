@@ -22172,6 +22172,64 @@ printf ">r\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
 # verified from a single platform, so no additional test is written here.
 
 
+
+#******************************************************************************#
+#                                                                              #
+#     chimeras_denovo heap overflow on a query shorter than a previous one     #
+#                                                                              #
+#******************************************************************************#
+##
+## fixed in vsearch after v2.31.0 (regression introduced in v2.30.1)
+
+# fill_in_alignment_string_for_query() walked the whole query_seq buffer
+# with a range-for loop instead of stopping at query_len. That buffer is a
+# high-water mark grown to the longest query seen, so for any query
+# shorter than an earlier one the loop ran past the query, consumed the
+# terminator plus the stale bytes behind it, and left the alignment cursor
+# too far along. The terminal-gap fill that follows the loop then wrote
+# its dashes off the end of the alignment buffer, corrupting the heap and
+# crashing (SIGSEGV, exit 139) in the allocator on the way out.
+#
+# Two queries are needed, in this order: a long one to grow the buffer,
+# then a shorter one to be walked past its own end. The parents must be
+# longer than the short query, so that its alignment ends with an
+# insertion, which is what the offending fill writes.
+#
+# Note: the alignment output itself was never wrong -- the bytes the
+# report reads were all written before the cursor ran away -- so the only
+# observable symptom is the crash, and the test checks the exit status.
+
+DESCRIPTION="chimeras_denovo: a query shorter than an earlier one does not corrupt the heap"
+printf ">pA;size=9\n%s\n>pB;size=9\n%s\n>qLong;size=1\n%s\n>qShort;size=1\n%s\n" \
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" \
+    "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC" \
+    "AAAAAAAAAAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCC" \
+    "AAAAAAAAAACCCCCCCCCC" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --chimeras /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# same input, but through the alignment report: the offending write sits
+# on the path that builds the query row of --alnout
+DESCRIPTION="chimeras_denovo: alnout on a query shorter than an earlier one does not corrupt the heap"
+printf ">pA;size=9\n%s\n>pB;size=9\n%s\n>qLong;size=1\n%s\n>qShort;size=1\n%s\n" \
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" \
+    "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC" \
+    "AAAAAAAAAAAAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCC" \
+    "AAAAAAAAAACCCCCCCCCC" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --qmask none \
+        --quiet \
+        --alnout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 exit 0
 
 
