@@ -319,6 +319,29 @@ printf "" | \
 rm -f "${DB}"
 unset DB
 
+## a query record with no sequence is not the same as an empty query
+## file: --minseqlength filters database sequences only, so a
+## zero-length query is never discarded and goes through the aligner
+## like any other (see also issue 171 in fixed_bugs.sh). --output_no_hits
+## is what makes that observable: without it the query leaves no trace.
+DESCRIPTION="--usearch_global reports a zero-length query record as unmatched"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --output_no_hits \
+        --blast6out - \
+        --quiet 2> /dev/null | \
+    awk -F'\t' '{print $1, $2}' | \
+    grep -qx "q \*" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 DESCRIPTION="--usearch_global accepts fasta query input"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
