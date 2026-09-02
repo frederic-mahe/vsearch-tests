@@ -1471,12 +1471,14 @@ printf "@s\nACGT\n+\nIIII\n" | \
 #                                                                             #
 #*****************************************************************************#
 
-## NOTE: the three tests in this section pin behaviour introduced after
-## v2.31.0 (one std::FILE per output target, so that outputs naming the same
-## target share a buffer). They fail against v2.31.0 and earlier, on purpose:
-## what those releases produce here is spliced or mutually overwritten output.
-## Do not "fix" them to match an older binary -- they are the regression guard
-## for that fix.
+## NOTE: this section pins behaviour introduced after v2.31.0 (one std::FILE
+## per output target, so that outputs naming the same target share a buffer).
+## All but the last test fail against v2.31.0 and earlier, on purpose: what
+## those releases produce here is spliced or mutually overwritten output. Do
+## not "fix" them to match an older binary -- they are the regression guard
+## for that fix. The exception is the final test, which pins a deliberate
+## limitation of the mechanism rather than the fix, and passes against those
+## releases too.
 
 ## Every output option given as "-" writes through the same stdout stream, so
 ## the records of the two formats interleave whole, in the order they were
@@ -1541,6 +1543,56 @@ head -n 1 "${OUTPUT}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${FASTQ}" "${OUTPUT}"
+
+## Whether two names are recognised as one target is decided from the names
+## alone -- the lookup has to happen before the file is opened, because
+## opening for writing truncates -- so it is deliberately conservative:
+## only rewrites that cannot make two *different* files look like the same
+## one are applied. Collapsing a run of "/" in the middle of a name is one
+## of them.
+DESCRIPTION="--fastx_revcomp treats an interior double slash as the same output target"
+FASTQ=$(mktemp)
+DIR=$(mktemp -d)
+printf "@s1\nAAAA\n+\nIIII\n@s2\nCCCC\n+\nIIII\n" > "${FASTQ}"
+"${VSEARCH}" \
+    --fastx_revcomp "${FASTQ}" \
+    --fastaout "${DIR}//f" \
+    --fastqout "${DIR}/f" \
+    --quiet 2> /dev/null
+[[ $(grep -c "^>s" "${DIR}/f") == "2" ]] && \
+    [[ $(grep -c "^@s" "${DIR}/f") == "2" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${FASTQ}" "${DIR}"
+
+## A *leading* run of slashes is the exception, and is kept verbatim: POSIX
+## leaves a pathname beginning with exactly two slashes implementation-defined,
+## so a system may resolve "//a/b" and "/a/b" to different files, and merging
+## them would write both record sets into one of the two and leave the other
+## unwritten -- a worse failure than the overwriting this whole mechanism
+## exists to prevent. Linux resolves the two to the same file, so what is
+## pinned here is only that they are not merged; the two streams overwrite
+## each other exactly as they did before the mechanism existed.
+##
+## This is a documented limitation, not a target: should the key ever be
+## computed by a real path resolver (realpath() on the directory plus the
+## basename, GetFullPathName on Windows), these two spellings would resolve
+## to one file on this platform and merging them would then be correct. Change
+## this test with that change, do not work around it.
+DESCRIPTION="--fastx_revcomp does not merge output targets differing by a leading double slash"
+FASTQ=$(mktemp)
+DIR=$(mktemp -d)
+printf "@s1\nAAAA\n+\nIIII\n@s2\nCCCC\n+\nIIII\n" > "${FASTQ}"
+"${VSEARCH}" \
+    --fastx_revcomp "${FASTQ}" \
+    --fastaout "/${DIR}/g" \
+    --fastqout "${DIR}/g" \
+    --quiet 2> /dev/null
+[[ $(grep -c "^>s" "${DIR}/g") == "2" ]] && \
+    [[ $(grep -c "^@s" "${DIR}/g") == "2" ]] && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -rf "${FASTQ}" "${DIR}"
 
 
 #*****************************************************************************#
