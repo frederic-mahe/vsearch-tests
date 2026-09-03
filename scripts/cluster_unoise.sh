@@ -1596,6 +1596,30 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
         success "${DESCRIPTION}"
 
 
+## ---------- k-mer pre-filter ----------
+
+## Two 51-nt sequences differing at one position, of which --qmask dust
+## leaves only a 12-nt unmasked head: the centroid then holds four
+## distinct 8-mers and the query five. Before the requirement was capped
+## by the centroid's own word count, the pair was asked for five shared
+## words and could not reach it, so the two sequences did not cluster
+## (issue 328). --minsize 1 is required, or the size=1 variant is
+## discarded before clustering and the test passes for the wrong reason.
+DESCRIPTION="--cluster_unoise absorbs a dust-masked variant sharing all the centroid's words"
+[ "$(printf ">s1;size=100\n%s\n>s2;size=1\n%s\n" \
+        "ATTGATTGATTGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" \
+        "CTTGATTGATTGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --sizein \
+        --minsize 1 \
+        --qmask dust \
+        --quiet \
+        --uc - 2> /dev/null | grep -c "^C")" -eq 1 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 #*****************************************************************************#
 #                                                                             #
 #                               memory leaks                                  #

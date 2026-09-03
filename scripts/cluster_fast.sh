@@ -2045,6 +2045,30 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
         success "${DESCRIPTION}"
 
 
+## ---------- k-mer pre-filter ----------
+
+## Two 51-nt sequences differing at one position, of which --qmask dust
+## leaves only a 12-nt unmasked head: the centroid then holds four
+## distinct 8-mers and the query five. Before the requirement was capped
+## by the centroid's own word count, the pair was asked for five shared
+## words and could not reach it, so the two sequences did not cluster
+## (issue 328, and the 2018-08-15 forum thread in
+## google_forum_issues.sh).
+DESCRIPTION="--cluster_fast clusters two dust-masked sequences sharing all the centroid's words"
+[ "$(printf ">s1\n%s\n>s2\n%s\n" \
+        "ATTGATTGATTGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" \
+        "CTTGATTGATTGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.9 \
+        --iddef 1 \
+        --qmask dust \
+        --quiet \
+        --uc - 2> /dev/null | grep -c "^C")" -eq 1 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 #*****************************************************************************#
 #                                                                             #
 #                               memory leaks                                  #
