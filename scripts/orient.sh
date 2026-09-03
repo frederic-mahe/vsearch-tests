@@ -935,21 +935,27 @@ printf ">q\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 unset SEQ
 
-# NOTE: --wordlength 15 would exercise the documented upper bound, but memory
-# for a part of the index grows by a factor of 4 per additional nucleotide,
-# which can be too slow for routine testing. Test is disabled.
-# DESCRIPTION="--wordlength accepts maximum value (15)"
-# SEQ="GACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT"
-# printf ">q\n%s\n" "${SEQ}" | \
-#     "${VSEARCH}" \
-#         --orient - \
-#         --db <(printf ">s\n%s\n" "${SEQ}") \
-#         --fastaout /dev/null \
-#         --wordlength 15 \
-#         --quiet 2>/dev/null && \
-#     success "${DESCRIPTION}" || \
-#         failure "${DESCRIPTION}"
-# unset SEQ
+# NOTE: actually *building* an index at the documented upper bound is not
+# testable here: the index allocates 4^wordlength slots whatever the database
+# size, so --wordlength 15 needs some 16 GB (0.33 GB at 12, 1.05 at 13, 4.20
+# at 14) and kills the FreeBSD CI VM. Pin that the parser *accepts* 15
+# instead, by pointing --db at a file that does not exist: the options are
+# validated before any input is opened, so an accepted width gets as far as
+# the missing database and reports its name, while a rejected one (16, just
+# below) never does.
+DESCRIPTION="--wordlength accepts maximum value (15)"
+SEQ="GACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT"
+MISSING_DB=$(mktemp -u).fasta
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --orient - \
+        --db "${MISSING_DB}" \
+        --fastaout /dev/null \
+        --wordlength 15 2>&1 | \
+    grep -qF "${MISSING_DB}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset MISSING_DB SEQ
 
 DESCRIPTION="--wordlength rejects value below minimum (2)"
 SEQ="GACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT"
@@ -1078,10 +1084,13 @@ unset TMPUDB SEQ
 ## vsearch selects different internal k-mer counting structures depending on
 ## the word length (boundaries at 9/10 and 12/13 as of 2026-08); orientation
 ## must not depend on which structure is in use, so check both strands on
-## each side of the boundaries and at the largest accepted (and odd) width
+## each side of the boundaries. The largest accepted width (15) is left out on
+## purpose: it is the same count_hash structure as 13, and the index allocates
+## 4^wordlength slots whatever the database size, so it needs some 16 GB and
+## kills the FreeBSD CI VM (see the NOTE at the maximum-value test above)
 SEQ="GACAGGTACAAGCTTGCATCACTGGATCCTAGCAATCGTG"
 RC_SEQ="CACGATTGCTAGGATCCAGTGATGCAAGCTTGTACCTGTC"  # reverse-complement of SEQ
-for WORDLENGTH in 9 10 12 13 15 ; do
+for WORDLENGTH in 9 10 12 13 ; do
     DESCRIPTION="--wordlength ${WORDLENGTH}: a query identical to db is oriented forward (+)"
     printf ">q\n%s\n" "${SEQ}" | \
         "${VSEARCH}" \
