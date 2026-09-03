@@ -3183,9 +3183,14 @@ unset fwd rev
 ## A: dust masking leaves too few distinct k-mers; set --minwordmatches 0 to bypass the heuristic.
 
 # two 51-nt sequences differ only at position 1 and are mostly low-complexity
-# (poly-A); under dust masking the default k-mer heuristic keeps them apart
-# (two clusters)
-DESCRIPTION="forum (2018-08-15): dust masking + default minwordmatches leaves seqs unclustered"
+# (poly-A); under dust masking only their 12-nt head survives, leaving the
+# centroid four distinct k-mers and the query five. This test expected two
+# clusters until the k-mer requirement was capped by the target's own word
+# count as well as by the query's: the pair was asked for five shared k-mers,
+# which the centroid cannot supply, and no query could ever select it (issue
+# 328). It now expects the single cluster the forum poster was after, which
+# is also what the --minwordmatches 0 test below has always returned.
+DESCRIPTION="forum (2018-08-15): dust masking + default minwordmatches now clusters low-complexity seqs"
 [ "$(printf ">s1\nATTGATTGATTGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n>s2\nCTTGATTGATTGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     ${VSEARCH} \
         --cluster_smallmem - \
@@ -3194,7 +3199,7 @@ DESCRIPTION="forum (2018-08-15): dust masking + default minwordmatches leaves se
         --iddef 1 \
         --qmask dust \
         --quiet \
-        --uc - 2>/dev/null | grep -c '^C')" -eq 2 ] && \
+        --uc - 2>/dev/null | grep -c '^C')" -eq 1 ] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 

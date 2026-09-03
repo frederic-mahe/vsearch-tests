@@ -2692,6 +2692,166 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## ------------------------------------------- minwordmatches and short targets
+
+## A sequence can share at most as many words as it holds, so requiring
+## --minwordmatches of them asked short or heavily masked *targets* for
+## more than they can supply and hid them from every query, an exact
+## match included (issue 328). The requirement is capped by the target's
+## own distinct word count as well as by the query's. WORD_SEQ has 33
+## distinct 8-mers and no repeated one, so at the default word length
+## its n-nt prefix holds exactly n - 7 distinct words: the 19-nt prefix
+## is the shortest one reaching the default --minwordmatches of 12.
+WORD_SEQ="TTTCCTCATGCAATTCAAAACCATGTCCGTAATGTAGGCG"
+
+DESCRIPTION="--usearch_global finds an exact 18-nt target (fewer words than --minwordmatches)"
+DB=$(mktemp)
+printf ">t\n%s\n" "${WORD_SEQ:0:18}" > "${DB}"
+[ "$(printf ">q\n%s\n" "${WORD_SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out - 2> /dev/null | wc -l)" -eq 1 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the same pair, the other way round: this direction always worked, and
+## the two must now agree
+DESCRIPTION="--usearch_global finds that pair with the 18-nt sequence as the query"
+DB=$(mktemp)
+printf ">t\n%s\n" "${WORD_SEQ}" > "${DB}"
+[ "$(printf ">q\n%s\n" "${WORD_SEQ:0:18}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out - 2> /dev/null | wc -l)" -eq 1 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## 19 nt is the first prefix holding --minwordmatches words, so 19 and 20
+## were reachable before the target-side cap and 17 and 18 were not
+DESCRIPTION="--usearch_global finds exact targets of 17, 18, 19 and 20 nt"
+DB=$(mktemp)
+printf ">t17\n%s\n>t18\n%s\n>t19\n%s\n>t20\n%s\n" \
+    "${WORD_SEQ:0:17}" "${WORD_SEQ:0:18}" "${WORD_SEQ:0:19}" "${WORD_SEQ:0:20}" > "${DB}"
+[ "$(printf ">q\n%s\n" "${WORD_SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxaccepts 0 \
+        --maxrejects 0 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out - 2> /dev/null | wc -l)" -eq 4 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## length is not the rule, distinct words are: 30 nt of (AC)n hold two
+DESCRIPTION="--usearch_global finds a 30-nt low-complexity target (two distinct words)"
+DB=$(mktemp)
+printf ">t\n%s\n" "ACACACACACACACACACACACACACACAC" > "${DB}"
+[ "$(printf ">q\n%s\n" "TTTCCTCATGACACACACACACACACACACACACACACACTAATGTAGGCG" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --qmask none \
+        --dbmask none \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out - 2> /dev/null | wc -l)" -eq 1 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## The query side of the same heuristic is unchanged, and is what the
+## --minwordmatches entry of the manual now describes: a query holding
+## fewer distinct words than --minwordmatches must have all of them
+## match, so a single mismatch is enough to lose the hit. These four
+## tests pin that behaviour and the documented way around it.
+DESCRIPTION="--usearch_global misses a 25-nt query with one mismatch (default --minwordmatches)"
+DB=$(mktemp)
+printf ">t\n%s\n" "GGCCCAGTCCAGATCCTCGGAAGTCCCAACTAACGAATAAGTAGATCCTTCTAAATAGTAGTATACGAATGTAATCAACATATTACCGCACCCAACTTTG" > "${DB}"
+[ "$(printf ">q\n%s\n" "GTAGATCCTTCTCAATAGTAGTATA" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out - 2> /dev/null | wc -l)" -eq 0 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global finds that 25-nt query with --minwordmatches 1"
+[ "$(printf ">q\n%s\n" "GTAGATCCTTCTCAATAGTAGTATA" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --minwordmatches 1 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out - 2> /dev/null | wc -l)" -eq 1 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --minwordmatches 1 is as sensitive as --minwordmatches 0"
+[ "$(printf ">q\n%s\n" "GTAGATCCTTCTCAATAGTAGTATA" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --minwordmatches 0 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out - 2> /dev/null | wc -l)" -eq 1 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global misses an 18-nt query with one mismatch (all its words must match)"
+[ "$(printf ">q\n%s\n" "GTAGATCCTGCTAAATAG" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out - 2> /dev/null | wc -l)" -eq 0 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global finds that 18-nt query with --minwordmatches 1"
+[ "$(printf ">q\n%s\n" "GTAGATCCTGCTAAATAG" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --minwordmatches 1 \
+        --minseqlength 1 \
+        --quiet \
+        --blast6out - 2> /dev/null | wc -l)" -eq 1 ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+unset WORD_SEQ
+
+
 ## -------------------------------------------------------- mothur_shared_out
 
 DESCRIPTION="--usearch_global --mothur_shared_out writes a header line"

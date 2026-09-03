@@ -2602,6 +2602,55 @@ done
 unset OPT
 
 
+## ---------- k-mer pre-filter (none) ----------
+
+## --allpairs_global aligns every pair of sequences and builds no k-mer
+## index, so the two options that drive the pre-filter of the other
+## search commands have no effect here. The manual says so in its
+## *ignored options* section; these tests pin it, and would catch the
+## day --allpairs_global gains a pre-filter without that section being
+## revisited. --threads 1 is needed only because the output order of a
+## multithreaded run is not stable, and these compare whole outputs.
+ALLPAIRS_FASTA=$(mktemp)
+printf ">s1\n%s\n>s2\n%s\n>s3\n%s\n" \
+    "GTTGGCTCTGAAAGATCGCCATATCCTGGCTGCTCGAGTA" \
+    "GTTGGATCTGAAAGATCGCCATTTCCTGGCTGCACGAGTA" \
+    "GTTGGCTCTGTAAGATCGCCATATCCTGGCAGCTCGACTA" > "${ALLPAIRS_FASTA}"
+ALLPAIRS_EXPECTED=$("${VSEARCH}" \
+                        --allpairs_global "${ALLPAIRS_FASTA}" \
+                        --id 0.5 \
+                        --threads 1 \
+                        --quiet \
+                        --userfields query+target+id \
+                        --userout - 2> /dev/null)
+
+DESCRIPTION="--allpairs_global output is unchanged by --minwordmatches"
+[ "$("${VSEARCH}" \
+        --allpairs_global "${ALLPAIRS_FASTA}" \
+        --id 0.5 \
+        --minwordmatches 1 \
+        --threads 1 \
+        --quiet \
+        --userfields query+target+id \
+        --userout - 2> /dev/null)" == "${ALLPAIRS_EXPECTED}" ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--allpairs_global output is unchanged by --wordlength"
+[ "$("${VSEARCH}" \
+        --allpairs_global "${ALLPAIRS_FASTA}" \
+        --id 0.5 \
+        --wordlength 15 \
+        --threads 1 \
+        --quiet \
+        --userfields query+target+id \
+        --userout - 2> /dev/null)" == "${ALLPAIRS_EXPECTED}" ] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${ALLPAIRS_FASTA}"
+unset ALLPAIRS_FASTA ALLPAIRS_EXPECTED
+
+
 ## clean up common variables before the fixed bugs and memory leaks
 ## sections
 unset SEQ
