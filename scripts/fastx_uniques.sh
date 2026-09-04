@@ -853,6 +853,75 @@ printf "@s;size=1\nA\n+\n2\n@s;size=14\nA\n+\n2\n" | \
         failure "${DESCRIPTION}"
 
 
+# The three tests below pin the guards on the merge shortcut in
+# core/derep.cpp: it skips the averaging arithmetic when the weighted mean
+# provably cannot leave the stored symbol's interval. Each guard is
+# unreachable in a default run, so without these tests nothing would notice
+# if one were dropped. All three describe behaviour that released binaries
+# produce too -- the shortcut is byte-identical, so it is the arithmetic
+# these check, not the shortcut.
+
+# guard 1: the incoming abundance has to be small against the accumulated
+# one. Here it is ten times larger, and the merge does move the symbol
+# (Q20 stored, Q22 arriving -> Q21), so a shortcut that fired on the symbols
+# alone would report the stored Q20 ('5') instead of Q21 ('6').
+DESCRIPTION="--fastx_uniques merges a better base carrying most of the abundance (Q20 size 1 + Q22 size 10)"
+printf "@s;size=1\nA\n+\n5\n@s;size=10\nA\n+\n7\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --sizein \
+        --sizeout \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s;size=11@A@+@6@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# guard 2: a stored quality above --fastq_qmaxout is pulled down by the
+# clamp inside the merge, not only by the one applied at output time, and the
+# difference escapes that output clamp as soon as a third member arrives.
+# Q21 (size 5) then Q22 stores Q20 (clamped), and Q9 then merges to Q15
+# ('0'); keeping the unclamped Q21 would give Q16 ('1').
+DESCRIPTION="--fastx_uniques applies fastq_qmaxout inside the merge, not just at output (Q21+Q22+Q9)"
+printf "@s;size=5\nA\n+\n6\n@s;size=1\nA\n+\n7\n@s;size=1\nA\n+\n*\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --sizein \
+        --sizeout \
+        --fastq_qmaxout 20 \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s;size=7@A@+@0@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# guard 3: at an accumulated abundance around 2^53 the incoming
+# contribution is the size of a rounding error in the weighted mean, and the
+# truncating conversion answers one quality less. Q17 stored at size 10^16
+# with Q18 arriving at size 1 gives Q16 ('1'), not the stored Q17 ('2'). The
+# affected stored qualities are 5, 8, 10 and 17 -- the same ones named in the
+# abundance-independence note above.
+#
+# The abundance has to exceed 2^32 to reach that regime, so vsearch 2.31.0
+# and older truncate it while reading the header (they report
+# ";size=1874919425" and quality Q17) and this test fails against released
+# binaries, like the three above it.
+DESCRIPTION="--fastx_uniques merged quality at an abundance near the double mantissa (Q17, size 1e16 + 1)"
+printf "@s;size=10000000000000000\nA\n+\n2\n@s;size=1\nA\n+\n3\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --quiet \
+        --sizein \
+        --sizeout \
+        --fastqout - | \
+    tr "\n" "@" | \
+    grep -qx "@s;size=10000000000000001@A@+@1@" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
 ## --------------------------------------------------------------------- median
 
 DESCRIPTION="--fastx_unique outputs a median cluster size"
