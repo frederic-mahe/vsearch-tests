@@ -249,6 +249,130 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB_FASTA}" "${DB_UDB}"
 unset SEQ DB_FASTA DB_UDB
 
+## A UDB and the fasta file it was built from are not interchangeable
+## for --sintax: makeudb_usearch runs DUST (its default --dbmask dust)
+## and stores the masked sequences, whereas --sintax never runs DUST on
+## a fasta database, so the two index different k-mers.
+##
+## LOWCOMP is a 69-nt low-complexity reference that DUST masks
+## completely (longest unmasked stretch: 1 nt, hence no 8-mer at all).
+## The query is LOWCOMP followed by the high-complexity SEQ, so the
+## query itself always holds enough unique k-mers to be bootstrapped
+## (>= 32 = subset_size); only the reference index changes.
+
+## a fasta reference is never DUST-masked, so the entry is indexed
+DESCRIPTION="--sintax indexes a low-complexity fasta reference (no DUST)"
+LOWCOMP="AATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATT"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB_FASTA=$(mktemp)
+printf ">low;tax=d:Bacteria,p:Lowcomplex\n%s\n" "${LOWCOMP}" > "${DB_FASTA}"
+printf ">q\n%s%s\n" "${LOWCOMP}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB_FASTA}" \
+        --randseed 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    grep --quiet "p:Lowcomplex" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB_FASTA}"
+unset LOWCOMP SEQ DB_FASTA
+
+## the same reference in a default UDB is DUST-masked out of the index
+DESCRIPTION="--sintax loses a low-complexity reference DUST-masked by makeudb"
+LOWCOMP="AATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATT"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB_FASTA=$(mktemp)
+DB_UDB=$(mktemp)
+printf ">low;tax=d:Bacteria,p:Lowcomplex\n%s\n" "${LOWCOMP}" > "${DB_FASTA}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB_FASTA}" \
+    --output "${DB_UDB}" \
+    --quiet 2>/dev/null
+printf ">q\n%s%s\n" "${LOWCOMP}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB_UDB}" \
+        --randseed 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    grep --quiet "p:Lowcomplex" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB_FASTA}" "${DB_UDB}"
+unset LOWCOMP SEQ DB_FASTA DB_UDB
+
+## hence the two database formats can classify the same query differently
+DESCRIPTION="--sintax fasta and default UDB results differ (dbmask)"
+LOWCOMP="AATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATT"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB_FASTA=$(mktemp)
+DB_UDB=$(mktemp)
+QUERY=$(mktemp)
+printf ">low;tax=d:Bacteria,p:Lowcomplex\n%s\n" "${LOWCOMP}" > "${DB_FASTA}"
+printf ">q\n%s%s\n" "${LOWCOMP}" "${SEQ}" > "${QUERY}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB_FASTA}" \
+    --output "${DB_UDB}" \
+    --quiet 2>/dev/null
+FROM_FASTA=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_FASTA}" \
+                 --randseed 1 --tabbedout /dev/stdout --quiet 2>/dev/null)
+FROM_UDB=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_UDB}" \
+               --randseed 1 --tabbedout /dev/stdout --quiet 2>/dev/null)
+[[ "${FROM_FASTA}" != "${FROM_UDB}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB_FASTA}" "${DB_UDB}" "${QUERY}"
+unset LOWCOMP SEQ DB_FASTA DB_UDB QUERY FROM_FASTA FROM_UDB
+
+## building the UDB with --dbmask none restores the fasta behaviour
+DESCRIPTION="--sintax UDB built with --dbmask none matches the fasta database"
+LOWCOMP="AATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATT"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB_FASTA=$(mktemp)
+DB_UDB=$(mktemp)
+QUERY=$(mktemp)
+printf ">low;tax=d:Bacteria,p:Lowcomplex\n%s\n" "${LOWCOMP}" > "${DB_FASTA}"
+printf ">q\n%s%s\n" "${LOWCOMP}" "${SEQ}" > "${QUERY}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB_FASTA}" \
+    --dbmask none \
+    --output "${DB_UDB}" \
+    --quiet 2>/dev/null
+FROM_FASTA=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_FASTA}" \
+                 --randseed 1 --tabbedout /dev/stdout --quiet 2>/dev/null)
+FROM_UDB=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_UDB}" \
+               --randseed 1 --tabbedout /dev/stdout --quiet 2>/dev/null)
+[[ "${FROM_FASTA}" == "${FROM_UDB}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB_FASTA}" "${DB_UDB}" "${QUERY}"
+unset LOWCOMP SEQ DB_FASTA DB_UDB QUERY FROM_FASTA FROM_UDB
+
+## --dbmask is inert on a UDB database: the sequences were masked (or
+## not) when the UDB was built, and udb_read never consults the option
+DESCRIPTION="--sintax --dbmask does not affect a UDB database"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB_FASTA=$(mktemp)
+DB_UDB=$(mktemp)
+QUERY=$(mktemp)
+printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" > "${DB_FASTA}"
+printf ">q\n%s\n" "${SEQ}" > "${QUERY}"
+"${VSEARCH}" \
+    --makeudb_usearch "${DB_FASTA}" \
+    --output "${DB_UDB}" \
+    --quiet 2>/dev/null
+WITH_DUST=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_UDB}" --dbmask dust \
+                --randseed 1 --tabbedout /dev/stdout --quiet 2>/dev/null)
+WITH_NONE=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_UDB}" --dbmask none \
+                --randseed 1 --tabbedout /dev/stdout --quiet 2>/dev/null)
+[[ "${WITH_DUST}" == "${WITH_NONE}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB_FASTA}" "${DB_UDB}" "${QUERY}"
+unset SEQ DB_FASTA DB_UDB QUERY WITH_DUST WITH_NONE
+
 ## --tabbedout is accepted
 DESCRIPTION="--tabbedout is accepted"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
