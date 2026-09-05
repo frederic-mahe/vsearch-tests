@@ -177,6 +177,51 @@ printf ">s1\nACGTACGTACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# Every fixture above is shorter than one DUST window. DUST reads the sequence
+# in windows of 64 nucleotides that advance by 32, and the shortest region it
+# can report is 8 long, so a run of eight is also the weakest signal it acts
+# on at all. These two put such a run at each end of the first window: they
+# fail both if a window stops being examined and if a region that only just
+# clears the DUST level stops being reported.
+
+# eight T's at positions 57-64, closing exactly on the first window boundary
+DESCRIPTION="--maskfasta masks a minimal low-complexity run at the first DUST window boundary"
+printf ">s1\n%s%s%s\n" \
+    "CGATTGCAGTCCTAGGACTTGCAACGTTACGGATCCGTTAGCCATGACTGGACTCA" \
+    "TTTTTTTT" \
+    "AGTGTACCGGATCAGTTCAGGCATACGTGGACATCCAAGT" | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output - \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "$(printf "%s%s%s" \
+    "CGATTGCAGTCCTAGGACTTGCAACGTTACGGATCCGTTAGCCATGACTGGACTCA" \
+    "tttttttt" \
+    "AGTGTACCGGATCAGTTCAGGCATACGTGGACATCCAAGT")" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the same run at positions 67-74, past the first window entirely
+DESCRIPTION="--maskfasta masks a minimal low-complexity run beyond the first DUST window"
+printf ">s1\n%s%s%s%s\n" \
+    "CGATTGCAGTCCTAGGACTTGCAACGTTACGGATCCGTTA" \
+    "GCCATGACTGGACTCAAGTGTACCGG" \
+    "TTTTTTTT" \
+    "ATCAGTTCAGGCATACGTGGACATCCAAGT" | \
+    "${VSEARCH}" \
+        --maskfasta - \
+        --output - \
+        --fasta_width 0 \
+        --quiet 2>/dev/null | \
+    grep -qx "$(printf "%s%s%s%s" \
+    "CGATTGCAGTCCTAGGACTTGCAACGTTACGGATCCGTTA" \
+    "GCCATGACTGGACTCAAGTGTACCGG" \
+    "tttttttt" \
+    "ATCAGTTCAGGCATACGTGGACATCCAAGT")" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--maskfasta empty fasta input produces empty output"
 printf "" | \
     "${VSEARCH}" \
