@@ -900,14 +900,26 @@ printf "@s;size=5\nA\n+\n6\n@s;size=1\nA\n+\n7\n@s;size=1\nA\n+\n*\n" | \
 # guard 3: at an accumulated abundance around 2^53 the incoming
 # contribution is the size of a rounding error in the weighted mean, and the
 # truncating conversion answers one quality less. Q17 stored at size 10^16
-# with Q18 arriving at size 1 gives Q16 ('1'), not the stored Q17 ('2'). The
-# affected stored qualities are 5, 8, 10 and 17 -- the same ones named in the
-# abundance-independence note above.
+# with Q18 arriving at size 1 gives Q16 ('1') on x86_64 with glibc and the
+# stored Q17 ('2') everywhere else, so the merged symbol is matched as
+# [12]. The affected stored qualities are 5, 8, 10 and 17 -- the same ones
+# named in the abundance-independence note above.
 #
-# The abundance has to exceed 2^32 to reach that regime, so vsearch 2.31.0
-# and older truncate it while reading the header (they report
-# ";size=1874919425" and quality Q17) and this test fails against released
-# binaries, like the three above it.
+# Which of the two comes out is decided by the last bit of the mean, which
+# is not portable. The mean is p1 + 1 ulp on x86_64, and -10 * log10() of
+# it is 16.999999999999996 with glibc (Q16) but exactly 17.0 with FreeBSD's
+# libm (Q17); on arm64 and POWER the compiler contracts the multiply-add of
+# the mean into one fmadd, which returns p1 itself, and Q17 again. No build
+# is wrong: the true -10 * log10() of that mean is 16.9999999999999987,
+# less than half an ulp of 17 below the threshold trunc() tests, so a
+# correctly rounded log10() answers 17 too. Nor can the guard be pinned
+# more strictly than [12], since its only observable effect is at that
+# scale: the shortcut's own answer is the '2' that [12] also accepts.
+#
+# What the test does pin portably is the abundance: it has to exceed 2^32
+# to reach that regime, so vsearch 2.31.0 and older truncate it while
+# reading the header (they report ";size=1874919425" and quality Q17) and
+# this test fails against released binaries, like the three above it.
 DESCRIPTION="--fastx_uniques merged quality at an abundance near the double mantissa (Q17, size 1e16 + 1)"
 printf "@s;size=10000000000000000\nA\n+\n2\n@s;size=1\nA\n+\n3\n" | \
     "${VSEARCH}" \
@@ -917,7 +929,7 @@ printf "@s;size=10000000000000000\nA\n+\n2\n@s;size=1\nA\n+\n3\n" | \
         --sizeout \
         --fastqout - | \
     tr "\n" "@" | \
-    grep -qx "@s;size=10000000000000001@A@+@1@" && \
+    grep -qx "@s;size=10000000000000001@A@+@[12]@" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
