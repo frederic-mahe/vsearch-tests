@@ -6101,6 +6101,126 @@ unset MAX EXPECTED_MD5 generate_n_entries
 
 #*****************************************************************************#
 #                                                                             #
+#                       scratch reuse across read pairs                       #
+#                                                                             #
+#*****************************************************************************#
+
+## The merge core hands each thread a single scratch structure and reuses it
+## for every read pair: the heads of the k-mer index are cleared for each
+## pair, the links are indexed by forward position and only ever grow, and
+## the diagonal counters are refilled rather than reallocated. A merged
+## record must therefore never depend on the pairs that came before it.
+## Reads of a uniform length cannot show that, so the cases below alternate a
+## 2 x 100 nt pair (merging to 150 nt) with a 2 x 40 nt pair (merging to
+## 60 nt): a long pair ahead of a short one leaves links reaching past the
+## end of the short read, a short pair ahead of a long one is what forces
+## those links to grow, and repeating a pair is what lets an index entry left
+## by an earlier read name a position the current read is using too.
+##
+## --threads 1 is required rather than cosmetic: it is what sends every pair
+## through the same scratch, in file order.
+##
+## Each ordering is compared with the same pair merged on its own, so no
+## merged quality symbol is written down here: those are computed with
+## log10() and are not the same on all platforms, but both sides of each
+## comparison come from the same binary.
+
+LONG_R1="GGTAAGAACGGCAAACCTTCAGTATGATTCGCCCAAATTATTGCCACTGTCAACTAGACGCAATCTGCCTTAGGCAATACTTCCTGTTAATATCGCAAAT"
+LONG_R2="CGAGAGAGGAAACGTACCATTCCTTACAACCGCGGTCGGTTCCCCATTTAATTTGCGATATTAACAGGAAGTATTGCCTAAGGCAGATTGCGTCTAGTTG"
+SHORT_R1="GCTATATGGCACAGTCTGCAATATTTCTTGAGGCAATAGC"
+SHORT_R2="CGCTGAGTAGGAGACAAATTGCTATTGCCTCAAGAAATAT"
+
+## $1 = header, $2 = sequence; every base gets the same quality symbol
+emit_pair () {
+    printf "@%s\n%s\n+\n%s\n" "${1}" "${2}" "${2//?/I}"
+}
+
+## each pair merged on its own: the reference the orderings are compared
+## with. Expected outputs are compared as regular files, and the run under
+## test is fed to diff through '-': a process substitution is not a portable
+## operand for diff.
+LONG_ALONE=$(mktemp)
+SHORT_ALONE=$(mktemp)
+ALTERNATING_EXPECTED=$(mktemp)
+
+"${VSEARCH}" \
+    --fastq_mergepairs <(emit_pair long "${LONG_R1}") \
+    --reverse <(emit_pair long "${LONG_R2}") \
+    --threads 1 \
+    --quiet \
+    --fastqout "${LONG_ALONE}" 2> /dev/null
+
+"${VSEARCH}" \
+    --fastq_mergepairs <(emit_pair short "${SHORT_R1}") \
+    --reverse <(emit_pair short "${SHORT_R2}") \
+    --threads 1 \
+    --quiet \
+    --fastqout "${SHORT_ALONE}" 2> /dev/null
+
+## the two checks below are what keeps the comparisons that follow from
+## passing on two empty outputs
+
+DESCRIPTION="--fastq_mergepairs: the 2 x 100 nt reference pair merges to 150 nt"
+awk 'NR == 2 {n = length($1)} END {exit (NR == 4 && n == 150) ? 0 : 1}' \
+    "${LONG_ALONE}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_mergepairs: the 2 x 40 nt reference pair merges to 60 nt"
+awk 'NR == 2 {n = length($1)} END {exit (NR == 4 && n == 60) ? 0 : 1}' \
+    "${SHORT_ALONE}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_mergepairs: a merged record is unchanged by a longer pair before it"
+"${VSEARCH}" \
+    --fastq_mergepairs <(emit_pair long "${LONG_R1}" ; emit_pair short "${SHORT_R1}") \
+    --reverse <(emit_pair long "${LONG_R2}" ; emit_pair short "${SHORT_R2}") \
+    --threads 1 \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    tail -n 4 | \
+    diff -q - "${SHORT_ALONE}" > /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_mergepairs: a merged record is unchanged by a shorter pair before it"
+"${VSEARCH}" \
+    --fastq_mergepairs <(emit_pair short "${SHORT_R1}" ; emit_pair long "${LONG_R1}") \
+    --reverse <(emit_pair short "${SHORT_R2}" ; emit_pair long "${LONG_R2}") \
+    --threads 1 \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    tail -n 4 | \
+    diff -q - "${LONG_ALONE}" > /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+cat "${LONG_ALONE}" "${SHORT_ALONE}" "${LONG_ALONE}" "${SHORT_ALONE}" \
+    > "${ALTERNATING_EXPECTED}"
+
+DESCRIPTION="--fastq_mergepairs: alternating read lengths give the same records as separate runs"
+"${VSEARCH}" \
+    --fastq_mergepairs <(emit_pair long "${LONG_R1}" ; emit_pair short "${SHORT_R1}" ; \
+                         emit_pair long "${LONG_R1}" ; emit_pair short "${SHORT_R1}") \
+    --reverse <(emit_pair long "${LONG_R2}" ; emit_pair short "${SHORT_R2}" ; \
+                emit_pair long "${LONG_R2}" ; emit_pair short "${SHORT_R2}") \
+    --threads 1 \
+    --quiet \
+    --fastqout - 2> /dev/null | \
+    diff -q - "${ALTERNATING_EXPECTED}" > /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -f "${LONG_ALONE}" "${SHORT_ALONE}" "${ALTERNATING_EXPECTED}"
+unset LONG_R1 LONG_R2 SHORT_R1 SHORT_R2 LONG_ALONE SHORT_ALONE
+unset ALTERNATING_EXPECTED DESCRIPTION
+unset -f emit_pair
+
+
+
+#*****************************************************************************#
+#                                                                             #
 #                                    notes                                    #
 #                                                                             #
 #*****************************************************************************#
