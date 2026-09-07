@@ -909,6 +909,59 @@ printf ">s\n%s\n" "${PARENT_A}" | \
 rm -f "${DB}"
 unset DB
 
+## The manpage says the output order may vary when using multiple
+## threads. The order is all that varies: each query is compared against
+## the reference database alone, so the set of rows must be the same at
+## any thread count. Comparing the two runs sorted is what makes this
+## test independent of the order (comparing them raw would fail on a
+## perfectly correct binary).
+DESCRIPTION="--uchime_ref output content does not depend on --threads"
+DB=$(mktemp)
+QUERIES=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf ">c1\n%s\n>p1\n%s\n>c2\n%s\n>p2\n%s\n>c3\n%s\n>p3\n%s\n>c4\n%s\n>p4\n%s\n" \
+       "${CHIMERA_AB}" "${PARENT_A}" "${CHIMERA_AB}" "${PARENT_B}" \
+       "${CHIMERA_AB}" "${PARENT_A}" "${CHIMERA_AB}" "${PARENT_B}" > "${QUERIES}"
+SERIAL=$("${VSEARCH}" \
+        --uchime_ref "${QUERIES}" \
+        --db "${DB}" \
+        --threads 1 \
+        --uchimeout - \
+        --quiet | sort)
+PARALLEL=$("${VSEARCH}" \
+        --uchime_ref "${QUERIES}" \
+        --db "${DB}" \
+        --threads 4 \
+        --uchimeout - \
+        --quiet | sort)
+[[ -n "${SERIAL}" ]] && \
+[[ "${SERIAL}" == "${PARALLEL}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${QUERIES}"
+unset DB QUERIES SERIAL PARALLEL
+
+## the other half of the statement above: with a single thread there is
+## nothing to interleave, so the rows come out in input order
+DESCRIPTION="--uchime_ref --threads 1 reports queries in input order"
+DB=$(mktemp)
+QUERIES=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf ">c1\n%s\n>p1\n%s\n>c2\n%s\n>p2\n%s\n" \
+       "${CHIMERA_AB}" "${PARENT_A}" "${CHIMERA_AB}" "${PARENT_B}" > "${QUERIES}"
+"${VSEARCH}" \
+    --uchime_ref "${QUERIES}" \
+    --db "${DB}" \
+    --threads 1 \
+    --uchimeout - \
+    --quiet | \
+    awk -F'\t' '{printf "%s ", $2}' | \
+    grep -qx "c1 p1 c2 p2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${QUERIES}"
+unset DB QUERIES
+
 DESCRIPTION="--uchime_ref --threads above 1024 is rejected"
 DB=$(mktemp)
 printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
