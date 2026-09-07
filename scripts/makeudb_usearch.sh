@@ -733,22 +733,9 @@ unset TMPFA TMPUDB TMPOUT
 
 #*****************************************************************************#
 #                                                                             #
-#                              ignored options                                #
+#                               ignored input                                 #
 #                                                                             #
 #*****************************************************************************#
-
-## --threads: accepted but command is not multithreaded
-
-DESCRIPTION="--threads is accepted (ignored, no observable effect)"
-printf ">s\n%s\n" "${SEQ}" | \
-    "${VSEARCH}" \
-        --makeudb_usearch - \
-        --threads 2 \
-        --output /dev/null \
-        --quiet 2> /dev/null && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
-
 
 # the manpage documents that fastq input is accepted (quality values
 # are ignored and are not stored in the database)
@@ -814,11 +801,39 @@ printf ">s\n%s\n" "${SEQ}" | \
 #                                                                             #
 #*****************************************************************************#
 
-## Only the masking step is distributed over threads; the k-mer index is
-## built and the file written serially. The UDB must therefore be the same
-## file whatever --threads is set to, and this is what pins that: dust_all()
-## claims sequences from a shared counter, so a thread count that changed the
-## result would mean the masking of one sequence depends on another.
+## --threads used to be listed under "ignored options" here, because the
+## command refused to use more than one thread. It now distributes DUST
+## masking over threads (the k-mer index is still built and the file still
+## written serially), so the three tests below replace that one: the option is
+## accepted, it is no longer refused with a warning, and it does not reach the
+## result.
+
+DESCRIPTION="--threads is accepted"
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --threads 2 \
+        --output /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the command masks in parallel, so asking for more than one thread is no
+## longer refused with "does not support multithreading"
+DESCRIPTION="--threads greater than one is not refused with a warning"
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --threads 2 \
+        --output /dev/null 2>&1 | \
+    grep -q "does not support multithreading" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## The UDB must be the same file whatever --threads is set to, and this is
+## what pins that: dust_all() claims sequences from a shared counter, so a
+## thread count that changed the result would mean the masking of one
+## sequence depends on another.
 DESCRIPTION="--makeudb_usearch output does not depend on the number of threads"
 TMPFA=$(mktemp)
 TMPUDB1=$(mktemp)
@@ -841,18 +856,6 @@ cmp -s "${TMPUDB1}" "${TMPUDB4}" && \
         failure "${DESCRIPTION}"
 rm -f "${TMPFA}" "${TMPUDB1}" "${TMPUDB4}"
 unset TMPFA TMPUDB1 TMPUDB4 i
-
-## the command masks in parallel, so asking for more than one thread is no
-## longer refused with "does not support multithreading"
-DESCRIPTION="--threads greater than one is not refused with a warning"
-printf ">s\n%s\n" "${SEQ}" | \
-    "${VSEARCH}" \
-        --makeudb_usearch - \
-        --threads 2 \
-        --output /dev/null 2>&1 | \
-    grep -q "does not support multithreading" && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
