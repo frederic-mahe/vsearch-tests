@@ -810,6 +810,53 @@ printf ">s\n%s\n" "${SEQ}" | \
 
 #*****************************************************************************#
 #                                                                             #
+#                                 threading                                   #
+#                                                                             #
+#*****************************************************************************#
+
+## Only the masking step is distributed over threads; the k-mer index is
+## built and the file written serially. The UDB must therefore be the same
+## file whatever --threads is set to, and this is what pins that: dust_all()
+## claims sequences from a shared counter, so a thread count that changed the
+## result would mean the masking of one sequence depends on another.
+DESCRIPTION="--makeudb_usearch output does not depend on the number of threads"
+TMPFA=$(mktemp)
+TMPUDB1=$(mktemp)
+TMPUDB4=$(mktemp)
+for i in {1..20} ; do
+    printf ">s%d\n%s\n" "${i}" "${SEQ}"
+done > "${TMPFA}"
+"${VSEARCH}" \
+    --makeudb_usearch "${TMPFA}" \
+    --threads 1 \
+    --output "${TMPUDB1}" \
+    --quiet 2> /dev/null
+"${VSEARCH}" \
+    --makeudb_usearch "${TMPFA}" \
+    --threads 4 \
+    --output "${TMPUDB4}" \
+    --quiet 2> /dev/null
+cmp -s "${TMPUDB1}" "${TMPUDB4}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPFA}" "${TMPUDB1}" "${TMPUDB4}"
+unset TMPFA TMPUDB1 TMPUDB4 i
+
+## the command masks in parallel, so asking for more than one thread is no
+## longer refused with "does not support multithreading"
+DESCRIPTION="--threads greater than one is not refused with a warning"
+printf ">s\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --threads 2 \
+        --output /dev/null 2>&1 | \
+    grep -q "does not support multithreading" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
 #                               memory leaks                                  #
 #                                                                             #
 #*****************************************************************************#
