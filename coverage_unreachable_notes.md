@@ -47,10 +47,15 @@ changes.
   `--length_cutoffs` validation rejects `shortest > longest`, so the
   largest generated cutoff is always `<= opt_longest`. The break can
   never fire.
-  - Still true, but there is now **one** such break, not two:
+  - Still true, but there was by then **one** such break, not two:
     `eestats.cc` was split, and the output and log loops were merged
     into the single `report_eestats2()` called once per destination.
-    The surviving break is `src/commands/fastq_eestats2.cpp:134`.
+  - **Retired 2026-09-08**: that surviving break is now
+    `assert(len_cutoff <= parameters.opt_length_cutoffs_longest)` in
+    `src/commands/fastq_eestats2.cpp`, so the bound is stated where a
+    reader looks for it and a future change that breaks it fails loudly
+    in a debug build. Nothing here is uncovered any more: the assert is
+    on the covered path.
   - Re-verified empirically, not just by reading: a build with
     `fatal("INSTRUMENTATION: dead break was taken")` in the branch
     survived the whole `fastq_eestats2.sh` script (97 PASS) and a
