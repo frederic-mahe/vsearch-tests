@@ -304,6 +304,44 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## a database can hold the same sequence several times, and a query
+## matching it must be reported against every copy, not just the first
+DESCRIPTION="--search_exact reports all identical database sequences"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\n%s\n>d3\n%s\n>d4\n%s\n>d5\n%s\n" \
+       "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out - \
+        --quiet | \
+    awk 'END {exit (NR == 5) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## each copy is reported exactly once, and no copy is skipped
+DESCRIPTION="--search_exact reports each identical database sequence once"
+DB=$(mktemp)
+printf ">d1\n%s\n>d2\n%s\n>d3\n%s\n>d4\n%s\n>d5\n%s\n" \
+       "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --blast6out - \
+        --quiet | \
+    awk -F'\t' '{print $2}' | \
+    LC_ALL=C sort | \
+    paste -s -d' ' - | \
+    grep -qx "d1 d2 d3 d4 d5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## a single mismatch in a full-length alignment produces no hit
 DESCRIPTION="--search_exact reports no hit when one nucleotide differs"
 DB=$(mktemp)
