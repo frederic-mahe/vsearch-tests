@@ -716,9 +716,10 @@ printf ">s1\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
 rm -f "${TMPUDB}"
 unset TMPUDB
 
-## --sizein: abundance is not stored in the UDB file, so --sizein
-## has no observable effect on the output (all entries become size=1
-## when combined with --sizeout)
+## --sizein: a UDB file stores headers verbatim, so a ;size= annotation
+## is present in the file as header text. --sizein is what reads it back
+## as an abundance, here as everywhere else in vsearch; without it each
+## entry counts as one, and --sizeout then writes size=1.
 DESCRIPTION="--sizein is accepted"
 TMPUDB=$(mktemp)
 printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
@@ -758,6 +759,70 @@ printf ">s1\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
     grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
+## a stored ;size= annotation is header text until --sizein reads it
+DESCRIPTION="--sizein --sizeout writes the abundance stored in the header"
+TMPUDB=$(mktemp)
+printf ">s1;size=7\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
+"${VSEARCH}" \
+    --udb2fasta "${TMPUDB}" \
+    --sizein \
+    --sizeout \
+    --output /dev/stdout \
+    --quiet 2> /dev/null | \
+    grep -qx ">s1;size=7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
+DESCRIPTION="--sizeout without --sizein replaces a stored abundance with 1"
+TMPUDB=$(mktemp)
+printf ">s1;size=7\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
+"${VSEARCH}" \
+    --udb2fasta "${TMPUDB}" \
+    --sizeout \
+    --output /dev/stdout \
+    --quiet 2> /dev/null | \
+    grep -qx ">s1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
+DESCRIPTION="--sizein alone leaves the stored header unchanged"
+TMPUDB=$(mktemp)
+printf ">s1;size=7\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
+"${VSEARCH}" \
+    --udb2fasta "${TMPUDB}" \
+    --sizein \
+    --output /dev/stdout \
+    --quiet 2> /dev/null | \
+    grep -qx ">s1;size=7" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
+## --udb2fasta does not accept --wordlength, so the word length stored in
+## the file cannot be overriding anything the user asked for
+DESCRIPTION="--udb2fasta does not warn about the word length stored in the file"
+TMPUDB=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udb2fasta "${TMPUDB}" \
+    --output /dev/null 2>&1 | \
+    grep -q "Wordlength adjusted" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 rm -f "${TMPUDB}"
 unset TMPUDB
 

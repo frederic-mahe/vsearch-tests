@@ -508,6 +508,279 @@ rm -f "${TMPFA}" "${TMPUDB}" "${TMPLOG}"
 unset TMPFA TMPUDB TMPLOG SEQ10K
 
 
+## ---------------------------------------- reported values, not just labels
+
+## The tests above check that the report's labels appear. These check the
+## numbers beside them, on a database small enough to work out by hand: one
+## 32-nucleotide sequence "ACGT" x 8 indexed at word length 3. Its 3-mers are
+## ACG, CGT, GTA and TAC, each occurring more than once but counted once per
+## sequence, so 4 of the 4^3 = 64 slots hold a count of 1 and the other 60
+## hold zero.
+
+DESCRIPTION="--udbstats reports 4^wordlength index slots"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^Slots +64$" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+DESCRIPTION="--udbstats reports the number of indexed words"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^Words +4$" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+## among equally frequent words the report names the smallest word index:
+## ACG is 6, against CGT 27, GTA 44 and TAC 49
+DESCRIPTION="--udbstats reports Max size and the word holding it"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^Max size +1 \(ACG\)$" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+## 60 of the 64 slots are empty, so both central values are zero
+DESCRIPTION="--udbstats reports the median word size"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^ +0  Median size$" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+## 4 words over 64 slots
+DESCRIPTION="--udbstats reports the mean word size"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^ +0\.1  Mean size$" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+## the four equally frequent words are listed by increasing word index
+DESCRIPTION="--udbstats lists equally frequent words by increasing word index"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+awk '$2 == "ACG" || $2 == "CGT" || $2 == "GTA" || $2 == "TAC" {printf "%s ", $1}' "${TMPLOG}" | \
+    grep -qx "6 27 44 49 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+## with two identical sequences each word matches both of them, and the row
+## lists their zero-based numbers
+DESCRIPTION="--udbstats reports the sequences matching each reported word"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^ +6 +ACG +0 +2 +0 1$" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+## the histogram's totals row repeats the number of words and of slots
+DESCRIPTION="--udbstats reports the word-size histogram totals"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^ +4\.0 +64\.0$" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+## the empty slots are one histogram bucket: 60 of 64 slots, 93.8 %
+DESCRIPTION="--udbstats reports the number of slots in a histogram bucket"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^ +0 +0\.0 +60\.0 +93\.8% +93\.8% +\*+$" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+DESCRIPTION="--udbstats reports the indexed nucleotides as all uppercase"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^ +32  Upper$" "${TMPLOG}" && \
+    grep -qE "^ +0  Lower \(0\.0%\)$" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+DESCRIPTION="--udbstats reports the indexed word total in the log trailer"
+TMPUDB=$(mktemp)
+TMPLOG=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --quiet \
+    --log "${TMPLOG}" 2> /dev/null
+grep -qE "^ +4  Indexed words$" "${TMPLOG}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMPUDB}" "${TMPLOG}"
+unset TMPUDB TMPLOG
+
+
+## --wordlength is not an option --udbstats accepts, so the word length
+## stored in the file cannot be overriding anything the user asked for, and
+## reporting it as "adjusted" would name a setting they could not have made
+DESCRIPTION="--udbstats does not warn about the word length stored in the file"
+TMPUDB=$(mktemp)
+printf ">s1\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --makeudb_usearch - \
+        --dbmask none \
+        --wordlength 3 \
+        --output "${TMPUDB}" \
+        --quiet 2> /dev/null
+"${VSEARCH}" \
+    --udbstats "${TMPUDB}" \
+    --log /dev/null 2>&1 | \
+    grep -q "Wordlength adjusted" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${TMPUDB}"
+unset TMPUDB
+
+
 #*****************************************************************************#
 #                                                                             #
 #                            secondary options                                #
