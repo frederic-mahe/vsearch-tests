@@ -3086,6 +3086,52 @@ DESCRIPTION="--sff_convert --sample accepts empty string"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# the bare ';sample=' annotation above is accepted but announced:
+# vsearch (post-v2.31.0) warns whenever nothing is left of the
+# --sample argument, so these four tests fail against released
+# binaries
+DESCRIPTION="--sff_convert --sample empty string triggers a warning"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sample "" \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "^WARNING: --sample is empty or starts with ';' or a blank" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# truncation at the first ';' can consume the whole argument
+DESCRIPTION="--sff_convert --sample truncated to nothing triggers a warning"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sample ";ABC" \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "^WARNING: --sample is empty or starts with ';' or a blank" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--sff_convert --sample triggers no warning when a name survives"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sample "ABC" \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "^WARNING: --sample" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# a partial truncation keeps a usable name, and stays silent
+DESCRIPTION="--sff_convert --sample partially truncated triggers no warning"
+"${VSEARCH}" \
+    --sff_convert "${SFF}" \
+    --quiet \
+    --sample "ABC;DEF" \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "^WARNING: --sample" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## -------------------------------------------------------------------- sizeout
 
 # When using --relabel, --relabel_self, --relabel_md5 or
@@ -3247,8 +3293,15 @@ fi
 
 # note: vsearch accepts an empty --sample argument and writes a bare
 # ";sample=" annotation (see the test "--sff_convert --sample accepts
-# empty string"). Whether an empty string should instead trigger a
-# warning is an upstream design question.
+# empty string"). The upstream design question this note used to raise
+# has been answered: post-v2.31.0 the annotation is still written, but
+# a warning is emitted whenever nothing is left of the argument (an
+# empty string, or a string truncated to nothing at its first ';' or
+# blank character). The reason is downstream: --otutabout reads
+# "sample=" back out of query headers, so an empty value becomes a
+# column with no name. A partial truncation ("ABC;DEF" -> "ABC")
+# keeps a usable name and stays silent. See the four warning tests
+# above.
 
 
 # ==2940572== Memcheck, a memory error detector

@@ -613,6 +613,79 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## AGC versus DGC, pinned on a case where the two disagree. X and Y
+## are two centroids, each one substitution away from Q (97.5%) but
+## two substitutions away from each other (95%), so --id 0.96 keeps
+## them apart and lets Q reach both. --usersort feeds them in input
+## order, which makes the *lower* abundance centroid the earlier
+## target: distance-based greedy clustering then picks X (first of two
+## equally close centroids) while abundance-based greedy clustering
+## picks Y. Without these two tests nothing distinguishes the two
+## comparators (searchcore.cpp hit_compare_bysize_typed), and it has
+## already been mistaken for dead code once.
+CENTROID_X="TTTCCTCATGAAATTCAAAACCATGTCCGTAATGTAGGCG"
+CENTROID_Y="TTTCCTCATGCAATTCAAAACCATGTCCGTCATGTAGGCG"
+QUERY_Q="TTTCCTCATGCAATTCAAAACCATGTCCGTAATGTAGGCG"
+
+DESCRIPTION="--cluster_smallmem without --sizeorder assigns to the closest centroid (DGC)"
+printf ">X;size=10\n%s\n>Y;size=100\n%s\n>Q;size=1\n%s\n" \
+    "${CENTROID_X}" "${CENTROID_Y}" "${QUERY_Q}" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.96 \
+        --sizein \
+        --maxaccepts 2 \
+        --qmask none \
+        --uc - \
+        --quiet 2> /dev/null | \
+    awk '$1 == "H" {print $10}' | \
+    grep -qx "X;size=10" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_smallmem --sizeorder assigns to the most abundant centroid (AGC)"
+printf ">X;size=10\n%s\n>Y;size=100\n%s\n>Q;size=1\n%s\n" \
+    "${CENTROID_X}" "${CENTROID_Y}" "${QUERY_Q}" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.96 \
+        --sizein \
+        --sizeorder \
+        --maxaccepts 2 \
+        --qmask none \
+        --uc - \
+        --quiet 2> /dev/null | \
+    awk '$1 == "H" {print $10}' | \
+    grep -qx "Y;size=100" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the same input with the default --maxaccepts 1: the search stops at
+## the first accepted centroid, so --sizeorder cannot express itself
+## (this is what the manpage means by "only takes effect when
+## --maxaccepts is greater than one")
+DESCRIPTION="--cluster_smallmem --sizeorder has no effect with --maxaccepts 1"
+printf ">X;size=10\n%s\n>Y;size=100\n%s\n>Q;size=1\n%s\n" \
+    "${CENTROID_X}" "${CENTROID_Y}" "${QUERY_Q}" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.96 \
+        --sizein \
+        --sizeorder \
+        --maxaccepts 1 \
+        --qmask none \
+        --uc - \
+        --quiet 2> /dev/null | \
+    awk '$1 == "H" {print $10}' | \
+    grep -qx "X;size=10" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset CENTROID_X CENTROID_Y QUERY_Q
+
 DESCRIPTION="--cluster_smallmem --sizeout adds ;size= to centroid headers"
 printf ">a\nAAAAAAAAAAAA\n>b\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
