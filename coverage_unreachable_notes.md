@@ -39,7 +39,7 @@ changes.
 - **628** — `fasta_print_db()` (the non-relabel variant): no callers;
   only `fasta_print_db_relabel()` is used.
 
-## eestats.cc
+## eestats.cc -> src/commands/fastq_eestats2.cpp (re-checked 2026-09-08)
 - **531, 571** — `break;` taken when `len_cutoff >
   opt_length_cutoffs_longest` in the `--fastq_eestats2` output (531) and
   log (571) loops. `len_steps` is computed as
@@ -47,6 +47,17 @@ changes.
   `--length_cutoffs` validation rejects `shortest > longest`, so the
   largest generated cutoff is always `<= opt_longest`. The break can
   never fire.
+  - Still true, but there is now **one** such break, not two:
+    `eestats.cc` was split, and the output and log loops were merged
+    into the single `report_eestats2()` called once per destination.
+    The surviving break is `src/commands/fastq_eestats2.cpp:134`.
+  - Re-verified empirically, not just by reading: a build with
+    `fatal("INSTRUMENTATION: dead break was taken")` in the branch
+    survived the whole `fastq_eestats2.sh` script (97 PASS) and a
+    hand-built sweep of read lengths 1..1000 against
+    `--length_cutoffs` values `50,100,7`, `10,10,1`, `1,3,5`,
+    `1,1000,997`, `40,101,60`, `1,2,1`, `50,*,7` and
+    `1,2000000000,999999999`. The branch was never taken.
 
 ## getseq.cc
 - **113** — `fatal("Unable to get status for labels file (%s)")`.
