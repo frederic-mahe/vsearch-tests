@@ -3113,7 +3113,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --xn 8.0 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3124,7 +3124,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --xn 8 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3135,7 +3135,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --xn 1.001 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3186,9 +3186,63 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --xn 1000.0 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+
+## --xn weights the 'no' votes of the UCHIME scoring function, which
+## --chimeras_denovo never evaluates: it routes to eval_parents_long(),
+## where a query that reaches scoring is chimeric by construction. The
+## manpage lists --xn under "ignored options", and the log deliberately
+## omits xn/dn/xa for this command; post-v2.31.0 vsearch also says so
+## at run time, so these two tests fail against released binaries.
+DESCRIPTION="chimeras_denovo: option xn triggers an ignored-option warning"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --xn 8.0 \
+        --quiet \
+        --nonchimeras /dev/null 2>&1 | \
+    grep -q "^WARNING: Option --xn is ignored by --chimeras_denovo" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+
+DESCRIPTION="chimeras_denovo: no ignored-option warning without xn"
+printf ">s;size=1\nA\n" | \
+    ${VSEARCH} \
+        --chimeras_denovo - \
+        --quiet \
+        --nonchimeras /dev/null 2>&1 | \
+    grep -q "^WARNING: Option --xn" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
+## and the reason for the warning: the value changes nothing. Two runs
+## three orders of magnitude apart produce the same tabbedout, on an
+## input where --uchime_denovo would flip its verdict over that range.
+DESCRIPTION="chimeras_denovo: option xn does not change the output"
+XN_INPUT=$(mktemp)
+XN_LOW=$(mktemp)
+XN_HIGH=$(mktemp)
+printf ">sA;size=9\nGTAGGCCGTGGTAGGCCGTG\n>sB;size=9\nCTGAGCCGTACTGAGCCGTA\n>sQ;size=1\nGTAGGCCGTGCTGAGCCGTA\n" > "${XN_INPUT}"
+${VSEARCH} \
+    --chimeras_denovo "${XN_INPUT}" \
+    --xn 1.1 \
+    --quiet \
+    --tabbedout "${XN_LOW}" 2> /dev/null
+${VSEARCH} \
+    --chimeras_denovo "${XN_INPUT}" \
+    --xn 1000 \
+    --quiet \
+    --tabbedout "${XN_HIGH}" 2> /dev/null
+cmp -s "${XN_LOW}" "${XN_HIGH}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${XN_INPUT}" "${XN_LOW}" "${XN_HIGH}"
+unset XN_INPUT XN_LOW XN_HIGH
 
 
 #*****************************************************************************#

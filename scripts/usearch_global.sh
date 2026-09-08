@@ -4367,9 +4367,12 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
-## MD encodes a mismatch as <count><ref-base><count>; vsearch emits the
-## reference base in lowercase when dust-masked (SAM manpage documents
-## uppercase), so match case-insensitively
+## MD encodes a mismatch as <count><ref-base><count>. vsearch used to
+## emit the reference base in lowercase when it had been dust-masked,
+## which is why the two tests below match case-insensitively; that was
+## fixed post-v2.31.0 (the SAMtags grammar is uppercase-only) and the
+## strict tests further down now pin the uppercase form. The -i here is
+## kept so these two keep passing against older binaries.
 DESCRIPTION="--usearch_global --samout MD encodes a mismatch with the reference base"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
@@ -4398,6 +4401,62 @@ printf ">q\nACGTACGTACGTACGTACGTCGTACGTACGTACGTACGT\n" | \
         --samout - \
         --quiet | \
     grep -iqE $'\tMD:Z:20\\^A19(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the SAMtags MD grammar is [0-9]+(([A-Z]|\^[A-Z]+)[0-9]+)*, uppercase
+## only, and samtools calmd recomputes this same alignment as
+## MD:Z:20A19. The reference here is dust-masked (both sequences are a
+## low-complexity ACGT repeat, and --dbmask defaults to dust), which is
+## exactly the case that used to leak lowercase into MD. These three
+## tests are case-sensitive on purpose and fail against v2.31.0.
+DESCRIPTION="--usearch_global --samout MD uppercases a masked reference base"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tMD:Z:20A19(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --samout MD uppercases a masked deleted base"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    grep -qE $'\tMD:Z:20\\^A19(\t|$)' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## SEQ is deliberately left alone: lowercase is legal there
+## (\*|[A-Za-z=.]+) and it still carries the masking, unlike MD
+DESCRIPTION="--usearch_global --samout SEQ keeps the masking case"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.9 \
+        --samout - \
+        --quiet | \
+    awk -F'\t' '{exit ($10 == "acgtacgtacgtacgtacgtccgtacgtacgtacgtacgt") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
