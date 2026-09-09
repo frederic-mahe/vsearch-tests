@@ -1043,6 +1043,51 @@ printf "@s\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## The header annotation options are all rejected for this command, and
+## fastx_syncpairs.cpp depends on that: OutputAnnotations' abundance field is
+## read only by fprint_header_annotations(), gated on --sizeout, so the
+## command skips the ;size= parse unless --sizeout is given. Pin the
+## rejections here; if one of them is ever added to the allow-list, the
+## abundance has to start being parsed again for it.
+DESCRIPTION="--fastx_syncpairs rejects --sizeout"
+REVERSE=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${REVERSE}"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse "${REVERSE}" \
+        --fastqout /dev/null \
+        --sizeout 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${REVERSE}"
+
+DESCRIPTION="--fastx_syncpairs rejects --xsize"
+REVERSE=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${REVERSE}"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse "${REVERSE}" \
+        --fastqout /dev/null \
+        --xsize 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${REVERSE}"
+
+DESCRIPTION="--fastx_syncpairs rejects --relabel"
+REVERSE=$(mktemp)
+printf "@s\nA\n+\nI\n" > "${REVERSE}"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastx_syncpairs - \
+        --reverse "${REVERSE}" \
+        --fastqout /dev/null \
+        --relabel "seq" 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${REVERSE}"
+
 DESCRIPTION="--fastx_syncpairs rejects an unrelated option (--join_padgap)"
 REVERSE=$(mktemp)
 printf "@s\nA\n+\nI\n" > "${REVERSE}"
