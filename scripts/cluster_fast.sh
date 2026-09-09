@@ -1924,6 +1924,53 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGT
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## ---------- duplicate sequence identifiers ----------
+
+## clustering is based on the sequences, not on the identifiers, but
+## the OTU table is keyed on the centroid identifier: two distinct
+## clusters sharing the same identifier are reported on a single row,
+## and their abundances are merged (see cluster_size.sh for the
+## complete set of tests)
+DESCRIPTION="--cluster_fast does not cluster different sequences sharing the same identifier"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --otutabout merges distinct clusters sharing the same identifier"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --otutabout accumulates both samples on the merged row"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    grep -qx "s1	5	5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
