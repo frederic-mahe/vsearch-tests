@@ -1519,6 +1519,200 @@ printf ">s1;size=3\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## ---------- duplicate sequence identifiers ----------
+
+## clustering is based on the sequences, not on the identifiers: two
+## entries sharing the same identifier are clustered together only if
+## their sequences are similar enough
+DESCRIPTION="--cluster_size clusters identical sequences sharing the same identifier"
+printf ">s1;sample=S1\nAAAAAAAAAAAA\n>s1;sample=S2\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -c "^>" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_size sums the abundances of identical sequences sharing the same identifier"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --sizeout \
+        --relabel "OTU_" \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -qx ">OTU_1;size=10" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the sample annotations remain distinct, even though the two entries
+## share the same identifier
+DESCRIPTION="--cluster_size --otutabout keeps the sample columns of a shared identifier"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --relabel "OTU_" \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    grep -qx "#OTU ID	S1	S2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_size --otutabout splits the merged cluster over both samples"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --relabel "OTU_" \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    grep -qx "OTU_1	5	5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## different sequences sharing the same identifier yield two clusters
+DESCRIPTION="--cluster_size does not cluster different sequences sharing the same identifier"
+printf ">s1;sample=S1\nAAAAAAAAAAAA\n>s1;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_size --relabel gives distinct names to clusters sharing the same identifier"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --relabel "OTU_" \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    awk 'NR > 1 {printf "%s ", $1} END {print ""}' | \
+    grep -qx "OTU_1 OTU_2 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_size --relabel --otutabout assigns the first cluster to its own sample"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --relabel "OTU_" \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    grep -qx "OTU_1	5	0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_size --relabel --otutabout assigns the second cluster to its own sample"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --relabel "OTU_" \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    grep -qx "OTU_2	0	5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## without --relabel, the OTU tables are keyed on the centroid
+## identifier: two distinct clusters sharing the same identifier are
+## reported on a single row, and their abundances are merged (compare
+## with the two centroids reported above)
+DESCRIPTION="--cluster_size --otutabout merges distinct clusters sharing the same identifier"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    awk 'END {exit (NR == 2) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_size --otutabout accumulates both samples on the merged row"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --otutabout - \
+        --quiet 2> /dev/null | \
+    grep -qx "s1	5	5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --mothur_shared_out is keyed on the centroid identifier too, and
+## reports numOtus = 1 for the two clusters
+DESCRIPTION="--cluster_size --mothur_shared_out undercounts clusters sharing the same identifier"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --mothur_shared_out - \
+        --quiet 2> /dev/null | \
+    grep -qx "vsearch	S1	1	5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --biomout reports a single observation (one row, two columns)
+DESCRIPTION="--cluster_size --biomout undercounts clusters sharing the same identifier"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --biomout - \
+        --quiet 2> /dev/null | \
+    grep -qF '"shape": [1,2],' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --uc is not keyed on the identifiers: both clusters are reported
+DESCRIPTION="--cluster_size --uc reports both clusters sharing the same identifier"
+printf ">s1;size=5;sample=S1\nAAAAAAAAAAAA\n>s1;size=5;sample=S2\nCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.97 \
+        --minseqlength 1 \
+        --sizein \
+        --uc - \
+        --quiet 2> /dev/null | \
+    grep -c "^C" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
