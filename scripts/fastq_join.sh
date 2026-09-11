@@ -261,6 +261,24 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## when both outputs name the same file they share one stream, so the order
+## of the two renderings of a record is observable: fasta first, then fastq
+DESCRIPTION="--fastq_join writes the fasta record before the fastq one"
+BOTH=$(mktemp)
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_join - \
+        --reverse <(printf "@s\nA\n+\nI\n") \
+        --fastaout "${BOTH}" \
+        --fastqout "${BOTH}" \
+        --quiet 2> /dev/null
+head -n 1 "${BOTH}" | \
+    grep -q "^>" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${BOTH}"
+unset BOTH
+
 
 #*****************************************************************************#
 #                                                                             #
