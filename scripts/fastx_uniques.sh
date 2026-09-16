@@ -1520,6 +1520,27 @@ printf ">s1\nA\n" | \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
 
+## The abundance filter reaches the sequence output only: a --uc cluster
+## summary still lists every cluster, discarded ones included, as in
+## usearch. Here "b" is a singleton removed from the fasta output and
+## still listed in the --uc file.
+DESCRIPTION="--minuniquesize does not filter the --uc output"
+UNIQ_A="AGACTTTCAAAGATATGCTGGGTAGAGGTCGAGGTTATTA"
+UNIQ_B="TTTGTTACCAATTCTCATTGTGTTTCGGAACTTGCGTTTT"
+UC=$(mktemp)
+printf ">a\n%s\n>a2\n%s\n>b\n%s\n" "${UNIQ_A}" "${UNIQ_A}" "${UNIQ_B}" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --minuniquesize 2 \
+        --fastaout /dev/null \
+        --uc "${UC}" \
+        --quiet
+grep -qw "b" "${UC}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${UC}"
+unset UC UNIQ_A UNIQ_B
+
 ## --------------------------------------------------------------------- strand
 
 ## --strand is accepted
