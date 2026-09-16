@@ -1847,6 +1847,67 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## Two varied 40-mers and the reverse complement of the first. Unlike
+## SEQ, they hold enough distinct 8-mers for DUST to leave them alone
+## and for the word pre-filter to index them, and the first is not
+## self-complementary, so a plus-strand and a minus-strand match are
+## distinguishable.
+QSEQ="AGACTTTCAAAGATATGCTGGGTAGAGGTCGAGGTTATTA"
+QSEQ_RC="TAATAACCTCGACCTCTACCCAGCATATCTTTGAAAGTCT"
+FILLER40="TTTGTTACCAATTCTCATTGTGTTTCGGAACTTGCGTTTT"
+
+## Soft and dust masking keep masked words out of the k-mer pre-filter
+## that selects candidate targets, but they do not reach the alignment:
+## the masked region is still aligned and scored like any other, so the
+## reported identity is the same masked and unmasked.
+LOW_Q="ATATATATATATATATATATATATATATATATATATATAT"
+LOW_T="TATATATATATATATATATATATATATATATATATATATA"
+DESCRIPTION="--usearch_global masking does not change the reported identity"
+DB=$(mktemp)
+printf ">d\n%s%s%s\n" "${QSEQ}" "${LOW_T}" "${FILLER40}" > "${DB}"
+MASKED=$(printf ">q\n%s%s%s\n" "${QSEQ}" "${LOW_Q}" "${FILLER40}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --blast6out - \
+        --quiet | \
+    cut -f 3)
+UNMASKED=$(printf ">q\n%s%s%s\n" "${QSEQ}" "${LOW_Q}" "${FILLER40}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --qmask none \
+        --dbmask none \
+        --blast6out - \
+        --quiet | \
+    cut -f 3)
+[[ "${MASKED}" == "${UNMASKED}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset MASKED UNMASKED
+
+## --hardmask replaces the masked nucleotides with Ns, and an N counts
+## as a matching column, so the masked region matches whatever it is
+## aligned against and the identity rises to 100%
+DESCRIPTION="--usearch_global --hardmask makes a masked region match"
+printf ">q\n%s%s%s\n" "${QSEQ}" "${LOW_Q}" "${FILLER40}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --hardmask \
+        --blast6out - \
+        --quiet | \
+    cut -f 3 | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+unset LOW_Q LOW_T
+
 ## ------------------------------------------------------------------ idprefix
 
 DESCRIPTION="--usearch_global --idprefix is accepted"
@@ -2226,6 +2287,28 @@ printf ">q\nACGTACGTACGTACGTACCTAACTACGTACGTACGTACGT\n" | \
 rm -f "${DB}"
 unset DB
 
+## --maxdiffs counts internal differences only: terminal gaps are
+## excluded (difference_count() is mismatches + internal_indels), so a
+## query aligned to a much longer target is not rejected for the length
+## difference. Here the query matches the first half of the target
+## exactly, leaving 40 terminal gaps, and --maxdiffs 0 still accepts it.
+DESCRIPTION="--usearch_global --maxdiffs does not count terminal gaps"
+DB=$(mktemp)
+printf ">d\n%s%s\n" "${QSEQ}" "${FILLER40}" > "${DB}"
+printf ">q\n%s\n" "${QSEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxdiffs 0 \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ------------------------------------------------------------------ maxgaps
 
 DESCRIPTION="--usearch_global --maxgaps is accepted"
@@ -2262,6 +2345,25 @@ printf ">q\nACGTACGTACGTACGTACGACGTACGTACGTACGTACGT\n" | \
 rm -f "${DB}"
 unset DB
 
+## --maxgaps is enforced on internal_gaps, so terminal gaps cost no gap
+## opening either: the same 40 terminal gaps pass --maxgaps 0
+DESCRIPTION="--usearch_global --maxgaps does not count terminal gaps"
+DB=$(mktemp)
+printf ">d\n%s%s\n" "${QSEQ}" "${FILLER40}" > "${DB}"
+printf ">q\n%s\n" "${QSEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxgaps 0 \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ------------------------------------------------------------------ maxhits
 
 DESCRIPTION="--usearch_global --maxhits caps the number of reported hits"
@@ -2277,6 +2379,51 @@ printf ">q\n%s\n" "${SEQ}" | \
         --blast6out - \
         --quiet | \
     awk 'END {exit (NR == 1) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## vsearch aligns globally, not locally, and reports at most one
+## alignment per database sequence and per strand. A motif occurring
+## twice within one target therefore yields a single hit, even with the
+## accept and reject limits lifted (issue 328).
+DESCRIPTION="--usearch_global reports one hit per target sequence"
+DB=$(mktemp)
+printf ">d\n%s%s%s\n" "${QSEQ}" "${FILLER40}" "${QSEQ}" > "${DB}"
+printf ">q\n%s\n" "${QSEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxaccepts 0 \
+        --maxrejects 0 \
+        --blast6out - \
+        --quiet | \
+    wc -l | \
+    grep -qw "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ... but once per strand: the same motif present on each strand of one
+## target gives two hits with --strand both
+DESCRIPTION="--usearch_global reports one hit per target sequence and strand"
+DB=$(mktemp)
+printf ">d\n%s%s%s\n" "${QSEQ}" "${FILLER40}" "${QSEQ_RC}" > "${DB}"
+printf ">q\n%s\n" "${QSEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxaccepts 0 \
+        --maxrejects 0 \
+        --strand both \
+        --blast6out - \
+        --quiet | \
+    wc -l | \
+    grep -qw "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -4879,6 +5026,46 @@ printf ">s\n%s\n" "${SEQ}" | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --self compares labels, and a label is the header up to the first
+## blank, so two records sharing an identifier but carrying different
+## descriptions still reject each other
+DESCRIPTION="--usearch_global --self compares identifiers, not full headers"
+DB=$(mktemp)
+printf ">s a description\n%s\n" "${QSEQ}" > "${DB}"
+printf ">s another description\n%s\n" "${QSEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --self \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --notrunclabels makes the whole header the label, so the same two
+## records no longer reject each other
+DESCRIPTION="--usearch_global --self --notrunclabels compares full headers"
+DB=$(mktemp)
+printf ">s a description\n%s\n" "${QSEQ}" > "${DB}"
+printf ">s another description\n%s\n" "${QSEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --self \
+        --notrunclabels \
+        --blast6out - \
+        --quiet | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 rm -f "${DB}"
 unset DB
 

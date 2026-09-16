@@ -1092,6 +1092,44 @@ printf ">s1\n%s\n>s2\n%sT%s\n" "${SEQ64}" "${SEQ64:0:32}" "${SEQ64:33}" | \
         failure "${DESCRIPTION}"
 unset SEQ64
 
+## The OTU table is assembled in ordered containers keyed on the label,
+## so rows and columns come out sorted lexicographically, whatever order
+## the OTUs were created in or the samples first appeared in. Here the
+## input is listed longest first and most abundant first, with labels in
+## the opposite alphabetical order.
+LONG_OTU="AGACTTTCAAAGATATGCTGGGTAGAGGTCGAGGTTATTACAGTAGCATCGGATACGCA"
+MID_OTU="TTTGTTACCAATTCTCATTGTGTTTCGGAACTTGCGTTTTCAGTAGCATC"
+SHORT_OTU="GGATCCGTAAGCTTAGGCCATTACGCATTGCAAGTCC"
+
+DESCRIPTION="--cluster_fast --otutabout sorts OTU rows by identifier"
+printf ">zulu;sample=s1;size=100\n%s\n>mike;sample=s1;size=10\n%s\n>alfa;sample=s1;size=1\n%s\n" \
+       "${LONG_OTU}" "${MID_OTU}" "${SHORT_OTU}" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 1.0 \
+        --sizein \
+        --otutabout - \
+        --quiet | \
+    awk 'NR > 1 {printf "%s ", $1}' | \
+    grep -qx "alfa mike zulu " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --otutabout sorts sample columns by identifier"
+printf ">zulu;sample=zzz;size=100\n%s\n>mike;sample=aaa;size=10\n%s\n" \
+       "${LONG_OTU}" "${MID_OTU}" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 1.0 \
+        --sizein \
+        --otutabout - \
+        --quiet | \
+    head -n 1 | \
+    awk -F'\t' '{exit ($2 == "aaa" && $3 == "zzz") ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset LONG_OTU MID_OTU SHORT_OTU
+
 ## ---------- header manipulation ----------
 
 DESCRIPTION="--cluster_fast --centroid_sizeout is accepted"
