@@ -59,8 +59,11 @@ fi
 ## A 40-nt sequence used in most tests; both query and target are
 ## identical by default, producing a single full-length global match.
 ## 40 nt is long enough to pass the default k-mer index thresholds
-## without needing --minseqlength.
-SEQ="ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT"
+## without needing --minseqlength. It is also non-repetitive, so the
+## default dust masking leaves its k-mers in the index (a plain ACGT
+## repeat is masked away entirely). Tests that need a query differing
+## from the target derive it from SEQ, so the two stay in sync.
+SEQ="CCGGCTGACGTACTGTCATATGCTGAGCAATAATCGTATT"
 
 
 #*****************************************************************************#
@@ -773,7 +776,7 @@ unset DB
 DESCRIPTION="--usearch_global reports no hit below the identity threshold"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACCTAACTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}C${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -1642,7 +1645,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --id 1.0 \
         --blast6out /dev/null \
         --dbnotmatched - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qw ">d2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1951,7 +1954,7 @@ unset DB
 DESCRIPTION="--usearch_global --idprefix rejects mismatched prefix"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nTCGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "T${SEQ:1}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -2008,7 +2011,7 @@ unset DB
 DESCRIPTION="--usearch_global --idsuffix rejects mismatched suffix"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGC\n" | \
+printf ">q\n%s\n" "${SEQ:0:39}C" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -2160,7 +2163,7 @@ unset DB
 DESCRIPTION="--usearch_global --leftjust rejects alignments starting with gaps"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nGTACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:2}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -2273,7 +2276,7 @@ unset DB
 DESCRIPTION="--usearch_global --maxdiffs 0 rejects a match with one mismatch"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACCTAACTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}C${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -2331,7 +2334,7 @@ unset DB
 DESCRIPTION="--usearch_global --maxgaps 0 rejects a match with an internal gap"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGACGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -2621,7 +2624,7 @@ unset DB
 DESCRIPTION="--usearch_global --maxsubs 0 rejects a match with one mismatch"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACCTAACTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}C${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -3041,7 +3044,7 @@ unset DB
 DESCRIPTION="--usearch_global --n_mismatch counts N as mismatch"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTNCGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}N${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -3085,7 +3088,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --id 0.97 \
         --blast6out /dev/null \
         --notmatched - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qw ">q" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3196,7 +3199,7 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
         --id 0.5 \
         --output_no_hits \
         --blast6out - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     awk -F'\t' '{exit ($1 == "q" && $2 == "*") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3432,7 +3435,7 @@ unset DB
 DESCRIPTION="--usearch_global --rightjust rejects alignments ending with gaps"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGTACGTAC\n" | \
+printf ">q\n%s\n" "${SEQ:0:38}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -4218,7 +4221,7 @@ unset DB
 DESCRIPTION="--usearch_global --samout CIGAR uses I for an insertion in the query"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTAACGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}G${SEQ:20}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -4235,7 +4238,7 @@ unset DB
 DESCRIPTION="--usearch_global --samout CIGAR uses D for a deletion in the query"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTCGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -4339,7 +4342,7 @@ unset DB
 DESCRIPTION="--usearch_global --samout AS is the percent identity rounded (98 for 39/40)"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}C${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -4387,7 +4390,7 @@ unset DB
 DESCRIPTION="--usearch_global --samout XM counts mismatches (1 for a single substitution)"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}C${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -4419,7 +4422,7 @@ unset DB
 DESCRIPTION="--usearch_global --samout XO counts gap opens (1 for a single insertion)"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTAACGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}G${SEQ:20}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -4451,7 +4454,7 @@ unset DB
 DESCRIPTION="--usearch_global --samout XG counts total internal gap length (1 for a single inserted base)"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTAACGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}G${SEQ:20}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -4485,7 +4488,7 @@ unset DB
 DESCRIPTION="--usearch_global --samout NM equals XM + XG (single mismatch gives NM:i:1)"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}C${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
@@ -4523,14 +4526,14 @@ unset DB
 DESCRIPTION="--usearch_global --samout MD encodes a mismatch with the reference base"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}C${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
         --id 0.9 \
         --samout - \
         --quiet | \
-    grep -iqE $'\tMD:Z:20A19(\t|$)' && \
+    grep -iqE $'\tMD:Z:20T19(\t|$)' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -4540,14 +4543,14 @@ unset DB
 DESCRIPTION="--usearch_global --samout MD prefixes deletions with a caret"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTCGTACGTACGTACGTACGT\n" | \
+printf ">q\n%s\n" "${SEQ:0:20}${SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
         --id 0.9 \
         --samout - \
         --quiet | \
-    grep -iqE $'\tMD:Z:20\\^A19(\t|$)' && \
+    grep -iqE $'\tMD:Z:20\\^T19(\t|$)' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -4559,16 +4562,20 @@ unset DB
 ## low-complexity ACGT repeat, and --dbmask defaults to dust), which is
 ## exactly the case that used to leak lowercase into MD. These three
 ## tests are case-sensitive on purpose and fail against v2.31.0.
+## SEQ is non-repetitive and survives dust masking, so these three
+## keep a repeat of their own (and the warning it triggers).
+MASKED_SEQ="ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT"
+
 DESCRIPTION="--usearch_global --samout MD uppercases a masked reference base"
 DB=$(mktemp)
-printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+printf ">d\n%s\n" "${MASKED_SEQ}" > "${DB}"
+printf ">q\n%s\n" "${MASKED_SEQ:0:20}C${MASKED_SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
         --id 0.9 \
         --samout - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qE $'\tMD:Z:20A19(\t|$)' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4577,14 +4584,14 @@ unset DB
 
 DESCRIPTION="--usearch_global --samout MD uppercases a masked deleted base"
 DB=$(mktemp)
-printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTCGTACGTACGTACGTACGT\n" | \
+printf ">d\n%s\n" "${MASKED_SEQ}" > "${DB}"
+printf ">q\n%s\n" "${MASKED_SEQ:0:20}${MASKED_SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
         --id 0.9 \
         --samout - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qE $'\tMD:Z:20\\^A19(\t|$)' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4595,19 +4602,19 @@ unset DB
 ## (\*|[A-Za-z=.]+) and it still carries the masking, unlike MD
 DESCRIPTION="--usearch_global --samout SEQ keeps the masking case"
 DB=$(mktemp)
-printf ">d\n%s\n" "${SEQ}" > "${DB}"
-printf ">q\nACGTACGTACGTACGTACGTCCGTACGTACGTACGTACGT\n" | \
+printf ">d\n%s\n" "${MASKED_SEQ}" > "${DB}"
+printf ">q\n%s\n" "${MASKED_SEQ:0:20}C${MASKED_SEQ:21}" | \
     "${VSEARCH}" \
         --usearch_global - \
         --db "${DB}" \
         --id 0.9 \
         --samout - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     awk -F'\t' '{exit ($10 == "acgtacgtacgtacgtacgtccgtacgtacgtacgtacgt") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
-unset DB
+unset DB MASKED_SEQ
 
 ## YT:Z:UU (bowtie2 alignment type) is the last tag of a mapped record
 DESCRIPTION="--usearch_global --samout ends each mapped record with YT:Z:UU"
@@ -4881,7 +4888,7 @@ printf ">S1\nGGGG\n" | \
         --maxaccepts 2 \
         --minseqlength 1 \
         --samout - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     awk -F'\t' 'NR == 2 {exit ($3 == "R2") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -5186,7 +5193,7 @@ unset DB
 
 DESCRIPTION="--usearch_global --top_hits_only reports only the best-identity hits"
 DB=$(mktemp)
-printf ">d1\n%s\n>d2\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGC\n" "${SEQ}" > "${DB}"
+printf ">d1\n%s\n>d2\n%s\n" "${SEQ}" "${SEQ:0:39}C" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --usearch_global - \
@@ -5207,7 +5214,7 @@ unset DB
 ## (results.cc top_hits_only break in results_show_alnout)
 DESCRIPTION="--usearch_global --top_hits_only shows only the best hit in --alnout"
 DB=$(mktemp)
-printf ">d1\n%s\n>d2\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGC\n" "${SEQ}" > "${DB}"
+printf ">d1\n%s\n>d2\n%s\n" "${SEQ}" "${SEQ:0:39}C" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --usearch_global - \
@@ -5228,7 +5235,7 @@ unset DB
 ## (results.cc top_hits_only break in results_show_samout)
 DESCRIPTION="--usearch_global --top_hits_only shows only the best hit in --samout"
 DB=$(mktemp)
-printf ">d1\n%s\n>d2\nACGTACGTACGTACGTACGTACGTACGTACGTACGTACGC\n" "${SEQ}" > "${DB}"
+printf ">d1\n%s\n>d2\n%s\n" "${SEQ}" "${SEQ:0:39}C" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --usearch_global - \
@@ -5306,7 +5313,7 @@ unset DB
 ## --weak_id reports hits below --id that still clear --weak_id
 DESCRIPTION="--usearch_global --weak_id reports a weak hit"
 DB=$(mktemp)
-printf ">d\nACGTACGTACGTACGTACCTAACTACGTACGTACGTACGT\n" > "${DB}"
+printf ">d\n%s\n" "${SEQ:0:20}C${SEQ:21}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --usearch_global - \
@@ -6645,7 +6652,7 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
         --output_no_hits \
         --userout - \
         --userfields "target+diffs" \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qx "\*	0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -6765,7 +6772,7 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
         --output_no_hits \
         --userout - \
         --userfields "target+mid" \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qx "\*	0.0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -6848,7 +6855,7 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
         --output_no_hits \
         --userout - \
         --userfields qseq \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qix "CGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -6907,7 +6914,7 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
         --output_no_hits \
         --userout - \
         --userfields "tl+tseq" \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qx "0	" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -7063,7 +7070,7 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
         --output_no_hits \
         --userout - \
         --userfields "target+qrowdots+trowdots" \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qx "\*		" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -7122,7 +7129,7 @@ printf ">q\nCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCG\n" | \
         --output_no_hits \
         --userout - \
         --userfields "target+qlor+qhir+tlor+thir" \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qx "\*	0	0	0	0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
