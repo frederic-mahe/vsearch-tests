@@ -1736,7 +1736,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --cluster_fast - \
         --id 0.97 \
         --quiet \
-        --centroids /dev/stdout | \
+        --centroids /dev/stdout 2> /dev/null | \
     grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2311,7 +2311,7 @@ printf ">q1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACG\n" | \
         --id 0.97 \
         --strand plus \
         --quiet \
-        --uc /dev/stdout | \
+        --uc /dev/stdout 2> /dev/null | \
     awk '$1 == "H" {print $10}' | \
     grep -qx "ref1" && \
     success "${DESCRIPTION}" || \
@@ -2337,7 +2337,7 @@ printf ">a;size=3\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=4\nACGTACGTACGTACGT
         --sizein \
         --sizeout \
         --quiet \
-        --centroids /dev/stdout | \
+        --centroids /dev/stdout 2> /dev/null | \
     grep -qx ">b;size=7" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2379,7 +2379,7 @@ printf ">q1\nGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT\n" | \
         --top_hits_only \
         --userfields target \
         --quiet \
-        --userout /dev/stdout | \
+        --userout /dev/stdout 2> /dev/null | \
     awk 'END {exit (NR == 2) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2397,7 +2397,7 @@ printf ">q1\nGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT\n" | \
         --maxhits 1 \
         --userfields target \
         --quiet \
-        --userout /dev/stdout | \
+        --userout /dev/stdout 2> /dev/null | \
     awk 'END {exit (NR == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2422,7 +2422,7 @@ printf ">q1;sample=A\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACG\n>q2;sample=B\nAAAAAAAAAA
         --id 0.97 \
         --strand plus \
         --quiet \
-        --otutabout /dev/stdout | \
+        --otutabout /dev/stdout 2> /dev/null | \
     head -n 1 | \
     grep -qx "#OTU ID	A	B" && \
     success "${DESCRIPTION}" || \
@@ -2520,7 +2520,7 @@ printf ">a;size=1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n>b;size=5\nAAAAAAAAAAAAAA
         --id 0.90 \
         --sizein \
         --quiet \
-        --centroids /dev/stdout | \
+        --centroids /dev/stdout 2> /dev/null | \
     grep -qx ">b;size=5" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2532,7 +2532,7 @@ printf ">short\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n>longer\nAAAAAAAAAAAAAAAAAAA
         --cluster_fast - \
         --id 0.80 \
         --quiet \
-        --centroids /dev/stdout | \
+        --centroids /dev/stdout 2> /dev/null | \
     grep -qx ">longer" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
