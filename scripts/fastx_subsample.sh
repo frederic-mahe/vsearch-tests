@@ -1029,7 +1029,7 @@ printf ">s1\nA\n>s2\nC\n" | \
         --sample_pct 50.0 \
         --allow_fewer \
         --quiet \
-        --fastaout - | \
+        --fastaout - 2> /dev/null | \
     awk '/^>/ {s += 1} END {exit s == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"

@@ -246,7 +246,7 @@ printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -412,7 +412,7 @@ DESCRIPTION="chimeras_denovo: alnout reports Parent C (three parents)"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -q "^ParentC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -440,7 +440,7 @@ DESCRIPTION="chimeras_denovo: alnout reports Parent C length"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep "^ParentC" | \
     grep -q "58 nt" && \
     success "${DESCRIPTION}" || \
@@ -469,7 +469,7 @@ DESCRIPTION="chimeras_denovo: alnout reports Parent C header"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep "^ParentC" | \
     grep -q "pC;size=9$" && \
     success "${DESCRIPTION}" || \
@@ -498,7 +498,7 @@ DESCRIPTION="chimeras_denovo: alnout reports multi-way alignment starting with p
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -Eq "^Q +1 [ACGTacgt-]" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -526,7 +526,7 @@ DESCRIPTION="chimeras_denovo: alnout reports uppercased sequences (query Q)"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -Eq " [ACGT]+ " && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -554,7 +554,7 @@ DESCRIPTION="chimeras_denovo: alnout reports multi-way alignment starting with p
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -Eq "^C +1 [ACGTacgt-]" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -582,7 +582,7 @@ DESCRIPTION="chimeras_denovo: alnout reports lowercase letters when parent misma
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -Eq "^C +1 AaA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -627,7 +627,7 @@ DESCRIPTION="chimeras_denovo: alnout reports positions that favor a particular p
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -q "^Diffs" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -656,7 +656,7 @@ DESCRIPTION="chimeras_denovo: alnout reports positions that favor a particular p
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -Eq "^Diffs +A +A +B +B +C +C" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -684,7 +684,7 @@ DESCRIPTION="chimeras_denovo: alnout reports a model of the chimera (Model)"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -q "^Model" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -712,7 +712,7 @@ DESCRIPTION="chimeras_denovo: alnout reports a model of the chimera (parent name
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -Eq "^Model +A+B+C+" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -740,7 +740,7 @@ DESCRIPTION="chimeras_denovo: alnout reports global similarity percentages (Ids)
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -q "^Ids." && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -768,7 +768,7 @@ DESCRIPTION="chimeras_denovo: alnout reports global similarity with parent A"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep "^Ids." | \
     grep -q "QA 93.10%" && \
     success "${DESCRIPTION}" || \
@@ -797,7 +797,7 @@ DESCRIPTION="chimeras_denovo: alnout reports global similarity with parent B"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep "^Ids." | \
     grep -q "QB 93.10%" && \
     success "${DESCRIPTION}" || \
@@ -826,7 +826,7 @@ DESCRIPTION="chimeras_denovo: alnout reports global similarity with parent C (th
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep "^Ids." | \
     grep -q "QC 93.10%" && \
     success "${DESCRIPTION}" || \
@@ -873,7 +873,7 @@ DESCRIPTION="chimeras_denovo: alnout reports global similarity of the parent clo
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep "^Ids." | \
     grep -q "QA 93.10%" && \
     success "${DESCRIPTION}" || \
@@ -902,7 +902,7 @@ DESCRIPTION="chimeras_denovo: alnout reports global similarity with the model (a
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep "^Ids." | \
     grep -q "QModel 100.00%" && \
     success "${DESCRIPTION}" || \
@@ -932,7 +932,7 @@ DESCRIPTION="chimeras_denovo: alnout reports the divergence of the model with th
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep "^Ids." | \
     grep -q "Div. +7.41%" && \
     success "${DESCRIPTION}" || \
@@ -1009,7 +1009,7 @@ printf ">s;size=1\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1061,7 +1061,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 1 is the score value (always 99.9
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($1 == "99.9999") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1090,7 +1090,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 2 is the query header"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($2 == "Q;size=1") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1119,7 +1119,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 3 is the parent A header"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($3 == "pA;size=9") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1148,7 +1148,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 4 is the parent B header"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($4 == "pB;size=9") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1177,7 +1177,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 5 is the parent C header"
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($5 == "pC;size=9") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1202,7 +1202,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 5 is the parent C header (* if no
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($5 == "*") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1231,7 +1231,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 6 is the max similarity percentag
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($6 == "100.00") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1260,7 +1260,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 7 is the global similarity percen
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($7 == "93.10") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1289,7 +1289,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 8 is the global similarity percen
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($8 == "93.10") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1318,7 +1318,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 9 is the global similarity percen
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($9 == "93.10") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1343,7 +1343,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 9 is the global similarity percen
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($9 == "0.00") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1372,7 +1372,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 10 is the highest global similari
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($10 == "93.10") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1401,7 +1401,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 10 is the highest global similari
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($10 == "93.10") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1430,7 +1430,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 11 is the left yes count (always 
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($11 == "0") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1459,7 +1459,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 12 is the left no count (always 0
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($12 == "0") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1488,7 +1488,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 13 is the left abstain count (alw
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($13 == "0") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1517,7 +1517,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 14 is the right yes count (always
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($14 == "0") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1546,7 +1546,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 15 is the right no count (always 
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($15 == "0") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1575,7 +1575,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 16 is the right abstain count (al
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($16 == "0") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1604,7 +1604,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 17 is a dummy value (always 0.00)
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($17 == "0.00") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1633,7 +1633,7 @@ DESCRIPTION="chimeras_denovo: tabbedout column 18 is the chimeric status (always
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit ($18 == "Y") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1667,7 +1667,7 @@ DESCRIPTION="chimeras_denovo: tabbedout only outputs the first three parents (4 
         --chimeras_denovo - \
         --quiet \
         --chimeras_parents_max 4 \
-        --tabbedout - | \
+        --tabbedout - 2> /dev/null | \
     awk '{exit (! /^$/) && (! /pD/) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1839,7 +1839,7 @@ printf ">s\na\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1850,7 +1850,7 @@ printf "@s\nA\n+\nI\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --chimeras /dev/null && \
+        --chimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1860,7 +1860,7 @@ printf "@s\nA\n+\nI\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2009,7 +2009,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --abskew 1.0 && \
+        --abskew 1.0 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2064,7 +2064,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --abskew 2.0 && \
+        --abskew 2.0 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2075,7 +2075,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --abskew 16.0 && \
+        --abskew 16.0 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2086,7 +2086,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --abskew 140961597.0 && \
+        --abskew 140961597.0 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2098,7 +2098,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --abskew 3402823500000000000000000000000000.0 && \
+        --abskew 3402823500000000000000000000000000.0 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2799,7 +2799,7 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 2 rejects chimeras wit
         --chimeras_denovo - \
         --quiet \
         --chimeras_parents_max 2 \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -2855,7 +2855,7 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 4 allows four parents"
         --chimeras_denovo - \
         --quiet \
         --chimeras_parents_max 4 \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -iq "^ParentD" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2911,7 +2911,7 @@ DESCRIPTION="chimeras_denovo: option chimeras_parents_max 3 rejects chimera with
         --chimeras_denovo - \
         --quiet \
         --chimeras_parents_max 3 \
-        --alnout - | \
+        --alnout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -2927,7 +2927,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --chimeras_parts 2 \
         --quiet \
-        --chimeras /dev/null && \
+        --chimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2938,7 +2938,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --chimeras_parts 3 \
         --quiet \
-        --chimeras /dev/null && \
+        --chimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2950,7 +2950,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --chimeras_parts 2 \
         --quiet \
-        --chimeras /dev/null && \
+        --chimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -2962,7 +2962,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --chimeras_parts 100 \
         --quiet \
-        --chimeras /dev/null && \
+        --chimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3048,7 +3048,7 @@ printf ">s;size=9\nA\n" | \
         --chimeras_denovo - \
         --sizein \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3059,7 +3059,7 @@ printf ">s;size=42\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -q "^>s;size=42$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3096,7 +3096,7 @@ printf ">s\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --sizeout \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -q "^>s;size=1$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3281,7 +3281,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --alignwidth 60 && \
+        --alignwidth 60 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3314,7 +3314,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --alignwidth 0 && \
+        --alignwidth 0 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3351,7 +3351,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --alignwidth 1 && \
+        --alignwidth 1 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3388,7 +3388,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --alignwidth 255 && \
+        --alignwidth 255 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3399,7 +3399,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --alignwidth 65535 && \
+        --alignwidth 65535 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3410,7 +3410,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --nonchimeras /dev/null \
-        --alignwidth 2147483647 && \
+        --alignwidth 2147483647 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3525,7 +3525,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --fasta_width 80 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3536,7 +3536,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --fasta_width 0 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3620,7 +3620,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --gapext "2I/1E" \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3631,7 +3631,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --gapext "2" \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3656,7 +3656,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --gapopen "20I/2E" \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3667,7 +3667,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --gapopen "20" \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3692,7 +3692,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --hardmask \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3705,7 +3705,7 @@ printf ">s;size=1\n%s\n" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" | \
         --chimeras_denovo - \
         --hardmask \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3735,7 +3735,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --label_suffix ";foo=bar" \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3746,7 +3746,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --label_suffix ";foo=bar" \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">s;size=1;foo=bar" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3808,7 +3808,7 @@ printf ">s\nA\n" | \
         --sizeout \
         --label_suffix ";foo=bar" \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">s;foo=bar;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3822,7 +3822,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --lengthout \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3833,7 +3833,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --lengthout \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -q "length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3918,7 +3918,7 @@ printf "@s;size=1\nA\n+\nI\n" | \
         --chimeras_denovo - \
         --quiet \
         --lengthout \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -q "length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4002,7 +4002,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --match 2 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4013,7 +4013,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --match 10 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4048,7 +4048,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --maxseqlength 50000 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4071,7 +4071,7 @@ printf ">s;size=1\nAAAAA\n" | \
         --chimeras_denovo - \
         --maxseqlength 5 \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep --quiet "^>s;size=1$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4097,7 +4097,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --minseqlength 1 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4108,7 +4108,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --minseqlength 0 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4151,7 +4151,7 @@ printf ">s;size=1\nAAAAA\n" | \
         --chimeras_denovo - \
         --minseqlength 5 \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep --quiet "^>s;size=1$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4167,7 +4167,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --mismatch 4 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4228,7 +4228,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --notrunclabels \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4239,7 +4239,7 @@ printf ">s foo\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4251,7 +4251,7 @@ printf ">s foo\nA\n" | \
         --chimeras_denovo - \
         --notrunclabels \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">s foo" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4263,7 +4263,7 @@ printf ">s\tfoo\nA\n" | \
         --chimeras_denovo - \
         --notrunclabels \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qxE ">s$(printf '\t')foo" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4371,7 +4371,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --qmask dust \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4382,7 +4382,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --qmask soft \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4404,7 +4404,7 @@ printf ">s;size=1\n%s\n" "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" | \
         --chimeras_denovo - \
         --qmask soft \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4470,7 +4470,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --relabel "new_" \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4481,7 +4481,7 @@ printf ">s1;size=1\nA\n>s2;size=1\nC\n" | \
         --chimeras_denovo - \
         --relabel "new_" \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">new_1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4493,7 +4493,7 @@ printf ">s1;size=1\nA\n>s2;size=1\nC\n" | \
         --chimeras_denovo - \
         --relabel "new_" \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">new_2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4528,7 +4528,7 @@ printf ">s1;size=1\nA\n" | \
         --chimeras_denovo - \
         --relabel "" \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4545,7 +4545,7 @@ printf ">s;size=1\nA\n" | \
         --relabel "new_" \
         --relabel_keep \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4557,7 +4557,7 @@ printf ">s;size=1\nA\n" | \
         --relabel "new_" \
         --relabel_keep \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">new_1 s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4570,7 +4570,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --relabel_keep \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4585,7 +4585,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --relabel_md5 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4597,7 +4597,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --relabel_md5 \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4611,7 +4611,7 @@ printf ">s;size=1\naaa\n" | \
         --qmask none \
         --relabel_md5 \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">e1faffb3e614e6c2fba74296962386b7" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4625,7 +4625,7 @@ printf ">s;size=1\nUUU\n" | \
         --qmask none \
         --relabel_md5 \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">da189c1824c1b701010054237bcc143e" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4641,7 +4641,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --relabel_self \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4652,7 +4652,7 @@ printf ">s;size=1\nACGT\n" | \
         --chimeras_denovo - \
         --relabel_self \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">ACGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4668,7 +4668,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --relabel_sha1 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4680,7 +4680,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --relabel_sha1 \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4766,7 +4766,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --sample "ABC" \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4777,7 +4777,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --sample "ABC" \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">s;size=1;sample=ABC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4840,7 +4840,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --sizeout \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4853,7 +4853,7 @@ printf ">s\nA\n" | \
         --chimeras_denovo - \
         --sizeout \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">s;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4891,7 +4891,7 @@ printf ">s;size=42\nA\n" | \
         --relabel_md5 \
         --sizeout \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=42" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4905,7 +4905,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo /dev/stdin \
         --chimeras /dev/null \
         --threads 1 \
-        --quiet && \
+        --quiet 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4931,7 +4931,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --xee \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4942,7 +4942,7 @@ printf ">s;size=1;ee=0.5\nA\n" | \
         --chimeras_denovo - \
         --xee \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -q "ee=0.5" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -4954,7 +4954,7 @@ printf ">s;size=1;ee=0.5\nA\n" | \
     ${VSEARCH} \
         --chimeras_denovo - \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -q "ee=0.5" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4992,7 +4992,7 @@ printf ">s;length=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --xlength \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5003,7 +5003,7 @@ printf ">s;length=1\nA\n" | \
         --chimeras_denovo - \
         --quiet \
         --xlength \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -q "length=1" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -5014,7 +5014,7 @@ printf "@s;length=1\nA\n+\nI\n" | \
         --chimeras_denovo - \
         --quiet \
         --xlength \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -q "length=1" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -5100,7 +5100,7 @@ printf ">s;length=2\nA\n" | \
         --quiet \
         --xlength \
         --lengthout \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -q "length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -5117,7 +5117,7 @@ printf ">s;size=1\nA\n" | \
         --chimeras_denovo - \
         --xsize \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5128,7 +5128,7 @@ printf ">s;size=9\nA\n" | \
         --chimeras_denovo - \
         --xsize \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -5167,7 +5167,7 @@ printf ">s;size=42\nA\n" | \
         --xsize \
         --sizeout \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">s;size=42" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"

@@ -570,7 +570,7 @@ printf ">s;size=1 extra\nA\n" | \
         --rereplicate - \
         --quiet \
         --notrunclabels \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">s;size=1 extra" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -670,7 +670,7 @@ printf ">s\nA\n" | \
         --rereplicate - \
         --quiet \
         --relabel "label" \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">label1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -682,7 +682,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel "label" \
         --sizeout \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">label1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -765,7 +765,7 @@ printf ">s\nA\n" | \
         --rereplicate - \
         --quiet \
         --relabel_md5 \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">7fc56270e7a70fa81a5935b72eacbe29" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -777,7 +777,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_md5 \
         --sizeout \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">7fc56270e7a70fa81a5935b72eacbe29;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -834,7 +834,7 @@ printf ">s\nA\n" | \
         --rereplicate - \
         --quiet \
         --relabel_sha1 \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -846,7 +846,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_sha1 \
         --sizeout \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">6dcd4ce23d88e2ee9568ba546c007c63d9131c1b;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -903,7 +903,7 @@ printf ">s\nA\n" | \
         --rereplicate - \
         --quiet \
         --relabel_self \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -915,7 +915,7 @@ printf ">s\nA\n" | \
         --quiet \
         --relabel_self \
         --sizeout \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">A;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -974,7 +974,7 @@ printf ">s\nA\n" | \
         --rereplicate - \
         --threads 1 \
         --quiet \
-        --output /dev/null && \
+        --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1020,7 +1020,7 @@ printf ">s;length=1\nA\n" | \
         --rereplicate - \
         --xlength \
         --quiet \
-        --output /dev/null && \
+        --output /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
@@ -1030,7 +1030,7 @@ printf ">s;length=1\nA\n" | \
         --rereplicate - \
         --xlength \
         --quiet \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">s" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1042,7 +1042,7 @@ printf ">s;length=2\nA\n" | \
         --xlength \
         --lengthout \
         --quiet \
-        --output - | \
+        --output - 2> /dev/null | \
     grep -qx ">s;length=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"

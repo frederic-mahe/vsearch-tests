@@ -230,7 +230,7 @@ printf ">s;size=1\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \
         --uchime3_denovo - \
         --nonchimeras - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     awk '/^>/ {next} /[a-z]/ {found = 1} END {exit !found}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -523,7 +523,7 @@ printf ">s;size=1\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
         --uchime3_denovo - \
         --hardmask \
         --nonchimeras - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qx "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1123,7 +1123,7 @@ printf ">s\nA\n" | \
         --uchime3_denovo - \
         --threads 1 \
         --quiet \
-        --chimeras /dev/null && \
+        --chimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
