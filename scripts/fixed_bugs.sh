@@ -55,7 +55,7 @@ DESCRIPTION="regression c4b218ffe (segfault)"
     --id 0.97 \
     --quiet \
     --blast6out /dev/null \
-    --output_no_hits && \
+    --output_no_hits 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -405,7 +405,7 @@ DESCRIPTION="issue 7: --maxaccepts is available"
     --id 1.0 \
     --quiet \
     --maxaccepts 1 \
-    --blast6out /dev/null && \
+    --blast6out /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -417,7 +417,7 @@ DESCRIPTION="issue 7: --maxaccepts limits the number of matches (2 matches, acce
     --id 1.0 \
     --quiet \
     --maxaccepts 2 \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -430,7 +430,7 @@ DESCRIPTION="issue 7: --maxaccepts limits the number of matches (2 matches, acce
     --id 1.0 \
     --quiet \
     --maxaccepts 1 \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -451,7 +451,7 @@ DESCRIPTION="issue 8: search both strands (default is plus/normal strand)"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -464,7 +464,7 @@ DESCRIPTION="issue 8: search both strands (explicit plus strand)"
     --id 1.0 \
     --strand plus \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -477,7 +477,7 @@ DESCRIPTION="issue 8: search both strands"
     --id 1.0 \
     --strand both \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -599,7 +599,7 @@ DESCRIPTION="issue 11: --cluster_fast is implemented"
     --id 0.6 \
     --quiet \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     grep -qx ">t1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -611,7 +611,7 @@ DESCRIPTION="issue 11: --cluster_smallmem is implemented"
     --id 0.6 \
     --quiet \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     grep -qx ">t1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -623,7 +623,7 @@ DESCRIPTION="issue 11: --cluster_size is implemented"
     --id 0.6 \
     --quiet \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     grep -qx ">t1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -794,7 +794,7 @@ DESCRIPTION="issue 15: --wordlength is accepted"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --blast6out /dev/null && \
+    --blast6out /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -846,7 +846,7 @@ DESCRIPTION="issue 18: userfield values are correct (raw)"
     --id 0.5 \
     --quiet \
     --userfield "raw" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "8" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -859,7 +859,7 @@ DESCRIPTION="issue 18: userfield values are correct (qlo)"
     --id 0.5 \
     --quiet \
     --userfield "qlo" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -872,7 +872,7 @@ DESCRIPTION="issue 18: userfield values are correct (qilo)"
     --id 0.5 \
     --quiet \
     --userfield "qilo" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -885,7 +885,7 @@ DESCRIPTION="issue 18: userfield values are correct (qhi)"
     --id 0.5 \
     --quiet \
     --userfield "qhi" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -898,7 +898,7 @@ DESCRIPTION="issue 18: userfield values are correct (qihi)"
     --id 0.5 \
     --quiet \
     --userfield "qihi" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -911,7 +911,7 @@ DESCRIPTION="issue 18: userfield values are correct (tlo)"
     --id 0.5 \
     --quiet \
     --userfield "tlo" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -924,7 +924,7 @@ DESCRIPTION="issue 18: userfield values are correct (tilo)"
     --id 0.5 \
     --quiet \
     --userfield "tilo" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -937,7 +937,7 @@ DESCRIPTION="issue 18: userfield values are correct (thi)"
     --id 0.5 \
     --quiet \
     --userfield "thi" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -950,7 +950,7 @@ DESCRIPTION="issue 18: userfield values are correct (tihi)"
     --id 0.5 \
     --quiet \
     --userfield "tihi" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -978,7 +978,7 @@ DESCRIPTION="issue 19: --iddef is implemented (0)"
     --id 0.5 \
     --quiet \
     --userfield "id0" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "50.0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -996,7 +996,7 @@ DESCRIPTION="issue 19: --iddef is implemented (1)"
     --id 0.5 \
     --quiet \
     --userfield "id1" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "28.6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1014,7 +1014,7 @@ DESCRIPTION="issue 19: --iddef is implemented (2)"
     --id 0.5 \
     --quiet \
     --userfield "id2" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "100.0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1035,7 +1035,7 @@ DESCRIPTION="issue 19: --iddef is implemented (3)"
     --id 0.5 \
     --quiet \
     --userfield "id3" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "60.0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1049,7 +1049,7 @@ DESCRIPTION="issue 19: --iddef is implemented (4)"
     --id 0.5 \
     --quiet \
     --userfield "id4" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "28.6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1070,7 +1070,7 @@ DESCRIPTION="issue 20: --blast6out outputs 12 columns (match)"
     --minseqlength 4 \
     --id 1.0 \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk '{exit NF == 12 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1083,7 +1083,7 @@ DESCRIPTION="issue 20: --blast6out outputs 12 columns (no match)"
     --id 1.0 \
     --quiet \
     --output_no_hits \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk '{exit NF == 12 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1112,7 +1112,7 @@ DESCRIPTION="issue 21: --alnout (match)"
     --minseqlength 4 \
     --id 1.0 \
     --quiet \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -qw "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1124,7 +1124,7 @@ DESCRIPTION="issue 21: --alnout (no match)"
     --minseqlength 4 \
     --id 1.0 \
     --quiet \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -qw "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1136,7 +1136,7 @@ DESCRIPTION="issue 21: --blast6out (match)"
     --minseqlength 4 \
     --id 1.0 \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     grep -qw "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1148,7 +1148,7 @@ DESCRIPTION="issue 21: --blast6out (no match)"
     --minseqlength 4 \
     --id 1.0 \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1161,7 +1161,7 @@ DESCRIPTION="issue 21: --userout (match)"
     --id 1.0 \
     --quiet \
     --userfields query \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1174,7 +1174,7 @@ DESCRIPTION="issue 21: --userout (no match)"
     --id 1.0 \
     --quiet \
     --userfields query \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1186,7 +1186,7 @@ DESCRIPTION="issue 21: --uc (match)"
     --minseqlength 4 \
     --id 1.0 \
     --quiet \
-    --uc - | \
+    --uc - 2> /dev/null | \
     grep -qw "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1198,7 +1198,7 @@ DESCRIPTION="issue 21: --uc (no match)"
     --minseqlength 4 \
     --id 1.0 \
     --quiet \
-    --uc - | \
+    --uc - 2> /dev/null | \
     grep -qw "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1212,7 +1212,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits (match)"
     --id 1.0 \
     --quiet \
     --output_no_hits \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -qw "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1225,7 +1225,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits (no match)"
     --id 1.0 \
     --quiet \
     --output_no_hits \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -qw "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1238,7 +1238,7 @@ DESCRIPTION="issue 21: --blast6out --output_no_hits (match)"
     --id 1.0 \
     --quiet \
     --output_no_hits \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     grep -qw "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1251,7 +1251,7 @@ DESCRIPTION="issue 21: --blast6out --output_no_hits (no match)"
     --id 1.0 \
     --quiet \
     --output_no_hits \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     grep -q "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1265,7 +1265,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits (match)"
     --quiet \
     --output_no_hits \
     --userfields query \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qw "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1279,7 +1279,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits (no match)"
     --quiet \
     --output_no_hits \
     --userfields query \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qw "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1292,7 +1292,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits (match)"
     --id 1.0 \
     --quiet \
     --output_no_hits \
-    --uc - | \
+    --uc - 2> /dev/null | \
     grep -qw "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1305,7 +1305,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits (no match)"
     --id 1.0 \
     --quiet \
     --output_no_hits \
-    --uc - | \
+    --uc - 2> /dev/null | \
     grep -qw "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1319,7 +1319,7 @@ DESCRIPTION="issue 21: --alnout --uc_allhits (match)"
     --id 1.0 \
     --quiet \
     --uc_allhits \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -qw "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1332,7 +1332,7 @@ DESCRIPTION="issue 21: --alnout --uc_allhits (no match)"
     --id 1.0 \
     --quiet \
     --uc_allhits \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -qx "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1345,7 +1345,7 @@ DESCRIPTION="issue 21: --blast6out --uc_allhits (match)"
     --id 1.0 \
     --quiet \
     --uc_allhits \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     grep -qw "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1358,7 +1358,7 @@ DESCRIPTION="issue 21: --blast6out --uc_allhits (no match)"
     --id 1.0 \
     --quiet \
     --uc_allhits \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1372,7 +1372,7 @@ DESCRIPTION="issue 21: --userout --uc_allhits (match)"
     --quiet \
     --uc_allhits \
     --userfields query \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qw "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1386,7 +1386,7 @@ DESCRIPTION="issue 21: --userout --uc_allhits (no match)"
     --quiet \
     --uc_allhits \
     --userfields query \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1399,7 +1399,7 @@ DESCRIPTION="issue 21: --uc --uc_allhits (match)"
     --id 1.0 \
     --quiet \
     --uc_allhits \
-    --uc - | \
+    --uc - 2> /dev/null | \
     grep -qw "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1412,7 +1412,7 @@ DESCRIPTION="issue 21: --uc --uc_allhits (no match)"
     --id 1.0 \
     --quiet \
     --uc_allhits \
-    --uc - | \
+    --uc - 2> /dev/null | \
     grep -qw "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1428,7 +1428,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits --uc_allhits (match)"
     --quiet \
     --output_no_hits \
     --uc_allhits \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -qw "^Qry" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1442,7 +1442,7 @@ DESCRIPTION="issue 21: --alnout --output_no_hits --uc_allhits (no match)"
     --quiet \
     --output_no_hits \
     --uc_allhits \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -qw "^Qry" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1456,7 +1456,7 @@ DESCRIPTION="issue 21: --blast6out --output_no_hits --uc_allhits (match)"
     --quiet \
     --output_no_hits \
     --uc_allhits \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     grep -qw "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1470,7 +1470,7 @@ DESCRIPTION="issue 21: --blast6out --output_no_hits --uc_allhits (no match)"
     --quiet \
     --output_no_hits \
     --uc_allhits \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     grep -qw "^query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1485,7 +1485,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits --uc_allhits (match)"
     --output_no_hits \
     --uc_allhits \
     --userfields query \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qw "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1500,7 +1500,7 @@ DESCRIPTION="issue 21: --userout --output_no_hits --uc_allhits (no match)"
     --output_no_hits \
     --uc_allhits \
     --userfields query \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qw "query" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1514,7 +1514,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits --uc_allhits (match)"
     --quiet \
     --output_no_hits \
     --uc_allhits \
-    --uc - | \
+    --uc - 2> /dev/null | \
     grep -qw "H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1528,7 +1528,7 @@ DESCRIPTION="issue 21: --uc --output_no_hits --uc_allhits (no match)"
     --quiet \
     --output_no_hits \
     --uc_allhits \
-    --uc - | \
+    --uc - 2> /dev/null | \
     grep -qw "N" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1562,7 +1562,7 @@ SEQ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     --db <(printf ">t\n%s\n" ${SEQ}) \
     --id 1.0 \
     --quiet \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep "^Qry" | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -1578,7 +1578,7 @@ SEQ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     --id 1.0 \
     --quiet \
     --rowlen 0 \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep "^Qry" | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -1601,7 +1601,7 @@ DESCRIPTION="issue 24: --maxaccepts 1 match by default"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1614,7 +1614,7 @@ DESCRIPTION="issue 24: --maxaccepts limits the number of matches (2 matches, acc
     --id 1.0 \
     --quiet \
     --maxaccepts 1 \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1627,7 +1627,7 @@ DESCRIPTION="issue 24: --maxaccepts 0 removes the limit on the number of matches
     --id 1.0 \
     --quiet \
     --maxaccepts 0 \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1639,7 +1639,7 @@ DESCRIPTION="issue 24: --maxrejects breaks after 32 bad matches (by default)"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1651,7 +1651,7 @@ DESCRIPTION="issue 24: --maxrejects accepts hits after 31 bad matches (by defaul
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1664,7 +1664,7 @@ DESCRIPTION="issue 24: --maxrejects 1 breaks after 1 bad match"
     --id 1.0 \
     --quiet \
     --maxrejects 1 \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -1677,7 +1677,7 @@ DESCRIPTION="issue 24: --maxrejects 2 breaks after 2 bad matches (2nd target is 
     --id 1.0 \
     --quiet \
     --maxrejects 2 \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -1690,7 +1690,7 @@ DESCRIPTION="issue 24: --maxrejects 0 scans all targets until --maxaccepts is fu
     --id 1.0 \
     --quiet \
     --maxrejects 0 \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2419,7 +2419,7 @@ ${VSEARCH} \
     --minseqlength 1 \
     --quiet \
     --id 1.0 \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk '{exit $11 == -1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2432,7 +2432,7 @@ ${VSEARCH} \
     --quiet \
     --id 1.0 \
     --userfields evalue \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk '{exit $1 == -1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2446,7 +2446,7 @@ ${VSEARCH} \
     --minseqlength 1 \
     --quiet \
     --id 1.0 \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk '{exit $12 == 0 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2459,7 +2459,7 @@ ${VSEARCH} \
     --quiet \
     --id 1.0 \
     --userfields bits \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk '{exit $1 == 0 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2482,7 +2482,7 @@ ${VSEARCH} \
     --quiet \
     --id 1.0 \
     --userfields query \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'BEGIN {FS = "\t"} {exit $1 == "q1" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2495,7 +2495,7 @@ ${VSEARCH} \
     --quiet \
     --id 1.0 \
     --userfields query \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'BEGIN {FS = "\t"} {exit $1 == "q1" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2508,7 +2508,7 @@ ${VSEARCH} \
     --quiet \
     --id 1.0 \
     --userfields target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'BEGIN {FS = "\t"} {exit $1 == "t1" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2521,7 +2521,7 @@ ${VSEARCH} \
     --quiet \
     --id 1.0 \
     --userfields target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'BEGIN {FS = "\t"} {exit $1 == "t1" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2544,7 +2544,7 @@ ${VSEARCH} \
     --quiet \
     --id 1.0 \
     --output_no_hits \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk '{exit $3 == "0.0" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2558,7 +2558,7 @@ ${VSEARCH} \
     --id 1.0 \
     --output_no_hits \
     --userfields id \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk '{exit $1 == "0.0" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2580,7 +2580,7 @@ ${VSEARCH} \
     --maxaccepts 0 \
     --quiet \
     --id 0.6 \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 3 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2594,7 +2594,7 @@ ${VSEARCH} \
     --quiet \
     --id 0.6 \
     --top_hits_only \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit $2 == "t3" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -2713,7 +2713,7 @@ ${VSEARCH} \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1A" && \
     success "${DESCRIPTION}" || \
@@ -2728,7 +2728,7 @@ ${VSEARCH} \
     --id 1.0 \
     --quiet \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=2A" && \
     success "${DESCRIPTION}" || \
@@ -2741,7 +2741,7 @@ ${VSEARCH} \
     --id 1.0 \
     --sizein \
     --quiet \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=2A" && \
     success "${DESCRIPTION}" || \
@@ -2755,7 +2755,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=3A" && \
     success "${DESCRIPTION}" || \
@@ -2768,7 +2768,7 @@ ${VSEARCH} \
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --dbmatched - | \
+    --dbmatched - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">t1A" && \
     success "${DESCRIPTION}" || \
@@ -2782,7 +2782,7 @@ ${VSEARCH} \
     --id 1.0 \
     --quiet \
     --sizeout \
-    --dbmatched - | \
+    --dbmatched - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">t1;size=1A" && \
     success "${DESCRIPTION}" || \
@@ -3245,7 +3245,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields qlo \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3259,7 +3259,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields qlo \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3272,7 +3272,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields qilo \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3290,7 +3290,7 @@ ${VSEARCH} \
     --quiet \
     --alnout - \
     --userfields qilo \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3303,7 +3303,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields qhi \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3317,7 +3317,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields qhi \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3330,7 +3330,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields qihi \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3345,7 +3345,7 @@ ${VSEARCH} \
     --quiet \
     --alnout - \
     --userfields qihi \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3358,7 +3358,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields tlo \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3372,7 +3372,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields tlo \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3385,7 +3385,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields tilo \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3400,7 +3400,7 @@ ${VSEARCH} \
     --quiet \
     --alnout - \
     --userfields tilo \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3413,7 +3413,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields thi \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3427,7 +3427,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields thi \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3440,7 +3440,7 @@ ${VSEARCH} \
     --id 0.5 \
     --quiet \
     --userfields tihi \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3455,7 +3455,7 @@ ${VSEARCH} \
     --quiet \
     --alnout - \
     --userfields tihi \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -3572,7 +3572,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=1AA>s2;size=1T" && \
     success "${DESCRIPTION}" || \
@@ -3586,7 +3586,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s2;size=1AA>s1;size=1T" && \
     success "${DESCRIPTION}" || \
@@ -3600,7 +3600,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=2AA>s2;size=1TT" && \
     success "${DESCRIPTION}" || \
@@ -3614,7 +3614,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s2;size=2TT>s1;size=1AA" && \
     success "${DESCRIPTION}" || \
@@ -3628,7 +3628,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=1AA>s2;size=1TT" && \
     success "${DESCRIPTION}" || \
@@ -3642,7 +3642,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=1TT>s2;size=1AA" && \
     success "${DESCRIPTION}" || \
@@ -3657,7 +3657,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=2AA>s2;size=1TT" && \
     success "${DESCRIPTION}" || \
@@ -3671,7 +3671,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s2;size=2TT>s1;size=1AA" && \
     success "${DESCRIPTION}" || \
@@ -3685,7 +3685,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=1AA>s2;size=1TT" && \
     success "${DESCRIPTION}" || \
@@ -3699,7 +3699,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=1TT>s2;size=1AA" && \
     success "${DESCRIPTION}" || \
@@ -3725,7 +3725,7 @@ ${VSEARCH} \
     --id 1.0 \
     --quiet \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=2A" && \
     success "${DESCRIPTION}" || \
@@ -3739,7 +3739,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=2A" && \
     success "${DESCRIPTION}" || \
@@ -3752,7 +3752,7 @@ ${VSEARCH} \
     --id 1.0 \
     --quiet \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=2A" && \
     success "${DESCRIPTION}" || \
@@ -3766,7 +3766,7 @@ ${VSEARCH} \
     --quiet \
     --sizein \
     --sizeout \
-    --centroids - | \
+    --centroids - 2> /dev/null | \
     tr -d "\n" | \
     grep -qx ">s1;size=3A" && \
     success "${DESCRIPTION}" || \
@@ -3950,7 +3950,7 @@ printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nGGGGGGGGGGGGGGGGGGGGGGGGGGGG
         --minseqlength 1 \
         --quiet \
         --msaout /dev/null \
-        --consout /dev/null && \
+        --consout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -3979,7 +3979,7 @@ printf ">q\nAAAAAAAAAA\n" | \
         --minseqlength 1 \
         --quiet \
         --userfields id \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -qx "91.7" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4061,7 +4061,7 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTAC
         --id 0.97 \
         --minseqlength 1 \
         --quiet \
-        --msaout - | \
+        --msaout - 2> /dev/null | \
     grep -qx ">consensus" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4136,7 +4136,7 @@ printf ">q\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
         --minseqlength 1 \
         --quiet \
         --userfields target \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -qx "d2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4161,7 +4161,7 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
         --id 0.97 \
         --minseqlength 1 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     awk '$1 == "H" || $1 == "S" {print $9"@"$2}' | \
     tr "\n" " " | \
     grep -qx "a@0 b@1 " && \
@@ -4222,7 +4222,7 @@ printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --id 0.97 \
         --minseqlength 1 \
         --quiet \
-        --samout /dev/null && \
+        --samout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4246,7 +4246,7 @@ printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --id 0.9 \
         --minseqlength 1 \
         --quiet \
-        --samout - | \
+        --samout - 2> /dev/null | \
     grep -v "^@" | \
     awk -F "\t" '$1 == "q" && $3 == "t" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -4285,7 +4285,7 @@ printf ">r1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>r2\nGGGGGGGGGGGGGGGGGGGGGGGGGGGG
         --minseqlength 1 \
         --relabel OTU_ \
         --quiet \
-        --centroids - | \
+        --centroids - 2> /dev/null | \
     grep "^>" | \
     tr "\n" " " | \
     grep -qx ">OTU_1 >OTU_2 " && \
@@ -4298,7 +4298,7 @@ printf ">r1;size=5\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --uchime_denovo - \
         --relabel SEQ_ \
         --quiet \
-        --nonchimeras - | \
+        --nonchimeras - 2> /dev/null | \
     grep -qx ">SEQ_1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4378,7 +4378,7 @@ printf ">cent\nAAAAAAAAAACCCCCCCCCCGGGGGGGGGGTTTTTTTTTT\n>m1\nAAAAAAAAAA\n>m2\nC
         --id 0.1 \
         --minseqlength 1 \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     awk '/^>/ {h++; next} {if (length($0) > 0) b++} END {exit (h == 1 && b == 0) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4449,7 +4449,7 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTAC
         --id 0.97 \
         --minseqlength 1 \
         --quiet \
-        --profile - | \
+        --profile - 2> /dev/null | \
     awk 'NR == 2 {ok = ($1 == 0 && $2 == "A" && $3 == 2)} END {exit ok ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4511,7 +4511,7 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTAC
         --id 0.99 \
         --minseqlength 1 \
         --quiet \
-        --consout /dev/null && \
+        --consout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4526,7 +4526,7 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTAC
         --minseqlength 1 \
         --cons_truncate \
         --quiet \
-        --consout /dev/null && \
+        --consout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4549,7 +4549,7 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --uchime_denovo - \
         --minh 2.0 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4559,7 +4559,7 @@ printf ">s1;size=2\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --uchime_denovo - \
         --minh 1 \
         --quiet \
-        --nonchimeras /dev/null && \
+        --nonchimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -4623,7 +4623,7 @@ printf ">a;size=1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=9\nGGGGGGGGGGGGGGGG
         --sizeout \
         --clusterout_sort \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     awk '/^>/ {print; exit}' | \
     grep -q "centroid=b" && \
     success "${DESCRIPTION}" || \
@@ -4649,7 +4649,7 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
         --minseqlength 1 \
         --clusterout_id \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     grep -q "clusterid=0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4721,7 +4721,7 @@ printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --minseqlength 1 \
         --samout - \
         --samheader \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -q "^@HD" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4758,7 +4758,7 @@ printf ">a;size=3\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=2\nACGTACGTACGTACGT
         --sizein \
         --sizeout \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     grep -q ";size=5" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -4953,7 +4953,7 @@ printf ">a;size=1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=5\nACGTACGTACGTACGT
         --sizeorder \
         --maxaccepts 4 \
         --quiet \
-        --centroids /dev/null && \
+        --centroids /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5046,7 +5046,7 @@ printf ">long\n%s\n>s1\nACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nGGGGGGGGGGGGGGGGG
         --minseqlength 1 \
         --quiet \
         --centroids /dev/null \
-        --uc /dev/null && \
+        --uc /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 unset LONG
@@ -5268,7 +5268,7 @@ DESCRIPTION="issue 140: truncate headers after a tab"
     --id 0.97 \
     --quiet \
     --minseqlength 1 \
-    --uc - | \
+    --uc - 2> /dev/null | \
     awk -F "\t" '{exit /^S/ && $9 == "s1" && $10 == "*" ? 0 : 1}' && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -5281,7 +5281,7 @@ DESCRIPTION="issue 140: do not truncate after a tab with --notrunclabels"
     --quiet \
     --notrunclabels \
     --minseqlength 1 \
-    --uc - | \
+    --uc - 2> /dev/null | \
     awk -F "\t" '{exit /^S/ && $9 == "s1" && $10 == "header" ? 0 : 1}' && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -5293,7 +5293,7 @@ DESCRIPTION="issue 140: truncate headers after a space"
     --id 0.97 \
     --quiet \
     --minseqlength 1 \
-    --uc - | \
+    --uc - 2> /dev/null | \
     awk -F "\t" '{exit /^S/ && $9 == "s1" && $10 == "*" ? 0 : 1}' && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -5305,7 +5305,7 @@ DESCRIPTION="issue 140: do not truncate after a space with --notrunclabels"
     --quiet \
     --notrunclabels \
     --minseqlength 1 \
-    --uc - | \
+    --uc - 2> /dev/null | \
     awk -F "\t" '{exit /^S/ && $9 == "s1 header" ? 0 : 1}' && \
     success  "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -5724,7 +5724,7 @@ printf ">q\nACG\n" | \
         --db <(printf ">t\nACGTACGTACGTACGTACGTACGTACGTACGT\n") \
         --minseqlength 1 \
         --quiet \
-        --chimeras /dev/null && \
+        --chimeras /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -5783,7 +5783,7 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
         --minseqlength 1 \
         --relabel OTU_ \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     grep "^>" | \
     tr "\n" " " | \
     grep -qx ">centroid=OTU_1;seqs=1 >centroid=OTU_2;seqs=1 " && \
@@ -6380,7 +6380,7 @@ printf ">s1\nACGTNNN\n>s2\nACGT\n" | \
         --id 0.5 \
         --minseqlength 1 \
         --quiet \
-        --consout -  | \
+        --consout - 2> /dev/null | \
     grep -q "NNN$" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -6817,7 +6817,7 @@ printf ">q\nACGTAGCTAGCTGATCGATCGTAGCTAGCTGA\n" | \
         --minseqlength 1 \
         --fulldp \
         --quiet \
-        --userout /dev/null && \
+        --userout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -7070,7 +7070,7 @@ printf ">q\nACGTAC\n" | \
         --minwordmatches 0 \
         --userfields target \
         --userout - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -qx "t" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -7187,7 +7187,7 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nRCGTACGTACGTACGTACGTACGTACGTAC
         --id 0.9 \
         --minseqlength 1 \
         --profile - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     awk -F "\t" 'NR == 2 {ok = (NF == 8 && $1 == 0 && $2 == "A" && $3 == 1 && $7 == 0 && $8 == 1)} END {exit ok ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -7412,7 +7412,7 @@ printf ">q\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n" | \
         --minseqlength 1 \
         --output_no_hits \
         --uc - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     awk '$1 == "N" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -8883,7 +8883,7 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
         --minseqlength 1 \
         --clusterout_id \
         --centroids - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep "^>" | \
     tr "\n" " " | \
     grep -qx ">a;clusterid=0 >b;clusterid=1 " && \
@@ -9361,7 +9361,7 @@ printf ">1-1234.1\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --id 0.97 \
         --minseqlength 1 \
         --otutabout - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     head -n 1 | \
     grep -qx "#OTU ID	1" && \
     success "${DESCRIPTION}" || \
@@ -9375,7 +9375,7 @@ printf ">q;sample=1-1234\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --id 0.97 \
         --minseqlength 1 \
         --otutabout - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     head -n 1 | \
     grep -qx "#OTU ID	1-1234" && \
     success "${DESCRIPTION}" || \
@@ -9736,7 +9736,7 @@ DESCRIPTION="issue 354: ambiguous matches are noted with a symbol + in alignment
     --minseqlength 1 \
     --quiet \
     --id 1.0 \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -Eqx "[[:space:]]+[+]" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -9748,7 +9748,7 @@ DESCRIPTION="issue 354: ambiguous matches are noted with a symbol + in alignment
     --minseqlength 1 \
     --quiet \
     --id 1.0 \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -Eqx "[[:space:]]+[+]" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -9760,7 +9760,7 @@ DESCRIPTION="issue 354: regular matches are noted with a symbol | in alignments"
     --minseqlength 1 \
     --quiet \
     --id 1.0 \
-    --alnout - | \
+    --alnout - 2> /dev/null | \
     grep -Eqx "[[:space:]]+[|]" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -9931,7 +9931,7 @@ printf ">s1;size=1\nAT\n>s2;size=9\nAA\n>s3;size=1\nAT\n" | \
         --sizein \
         --id 0.5 \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     tr "\n" "@" | \
     grep -qx ">centroid=s2;size=9;seqs=3@AA@" && \
     success "${DESCRIPTION}" || \
@@ -10458,7 +10458,7 @@ DESCRIPTION="issue 388: blast6out returns 12 tab-separated columns"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'BEGIN {FS = "\t"} {exit NF == 12 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -10567,7 +10567,7 @@ printf ">q\nAAA\n" | \
         --id 1.0 \
         --quiet \
         --userfields pv \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -10583,7 +10583,7 @@ printf ">q\nAAA\n" | \
         --n_mismatch \
         --quiet \
         --userfields pv \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -qx "0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -10625,7 +10625,7 @@ printf ">q\nAAA\n>s\nNNN\n" | \
         --id 1.0 \
         --quiet \
         --userfields pv \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -10639,7 +10639,7 @@ printf ">q\nAAA\n>s\nNNN\n" | \
         --n_mismatch \
         --quiet \
         --userfields pv \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -10652,7 +10652,7 @@ printf ">q\nAAA\n>s\nNNN\n" | \
         --id 1.0 \
         --quiet \
         --userfields pv \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -10666,7 +10666,7 @@ printf ">q\nAAA\n>s\nNNN\n" | \
         --n_mismatch \
         --quiet \
         --userfields pv \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -10679,7 +10679,7 @@ printf ">q\nAAA\n>s\nNNN\n" | \
         --id 1.0 \
         --quiet \
         --userfields pv \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -10693,7 +10693,7 @@ printf ">q\nAAA\n>s\nNNN\n" | \
         --n_mismatch \
         --quiet \
         --userfields pv \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -10706,7 +10706,7 @@ printf ">q;size=32;\nAAA\n>s;size=8;\nNNN\n" | \
         --id 1.0 \
         --quiet \
         --userfields pv \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -10720,7 +10720,7 @@ printf ">q;size=32;\nAAA\n>s;size=8;\nNNN\n" | \
         --n_mismatch \
         --quiet \
         --userfields pv \
-        --userout - | \
+        --userout - 2> /dev/null | \
     grep -q "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -11148,7 +11148,7 @@ printf ">s1;size=10;\nAAAA\n>s2;size=1;\nTTTT\n" | \
         --id 0.5 \
         --minseqlength 1 \
         --centroids - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     grep -c "^>" | \
     grep -qx "2" && \
     success "${DESCRIPTION}" || \
@@ -11468,7 +11468,7 @@ DESCRIPTION="issue 408: --maxhits 0 means unlimited hits"
     --maxhits 0 \
     --userfields query+target \
     --userout - \
-    --quiet | \
+    --quiet 2> /dev/null | \
     awk 'END {exit (NR > 0) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -11834,7 +11834,7 @@ printf ">s1;size=5;\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
         --minseqlength 1 \
         --xsize \
         --uc - \
-        --quiet | \
+        --quiet 2> /dev/null | \
     awk '$1 == "S" {print $9}' | \
     grep -qx "s1" && \
     success "${DESCRIPTION}" || \
@@ -12415,7 +12415,7 @@ DESCRIPTION="issue 473: use qrow and trow fields to output aligned sequences"
     --minseqlength 1 \
     --id 0.8 \
     --userfields "qrow+trow" \
-    --userout - | \
+    --userout - 2> /dev/null | \
     tr "\t" "@" | \
     grep -qx "AAATCG@AAATGG" && \
     success "${DESCRIPTION}" || \
@@ -12524,7 +12524,7 @@ printf ">s1;size=2;sample=A1;\nA\n>s2;size=1;sample=A2;\nA\n>s3;size=4;sample=A3
         --sizein \
         --sizeout \
         --relabel OTU_ \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     tr -d '\n' | \
     tr "\t" "@" | \
     grep -qx "#OTU ID@A1@A2@A3OTU_1@2@1@4" && \
@@ -13318,7 +13318,7 @@ DESCRIPTION="issue 506: reading --db from process substitutions"
     --uchime_ref <(printf ">query\nAAGG\n") \
     --db <(printf ">parentA\nAAAA\n>parentB\nGGGG\n") \
     --quiet \
-    --uchimeout /dev/null && \
+    --uchimeout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13328,7 +13328,7 @@ printf ">query\nAAGG\n" | \
         --uchime_ref - \
         --db <(printf ">parentA\nAAAA\n>parentB\nGGGG\n") \
         --quiet \
-        --uchimeout /dev/null && \
+        --uchimeout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13346,7 +13346,7 @@ printf ">parentA\nAAAA\n>parentB\nGGGG\n" | \
         --uchime_ref "${QUERY}" \
         --db /dev/stdin \
         --quiet \
-        --uchimeout /dev/null && \
+        --uchimeout /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${QUERY}"
@@ -13483,7 +13483,7 @@ printf ">s1\nA\n" | \
         --id 0.5 \
         --quiet \
         --uc /dev/null \
-        --clusters "tmp${PREFIX}" && \
+        --clusters "tmp${PREFIX}" 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "tmp${PREFIX}0"
@@ -13495,7 +13495,7 @@ printf ">s1\nA\n" | \
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --uc /dev/null && \
+        --uc /dev/null 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -13825,7 +13825,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, single match)"
     --minseqlength 1 \
     --id 0.50 \
     --quiet \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13838,7 +13838,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, double match)"
     --minseqlength 1 \
     --id 0.50 \
     --quiet \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13853,7 +13853,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizeout, single match
     --id 0.50 \
     --quiet \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13868,7 +13868,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizeout, double match
     --id 0.50 \
     --quiet \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13883,7 +13883,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizein, single match)
     --id 0.50 \
     --quiet \
     --sizein \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13898,7 +13898,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizein, double match)
     --id 0.50 \
     --quiet \
     --sizein \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13913,7 +13913,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizein, sizeout, sing
     --quiet \
     --sizein \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13928,7 +13928,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (no size, sizein, sizeout, doub
     --quiet \
     --sizein \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13942,7 +13942,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, single match)"
     --minseqlength 1 \
     --id 0.50 \
     --quiet \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13956,7 +13956,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, double match)"
     --minseqlength 1 \
     --id 0.50 \
     --quiet \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13971,7 +13971,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizeout, single 
     --id 0.50 \
     --quiet \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -13986,7 +13986,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizeout, double 
     --id 0.50 \
     --quiet \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14001,7 +14001,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, single m
     --id 0.50 \
     --quiet \
     --sizein \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14016,7 +14016,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, double m
     --id 0.50 \
     --quiet \
     --sizein \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14032,7 +14032,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, sizeout,
     --quiet \
     --sizein \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14048,7 +14048,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (subject size, sizein, sizeout,
     --quiet \
     --sizein \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14061,7 +14061,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, single match)"
     --minseqlength 1 \
     --id 0.50 \
     --quiet \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14074,7 +14074,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, double match)"
     --minseqlength 1 \
     --id 0.50 \
     --quiet \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14088,7 +14088,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizeout, single ma
     --id 0.50 \
     --quiet \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14102,7 +14102,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizeout, double ma
     --id 0.50 \
     --quiet \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14116,7 +14116,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizein, single mat
     --id 0.50 \
     --quiet \
     --sizein \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14130,7 +14130,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizein, double mat
     --id 0.50 \
     --quiet \
     --sizein \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14145,7 +14145,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizein, sizeout, s
     --quiet \
     --sizein \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14160,7 +14160,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, sizein, sizeout, d
     --quiet \
     --sizein \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=5" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14174,7 +14174,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, sing
     --minseqlength 1 \
     --id 0.50 \
     --quiet \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14188,7 +14188,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, doub
     --minseqlength 1 \
     --id 0.50 \
     --quiet \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14203,7 +14203,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --id 0.50 \
     --quiet \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14218,7 +14218,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --id 0.50 \
     --quiet \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14233,7 +14233,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --id 0.50 \
     --quiet \
     --sizein \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14248,7 +14248,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --id 0.50 \
     --quiet \
     --sizein \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=6" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14264,7 +14264,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --quiet \
     --sizein \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14280,7 +14280,7 @@ DESCRIPTION="issue 521: usearch_global dbmatched (query size, subject size, size
     --quiet \
     --sizein \
     --sizeout \
-    --dbmatched /dev/stdout | \
+    --dbmatched /dev/stdout 2> /dev/null | \
     grep -qx ">s1;size=5" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -14462,7 +14462,7 @@ printf ">s1\n%10s\n" " " | \
         --makeudb_usearch /dev/stdin \
         --minseqlength 10 \
         --quiet \
-        --output "${TMP_UDB}" && \
+        --output "${TMP_UDB}" 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP_UDB}"
@@ -14492,7 +14492,7 @@ printf ">s1\n%50000s\n" " " | \
     "${VSEARCH}" \
         --makeudb_usearch /dev/stdin \
         --quiet \
-        --output "${TMP_UDB}" && \
+        --output "${TMP_UDB}" 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm "${TMP_UDB}"
@@ -16027,7 +16027,7 @@ printf "" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     grep -qx "#OTU ID" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16045,7 +16045,7 @@ printf ">s1;sample=sample1\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'END {exit NF == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16061,7 +16061,7 @@ printf ">s1;sample=sample1\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16077,7 +16077,7 @@ printf ">s1;sample=sample1\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" '{exit $2 == "sample1" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16093,7 +16093,7 @@ printf ">s1;sample=sample1\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 2 {exit $1 == "s1" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16109,7 +16109,7 @@ printf ">s1;sample=sample1\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 2 {exit $2 == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16126,7 +16126,7 @@ printf ">s1;sample=sample1;size=2\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 2 {exit $2 == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16143,7 +16143,7 @@ printf ">s1;sample=sample1\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     grep -qw "#OTU ID" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16161,7 +16161,7 @@ printf ">s1;sample=sample1\nAA\n>s1;sample=sample1\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 2 {exit $2 == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16178,7 +16178,7 @@ printf ">s1;sample=\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 1 {exit $2 == "" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16196,7 +16196,7 @@ printf ">s1;sample=\nAA\n>s1;sample=sample1\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 1 {exit ($2 == "" && $3 == "sample1") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16222,7 +16222,7 @@ DESCRIPTION="issue 536: otutabout accepts two samples (common sequence)"
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 2 {exit ($1 == "s1" && $2 == 1 && $3 == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16244,7 +16244,7 @@ DESCRIPTION="issue 536: otutabout accepts two samples (exclusive sequences, thre
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'END {exit NR == 3 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16262,7 +16262,7 @@ DESCRIPTION="issue 536: otutabout accepts two samples (exclusive sequences, abse
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" '$1 == "s1" {exit ($3 == 0) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16280,7 +16280,7 @@ DESCRIPTION="issue 536: otutabout accepts two samples (exclusive sequences, pres
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" '$1 == "s1" {exit ($2 == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16298,7 +16298,7 @@ DESCRIPTION="issue 536: otutabout accepts two samples (exclusive sequences, firs
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" '$1 == "s1" {exit ($2 == 1 && $3 == 0) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16316,7 +16316,7 @@ DESCRIPTION="issue 536: otutabout accepts two samples (exclusive sequences, seco
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" '$1 == "s2" {exit ($2 == 0 && $3 == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16334,7 +16334,7 @@ DESCRIPTION="issue 536: otutabout accepts two samples (common and exclusive sequ
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'END {exit NR == 4 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16352,7 +16352,7 @@ DESCRIPTION="issue 536: otutabout contains the expected number of reads (same as
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk 'NR > 1 {for (i=2 ; i<=NF ; i++) {sum += $i}} \
          END {exit sum == 4 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -16372,7 +16372,7 @@ DESCRIPTION="issue 536: otutabout sample names are alpha sorted (two samples, no
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 1 {exit ($2 == "sample1" && \
                                 $3 == "sample2") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -16392,7 +16392,7 @@ DESCRIPTION="issue 536: otutabout sample names are alpha sorted (two samples, re
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 1 {exit ($2 == "sample1" && \
                                 $3 == "sample2") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
@@ -16413,7 +16413,7 @@ DESCRIPTION="issue 536: otutabout sample names are alpha sorted (three samples, 
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 1 {exit ($2 == "sample1" && \
                                 $3 == "sample2" && \
                                 $4 == "sample3") ? 0 : 1}' && \
@@ -16433,7 +16433,7 @@ DESCRIPTION="issue 536: otutabout cluster names are alpha sorted (normal input o
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     cut -f 1 | \
     tail -n +2 | \
     tr "\n" "@" | \
@@ -16454,7 +16454,7 @@ DESCRIPTION="issue 536: otutabout cluster names are alpha sorted (reverse input 
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     cut -f 1 | \
     tail -n +2 | \
     tr "\n" "@" | \
@@ -16479,7 +16479,7 @@ printf ">s1\nAA\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 1 {exit $2 == "s1" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16500,7 +16500,7 @@ printf ">s1\nAA\n>s2\nGG\n>s3\nCC\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     tr "\t" "@" | \
     tr "\n" "#" | \
     grep -qx "#OTU ID@s1@s2@s3#s1@1@0@0#s2@0@1@0#s3@0@0@1#" && \
@@ -16526,7 +16526,7 @@ printf ">q1;sample=s;size=1\nAA\n>q2;sample=s;size=5\nGG\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 2 {exit ($1 == "aaa" && $2 == 1) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16543,7 +16543,7 @@ printf ">q1;sample=s;size=1\nAA\n>q2;sample=s;size=5\nGG\n" | \
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'END {exit ($1 == "bbb" && $2 == 5) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16583,7 +16583,7 @@ DESCRIPTION="issue 536: otutabout works with both --sample and --relabel (sample
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" 'NR == 1 {exit ($2 == "alpha" && $3 == "beta") ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16613,7 +16613,7 @@ DESCRIPTION="issue 536: otutabout works with both --sample and --relabel (abunda
         --qmask none \
         --dbmask none \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     awk -F "\t" '$1 == "ggg" {exit ($2 == 1 && $3 == 0) ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -16798,7 +16798,7 @@ ${VSEARCH} \
     --makeudb_usearch <(printf ">t1\nA\n") \
     --minseqlength 1 \
     --quiet \
-    --output "${TMP}"
+    --output "${TMP}" 2> /dev/null
 
 ${VSEARCH} \
     --udb2fasta "${TMP}" \
@@ -16817,7 +16817,7 @@ ${VSEARCH} \
     --notrunclabels \
     --minseqlength 1 \
     --quiet \
-    --output "${TMP}"
+    --output "${TMP}" 2> /dev/null
 
 ${VSEARCH} \
     --udb2fasta "${TMP}" \
@@ -16835,7 +16835,7 @@ ${VSEARCH} \
     --makeudb_usearch <(printf ">t1 extra\nA\n") \
     --minseqlength 1 \
     --quiet \
-    --output "${TMP}"
+    --output "${TMP}" 2> /dev/null
 
 ${VSEARCH} \
     --udb2fasta "${TMP}" \
@@ -16854,7 +16854,7 @@ ${VSEARCH} \
     --notrunclabels \
     --minseqlength 1 \
     --quiet \
-    --output "${TMP}"
+    --output "${TMP}" 2> /dev/null
 
 ${VSEARCH} \
     --udb2fasta "${TMP}" \
@@ -16893,7 +16893,7 @@ printf ">s1\nAAA\n" | \
     --uchime_denovo - \
     --quiet \
     --maxseqlength 3 \
-    --uchimeout - | \
+    --uchimeout - 2> /dev/null | \
     grep -q "s1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17040,7 +17040,7 @@ ${VSEARCH} \
     --id 1.00 \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     tr "\t" " " | \
     grep -qx "q1 t1" && \
     success "${DESCRIPTION}" || \
@@ -17058,7 +17058,7 @@ ${VSEARCH} \
     --id 1.00 \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     grep -qx "." && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -17073,7 +17073,7 @@ ${VSEARCH} \
     --quiet \
     --output_no_hits \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     tr "\t" " " | \
     grep -qx "q1 \*" && \
     success "${DESCRIPTION}" || \
@@ -17089,7 +17089,7 @@ ${VSEARCH} \
     --quiet \
     --output_no_hits \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     tr "\t" " " | \
     grep -qx "q1 t1" && \
     success "${DESCRIPTION}" || \
@@ -17105,7 +17105,7 @@ ${VSEARCH} \
     --quiet \
     --output_no_hits \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17123,7 +17123,7 @@ ${VSEARCH} \
     --id 1.00 \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17138,7 +17138,7 @@ ${VSEARCH} \
     --id 1.00 \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17153,7 +17153,7 @@ ${VSEARCH} \
     --id 1.00 \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17173,7 +17173,7 @@ ${VSEARCH} \
     --maxaccepts 0 \
     --maxhits 1 \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17189,7 +17189,7 @@ ${VSEARCH} \
     --maxaccepts 0 \
     --maxhits 1 \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17205,7 +17205,7 @@ ${VSEARCH} \
     --maxaccepts 0 \
     --maxhits 2 \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17221,7 +17221,7 @@ ${VSEARCH} \
     --maxaccepts 0 \
     --maxhits 0 \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17244,7 +17244,7 @@ ${VSEARCH} \
     --strand plus \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17258,7 +17258,7 @@ ${VSEARCH} \
     --strand plus \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17272,7 +17272,7 @@ ${VSEARCH} \
     --strand both \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17287,7 +17287,7 @@ ${VSEARCH} \
     --strand both \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17303,7 +17303,7 @@ ${VSEARCH} \
     --maxaccepts 1 \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17320,7 +17320,7 @@ ${VSEARCH} \
     --maxhits 1 \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17336,7 +17336,7 @@ ${VSEARCH} \
     --maxaccepts 0 \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17351,7 +17351,7 @@ ${VSEARCH} \
     --top_hits_only \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17366,7 +17366,7 @@ ${VSEARCH} \
     --top_hits_only \
     --quiet \
     --userfields query+target \
-    --userout - | \
+    --userout - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17663,7 +17663,7 @@ ${VSEARCH} \
     --minseqlength 1 \
     --id 1.00 \
     --quiet \
-    --uc - | \
+    --uc - 2> /dev/null | \
     awk 'END {exit $1 == "H" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17675,7 +17675,7 @@ ${VSEARCH} \
     --minseqlength 1 \
     --id 1.00 \
     --quiet \
-    --uc - | \
+    --uc - 2> /dev/null | \
     awk 'END {exit $1 == "H" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17687,7 +17687,7 @@ ${VSEARCH} \
     --minseqlength 1 \
     --id 1.00 \
     --quiet \
-    --uc - | \
+    --uc - 2> /dev/null | \
     awk 'END {exit $1 == "H" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17699,7 +17699,7 @@ ${VSEARCH} \
     --minseqlength 1 \
     --id 1.00 \
     --quiet \
-    --uc - | \
+    --uc - 2> /dev/null | \
     awk 'END {exit $1 == "H" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -17757,7 +17757,7 @@ ${VSEARCH} \
     --minseqlength 1 \
     --id 1.00 \
     --quiet \
-    --otutabout - | \
+    --otutabout - 2> /dev/null | \
     awk 'END {exit $2 == 1 && $3 == 1 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18026,7 +18026,7 @@ ${VSEARCH} \
     --weak_id 0.75 \
     --maxaccepts 1 \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18042,7 +18042,7 @@ ${VSEARCH} \
     --maxaccepts 0 \
     --maxrejects 1 \
     --quiet \
-    --blast6out - | \
+    --blast6out - 2> /dev/null | \
     awk 'END {exit NR == 1 && $2 == "s1" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18093,7 +18093,7 @@ DESCRIPTION="issue 557: consout consensus keeps common bases (A)"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18104,7 +18104,7 @@ DESCRIPTION="issue 557: consout consensus keeps common bases (C)"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "C" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18115,7 +18115,7 @@ DESCRIPTION="issue 557: consout consensus keeps common bases (G)"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "G" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18126,7 +18126,7 @@ DESCRIPTION="issue 557: consout consensus keeps common bases (T)"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "T" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18137,7 +18137,7 @@ DESCRIPTION="issue 557: consout consensus is not case-sensitive (A-a)"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18148,7 +18148,7 @@ DESCRIPTION="issue 557: consout consensus is not case-sensitive (a-A)"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18159,7 +18159,7 @@ DESCRIPTION="issue 557: consout consensus is not case-sensitive (a-a)"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18170,7 +18170,7 @@ DESCRIPTION="issue 557: consout common bases are uppercased"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "A" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18181,7 +18181,7 @@ DESCRIPTION="issue 557: consout picks most common base (2/3rd AA)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18192,7 +18192,7 @@ DESCRIPTION="issue 557: consout does not pick least common base (1/3rd AC)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AC" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -18203,7 +18203,7 @@ DESCRIPTION="issue 557: consout picks most common base (3/5th AA)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18214,7 +18214,7 @@ DESCRIPTION="issue 557: consout does not pick least common base (2/5th AC)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AC" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -18225,7 +18225,7 @@ DESCRIPTION="issue 557: consout picks most common base (1/2 AT)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18236,7 +18236,7 @@ DESCRIPTION="issue 557: consout picks most common base (2/5 AT)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18247,7 +18247,7 @@ DESCRIPTION="issue 557: consout picks most common base (3/9 AT)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18266,7 +18266,7 @@ DESCRIPTION="issue 557: consout picks most common base (4/13 AT)"
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18285,7 +18285,7 @@ DESCRIPTION="issue 557: consout picks most common base (5/17 AT)"
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18304,7 +18304,7 @@ DESCRIPTION="issue 557: consout picks most common base (6/21 AT)"
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18323,7 +18323,7 @@ DESCRIPTION="issue 557: consout picks most common base (100/397 AT)"
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18343,7 +18343,7 @@ DESCRIPTION="issue 557: consout picks most common base (1000/3997 AT)"
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18356,7 +18356,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18367,7 +18367,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18378,7 +18378,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18389,7 +18389,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18400,7 +18400,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18411,7 +18411,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18423,7 +18423,7 @@ DESCRIPTION="issue 557: consout equally common bases are sorted alphabetically (
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18437,7 +18437,7 @@ DESCRIPTION="issue 557: consout picks any base rather than N (A)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18448,7 +18448,7 @@ DESCRIPTION="issue 557: consout picks any base rather than N (C)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AC" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18459,7 +18459,7 @@ DESCRIPTION="issue 557: consout picks any base rather than N (G)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AG" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18470,7 +18470,7 @@ DESCRIPTION="issue 557: consout picks any base rather than N (T)"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18481,7 +18481,7 @@ DESCRIPTION="issue 557: consout picks any base rather than N (t, case-insensitiv
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18492,7 +18492,7 @@ DESCRIPTION="issue 557: consout picks N if there are no other base"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "NA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18503,7 +18503,7 @@ DESCRIPTION="issue 557: consout picks N if there is only Ns"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "NA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18514,7 +18514,7 @@ DESCRIPTION="issue 557: consout picks a base, even if there are several Ns"
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "AA" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18528,7 +18528,7 @@ DESCRIPTION="issue 557: consout never picks a gap even if gaps are dominant (5')
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "CGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18539,7 +18539,7 @@ DESCRIPTION="issue 557: consout never picks a gap even if gaps are dominant (3')
     --minseqlength 1 \
     --id 0.5 \
     --quiet \
-    --consout - | \
+    --consout - 2> /dev/null | \
     grep -qx "CGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18553,7 +18553,7 @@ printf ">q1\n%sC%s\n>q2\n%s%s\n>q3\n%s%s\n" ${SEQ} ${SEQ} ${SEQ} ${SEQ} ${SEQ} $
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --consout - | \
+        --consout - 2> /dev/null | \
     grep -qx "ATATATATATATATAT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18567,7 +18567,7 @@ printf ">q1\n%sC%s\n>q2\n%s%s\n>q3\n%s%s\n" ${SEQ} ${SEQ} ${SEQ} ${SEQ} ${SEQ} $
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --msaout - | \
+        --msaout - 2> /dev/null | \
     grep -qx "ATATATAT-ATATATAT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18583,7 +18583,7 @@ printf ">q1\nT\n>q2\nU\n" | \
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --profile - | \
+        --profile - 2> /dev/null | \
     awk 'NR == 2 {exit $6 == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18595,7 +18595,7 @@ printf ">q1\nU\n>q2\nT\n" | \
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --profile - | \
+        --profile - 2> /dev/null | \
     awk 'NR == 2 {exit $6 == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18607,7 +18607,7 @@ printf ">q1\nR\n>q2\nS\n>q3\nW\n>q4\nK\n>q5\nM\n>q6\nB\n>q7\nD\n>q8\nH\n>q9\nV\n
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --profile - | \
+        --profile - 2> /dev/null | \
     awk 'NR == 2 {exit $NF == 10 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18619,7 +18619,7 @@ printf ">q1\nY\n>q2\nN\n" | \
         --minseqlength 1 \
         --id 0.5 \
         --quiet \
-        --profile - | \
+        --profile - 2> /dev/null | \
     awk 'NR == 2 {exit $NF == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18647,7 +18647,7 @@ DESCRIPTION="issue 558: usearch_global, use sample IDs in query"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --otutabout - | \
+    --otutabout - 2> /dev/null | \
     awk 'NR == 1 {exit $NF == "MS-A" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18660,7 +18660,7 @@ DESCRIPTION="issue 558: usearch_global, sample IDs in db are not used"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --otutabout - | \
+    --otutabout - 2> /dev/null | \
     awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18673,7 +18673,7 @@ DESCRIPTION="issue 558: usearch_global, sample IDs are truncated after ';'"
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --otutabout - | \
+    --otutabout - 2> /dev/null | \
     awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18685,7 +18685,7 @@ DESCRIPTION="issue 558: usearch_global, sample IDs are truncated after ' ' (spac
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --otutabout - | \
+    --otutabout - 2> /dev/null | \
     awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18699,7 +18699,7 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (default to sequence i
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --otutabout - | \
+    --otutabout - 2> /dev/null | \
     awk 'NR == 1 {exit $NF == "MS1" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18711,7 +18711,7 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (truncate sequence ide
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --otutabout - | \
+    --otutabout - 2> /dev/null | \
     awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18723,7 +18723,7 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (truncate sequence ide
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --otutabout - | \
+    --otutabout - 2> /dev/null | \
     awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18735,7 +18735,7 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (truncate sequence ide
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --otutabout - | \
+    --otutabout - 2> /dev/null | \
     awk 'NR == 1 {exit $NF == "MS" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -18748,7 +18748,7 @@ DESCRIPTION="issue 558: usearch_global, missing sample ID (no truncation at '_')
     --minseqlength 1 \
     --id 1.0 \
     --quiet \
-    --otutabout - | \
+    --otutabout - 2> /dev/null | \
     awk 'NR == 1 {exit $NF == "MS_A" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -19799,7 +19799,7 @@ cat "${SAMPLE1}" "${SAMPLE2}" | \
         --relabel OTU_ \
         --sizeout \
         --quiet \
-        --otutabout - | \
+        --otutabout - 2> /dev/null | \
     tr "\t" "@" | \
     grep -qx "OTU_1@1@1" && \
     success "${DESCRIPTION}" || \
@@ -19841,7 +19841,7 @@ clusterize_identical() {
         --iddef 1 \
         --id 1.0 \
         --quiet \
-        --uc /dev/stdout
+        --uc /dev/stdout 2> /dev/null
 }
 
 expect_one_cluster() {
@@ -19987,7 +19987,7 @@ printf ">s1\nAA\n>s2\nA\n" | \
         --iddef 1 \
         --id 1.0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     awk '$1 == "C" {count += 1} END {exit count == 2 ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -20370,7 +20370,7 @@ DESCRIPTION="issue 589: --usearch_global outputs expected pairwise alignment res
     --id 0 \
     --wordlength 7 \
     --quiet \
-    --uc - | \
+    --uc - 2> /dev/null | \
     awk '/^H/ {exit $8 == "2M" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -20384,7 +20384,7 @@ printf ">S1;size=5\nTGT\n>S2;size=1\nCT\n" | \
         --threads 1 \
         --quiet \
         --id 0 \
-        --uc - | \
+        --uc - 2> /dev/null | \
     awk '/^H/ {exit $8 == "=" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -20398,7 +20398,7 @@ printf ">S1;size=5\nTGT\n>S2;size=1\nCT\n" | \
         --threads 1 \
         --quiet \
         --id 0 \
-        --uc - | \
+        --uc - 2> /dev/null | \
     awk '/^H/ {exit $8 == "DM2I" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -20413,7 +20413,7 @@ printf ">S1;size=5\nTGT\n>S2;size=1\nCT\n" | \
         --threads 1 \
         --quiet \
         --id 0 \
-        --uc - | \
+        --uc - 2> /dev/null | \
     awk '/^H/ {exit $8 == "DM2I" ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -20520,7 +20520,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --top_hits_only \
         --quiet \
         --userfields target \
-        --userout - | \
+        --userout - 2> /dev/null | \
     tr "\n" " " | \
     grep -qx "d1 " && \
     success "${DESCRIPTION}" || \
@@ -20788,7 +20788,7 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
         --cluster_fast - \
         --id 1.0 \
         --quiet \
-        --centroids - | \
+        --centroids - 2> /dev/null | \
     grep -qx "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
@@ -20821,7 +20821,7 @@ printf ">s\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --makeudb_usearch - \
         --quiet \
-        --output "${TMP_OUTPUT}" && \
+        --output "${TMP_OUTPUT}" 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${TMP_OUTPUT}"
@@ -20918,7 +20918,7 @@ printf ">s1\nACGT\n>s2\nACGT\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -20932,7 +20932,7 @@ printf ">s1\nACGT\n>s2\nTCGT\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -20946,7 +20946,7 @@ printf ">s1\nACGT\n>s2\nAGGT\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -20960,7 +20960,7 @@ printf ">s1\nACGT\n>s2\nACGA\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -20974,7 +20974,7 @@ printf ">s1\nAAAA\n>s2\nTTTT\n" | \
         --iddef 0 \
         --strand "both" \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -20989,7 +20989,7 @@ printf ">s1\nAAAA\n>s2\nTTCT\n" | \
         --iddef 0 \
         --strand "both" \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21002,7 +21002,7 @@ printf ">s1\nAAACC\n>s2\nAAA\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -21015,7 +21015,7 @@ printf ">s1\nAAACC\n>s2\nTAA\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21028,7 +21028,7 @@ printf ">s1\nAAACC\n>s2\nATA\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21041,7 +21041,7 @@ printf ">s1\nAAACC\n>s2\nAAT\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21055,7 +21055,7 @@ printf ">s1\nAAACC\n>s2\nTTT\n" | \
         --iddef 0 \
         --strand "both" \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -21068,7 +21068,7 @@ printf ">s1\nCCAAA\n>s2\nAAA\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -21081,7 +21081,7 @@ printf ">s1\nCCAAA\n>s2\nTAA\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21094,7 +21094,7 @@ printf ">s1\nCCAAA\n>s2\nATA\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21107,7 +21107,7 @@ printf ">s1\nCCAAA\n>s2\nAAT\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21121,7 +21121,7 @@ printf ">s1\nCCAAA\n>s2\nTTT\n" | \
         --iddef 0 \
         --strand "both" \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -21134,7 +21134,7 @@ printf ">s1\nCCAAACC\n>s2\nAAA\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -21147,7 +21147,7 @@ printf ">s1\nCCAAACC\n>s2\nTAA\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21160,7 +21160,7 @@ printf ">s1\nCCAAACC\n>s2\nATA\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21173,7 +21173,7 @@ printf ">s1\nCCAAACC\n>s2\nAAT\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21187,7 +21187,7 @@ printf ">s1\nCCAAACC\n>s2\nTTT\n" | \
         --iddef 0 \
         --strand "both" \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
@@ -21201,7 +21201,7 @@ printf ">s1\nCCAA\n>s2\nGCC\n" | \
         --id 1.0 \
         --iddef 0 \
         --quiet \
-        --uc - | \
+        --uc - 2> /dev/null | \
     grep -q "^H" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
@@ -21389,7 +21389,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --top_hits_only \
         --quiet \
         --userfields target \
-        --userout - | \
+        --userout - 2> /dev/null | \
     sort | \
     tr "\n" " " | \
     grep -qx "d1 d2 " && \
