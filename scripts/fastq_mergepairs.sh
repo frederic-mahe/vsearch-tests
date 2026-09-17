@@ -2638,6 +2638,40 @@ DESCRIPTION="fastq_mergepairs --fastq_nostagger discards staggered pairs (explic
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+# A pair is staggered whichever of the two reads runs past the other's
+# 5' end. Above, the reads are the same length and it is the reverse read
+# that overhangs. Below, the forward read is the longer one (20 nt against
+# 12 nt, as truncation routinely produces) and it is the forward read that
+# runs 4 nt past the 16-nt fragment:
+#
+# ACGTTGCAAGCCATGTTTAC      forward, 20 nt
+#     ||||||||||||
+# ----TGCAAGCCATGT          reverse-complemented reverse read, 12 nt
+#
+# the offset is 20 + 12 - 16 = 16, longer than the reverse read but not
+# longer than the forward read
+DESCRIPTION="fastq_mergepairs discards a staggered pair when the forward read is the one overhanging"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nACGTTGCAAGCCATGTTTAC\n+\nIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nACATGGCTTGCA\n+\nIIIIIIIIIIII\n") \
+    --fastq_nostagger \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "staggered read pairs" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the same pair is merged when staggering is allowed, and the forward
+# read's 4-nt overhang is excluded from the merged sequence
+DESCRIPTION="fastq_mergepairs merges a forward-overhanging staggered pair when allowed"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nACGTTGCAAGCCATGTTTAC\n+\nIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nACATGGCTTGCA\n+\nIIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --fastaout - 2> /dev/null | \
+    grep -qx "ACGTTGCAAGCCATGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 #*****************************************************************************#
 #                                                                             #
 #                               --label_suffix                                #
