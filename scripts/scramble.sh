@@ -236,17 +236,17 @@ DESCRIPTION="--scramble preserves the nucleotide composition of each sequence"
 compare_compositions() {
     local input="${1}"
     local output
-    output=$(printf "%s" "${input}" | \
+    output=$(printf "%b" "${input}" | \
                  "${VSEARCH}" \
                      --scramble - \
                      --quiet \
                      --fastaout -)
     diff \
-        <(printf "%s" "${input}" | awk '!/^>/' | \
+        <(printf "%b" "${input}" | awk '!/^>/' | \
               while read -r SEQ ; do
                   echo "${SEQ}" | fold -w1 | sort | tr -d "\n" ; echo
               done) \
-        <(printf "%s" "${output}" | awk '!/^>/' | \
+        <(printf "%s\n" "${output}" | awk '!/^>/' | \
               while read -r SEQ ; do
                   echo "${SEQ}" | fold -w1 | sort | tr -d "\n" ; echo
               done) > /dev/null

@@ -76,6 +76,7 @@ for test_script in vsearch.sh \
                        maskfasta.sh \
                        orient.sh \
                        rereplicate.sh \
+                       scramble.sh \
                        search_exact.sh \
                        sff_convert.sh \
                        shuffle.sh \
