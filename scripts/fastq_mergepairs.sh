@@ -191,11 +191,27 @@ DESCRIPTION="fastq_mergepairs merging rejected: staggered read pairs"
 # --AAAATAAAAAA
 #   |||||||||
 # AAAAAATAAAA--
+# the overlap drawn above is 9 nt, below the default --fastq_minovlen of
+# 10, so allowing the stagger is not enough on its own
+DESCRIPTION="fastq_mergepairs merging rejected: staggered 9-nt overlap (allowed, below the default minovlen)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "overlap too short" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --AAAATAAAAAA
+#   |||||||||
+# AAAAAATAAAA--
 DESCRIPTION="fastq_mergepairs merging accepted: staggered read pairs (allowed)"
 "${VSEARCH}" \
     --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
     --fastq_allowmergestagger \
+    --fastq_minovlen 9 \
     --fastqout /dev/null 2>&1 | \
     grep -q "Statistics of merged reads" && \
     success "${DESCRIPTION}" || \
@@ -1978,6 +1994,34 @@ DESCRIPTION="fastq_mergepairs --fastq_maxdiffpct 6 rejects 1 mismatch in a 15-nt
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+# The percentage is computed over the overlap region, not over the
+# alignment offset. The staggered pair below has 30-nt reads over a 20-nt
+# fragment, so each read overhangs the other by 10 nt: the offset is 40 nt
+# while only 20 nt are aligned. The single mismatch is therefore 5.00% of
+# the overlap, not 2.50% of the offset. Low Q on the mismatching base
+# keeps the alignment score acceptable.
+DESCRIPTION="fastq_mergepairs --fastq_maxdiffpct 4 rejects 1 mismatch in a staggered 20-nt overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nGTTCCTCATGCAATTCAAAACCATGTCCGT\n+\n#IIIIIIIIIIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTGAATTGCATGAGGAAAAATGTAGGCG\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --fastq_maxdiffpct 4 \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --fastq_maxdiffpct 5 accepts 1 mismatch in a staggered 20-nt overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nGTTCCTCATGCAATTCAAAACCATGTCCGT\n+\n#IIIIIIIIIIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTGAATTGCATGAGGAAAAATGTAGGCG\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --fastq_maxdiffpct 5 \
+    --fastaout - 2> /dev/null | \
+    grep -qx ">s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 
 #*****************************************************************************#
 #                                                                             #
@@ -2520,6 +2564,51 @@ DESCRIPTION="fastq_mergepairs option fastq_minovlen is accepted"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## ------------------------------------------------ --fastq_minovlen effect ---
+
+# The minimum is checked against the overlap region, not against the
+# alignment offset. Each read of the staggered pair below overhangs the
+# other by 2 nt, so the offset is 13 nt while only 9 nt are aligned:
+#
+# --AAAATAAAAAA
+#   |||||||||
+# AAAAAATAAAA--
+
+DESCRIPTION="fastq_mergepairs --fastq_minovlen 9 accepts a staggered 9-nt overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --fastq_minovlen 9 \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "overlap too short" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs --fastq_minovlen 10 rejects a staggered 9-nt overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --fastq_minovlen 10 \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "overlap too short" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# 13 is the alignment offset of that pair; the minimum is not tested
+# against it
+DESCRIPTION="fastq_mergepairs --fastq_minovlen 13 rejects a staggered 9-nt overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --fastq_minovlen 13 \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "overlap too short" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 #*****************************************************************************#
 #                                                                             #
 #                              --fastq_nostagger                              #
@@ -2546,6 +2635,40 @@ DESCRIPTION="fastq_mergepairs --fastq_nostagger discards staggered pairs (explic
     --fastq_nostagger \
     --fastaout /dev/null 2>&1 | \
     grep -q "staggered read pairs" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# A pair is staggered whichever of the two reads runs past the other's
+# 5' end. Above, the reads are the same length and it is the reverse read
+# that overhangs. Below, the forward read is the longer one (20 nt against
+# 12 nt, as truncation routinely produces) and it is the forward read that
+# runs 4 nt past the 16-nt fragment:
+#
+# ACGTTGCAAGCCATGTTTAC      forward, 20 nt
+#     ||||||||||||
+# ----TGCAAGCCATGT          reverse-complemented reverse read, 12 nt
+#
+# the offset is 20 + 12 - 16 = 16, longer than the reverse read but not
+# longer than the forward read
+DESCRIPTION="fastq_mergepairs discards a staggered pair when the forward read is the one overhanging"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nACGTTGCAAGCCATGTTTAC\n+\nIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nACATGGCTTGCA\n+\nIIIIIIIIIIII\n") \
+    --fastq_nostagger \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "staggered read pairs" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the same pair is merged when staggering is allowed, and the forward
+# read's 4-nt overhang is excluded from the merged sequence
+DESCRIPTION="fastq_mergepairs merges a forward-overhanging staggered pair when allowed"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nACGTTGCAAGCCATGTTTAC\n+\nIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nACATGGCTTGCA\n+\nIIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --fastaout - 2> /dev/null | \
+    grep -qx "ACGTTGCAAGCCATGT" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
