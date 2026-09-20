@@ -264,7 +264,7 @@ printf "@s\n%s\n+\nIII\n" "${PARENT_A}" | \
 rm -f "${DB}"
 unset DB
 
-DESCRIPTION="--uchime_ref rejects query that is not fasta"
+DESCRIPTION="--uchime_ref rejects query that is not fasta or fastq"
 DB=$(mktemp)
 printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
 printf "not a fasta file\n" | \
