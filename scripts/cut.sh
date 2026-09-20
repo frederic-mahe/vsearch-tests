@@ -329,14 +329,86 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--cut rejects fastq input"
+# --cut used to reject fastq input ('FASTA file expected, FASTQ file
+# found'), and an earlier version of this test pinned that rejection;
+# the maintainer decided during the 2026-09-20 review of issue 496 to
+# accept fastq instead -- as --sintax, --usearch_global and --fastx_mask
+# already did -- and explicitly authorized flipping this test, which now
+# fails against released binaries. Quality values are read and dropped,
+# and all four outputs stay in fasta format
+DESCRIPTION="--cut accepts fastq input"
 printf "@\nA\n+\nI\n" | \
     "${VSEARCH}" \
         --cut - \
         --cut_pattern G^AATT_C \
         --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+	failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut cuts fastq input exactly as it cuts fasta input"
+printf "@s\nGAATTC\n+\nIIIIII\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "G^AATT_C" \
+        --fastaout - 2> /dev/null | \
+    tr -d "\n" | \
+    grep -qx ">sG>sAATTC" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut writes fasta fragments for fastq input (no quality values)"
+printf "@s\nGAATTC\n+\nIIIIII\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "G^AATT_C" \
+        --fastaout - 2> /dev/null | \
+    awk 'END {exit NR == 4 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut cuts fastq input on the reverse strand (fastaout_rev)"
+printf "@s\nGAATTC\n+\nIIIIII\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "G^AATT_C" \
+        --fastaout_rev - 2> /dev/null | \
+    tr -d "\n" | \
+    grep -qx ">sAATTC>sG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut writes non-matching fastq input as fasta (fastaout_discarded)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "G^AATT_C" \
+        --fastaout_discarded - 2> /dev/null | \
+    tr -d "\n" | \
+    grep -qx ">sA" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cut reads the abundance from a fastq header (--sizein --sizeout)"
+printf "@s;size=5\nGAATTC\n+\nIIIIII\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "G^AATT_C" \
+        --sizein \
+        --sizeout \
+        --fastaout - 2> /dev/null | \
+    awk '/^>s;size=5$/ {s += 1} END {exit s == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the quality line is parsed, so a malformed one is still an error
+DESCRIPTION="--cut rejects fastq input with a truncated quality line"
+printf "@s\nGAATTC\n+\nIII\n" | \
+    "${VSEARCH}" \
+        --cut - \
+        --cut_pattern "G^AATT_C" \
+        --fastaout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
-	success "${DESCRIPTION}"
+        success "${DESCRIPTION}"
 
 DESCRIPTION="--cut accepts identical input sequences (not dereplicated)"
 printf ">s\nA\n>s\nA\n" | \

@@ -168,10 +168,92 @@ printf ">s\n%s\n" "${PARENT_A}" | \
 rm -f "${DB}"
 unset DB
 
-DESCRIPTION="--uchime_ref rejects fastq query input"
+# --uchime_ref used to reject a fastq query ('FASTA file expected,
+# FASTQ file found') while --uchime_denovo, --uchime2_denovo,
+# --uchime3_denovo and --chimeras_denovo all accepted one, and while
+# --uchime_ref itself already accepted a fastq --db file; an earlier
+# version of this test pinned that rejection. The maintainer decided
+# during the 2026-09-20 review of issue 496 to accept fastq queries too
+# and explicitly authorized flipping this test, which now fails against
+# released binaries. The query loop reads the header and the sequence,
+# quality values are ignored, and every output is written in fasta
+# format
+DESCRIPTION="--uchime_ref accepts fastq query input"
 DB=$(mktemp)
 printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
-printf "@s\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII\n" | \
+printf "@s\n%s\n+\n%s\n" "${PARENT_A}" "${PARENT_A//?/I}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --quiet \
+        --chimeras /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--uchime_ref detects a chimera in a fastq query"
+DB=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf "@chimeraAB\n%s\n+\n%s\n" "${CHIMERA_AB}" "${CHIMERA_AB//?/I}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --chimeras - \
+        --quiet | \
+    grep -qw ">chimeraAB" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a fastq query is written back as fasta: two lines, no '+' line
+DESCRIPTION="--uchime_ref writes fasta output for a fastq query"
+DB=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf "@chimeraAB\n%s\n+\n%s\n" "${CHIMERA_AB}" "${CHIMERA_AB//?/I}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --chimeras - \
+        --quiet | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the quality line is parsed and dropped, so detection results cannot
+## depend on it
+DESCRIPTION="--uchime_ref gives the same uchimeout for fastq and fasta queries"
+DB=$(mktemp)
+FASTA_OUTPUT=$(mktemp)
+FASTQ_OUTPUT=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf ">chimeraAB\n%s\n" "${CHIMERA_AB}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --uchimeout - \
+        --quiet > "${FASTA_OUTPUT}" 2> /dev/null
+printf "@chimeraAB\n%s\n+\n%s\n" "${CHIMERA_AB}" "${CHIMERA_AB//?/I}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --uchimeout - \
+        --quiet > "${FASTQ_OUTPUT}" 2> /dev/null
+cmp -s "${FASTA_OUTPUT}" "${FASTQ_OUTPUT}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${FASTA_OUTPUT}" "${FASTQ_OUTPUT}"
+unset DB FASTA_OUTPUT FASTQ_OUTPUT
+
+## the query file is parsed inside the worker threads, so a malformed
+## fastq query must stop the pool and be reported from the main thread
+DESCRIPTION="--uchime_ref rejects a fastq query with a truncated quality line"
+DB=$(mktemp)
+printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
+printf "@s\n%s\n+\nIII\n" "${PARENT_A}" | \
     "${VSEARCH}" \
         --uchime_ref - \
         --db "${DB}" \
@@ -182,7 +264,7 @@ printf "@s\nACGTACGTACGTACGTACGTACGTACGTACGT\n+\nIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 rm -f "${DB}"
 unset DB
 
-DESCRIPTION="--uchime_ref rejects query that is not fasta"
+DESCRIPTION="--uchime_ref rejects query that is not fasta or fastq"
 DB=$(mktemp)
 printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
 printf "not a fasta file\n" | \
