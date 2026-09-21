@@ -78,6 +78,7 @@ for test_script in vsearch.sh \
                        rereplicate.sh \
                        scramble.sh \
                        search_exact.sh \
+                       search_global.sh \
                        sff_convert.sh \
                        shuffle.sh \
                        sintax.sh \
