@@ -1499,6 +1499,625 @@ DESCRIPTION="fastq_mergepairs option eetabbedout is accepted"
 
 #*****************************************************************************#
 #                                                                             #
+#                                --tabbedout                                  #
+#                                                                             #
+#*****************************************************************************#
+
+# --tabbedout writes one line per input pair, merged or not, in input
+# order. Each line is a sequence of tab-separated tokens: the label of
+# the forward read, then a token for each value the merging pipeline
+# computed, then the reason the pair was rejected if it was, then
+# result=merged or result=notmerged.
+#
+# The backbone fixture below is a 20 nt pair that overlaps over its whole
+# length with a single mismatch, so it merges under default settings and
+# each of eight options in turn rejects it. Its report line is:
+#
+#   s  len=20-20  aln=0-20-0  diffs=1  diffpct=5.0  mergelen=20  ee=0.5027  relabel=s  result=merged
+#
+# 1...5....10...15...20
+# ACGTTGCAAGCCATGTAACG      forward
+# ||||||||||x|||||||||
+# ACGTTGCAAGCCATGTAACG      reverse-complemented reverse read (1 mismatch)
+FWD_20="ACGTTGCAAGCCATGTAACG"
+REV_20="CGTTACATGACTTGCAACGT"
+QUAL_20="IIIIIIIIIIIIIIIIIIII"
+
+## ------------------------------------------------------- option acceptance ---
+
+DESCRIPTION="fastq_mergepairs option tabbedout is accepted"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --tabbedout alone satisfies the requirement to name an output, as
+# --eetabbedout already does: a diagnostic run needs no read output
+DESCRIPTION="fastq_mergepairs accepts --tabbedout alone as output"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout /dev/null > /dev/null 2>&1 && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout writes to stdout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout writes to a file"
+TMP=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout "${TMP}" > /dev/null 2>&1
+[[ -s "${TMP}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP}"
+
+## ------------------------------------------------------------- structure ---
+
+# unlike --eetabbedout, which reports merged pairs only, --tabbedout
+# reports every input pair: two pairs in, one of them unmergeable
+DESCRIPTION="fastq_mergepairs tabbedout writes one line per input pair"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1\n%s\n+\n%s\n@s2\nA\n+\nI\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s1\n%s\n+\n%s\n@s2\nT\n+\nI\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout - 2> /dev/null | \
+    awk 'END {exit NR == 2 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports pairs that did not merge"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --tabbedout - 2> /dev/null | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# --eetabbedout reports the merged pair only, --tabbedout reports both
+DESCRIPTION="fastq_mergepairs tabbedout reports more pairs than eetabbedout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s1\n%s\n+\n%s\n@s2\nA\n+\nI\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s1\n%s\n+\n%s\n@s2\nT\n+\nI\n" "${REV_20}" "${QUAL_20}") \
+    --eetabbedout - 2> /dev/null | \
+    awk 'END {exit NR == 1 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout empty output when input is empty"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "") \
+    --reverse <(printf "") \
+    --tabbedout - 2> /dev/null | \
+    awk 'END {exit NR == 0 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout fields are tab-separated"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit NF >= 3 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout writes no header line"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout - 2> /dev/null | \
+    awk -F "\t" 'NR == 1 {exit $1 == "s" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout first field is the forward read label"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@lbl1\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@lbl2\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == "lbl1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the whole header, description included, exactly as the merged-read
+# outputs of this command write it. usearch truncates its equivalent
+# field at the first blank; vsearch does not truncate labels here.
+DESCRIPTION="fastq_mergepairs tabbedout keeps the whole header, description included"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s description here\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s description here\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == "s description here" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# and it is the same label --fastaout writes for that pair
+DESCRIPTION="fastq_mergepairs tabbedout label matches the fastaout header"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s description here\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s description here\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastaout - --quiet 2> /dev/null | \
+    grep -qx ">s description here" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout last field is result=merged when merging"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $NF == "result=merged" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout last field is result=notmerged when rejecting"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --tabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $NF == "result=notmerged" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------- one test per rejection ---
+
+# the eight rejections the backbone fixture reaches by adding one option
+
+DESCRIPTION="fastq_mergepairs tabbedout reports toomanydiffs"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastq_maxdiffs 0 \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\ttoomanydiffs\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports toomanydiffpct"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastq_maxdiffpct 4 \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\ttoomanydiffpct\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports mergetooshort"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastq_minmergelen 21 \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\tmergetooshort\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports mergetoolong"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastq_maxmergelen 19 \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\tmergetoolong\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports toohighee"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastq_maxee 0.0001 \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\ttoohighee\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports tooshort"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastq_minlen 21 \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\ttooshort\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports toolong"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastq_maxlen 19 \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\ttoolong\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports alntooshort"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastq_minovlen 21 \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\talntooshort\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports toomanyns"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nACGTTGCAAGCCATGTAACN\n+\n%s\n" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastq_maxns 0 \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\ttoomanyns\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the remaining rejections, on the fixtures the tests above already use
+
+DESCRIPTION="fastq_mergepairs tabbedout reports nokmers"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\tnokmers\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports multiplealns"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAAAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTTTTT\n+\nIIIIIIIIII\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\tmultiplealns\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports nostagger"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\tnostagger\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout reports lowscore"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAA\n+\nIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTA\n+\nIIIIIIIII\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -qP "\tlowscore\tresult=notmerged$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --------------------------------------------------------- field contents ---
+
+# 1...5....10
+# AAATAAAAAA
+# ||||||||||
+# AAATAAAAAA
+# the two reads overlap over their whole length, so neither contributes
+# anything outside the overlap
+DESCRIPTION="fastq_mergepairs tabbedout aln= of a full overlap is 0-10-0"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "aln=0-10-0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ACGTTGCAAGCCATGTTTAC      forward, 20 nt
+#     ||||||||||||
+# ----TGCAAGCCATGT          reverse-complemented reverse read, 12 nt
+# the forward read contributes 4 nt before the 12 nt overlap and the
+# reverse read nothing after it, and the forward read's 4 nt 3' overhang
+# is trimmed; the merged sequence is the 16 nt the other test pins
+DESCRIPTION="fastq_mergepairs tabbedout aln= of a forward-overhanging pair is 4-12-0"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nACGTTGCAAGCCATGTTTAC\n+\nIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nACATGGCTTGCA\n+\nIIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --tabbedout - 2> /dev/null | \
+    grep -q "aln=4-12-0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout aln= components sum to mergelen="
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nACGTTGCAAGCCATGTTTAC\n+\nIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nACATGGCTTGCA\n+\nIIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --tabbedout - 2> /dev/null | \
+    awk '{
+        for (i = 1; i <= NF; i++) {
+            if ($i ~ /^aln=/) {split(substr($i, 5), a, "-")}
+            if ($i ~ /^mergelen=/) {m = substr($i, 10)}
+        }
+        exit (a[1] + a[2] + a[3] == m) ? 0 : 1
+    }' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout mergelen= is the merged sequence length"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nACGTTGCAAGCCATGTTTAC\n+\nIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nACATGGCTTGCA\n+\nIIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --tabbedout - 2> /dev/null | \
+    grep -q "mergelen=16" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout diffs= is zero for a perfect overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "diffs=0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout diffs= counts the mismatch"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "diffs=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# one mismatch over a 20 nt overlap is 5.0%
+DESCRIPTION="fastq_mergepairs tabbedout diffpct= is 100 x diffs / overlap"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "diffpct=5.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout len= reports the input read lengths"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nACGTTGCAAGCCATGTTTAC\n+\nIIIIIIIIIIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nACATGGCTTGCA\n+\nIIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --tabbedout - 2> /dev/null | \
+    grep -q "len=20-12" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# the pair overlaps over 9 nt with 2 nt hanging off each 3' end
+DESCRIPTION="fastq_mergepairs tabbedout stagger= reports the trimmed bases"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
+    --fastq_allowmergestagger \
+    --fastq_minovlen 9 \
+    --tabbedout - 2> /dev/null | \
+    grep -q "stagger=2-2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout omits stagger= when nothing hangs over"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "stagger=" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# a pair with no alignment has no overlap to divide by: emitting a
+# percentage there would print -nan
+DESCRIPTION="fastq_mergepairs tabbedout omits aln= when no alignment was found"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "aln=" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout omits diffpct= when no alignment was found"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "diffpct=" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout never reports nan"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -qi "nan" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# the same expected-error value --fastq_eeout writes into the header
+DESCRIPTION="fastq_mergepairs tabbedout ee= matches the fastq_eeout annotation"
+EE_TAB=$("${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n++++++++++\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n++++++++++\n") \
+    --tabbedout - --quiet 2> /dev/null | \
+    grep -o "ee=[0-9.]*" | cut -d= -f2)
+EE_HDR=$("${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nAAATAAAAAA\n+\n++++++++++\n") \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\n++++++++++\n") \
+    --fastaout - --fastq_eeout --quiet 2> /dev/null | \
+    grep -o "ee=[0-9.]*" | cut -d= -f2)
+[[ "${EE_TAB}" == "${EE_HDR}" && -n "${EE_TAB}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset EE_TAB EE_HDR
+
+DESCRIPTION="fastq_mergepairs tabbedout omits ee= when the pair did not merge"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "ee=" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ---------------------------------------------------------------- relabel ---
+
+DESCRIPTION="fastq_mergepairs tabbedout relabel= repeats the label by default"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "relabel=s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout relabel= carries the new label"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --relabel lbl \
+    --tabbedout - 2> /dev/null | \
+    grep -q "relabel=lbl1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout first field keeps the input label when relabelling"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --relabel lbl \
+    --tabbedout - 2> /dev/null | \
+    awk -F "\t" '{exit $1 == "s" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout relabel= carries the sizeout annotation"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --sizeout \
+    --tabbedout - 2> /dev/null | \
+    grep -q "relabel=s;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout omits relabel= when the pair did not merge"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --tabbedout - 2> /dev/null | \
+    grep -q "relabel=" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ----------------------------------------------------------- interactions ---
+
+# --quiet gates the report on stderr, never a file output
+DESCRIPTION="fastq_mergepairs quiet does not suppress tabbedout"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --quiet \
+    --tabbedout - 2> /dev/null | \
+    grep -q "result=merged" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="fastq_mergepairs tabbedout is unchanged by the presence of fastqout"
+TMP1=$(mktemp)
+TMP2=$(mktemp)
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --tabbedout "${TMP1}" > /dev/null 2>&1
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\n%s\n+\n%s\n" "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
+    --fastqout /dev/null \
+    --tabbedout "${TMP2}" > /dev/null 2>&1
+cmp -s "${TMP1}" "${TMP2}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP1}" "${TMP2}"
+
+# vsearch writes the chunks in the order they were read, so the report is
+# in input order whatever the thread count; usearch gives no such
+# guarantee. 600 pairs spread over more than one 500-pair chunk.
+DESCRIPTION="fastq_mergepairs tabbedout is in input order with several threads"
+TMP1=$(mktemp)
+TMP2=$(mktemp)
+for i in $(seq 600) ; do
+    printf "@s%d\n%s\n+\n%s\n" "${i}" "${FWD_20}" "${QUAL_20}"
+done > "${TMP1}"
+for i in $(seq 600) ; do
+    printf "@s%d\n%s\n+\n%s\n" "${i}" "${REV_20}" "${QUAL_20}"
+done > "${TMP2}"
+"${VSEARCH}" \
+    --fastq_mergepairs "${TMP1}" \
+    --reverse "${TMP2}" \
+    --threads 4 \
+    --tabbedout - --quiet 2> /dev/null | \
+    awk -F "\t" '{sub("^s", "", $1); if ($1 != NR) {exit 1}} END {exit NR == 600 ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP1}" "${TMP2}"
+
+DESCRIPTION="fastq_mergepairs tabbedout is identical at one and four threads"
+TMP1=$(mktemp)
+TMP2=$(mktemp)
+TMP3=$(mktemp)
+TMP4=$(mktemp)
+for i in $(seq 600) ; do
+    printf "@s%d\n%s\n+\n%s\n" "${i}" "${FWD_20}" "${QUAL_20}"
+done > "${TMP1}"
+for i in $(seq 600) ; do
+    printf "@s%d\n%s\n+\n%s\n" "${i}" "${REV_20}" "${QUAL_20}"
+done > "${TMP2}"
+"${VSEARCH}" --fastq_mergepairs "${TMP1}" --reverse "${TMP2}" \
+    --threads 1 --tabbedout "${TMP3}" --quiet 2> /dev/null
+"${VSEARCH}" --fastq_mergepairs "${TMP1}" --reverse "${TMP2}" \
+    --threads 4 --tabbedout "${TMP4}" --quiet 2> /dev/null
+cmp -s "${TMP3}" "${TMP4}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP1}" "${TMP2}" "${TMP3}" "${TMP4}"
+
+## --------------------------------------------------- the maxdiffpct guard ---
+
+# A pair with no alignment has best_overlap == 0, and the --fastq_maxdiffpct
+# test computes 0/0 there. The NaN that produces compares false, so the pair
+# falls through to the kmers test, which is the one that describes it. That
+# fall-through is load-bearing: see the comment in core/mergepairs.cpp.
+DESCRIPTION="fastq_mergepairs maxdiffpct 0 does not claim an unalignable pair has too many differences"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
+    --reverse <(printf "@s\nT\n+\nI\n") \
+    --fastq_maxdiffpct 0 \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "too few kmers found on same diagonal" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+unset FWD_20 REV_20 QUAL_20
+
+#*****************************************************************************#
+#                                                                             #
 #                          --fastaout_notmerged_fwd                           #
 #                                                                             #
 #*****************************************************************************#
