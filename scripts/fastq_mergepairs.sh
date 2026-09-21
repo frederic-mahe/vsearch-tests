@@ -1681,7 +1681,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports toomanydiffs"
     --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
     --fastq_maxdiffs 0 \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\ttoomanydiffs\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "toomanydiffs" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1691,7 +1691,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports toomanydiffpct"
     --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
     --fastq_maxdiffpct 4 \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\ttoomanydiffpct\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "toomanydiffpct" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1701,7 +1701,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports mergetooshort"
     --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
     --fastq_minmergelen 21 \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\tmergetooshort\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "mergetooshort" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1711,7 +1711,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports mergetoolong"
     --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
     --fastq_maxmergelen 19 \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\tmergetoolong\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "mergetoolong" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1721,7 +1721,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports toohighee"
     --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
     --fastq_maxee 0.0001 \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\ttoohighee\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "toohighee" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1731,7 +1731,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports tooshort"
     --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
     --fastq_minlen 21 \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\ttooshort\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "tooshort" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1741,7 +1741,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports toolong"
     --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
     --fastq_maxlen 19 \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\ttoolong\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "toolong" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1751,7 +1751,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports alntooshort"
     --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
     --fastq_minovlen 21 \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\talntooshort\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "alntooshort" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1761,7 +1761,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports toomanyns"
     --reverse <(printf "@s\n%s\n+\n%s\n" "${REV_20}" "${QUAL_20}") \
     --fastq_maxns 0 \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\ttoomanyns\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "toomanyns" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1772,7 +1772,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports nokmers"
     --fastq_mergepairs <(printf "@s\nA\n+\nI\n") \
     --reverse <(printf "@s\nT\n+\nI\n") \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\tnokmers\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "nokmers" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1781,7 +1781,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports multiplealns"
     --fastq_mergepairs <(printf "@s\nAAAAAAAAAA\n+\nIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTTTTTTT\n+\nIIIIIIIIII\n") \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\tmultiplealns\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "multiplealns" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1790,7 +1790,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports nostagger"
     --fastq_mergepairs <(printf "@s\nAAAATAAAAAA\n+\nIIIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTATTTTTT\n+\nIIIIIIIIIII\n") \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\tnostagger\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "nostagger" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
@@ -1799,7 +1799,7 @@ DESCRIPTION="fastq_mergepairs tabbedout reports lowscore"
     --fastq_mergepairs <(printf "@s\nAAAATAAAA\n+\nIIIIIIIII\n") \
     --reverse <(printf "@s\nTTTTATTTA\n+\nIIIIIIIII\n") \
     --tabbedout - 2> /dev/null | \
-    grep -qP "\tlowscore\tresult=notmerged$" && \
+    awk -F "\t" '$(NF - 1) == "lowscore" && $NF == "result=notmerged" {found = 1} END {exit found ? 0 : 1}' && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
