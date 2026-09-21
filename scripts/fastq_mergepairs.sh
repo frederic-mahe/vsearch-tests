@@ -5611,6 +5611,35 @@ DESCRIPTION="fastq_mergepairs --relabel replaces headers with prefix + ticker"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_mergepairs --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n" > "${AT_DIR}/sampleA_R1.fastq"
+"${VSEARCH}" \
+    --fastq_mergepairs "${AT_DIR}/sampleA_R1.fastq" \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--fastq_mergepairs --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf "@s\nAAATAAAAAA\n+\nIIIIIIIIII\n" > "${AT_DIR}/sampleA_R1.fastq"
+"${VSEARCH}" \
+    --fastq_mergepairs "${AT_DIR}/sampleA_R1.fastq" \
+    --reverse <(printf "@s\nTTTTTTATTT\n+\nIIIIIIIIII\n") \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 # ticker increments with each merged read
 DESCRIPTION="fastq_mergepairs --relabel ticker increments with each merged read"
 "${VSEARCH}" \

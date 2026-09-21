@@ -1307,6 +1307,35 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_getseqs --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s1\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --fastx_getseqs "${AT_DIR}/sampleA_R1.fasta" \
+    --label "s1" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--fastx_getseqs --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s1\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --fastx_getseqs "${AT_DIR}/sampleA_R1.fasta" \
+    --label "s1" \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 ## --relabel_keep
 DESCRIPTION="--relabel_keep retains the old identifier after a space"
 printf ">s1\nA\n" | \

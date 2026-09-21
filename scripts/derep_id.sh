@@ -1959,6 +1959,35 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+DESCRIPTION="--derep_id --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --derep_id "${AT_DIR}/sampleA_R1.fasta" \
+    --minseqlength 1 \
+    --quiet \
+    --relabel @ \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--derep_id --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --derep_id "${AT_DIR}/sampleA_R1.fasta" \
+    --minseqlength 1 \
+    --quiet \
+    --relabel @ \
+    --output - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--derep_id --relabel renames sequence (label + ticker)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \

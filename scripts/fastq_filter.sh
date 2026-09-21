@@ -1249,6 +1249,33 @@ printf "@s1\nA\n+\nI\n@s2\nC\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_filter --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf "@s\nA\n+\nI\n" > "${AT_DIR}/sampleA_R1.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${AT_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--fastq_filter --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf "@s\nA\n+\nI\n" > "${AT_DIR}/sampleA_R1.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${AT_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastqout - 2> /dev/null | \
+    grep -Fqx "@sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 ## --relabel_keep
 DESCRIPTION="--fastq_filter --relabel --relabel_keep retains old identifier"
 printf "@s1\nA\n+\nI\n" | \

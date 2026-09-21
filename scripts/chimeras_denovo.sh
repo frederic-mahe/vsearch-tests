@@ -4474,6 +4474,33 @@ printf ">s;size=1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--chimeras_denovo --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s;size=1\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --chimeras_denovo "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --nonchimeras /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--chimeras_denovo --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s;size=1\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --chimeras_denovo "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --nonchimeras - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 
 DESCRIPTION="chimeras_denovo: relabel replaces nonchimeras headers with prefix + ticker"
 printf ">s1;size=1\nA\n>s2;size=1\nC\n" | \

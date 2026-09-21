@@ -1303,6 +1303,37 @@ printf ">s1\nAAAAAAAAAAAA\n>s2\nCCCCCCCCCCCC\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--cluster_fast --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s1\nAAAAAAAAAAAA\n>s2\nCCCCCCCCCCCC\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --cluster_fast "${AT_DIR}/sampleA_R1.fasta" \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --relabel @ \
+    --centroids /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--cluster_fast --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s1\nAAAAAAAAAAAA\n>s2\nCCCCCCCCCCCC\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --cluster_fast "${AT_DIR}/sampleA_R1.fasta" \
+    --id 1.0 \
+    --minseqlength 1 \
+    --quiet \
+    --relabel @ \
+    --centroids - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--cluster_fast --relabel_keep retains old identifier"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \

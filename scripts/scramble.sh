@@ -781,6 +781,33 @@ printf ">s1\nA\n>s2\nC\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--scramble --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s1\nA\n>s2\nC\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --scramble "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--scramble --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s1\nA\n>s2\nC\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --scramble "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--scramble --relabel_keep keeps the old label after the new"
 printf ">s\nA\n" | \
     "${VSEARCH}" \

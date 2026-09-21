@@ -2930,6 +2930,33 @@ DESCRIPTION="--sff_convert --relabel renames sequence (label + ticker)"
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--sff_convert --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+cat "${SFF}" > "${AT_DIR}/sampleA_R1.sff"
+"${VSEARCH}" \
+    --sff_convert "${AT_DIR}/sampleA_R1.sff" \
+    --quiet \
+    --relabel @ \
+    --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--sff_convert --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+cat "${SFF}" > "${AT_DIR}/sampleA_R1.sff"
+"${VSEARCH}" \
+    --sff_convert "${AT_DIR}/sampleA_R1.sff" \
+    --quiet \
+    --relabel @ \
+    --fastqout - 2> /dev/null | \
+    grep -Fqx "@sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--sff_convert --relabel accepts empty label (only ticker)"
 "${VSEARCH}" \
     --sff_convert "${SFF}" \
