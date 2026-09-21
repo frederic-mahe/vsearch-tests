@@ -1134,6 +1134,33 @@ printf ">s1\nA\n>s2\nC\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_filter --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s1\nA\n>s2\nC\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --fastx_filter "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--fastx_filter --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s1\nA\n>s2\nC\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --fastx_filter "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 ## --relabel_keep
 DESCRIPTION="--fastx_filter --relabel --relabel_keep retains old identifier"
 printf ">s1\nA\n" | \

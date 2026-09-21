@@ -1580,6 +1580,41 @@ printf ">s\n%s\n" "${PARENT_A}" | \
         --quiet && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--uchime_ref --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+AT_DB=$(mktemp)
+printf ">d\n%s\n" "${PARENT_A}" > "${AT_DB}"
+printf ">s\n%s\n" "${PARENT_A}" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --uchime_ref "${AT_DIR}/sampleA_R1.fasta" \
+    --db "${AT_DB}" \
+    --quiet \
+    --relabel @ \
+    --nonchimeras /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+rm -f "${AT_DB}"
+unset AT_DIR AT_DB
+
+DESCRIPTION="--uchime_ref --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+AT_DB=$(mktemp)
+printf ">d\n%s\n" "${PARENT_A}" > "${AT_DB}"
+printf ">s\n%s\n" "${PARENT_A}" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --uchime_ref "${AT_DIR}/sampleA_R1.fasta" \
+    --db "${AT_DB}" \
+    --quiet \
+    --relabel @ \
+    --nonchimeras - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+rm -f "${AT_DB}"
+unset AT_DIR AT_DB
 rm -f "${DB}"
 unset DB
 

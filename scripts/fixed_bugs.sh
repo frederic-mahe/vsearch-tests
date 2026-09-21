@@ -6854,6 +6854,842 @@ printf ">a;size=10\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b;size=1\nACGTACGTACGTACG
 ##
 ## https://github.com/torognes/vsearch/issues/202
 
+## --relabel @ replaces the label with a sample identifier derived from the
+## name of the input file, and a ticker separated by a period. The identifier
+## is the base name, cut at the first underscore if it has one and at the
+## first period otherwise, then truncated at the first ';' or blank.
+##
+## One temporary directory for the whole section: the identifier comes from
+## the file name, so every test below needs a file with a name of its own.
+## Note that mktemp alone cannot be used for these -- its names all begin
+## "tmp.", so the identifier would always be "tmp".
+
+TMP_DIR=$(mktemp -d)
+FASTQ_ENTRY=$(printf "@s\nACGT\n+\nIIII\n")
+
+## ------------------------------------------- identifier derivation (issue 202)
+
+DESCRIPTION="issue 202: --relabel @ names records after the input file"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/plain.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/plain.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">plain.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ cuts at the first underscore"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/sampleA_R1.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ cuts at the first period when there is no underscore"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/sampleA.R1.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA.R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ cuts at the underscore when it comes first"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/a_b.c.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/a_b.c.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">a.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the underscore wins even when a period precedes it: usearch documents
+## "the first underscore or period", but cuts at the underscore regardless
+DESCRIPTION="issue 202: --relabel @ prefers the underscore over an earlier period"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/a.b_c.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/a.b_c.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">a.b.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ keeps every period before the first underscore"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/a.b.c_d.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/a.b.c_d.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">a.b.c.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ cuts at the first of several underscores"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/a.b_c_d.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/a.b_c_d.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">a.b.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ needs no file extension"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/a.b_c"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/a.b_c" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">a.b.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ cuts an underscore before an unusual extension"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/x_y.z"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/x_y.z" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">x.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ cuts at the first period of several"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/a.b.c.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/a.b.c.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">a.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ keeps a name with neither underscore nor period"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/noext"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/noext" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">noext.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ cuts an underscore with no extension at all"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/ab_cd"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/ab_cd" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">ab.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ accepts a trailing underscore"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/a_.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/a_.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">a.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the base name is taken before the cut: truncating the whole path would
+## yield "/tmp/tmp" or similar
+DESCRIPTION="issue 202: --relabel @ ignores an underscore in the directory name"
+mkdir "${TMP_DIR}/sub_dir"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/sub_dir/sampleA.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sub_dir/sampleA.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ ignores a period in the directory name"
+mkdir "${TMP_DIR}/sub.dir"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/sub.dir/sampleA.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sub.dir/sampleA.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ accepts a double extension"
+printf "%s\n" "${FASTQ_ENTRY}" | gzip > "${TMP_DIR}/sampleG_R1.fastq.gz"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleG_R1.fastq.gz" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">sampleG.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## vsearch truncates the identifier at the first ';' or blank, as --sample
+## does with its argument; usearch does not, and writes '>my sample.1'
+DESCRIPTION="issue 202: --relabel @ truncates the identifier at a blank"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/my sample.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/my sample.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">my.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ truncates the identifier at a semicolon"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/a;b.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/a;b.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">a.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the truncation is applied after the cut, not by widening the cut: a rule
+## that only widened the fallback would leave "my sample" here, because the
+## underscore branch never consults it
+DESCRIPTION="issue 202: --relabel @ truncates at a blank that precedes the underscore"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/my sample_R1.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/my sample_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">my.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ truncates at a semicolon that precedes the underscore"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/a;b_c.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/a;b_c.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">a.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------------- ticker and its reach
+
+DESCRIPTION="issue 202: --relabel @ numbers the first record 1"
+printf "@s1\nACGT\n+\nIIII\n@s2\nAAAA\n+\nIIII\n" > "${TMP_DIR}/sampleT_R1.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleT_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">sampleT.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ numbers the second record 2"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleT_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">sampleT.2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ replaces the original label"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleT_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -q "s1" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ------------------------------------------------ only the whole argument is @
+
+DESCRIPTION="issue 202: --relabel @x is a literal prefix"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel "@x" \
+    --fastaout - | \
+    grep -Fqx ">@x1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel x@ is a literal prefix"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel "x@" \
+    --fastaout - | \
+    grep -Fqx ">x@1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @@ is a literal prefix"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel "@@" \
+    --fastaout - | \
+    grep -Fqx ">@@1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------- input with no name to use
+
+DESCRIPTION="issue 202: --relabel @ rejects standard input"
+printf "%s\n" "${FASTQ_ENTRY}" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --relabel @ \
+        --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ says why it rejects standard input"
+printf "%s\n" "${FASTQ_ENTRY}" | \
+    "${VSEARCH}" \
+        --fastq_filter - \
+        --quiet \
+        --relabel @ \
+        --fastaout /dev/null 2>&1 | \
+    grep -q "requires a file name" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a named pipe is a stream, but it has a name and that name is used: this is
+## why the rule is spelled on the name rather than on a stat() of the handle
+DESCRIPTION="issue 202: --relabel @ uses the name of a named pipe"
+mkfifo "${TMP_DIR}/runA_1.fifo"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/runA_1.fifo" &
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/runA_1.fifo" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">runA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+wait
+
+## a process substitution reaches vsearch as /dev/fd/N, so the identifier is
+## the descriptor number; the number itself is not stable
+DESCRIPTION="issue 202: --relabel @ uses the descriptor name of a process substitution"
+"${VSEARCH}" \
+    --fastq_filter <(printf "%s\n" "${FASTQ_ENTRY}") \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -qx ">[0-9][0-9]*\.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ uses the name /dev/stdin is spelled with"
+printf "%s\n" "${FASTQ_ENTRY}" | \
+    "${VSEARCH}" \
+        --fastq_filter /dev/stdin \
+        --quiet \
+        --relabel @ \
+        --fastaout - | \
+    grep -Fqx ">stdin.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------------ empty identifier
+
+DESCRIPTION="issue 202: --relabel @ accepts a name that yields nothing (underscore)"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/_leading.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/_leading.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ accepts a name that yields nothing (period)"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/.leading.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/.leading.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ accepts a bare underscore name"
+printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/_abc"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/_abc" \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ warns when the identifier is empty"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/_leading.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "empty sample identifier" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## warnings are not silenced by --quiet, by documented contract
+DESCRIPTION="issue 202: --relabel @ warns about an empty identifier even with --quiet"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/_leading.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2>&1 | \
+    grep -q "WARNING" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------ interaction with the other options
+
+DESCRIPTION="issue 202: --relabel @ cannot combine with --relabel_md5"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --relabel_md5 \
+    --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ cannot combine with --relabel_sha1"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --relabel_sha1 \
+    --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ cannot combine with --relabel_self"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --relabel_self \
+    --fastaout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ --relabel_keep keeps the original label"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --relabel_keep \
+    --fastaout - | \
+    grep -Fqx ">sampleA.1 s" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ --sizeout adds the abundance annotation"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --sizeout \
+    --fastaout - | \
+    grep -Fqx ">sampleA.1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ --lengthout adds the length annotation"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --lengthout \
+    --fastaout - | \
+    grep -Fqx ">sampleA.1;length=4" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --sample and --relabel @ are orthogonal: one annotates, the other renames
+DESCRIPTION="issue 202: --relabel @ and --sample are independent"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --sample XYZ \
+    --fastaout - | \
+    grep -Fqx ">sampleA.1;sample=XYZ" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ --label_suffix appends the suffix"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --label_suffix SUF \
+    --fastaout - | \
+    grep -Fqx ">sampleA.1SUF" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ --xsize strips an incoming abundance"
+printf "@s;size=5\nACGT\n+\nIIII\n" > "${TMP_DIR}/sampleX_R1.fastq"
+"${VSEARCH}" \
+    --fastq_filter "${TMP_DIR}/sampleX_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --xsize \
+    --fastaout - | \
+    grep -Fqx ">sampleX.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------- fastq_mergepairs --tabbedout
+
+FWD_MERGE="ACGTTGCAAGCCATGTAACG"
+REV_MERGE="CGTTACATGACTTGCAACGT"
+QUAL_MERGE="IIIIIIIIIIIIIIIIIIII"
+printf "@s\n%s\n+\n%s\n" "${FWD_MERGE}" "${QUAL_MERGE}" > "${TMP_DIR}/sampleB_R1.fastq"
+printf "@s\n%s\n+\n%s\n" "${REV_MERGE}" "${QUAL_MERGE}" > "${TMP_DIR}/sampleB_R2.fastq"
+
+DESCRIPTION="issue 202: --relabel @ reaches the mergepairs tabbedout relabel= field"
+"${VSEARCH}" \
+    --fastq_mergepairs "${TMP_DIR}/sampleB_R1.fastq" \
+    --reverse "${TMP_DIR}/sampleB_R2.fastq" \
+    --quiet \
+    --relabel @ \
+    --tabbedout - | \
+    grep -q "relabel=sampleB\.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ leaves the mergepairs tabbedout first field alone"
+"${VSEARCH}" \
+    --fastq_mergepairs "${TMP_DIR}/sampleB_R1.fastq" \
+    --reverse "${TMP_DIR}/sampleB_R2.fastq" \
+    --quiet \
+    --relabel @ \
+    --tabbedout - | \
+    awk -F "\t" '{exit $1 == "s" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ --sizeout annotates the mergepairs relabel= field"
+"${VSEARCH}" \
+    --fastq_mergepairs "${TMP_DIR}/sampleB_R1.fastq" \
+    --reverse "${TMP_DIR}/sampleB_R2.fastq" \
+    --quiet \
+    --relabel @ \
+    --sizeout \
+    --tabbedout - | \
+    grep -q "relabel=sampleB\.1;size=1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ renames the merged record itself"
+"${VSEARCH}" \
+    --fastq_mergepairs "${TMP_DIR}/sampleB_R1.fastq" \
+    --reverse "${TMP_DIR}/sampleB_R2.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout - | \
+    grep -Fqx ">sampleB.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a pair that cannot merge gets no relabel= field, because no record was
+## written for it
+printf "@s\nACGTACGTACGTACGTACGT\n+\n%s\n" "${QUAL_MERGE}" > "${TMP_DIR}/sampleN_R1.fastq"
+printf "@s\nTTTTTTTTTTTTTTTTTTTT\n+\n%s\n" "${QUAL_MERGE}" > "${TMP_DIR}/sampleN_R2.fastq"
+
+DESCRIPTION="issue 202: --relabel @ adds no relabel= field to an unmerged pair"
+"${VSEARCH}" \
+    --fastq_mergepairs "${TMP_DIR}/sampleN_R1.fastq" \
+    --reverse "${TMP_DIR}/sampleN_R2.fastq" \
+    --quiet \
+    --relabel @ \
+    --tabbedout - 2> /dev/null | \
+    grep -q "relabel=" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ renames the unmerged forward read"
+"${VSEARCH}" \
+    --fastq_mergepairs "${TMP_DIR}/sampleN_R1.fastq" \
+    --reverse "${TMP_DIR}/sampleN_R2.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastqout /dev/null \
+    --fastqout_notmerged_fwd - 2> /dev/null | \
+    grep -Fqx "@sampleN.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --eetabbedout carries no labels at all, so --relabel cannot reach it
+DESCRIPTION="issue 202: --relabel @ does not reach --eetabbedout"
+"${VSEARCH}" \
+    --fastq_mergepairs "${TMP_DIR}/sampleB_R1.fastq" \
+    --reverse "${TMP_DIR}/sampleB_R2.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null \
+    --eetabbedout - | \
+    grep -q "sampleB" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --------------------------------------------- fastx_uniques --tabbedout
+
+printf ">s1\nACGT\n>s2\nACGT\n>s3\nTTTT\n" > "${TMP_DIR}/sampleU_R1.fasta"
+
+DESCRIPTION="issue 202: --relabel @ reaches the fastx_uniques tabbedout label column"
+"${VSEARCH}" \
+    --fastx_uniques "${TMP_DIR}/sampleU_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null \
+    --tabbedout - | \
+    awk -F "\t" 'NR == 1 {exit $2 == "sampleU.1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ leaves the fastx_uniques tabbedout first field alone"
+"${VSEARCH}" \
+    --fastx_uniques "${TMP_DIR}/sampleU_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null \
+    --tabbedout - | \
+    awk -F "\t" 'NR == 1 {exit $1 == "s1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the label column follows every --relabel* option, not only --relabel
+DESCRIPTION="issue 202: --relabel_sha1 reaches the fastx_uniques tabbedout label column"
+"${VSEARCH}" \
+    --fastx_uniques "${TMP_DIR}/sampleU_R1.fasta" \
+    --quiet \
+    --relabel_sha1 \
+    --fastaout /dev/null \
+    --tabbedout - | \
+    awk -F "\t" 'NR == 1 {exit $2 ~ /^[0-9a-f]{40}$/ ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel_md5 reaches the fastx_uniques tabbedout label column"
+"${VSEARCH}" \
+    --fastx_uniques "${TMP_DIR}/sampleU_R1.fasta" \
+    --quiet \
+    --relabel_md5 \
+    --fastaout /dev/null \
+    --tabbedout - | \
+    awk -F "\t" 'NR == 1 {exit $2 ~ /^[0-9a-f]{32}$/ ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel_self reaches the fastx_uniques tabbedout label column"
+"${VSEARCH}" \
+    --fastx_uniques "${TMP_DIR}/sampleU_R1.fasta" \
+    --quiet \
+    --relabel_self \
+    --fastaout /dev/null \
+    --tabbedout - | \
+    awk -F "\t" 'NR == 1 {exit $2 == "ACGT" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the digest in the column is the one the fasta header carries
+DESCRIPTION="issue 202: the fastx_uniques tabbedout digest matches the fasta header"
+"${VSEARCH}" \
+    --fastx_uniques "${TMP_DIR}/sampleU_R1.fasta" \
+    --quiet \
+    --relabel_sha1 \
+    --fastaout "${TMP_DIR}/uniques.fasta" \
+    --tabbedout - | \
+    awk -F "\t" 'NR == 1 {print ">" $2}' | \
+    grep -Fqx -f - "${TMP_DIR}/uniques.fasta" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## plain --relabel is unchanged, and stays byte-identical to usearch's column
+DESCRIPTION="issue 202: --relabel still names the fastx_uniques tabbedout column"
+"${VSEARCH}" \
+    --fastx_uniques "${TMP_DIR}/sampleU_R1.fasta" \
+    --quiet \
+    --relabel lbl \
+    --fastaout /dev/null \
+    --tabbedout - | \
+    awk -F "\t" 'NR == 1 {exit $2 == "lbl1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the column carries the bare label: --sizeout annotates the fasta header,
+## not this
+DESCRIPTION="issue 202: the fastx_uniques tabbedout column carries no annotation"
+"${VSEARCH}" \
+    --fastx_uniques "${TMP_DIR}/sampleU_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --sizeout \
+    --fastaout /dev/null \
+    --tabbedout - | \
+    awk -F "\t" 'NR == 1 {exit $2 == "sampleU.1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## ------------------------------------------------------- clustering outputs
+
+printf ">s1\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n>s2\nACGTACGTACGTACGTACGTACGTACGTACGTACGA\n" \
+    > "${TMP_DIR}/sampleO_R1.fasta"
+
+DESCRIPTION="issue 202: --relabel @ names the OTUs of --otutabout"
+"${VSEARCH}" \
+    --cluster_fast "${TMP_DIR}/sampleO_R1.fasta" \
+    --id 0.90 \
+    --threads 1 \
+    --quiet \
+    --relabel @ \
+    --otutabout - 2> /dev/null | \
+    awk -F "\t" 'NR == 2 {exit $1 == "sampleO.1" ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ names the OTUs of --biomout"
+"${VSEARCH}" \
+    --cluster_fast "${TMP_DIR}/sampleO_R1.fasta" \
+    --id 0.90 \
+    --threads 1 \
+    --quiet \
+    --relabel @ \
+    --biomout - 2> /dev/null | \
+    grep -q "sampleO\.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ names the centroid of --consout"
+"${VSEARCH}" \
+    --cluster_fast "${TMP_DIR}/sampleO_R1.fasta" \
+    --id 0.90 \
+    --threads 1 \
+    --quiet \
+    --relabel @ \
+    --consout - 2> /dev/null | \
+    grep -q "^>centroid=sampleO\.1;" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="issue 202: --relabel @ names the centroids of --centroids"
+"${VSEARCH}" \
+    --cluster_fast "${TMP_DIR}/sampleO_R1.fasta" \
+    --id 0.90 \
+    --threads 1 \
+    --quiet \
+    --relabel @ \
+    --centroids - 2> /dev/null | \
+    grep -Fqx ">sampleO.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --uc reports the input labels, and --relabel does not reach it
+DESCRIPTION="issue 202: --relabel @ does not reach --uc"
+"${VSEARCH}" \
+    --cluster_fast "${TMP_DIR}/sampleO_R1.fasta" \
+    --id 0.90 \
+    --threads 1 \
+    --quiet \
+    --relabel @ \
+    --uc - 2> /dev/null | \
+    grep -q "sampleO" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --msaout reports the input labels too
+DESCRIPTION="issue 202: --relabel @ does not reach --msaout"
+"${VSEARCH}" \
+    --cluster_fast "${TMP_DIR}/sampleO_R1.fasta" \
+    --id 0.90 \
+    --threads 1 \
+    --quiet \
+    --relabel @ \
+    --msaout - 2> /dev/null | \
+    grep -q "sampleO" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## ------------------------------------------------- search and paired outputs
+
+## the database-side outputs of a search are relabelled from the *query* file
+## name, with a ticker of their own: that is what --relabel already does
+DESCRIPTION="issue 202: --relabel @ names --dbmatched after the query file"
+printf ">db1\nACGTACGTACGTACGTACGTACGTACGTACGTACGT\n" > "${TMP_DIR}/refs.fasta"
+"${VSEARCH}" \
+    --usearch_global "${TMP_DIR}/sampleO_R1.fasta" \
+    --db "${TMP_DIR}/refs.fasta" \
+    --id 0.90 \
+    --threads 1 \
+    --quiet \
+    --relabel @ \
+    --dbmatched - 2> /dev/null | \
+    grep -Fqx ">sampleO.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## forward and reverse outputs share one ticker, so both reads of a pair get
+## the same label
+DESCRIPTION="issue 202: --relabel @ gives the reverse output the same label"
+"${VSEARCH}" \
+    --fastx_filter "${TMP_DIR}/sampleB_R1.fastq" \
+    --reverse "${TMP_DIR}/sampleB_R2.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null \
+    --fastaout_rev - | \
+    grep -Fqx ">sampleB.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+rm -rf "${TMP_DIR}"
+unset TMP_DIR FASTQ_ENTRY FWD_MERGE REV_MERGE QUAL_MERGE
+
+
 
 #*****************************************************************************#
 #                                                                             #

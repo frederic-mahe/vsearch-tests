@@ -3315,6 +3315,43 @@ printf ">q\n%s\n" "${SEQ}" | \
     grep -qx ">renamed1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--usearch_global --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+AT_DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${AT_DB}"
+printf ">q\n%s\n" "${SEQ}" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --usearch_global "${AT_DIR}/sampleA_R1.fasta" \
+    --db "${AT_DB}" \
+    --id 1.0 \
+    --quiet \
+    --relabel @ \
+    --matched /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+rm -f "${AT_DB}"
+unset AT_DIR AT_DB
+
+DESCRIPTION="--usearch_global --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+AT_DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${AT_DB}"
+printf ">q\n%s\n" "${SEQ}" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --usearch_global "${AT_DIR}/sampleA_R1.fasta" \
+    --db "${AT_DB}" \
+    --id 1.0 \
+    --quiet \
+    --relabel @ \
+    --matched - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+rm -f "${AT_DB}"
+unset AT_DIR AT_DB
 rm -f "${DB}"
 unset DB
 

@@ -738,6 +738,33 @@ printf ">s;size=1\n%s\n" "${PARENT_A}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--uchime3_denovo --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s;size=1\n%s\n" "${PARENT_A}" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --uchime3_denovo "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --nonchimeras /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--uchime3_denovo --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s;size=1\n%s\n" "${PARENT_A}" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --uchime3_denovo "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --nonchimeras - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--uchime3_denovo --relabel renames output sequences"
 printf ">s;size=1\n%s\n" "${PARENT_A}" | \
     "${VSEARCH}" \

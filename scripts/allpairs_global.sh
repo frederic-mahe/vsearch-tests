@@ -1381,6 +1381,35 @@ printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--allpairs_global --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --allpairs_global "${AT_DIR}/sampleA_R1.fasta" \
+    --acceptall \
+    --quiet \
+    --relabel @ \
+    --matched /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--allpairs_global --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --allpairs_global "${AT_DIR}/sampleA_R1.fasta" \
+    --acceptall \
+    --quiet \
+    --relabel @ \
+    --matched - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 ## ------------------------------------------------------------- relabel_keep
 
 DESCRIPTION="--allpairs_global --relabel_keep retains the old header after a space"

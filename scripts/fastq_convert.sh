@@ -1164,6 +1164,33 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_convert --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf "@s\nA\n+\nI\n" > "${AT_DIR}/sampleA_R1.fastq"
+"${VSEARCH}" \
+    --fastq_convert "${AT_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastqout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--fastq_convert --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf "@s\nA\n+\nI\n" > "${AT_DIR}/sampleA_R1.fastq"
+"${VSEARCH}" \
+    --fastq_convert "${AT_DIR}/sampleA_R1.fastq" \
+    --quiet \
+    --relabel @ \
+    --fastqout - 2> /dev/null | \
+    grep -Fqx "@sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--relabel replaces header with prefix and counter"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \

@@ -1100,6 +1100,37 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n>s2;size=16\nCCCCCCCCCCCC\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--cluster_unoise --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s1;size=16\nAAAAAAAAAAAA\n>s2;size=16\nCCCCCCCCCCCC\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --cluster_unoise "${AT_DIR}/sampleA_R1.fasta" \
+    --sizein \
+    --minseqlength 1 \
+    --quiet \
+    --relabel @ \
+    --centroids /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--cluster_unoise --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s1;size=16\nAAAAAAAAAAAA\n>s2;size=16\nCCCCCCCCCCCC\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --cluster_unoise "${AT_DIR}/sampleA_R1.fasta" \
+    --sizein \
+    --minseqlength 1 \
+    --quiet \
+    --relabel @ \
+    --centroids - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--cluster_unoise --relabel_keep retains old identifier"
 printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \

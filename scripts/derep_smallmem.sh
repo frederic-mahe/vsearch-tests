@@ -2658,6 +2658,33 @@ printf ">s\nA\n" > "${TMP}"
     --fastaout /dev/null && \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
+
+DESCRIPTION="--derep_smallmem --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --derep_smallmem "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--derep_smallmem --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --derep_smallmem "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
 rm -f "${TMP}"
 unset TMP
 

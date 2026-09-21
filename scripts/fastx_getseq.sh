@@ -936,6 +936,35 @@ printf ">s1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_getseq --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s1\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --fastx_getseq "${AT_DIR}/sampleA_R1.fasta" \
+    --label "s1" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--fastx_getseq --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s1\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --fastx_getseq "${AT_DIR}/sampleA_R1.fasta" \
+    --label "s1" \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--relabel replaces matching headers with a prefix + ticker"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \

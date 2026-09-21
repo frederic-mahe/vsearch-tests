@@ -1705,6 +1705,35 @@ printf "@s\nA\n+\nI\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastq_join --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf "@s\nA\n+\nI\n" > "${AT_DIR}/sampleA_R1.fastq"
+"${VSEARCH}" \
+    --fastq_join "${AT_DIR}/sampleA_R1.fastq" \
+    --reverse <(printf "@s\nA\n+\nI\n") \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--fastq_join --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf "@s\nA\n+\nI\n" > "${AT_DIR}/sampleA_R1.fastq"
+"${VSEARCH}" \
+    --fastq_join "${AT_DIR}/sampleA_R1.fastq" \
+    --reverse <(printf "@s\nA\n+\nI\n") \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--fastq_join --relabel renames sequence (label + ticker)"
 printf "@s\nA\n+\nI\n" | \
     "${VSEARCH}" \

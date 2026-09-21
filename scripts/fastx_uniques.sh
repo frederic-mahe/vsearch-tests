@@ -3530,6 +3530,33 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_uniques --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --fastx_uniques "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--fastx_uniques --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s\nA\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --fastx_uniques "${AT_DIR}/sampleA_R1.fasta" \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--fastx_uniques --relabel renames sequence (label + ticker)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \

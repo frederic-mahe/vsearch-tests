@@ -509,6 +509,33 @@ printf ">s\n%s\n" "${SEQ}" | make_udb "${TMPUDB}"
     --quiet 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--udb2fasta --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s\n%s\n" "${SEQ}" | make_udb "${AT_DIR}/sampleA_R1.udb"
+"${VSEARCH}" \
+    --udb2fasta "${AT_DIR}/sampleA_R1.udb" \
+    --quiet \
+    --relabel @ \
+    --output /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--udb2fasta --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s\n%s\n" "${SEQ}" | make_udb "${AT_DIR}/sampleA_R1.udb"
+"${VSEARCH}" \
+    --udb2fasta "${AT_DIR}/sampleA_R1.udb" \
+    --quiet \
+    --relabel @ \
+    --output - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
 rm -f "${TMPUDB}"
 unset TMPUDB
 

@@ -1322,6 +1322,37 @@ printf ">s1\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--fastx_mask --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s1\nACGT\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --fastx_mask "${AT_DIR}/sampleA_R1.fasta" \
+    --qmask none \
+    --fasta_width 0 \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--fastx_mask --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s1\nACGT\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --fastx_mask "${AT_DIR}/sampleA_R1.fasta" \
+    --qmask none \
+    --fasta_width 0 \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--relabel with empty string produces just the ticker as label"
 printf ">s1\nACGT\n" | \
     "${VSEARCH}" \

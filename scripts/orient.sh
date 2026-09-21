@@ -1879,6 +1879,35 @@ printf ">s\nACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--orient --relabel @ is accepted"
+AT_DIR=$(mktemp -d)
+printf ">s\nGACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --orient "${AT_DIR}/sampleA_R1.fasta" \
+    --db <(printf ">s\nGACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT\n") \
+    --quiet \
+    --relabel @ \
+    --fastaout /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
+DESCRIPTION="--orient --relabel @ renames after the input file"
+AT_DIR=$(mktemp -d)
+printf ">s\nGACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT\n" > "${AT_DIR}/sampleA_R1.fasta"
+"${VSEARCH}" \
+    --orient "${AT_DIR}/sampleA_R1.fasta" \
+    --db <(printf ">s\nGACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT\n") \
+    --quiet \
+    --relabel @ \
+    --fastaout - 2> /dev/null | \
+    grep -Fqx ">sampleA.1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${AT_DIR}"
+unset AT_DIR
+
 DESCRIPTION="--relabel replaces header with prefix and ticker"
 SEQ="GACAGGTACAAGAAGGAGTATGCATCGATCATCATCATCATCAT"
 printf ">q\n%s\n" "${SEQ}" | \
