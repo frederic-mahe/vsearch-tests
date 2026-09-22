@@ -7470,6 +7470,81 @@ done
 unset OPT_PAIR OPT_NAME
 
 
+#*****************************************************************************#
+#                                                                             #
+#                            abbreviated options                              #
+#                                                                             #
+#*****************************************************************************#
+
+## getopt accepts any unambiguous abbreviation of a long option name, so
+## --userfield names --userfields. vsearch honours the abbreviation and
+## reports it. fixed_bugs.sh spelled the option that way until 2026-09-22;
+## these tests replace that incidental coverage with a deliberate one.
+
+DESCRIPTION="--usearch_global accepts --userfield (abbreviation of --userfields)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userfield query \
+        --userout /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --userfield emits an abbreviation warning"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userfield query \
+        --userout /dev/null 2>&1 >/dev/null | \
+    grep -q "abbreviation of --userfields" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --userfield gives the same output as --userfields"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+ABBREVIATED=$(printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" --usearch_global - --db "${DB}" --id 1.0 \
+        --userfield query+target+id --userout - --quiet 2> /dev/null)
+SPELLED_OUT=$(printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" --usearch_global - --db "${DB}" --id 1.0 \
+        --userfields query+target+id --userout - --quiet 2> /dev/null)
+[[ -n "${ABBREVIATED}" && "${ABBREVIATED}" == "${SPELLED_OUT}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB ABBREVIATED SPELLED_OUT
+
+DESCRIPTION="--usearch_global --userfields spelled out is not reported"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userfields query \
+        --userout /dev/null 2>&1 >/dev/null | \
+    grep -q "abbreviation" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
 ## clean up common variables before the memory leaks section
 unset SEQ
 

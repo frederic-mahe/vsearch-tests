@@ -936,56 +936,56 @@ printf "@s;size=10000000000000000\nA\n+\n2\n@s;size=1\nA\n+\n3\n" | \
 
 ## --------------------------------------------------------------------- median
 
-DESCRIPTION="--fastx_unique outputs a median cluster size"
+DESCRIPTION="--fastx_uniques outputs a median cluster size"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --fastaout /dev/null 2>&1 | \
     grep -q "median" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (empty entry, no median)"
+DESCRIPTION="--fastx_uniques median (empty entry, no median)"
 printf "" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --fastaout /dev/null 2>&1 | \
     grep -q "median" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (single entry, median = 1)"
+DESCRIPTION="--fastx_uniques median (single entry, median = 1)"
 printf ">s1\nA\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (single entry with size annotation, median = 2)"
+DESCRIPTION="--fastx_uniques median (single entry with size annotation, median = 2)"
 printf ">s1;size=2\nA\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --sizein \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (two entries, median = 1)"
+DESCRIPTION="--fastx_uniques median (two entries, median = 1)"
 printf ">s1\nA\n>s2\nC\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (two entries with equal size annotations, median = 2)"
+DESCRIPTION="--fastx_uniques median (two entries with equal size annotations, median = 2)"
 printf ">s1;size=2\nA\n>s2;size=2\nC\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --sizein \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 2" && \
@@ -993,80 +993,80 @@ printf ">s1;size=2\nA\n>s2;size=2\nC\n" | \
         failure "${DESCRIPTION}"
 
 ## Banker's rounding (round half to even)
-DESCRIPTION="--fastx_unique median (1 + 2 -> median = 2)"
+DESCRIPTION="--fastx_uniques median (1 + 2 -> median = 2)"
 printf ">s1;size=1\nA\n>s2;size=2\nC\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --sizein \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (1 + 3 -> median = 2)"
+DESCRIPTION="--fastx_uniques median (1 + 3 -> median = 2)"
 printf ">s1;size=1\nA\n>s2;size=3\nC\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --sizein \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (1 + 4 -> median = 2)"
+DESCRIPTION="--fastx_uniques median (1 + 4 -> median = 2)"
 printf ">s1;size=1\nA\n>s2;size=4\nC\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --sizein \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 2" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (1 + 5 -> median = 3)"
+DESCRIPTION="--fastx_uniques median (1 + 5 -> median = 3)"
 printf ">s1;size=1\nA\n>s2;size=5\nC\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --sizein \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 3" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (1 + 6 -> median = 4)"
+DESCRIPTION="--fastx_uniques median (1 + 6 -> median = 4)"
 printf ">s1;size=1\nA\n>s2;size=6\nC\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --sizein \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (1 + 7 -> median = 4)"
+DESCRIPTION="--fastx_uniques median (1 + 7 -> median = 4)"
 printf ">s1;size=1\nA\n>s2;size=7\nC\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --sizein \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (1 + 8 -> median = 4)"
+DESCRIPTION="--fastx_uniques median (1 + 8 -> median = 4)"
 printf ">s1;size=1\nA\n>s2;size=8\nC\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --sizein \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 4" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="--fastx_unique median (1 + 9 -> median = 5)"
+DESCRIPTION="--fastx_uniques median (1 + 9 -> median = 5)"
 printf ">s1;size=1\nA\n>s2;size=9\nC\n" | \
     "${VSEARCH}" \
-        --fastx_unique - \
+        --fastx_uniques - \
         --sizein \
         --fastaout /dev/null 2>&1 | \
     grep -q "median 5" && \
@@ -5087,6 +5087,57 @@ printf ">s\nA\n" | \
         --output /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
 	success "${DESCRIPTION}"
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            abbreviated command                              #
+#                                                                             #
+#*****************************************************************************#
+
+## getopt accepts any unambiguous abbreviation of a long option name, and
+## vsearch's commands are entries in the same option table, so
+## --fastx_unique names the command --fastx_uniques. The abbreviation is
+## honoured and reported. The median tests spelled the command that way
+## until 2026-09-22; these tests replace that incidental coverage with a
+## deliberate one.
+
+DESCRIPTION="--fastx_unique is accepted as an abbreviation of --fastx_uniques"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_unique - \
+        --fastaout /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_unique emits an abbreviation warning"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_unique - \
+        --fastaout /dev/null 2>&1 >/dev/null | \
+    grep -q "abbreviation of --fastx_uniques" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--fastx_unique gives the same output as --fastx_uniques"
+ABBREVIATED=$(printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" --fastx_unique - --fastaout - --quiet 2> /dev/null)
+SPELLED_OUT=$(printf ">s1\nA\n>s2\nA\n" | \
+    "${VSEARCH}" --fastx_uniques - --fastaout - --quiet 2> /dev/null)
+[[ -n "${ABBREVIATED}" && "${ABBREVIATED}" == "${SPELLED_OUT}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+unset ABBREVIATED SPELLED_OUT
+
+DESCRIPTION="--fastx_uniques spelled out is not reported as an abbreviation"
+printf ">s1\nA\n" | \
+    "${VSEARCH}" \
+        --fastx_uniques - \
+        --fastaout /dev/null 2>&1 >/dev/null | \
+    grep -q "abbreviation" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 
 #*****************************************************************************#
