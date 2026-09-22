@@ -845,7 +845,7 @@ DESCRIPTION="issue 18: userfield values are correct (raw)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "raw" \
+    --userfields "raw" \
     --userout - 2> /dev/null | \
     grep -qx "8" && \
     success "${DESCRIPTION}" || \
@@ -858,7 +858,7 @@ DESCRIPTION="issue 18: userfield values are correct (qlo)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "qlo" \
+    --userfields "qlo" \
     --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
@@ -871,7 +871,7 @@ DESCRIPTION="issue 18: userfield values are correct (qilo)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "qilo" \
+    --userfields "qilo" \
     --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
@@ -884,7 +884,7 @@ DESCRIPTION="issue 18: userfield values are correct (qhi)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "qhi" \
+    --userfields "qhi" \
     --userout - 2> /dev/null | \
     grep -qx "4" && \
     success "${DESCRIPTION}" || \
@@ -897,7 +897,7 @@ DESCRIPTION="issue 18: userfield values are correct (qihi)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "qihi" \
+    --userfields "qihi" \
     --userout - 2> /dev/null | \
     grep -qx "2" && \
     success "${DESCRIPTION}" || \
@@ -910,7 +910,7 @@ DESCRIPTION="issue 18: userfield values are correct (tlo)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "tlo" \
+    --userfields "tlo" \
     --userout - 2> /dev/null | \
     grep -qx "1" && \
     success "${DESCRIPTION}" || \
@@ -923,7 +923,7 @@ DESCRIPTION="issue 18: userfield values are correct (tilo)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "tilo" \
+    --userfields "tilo" \
     --userout - 2> /dev/null | \
     grep -qx "3" && \
     success "${DESCRIPTION}" || \
@@ -936,7 +936,7 @@ DESCRIPTION="issue 18: userfield values are correct (thi)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "thi" \
+    --userfields "thi" \
     --userout - 2> /dev/null | \
     grep -qx "4" && \
     success "${DESCRIPTION}" || \
@@ -949,7 +949,7 @@ DESCRIPTION="issue 18: userfield values are correct (tihi)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "tihi" \
+    --userfields "tihi" \
     --userout - 2> /dev/null | \
     grep -qx "4" && \
     success "${DESCRIPTION}" || \
@@ -977,7 +977,7 @@ DESCRIPTION="issue 19: --iddef is implemented (0)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "id0" \
+    --userfields "id0" \
     --userout - 2> /dev/null | \
     grep -qx "50.0" && \
     success "${DESCRIPTION}" || \
@@ -995,7 +995,7 @@ DESCRIPTION="issue 19: --iddef is implemented (1)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "id1" \
+    --userfields "id1" \
     --userout - 2> /dev/null | \
     grep -qx "28.6" && \
     success "${DESCRIPTION}" || \
@@ -1013,7 +1013,7 @@ DESCRIPTION="issue 19: --iddef is implemented (2)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "id2" \
+    --userfields "id2" \
     --userout - 2> /dev/null | \
     grep -qx "100.0" && \
     success "${DESCRIPTION}" || \
@@ -1034,7 +1034,7 @@ DESCRIPTION="issue 19: --iddef is implemented (3)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "id3" \
+    --userfields "id3" \
     --userout - 2> /dev/null | \
     grep -qx "60.0" && \
     success "${DESCRIPTION}" || \
@@ -1048,7 +1048,7 @@ DESCRIPTION="issue 19: --iddef is implemented (4)"
     --minseqlength 4 \
     --id 0.5 \
     --quiet \
-    --userfield "id4" \
+    --userfields "id4" \
     --userout - 2> /dev/null | \
     grep -qx "28.6" && \
     success "${DESCRIPTION}" || \

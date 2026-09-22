@@ -4708,6 +4708,19 @@ printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## the spelling is kept exactly as the forum user typed it. getopt reads
+## --otutab as an unambiguous abbreviation of the option --otutabout, so
+## the command line fails for want of a command rather than for an unknown
+## option, and the abbreviation is reported. Asserting it here keeps that
+## explicit, since it is what the user sees alongside the answer above.
+DESCRIPTION="forum (2023-12-21): --otutab is reported as an abbreviation of --otutabout"
+printf ">q\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --otutab - 2>&1 >/dev/null | \
+    grep -q "abbreviation of --otutabout" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --otus is not a recognized vsearch option
 DESCRIPTION="forum (2023-12-21): --otus is not a valid vsearch option"
 DB=$(mktemp)

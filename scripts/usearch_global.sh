@@ -3225,6 +3225,49 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## -------------------------------------------------------------------- query
+
+# --query is how usearch 5.2.236 named the query file; vsearch passes
+# the query as the argument of the search command itself. getopt accepts
+# any unambiguous abbreviation of a long option name, and --query_cov was
+# the only option starting with "query", so --query was silently taken
+# for --query_cov: a file name then failed the numeric conversion with
+# the anonymous message "Illegal option argument", and a number was
+# accepted as a coverage threshold (fails with vsearch 2.32.0 and older)
+DESCRIPTION="--usearch_global --query is rejected, not read as --query_cov"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --query 0.9 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --query is named in the error message"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --query "${DB}" \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep -qw -- "--query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
 ## ---------------------------------------------------------------- query_cov
 
 DESCRIPTION="--usearch_global --query_cov is accepted"
@@ -7425,6 +7468,81 @@ for OPT_PAIR in "--cluster_fast /dev/null" "--cluster_size /dev/null" \
     unset DB
 done
 unset OPT_PAIR OPT_NAME
+
+
+#*****************************************************************************#
+#                                                                             #
+#                            abbreviated options                              #
+#                                                                             #
+#*****************************************************************************#
+
+## getopt accepts any unambiguous abbreviation of a long option name, so
+## --userfield names --userfields. vsearch honours the abbreviation and
+## reports it. fixed_bugs.sh spelled the option that way until 2026-09-22;
+## these tests replace that incidental coverage with a deliberate one.
+
+DESCRIPTION="--usearch_global accepts --userfield (abbreviation of --userfields)"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userfield query \
+        --userout /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --userfield emits an abbreviation warning"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userfield query \
+        --userout /dev/null 2>&1 >/dev/null | \
+    grep -q "abbreviation of --userfields" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --userfield gives the same output as --userfields"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+ABBREVIATED=$(printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" --usearch_global - --db "${DB}" --id 1.0 \
+        --userfield query+target+id --userout - --quiet 2> /dev/null)
+SPELLED_OUT=$(printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" --usearch_global - --db "${DB}" --id 1.0 \
+        --userfields query+target+id --userout - --quiet 2> /dev/null)
+[[ -n "${ABBREVIATED}" && "${ABBREVIATED}" == "${SPELLED_OUT}" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB ABBREVIATED SPELLED_OUT
+
+DESCRIPTION="--usearch_global --userfields spelled out is not reported"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userfields query \
+        --userout /dev/null 2>&1 >/dev/null | \
+    grep -q "abbreviation" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
 
 
 ## clean up common variables before the memory leaks section
