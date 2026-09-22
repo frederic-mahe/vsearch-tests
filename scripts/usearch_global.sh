@@ -3225,6 +3225,49 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## -------------------------------------------------------------------- query
+
+# --query is how usearch 5.2.236 named the query file; vsearch passes
+# the query as the argument of the search command itself. getopt accepts
+# any unambiguous abbreviation of a long option name, and --query_cov was
+# the only option starting with "query", so --query was silently taken
+# for --query_cov: a file name then failed the numeric conversion with
+# the anonymous message "Illegal option argument", and a number was
+# accepted as a coverage threshold (fails with vsearch 2.32.0 and older)
+DESCRIPTION="--usearch_global --query is rejected, not read as --query_cov"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --query 0.9 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --query is named in the error message"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --query "${DB}" \
+        --blast6out /dev/null \
+        --quiet 2>&1 | \
+    grep -qw -- "--query" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+
 ## ---------------------------------------------------------------- query_cov
 
 DESCRIPTION="--usearch_global --query_cov is accepted"
