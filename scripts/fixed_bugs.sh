@@ -7204,16 +7204,23 @@ printf "%s\n" "${FASTQ_ENTRY}" > "${TMP_DIR}/runA_1.fifo" &
 wait
 
 ## a process substitution reaches vsearch as /dev/fd/N, so the identifier is
-## the descriptor number; the number itself is not stable
-DESCRIPTION="issue 202: --relabel @ uses the descriptor name of a process substitution"
-"${VSEARCH}" \
-    --fastq_filter <(printf "%s\n" "${FASTQ_ENTRY}") \
-    --quiet \
-    --relabel @ \
-    --fastaout - | \
-    grep -qx ">[0-9][0-9]*\.1" && \
-    success "${DESCRIPTION}" || \
-        failure "${DESCRIPTION}"
+## the descriptor number; the number itself is not stable.
+##
+## Only where the shell implements <() with /dev/fd. On FreeBSD it is a real
+## named FIFO instead (/tmp/sh-np-*), so the identifier is that name and not a
+## number -- a difference in the shell, not in vsearch. The test above, which
+## names its own FIFO, already covers the FIFO spelling on every platform.
+if [[ "$(echo <(:))" == /dev/fd/* ]] ; then
+    DESCRIPTION="issue 202: --relabel @ uses the descriptor name of a process substitution"
+    "${VSEARCH}" \
+        --fastq_filter <(printf "%s\n" "${FASTQ_ENTRY}") \
+        --quiet \
+        --relabel @ \
+        --fastaout - | \
+        grep -qx ">[0-9][0-9]*\.1" && \
+        success "${DESCRIPTION}" || \
+            failure "${DESCRIPTION}"
+fi
 
 DESCRIPTION="issue 202: --relabel @ uses the name /dev/stdin is spelled with"
 printf "%s\n" "${FASTQ_ENTRY}" | \
