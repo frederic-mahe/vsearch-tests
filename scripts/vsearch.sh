@@ -141,6 +141,57 @@ DESCRIPTION="vsearch rejects mixed commands"
 	success "${DESCRIPTION}"
 
 
+## ------------------------------------------------------- abbreviated options
+
+# getopt accepts any unambiguous abbreviation of a long option name, so
+# --thread names --threads and vsearch honours it. That used to be
+# silent, which is how --query was taken for --query_cov. The
+# abbreviation is still accepted, but it is now reported.
+DESCRIPTION="vsearch reports an abbreviated option"
+"${VSEARCH}" \
+    --thread 1 --version 2>&1 > /dev/null | \
+    grep -q "abbreviation of --threads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="vsearch still honours an abbreviated option"
+"${VSEARCH}" \
+    --thread 1 --version > /dev/null 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="vsearch does not report an option spelled out in full"
+"${VSEARCH}" \
+    --threads 1 --version 2>&1 > /dev/null | \
+    grep -q "abbreviation" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# the three forms the option-name recovery has to get right: an argument
+# attached with '=', a long option written with a single dash, and the
+# one-letter long options --h and --v
+DESCRIPTION="vsearch does not report --threads=1 as an abbreviation"
+"${VSEARCH}" \
+    --threads=1 --version 2>&1 > /dev/null | \
+    grep -q "abbreviation" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="vsearch does not report -threads 1 as an abbreviation"
+"${VSEARCH}" \
+    -threads 1 --version 2>&1 > /dev/null | \
+    grep -q "abbreviation" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="vsearch does not report --h as an abbreviation"
+"${VSEARCH}" \
+    --h 2>&1 > /dev/null | \
+    grep -q "abbreviation" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+
 #*****************************************************************************#
 #                                                                             #
 #                               memory leaks                                  #
