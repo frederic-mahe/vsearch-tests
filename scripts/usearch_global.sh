@@ -1052,7 +1052,7 @@ for DEF in 0 1 2 3 4 ; do
 done
 unset DEF
 
-DESCRIPTION="--usearch_global --iddef 5 is rejected"
+DESCRIPTION="--usearch_global --iddef 6 is rejected"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
@@ -1060,7 +1060,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --usearch_global - \
         --db "${DB}" \
         --id 1.0 \
-        --iddef 5 \
+        --iddef 6 \
         --blast6out /dev/null \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
