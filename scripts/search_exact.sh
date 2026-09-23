@@ -1770,6 +1770,117 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## the raw alignment score of an exact match is --match per column
+## (20 nt x 2)
+DESCRIPTION="--search_exact --userfields raw is --match times the length"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields raw \
+        --quiet | \
+    grep -qx "40" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the aligners score a column holding an ambiguous symbol as zero, so
+## an exact match holding one N scores 19 x 2 = 38, as it does with
+## --usearch_global (vsearch 2.32.0 and earlier reported 40)
+DESCRIPTION="--search_exact --userfields raw scores an N column as zero"
+DB=$(mktemp)
+printf ">d\nACGTACGTACNTACGTACGT\n" > "${DB}"
+printf ">q\nACGTACGTACNTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields raw \
+        --quiet | \
+    grep -qx "38" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## identical ambiguous symbols are not a match either: R against R
+## scores zero
+DESCRIPTION="--search_exact --userfields raw scores an R column as zero"
+DB=$(mktemp)
+printf ">d\nACGTACGTACRTACGTACGT\n" > "${DB}"
+printf ">q\nACGTACGTACRTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields raw \
+        --quiet | \
+    grep -qx "38" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a 70,000-nt exact match at --match 32767 scores 2,293,690,000, above
+## 2^31 - 1 (vsearch 2.32.0 and earlier wrapped it to -2001277296)
+DESCRIPTION="--search_exact --userfields raw holds a score above 2^31"
+DB=$(mktemp)
+awk 'BEGIN {printf ">d\n"; for (i = 0; i < 8750; i++) printf "ACGTTGCA"; printf "\n"}' > "${DB}"
+"${VSEARCH}" \
+    --search_exact "${DB}" \
+    --db "${DB}" \
+    --maxseqlength 100000 \
+    --match 32767 \
+    --userout - \
+    --userfields raw \
+    --quiet | \
+    grep -qx "2293690000" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## id5 (score-based identity) of an exact match without ambiguous
+## symbols is 100%
+DESCRIPTION="--search_exact --userfields id5 is 100.0 for an exact match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields id5 \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## id5 reads the score, in which an N column costs --match: 100 * (1 -
+## (40 - 38) / (6 * 20)) = 98.3, the value --usearch_global reports for
+## the same pair, while id stays at 100.0
+DESCRIPTION="--search_exact --userfields id5 is below 100 when the match holds an N"
+DB=$(mktemp)
+printf ">d\nACGTACGTACNTACGTACGT\n" > "${DB}"
+printf ">q\nACGTACGTACNTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields id+id5 \
+        --quiet | \
+    grep -qx "100.0	98.3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ---------------------------------------------------------------------- xee
 
 DESCRIPTION="--search_exact --xee strips ;ee=float from headers"
@@ -1843,6 +1954,42 @@ printf ">q\n%s\n" "${SEQ}" | \
         --match 2 \
         --blast6out /dev/null \
         --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --match sets the score of each column of an exact match: 20 x 5
+DESCRIPTION="--search_exact --match sets the raw score"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --match 5 \
+        --userout - \
+        --userfields raw \
+        --quiet | \
+    grep -qx "100" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ... except for a column holding an N, which scores zero: 19 x 5
+DESCRIPTION="--search_exact --match does not apply to an N column"
+DB=$(mktemp)
+printf ">d\nACGTACGTACNTACGTACGT\n" > "${DB}"
+printf ">q\nACGTACGTACNTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --match 5 \
+        --userout - \
+        --userfields raw \
+        --quiet | \
+    grep -qx "95" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
