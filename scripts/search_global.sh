@@ -491,6 +491,46 @@ printf ">q\n%s\n" "${QUERY_SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+DESCRIPTION="--search_global --iddef 5 is accepted"
+DB=$(mktemp)
+make_db > "${DB}"
+printf ">q\n%s\n" "${QUERY_SEQ}" | \
+    "${VSEARCH}" \
+        --search_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 5 \
+        --quiet \
+        --blast6out /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --iddef 5 (score-based identity): against a copy of the query missing
+## one internal nucleotide (30MD29M, raw 98), the 1-nt gap weighs its
+## penalty, 20 / (2 + 4) = 3.3 mismatches: 100 * (1 - 20 / (6 * 59)) =
+## 94.4%, where --iddef 2 reports 59 / 60 = 98.3%
+DESCRIPTION="--search_global --iddef 5 reports the score-based identity"
+DB=$(mktemp)
+printf ">d\nTTGACCGATGCAGTTAACCGTAGCCTGAATGCATACGTTCCAGATTGCAACGTTGACCA\n" > "${DB}"
+printf ">q\n%s\n" "${QUERY_SEQ}" | \
+    "${VSEARCH}" \
+        --search_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 5 \
+        --qmask none \
+        --dbmask none \
+        --quiet \
+        --userout - \
+        --userfields id+id2 | \
+    grep -qx "94.4	98.3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 DESCRIPTION="--search_global --self excludes a target with the query's label"
 DB=$(mktemp)
 printf ">q\n%s\n" "${NEAR}" > "${DB}"
