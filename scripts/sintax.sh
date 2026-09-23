@@ -249,10 +249,11 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB_FASTA}" "${DB_UDB}"
 unset SEQ DB_FASTA DB_UDB
 
-## A UDB and the fasta file it was built from are not interchangeable
-## for --sintax: makeudb_usearch runs DUST (its default --dbmask dust)
-## and stores the masked sequences, whereas --sintax never runs DUST on
-## a fasta database, so the two index different k-mers.
+## A UDB and the fasta file it was built from give the same results for
+## --sintax when both are masked the same way: makeudb_usearch runs DUST
+## (its default --dbmask dust) and stores the masked sequences, and
+## --sintax runs DUST on a fasta database under the same default (issue
+## 570; before that fix, --sintax never ran DUST on a fasta database).
 ##
 ## LOWCOMP is a 69-nt low-complexity reference that DUST masks
 ## completely (longest unmasked stretch: 1 nt, hence no 8-mer at all).
@@ -260,8 +261,8 @@ unset SEQ DB_FASTA DB_UDB
 ## query itself always holds enough unique k-mers to be bootstrapped
 ## (>= 32 = subset_size); only the reference index changes.
 
-## a fasta reference is never DUST-masked, so the entry is indexed
-DESCRIPTION="--sintax indexes a low-complexity fasta reference (no DUST)"
+## a fasta reference is DUST-masked by default, so the entry is not indexed
+DESCRIPTION="--sintax DUST-masks a low-complexity fasta reference by default"
 LOWCOMP="AATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATT"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 DB_FASTA=$(mktemp)
@@ -270,6 +271,26 @@ printf ">q\n%s%s\n" "${LOWCOMP}" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db "${DB_FASTA}" \
+        --randseed 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    grep --quiet "p:Lowcomplex" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB_FASTA}"
+unset LOWCOMP SEQ DB_FASTA
+
+## with --dbmask none, the fasta reference is not masked and the entry is indexed
+DESCRIPTION="--sintax --dbmask none indexes a low-complexity fasta reference"
+LOWCOMP="AATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATT"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+DB_FASTA=$(mktemp)
+printf ">low;tax=d:Bacteria,p:Lowcomplex\n%s\n" "${LOWCOMP}" > "${DB_FASTA}"
+printf ">q\n%s%s\n" "${LOWCOMP}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db "${DB_FASTA}" \
+        --dbmask none \
         --randseed 1 \
         --tabbedout /dev/stdout \
         --quiet 2>/dev/null | \
@@ -303,8 +324,8 @@ printf ">q\n%s%s\n" "${LOWCOMP}" "${SEQ}" | \
 rm -f "${DB_FASTA}" "${DB_UDB}"
 unset LOWCOMP SEQ DB_FASTA DB_UDB
 
-## hence the two database formats can classify the same query differently
-DESCRIPTION="--sintax fasta and default UDB results differ (dbmask)"
+## hence the two database formats classify the same query identically
+DESCRIPTION="--sintax fasta and default UDB results are identical (dbmask)"
 LOWCOMP="AATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATT"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 DB_FASTA=$(mktemp)
@@ -320,14 +341,14 @@ FROM_FASTA=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_FASTA}" \
                  --randseed 1 --tabbedout /dev/stdout --quiet 2>/dev/null)
 FROM_UDB=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_UDB}" \
                --randseed 1 --tabbedout /dev/stdout --quiet 2>/dev/null)
-[[ "${FROM_FASTA}" != "${FROM_UDB}" ]] && \
+[[ "${FROM_FASTA}" == "${FROM_UDB}" ]] && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB_FASTA}" "${DB_UDB}" "${QUERY}"
 unset LOWCOMP SEQ DB_FASTA DB_UDB QUERY FROM_FASTA FROM_UDB
 
-## building the UDB with --dbmask none restores the fasta behaviour
-DESCRIPTION="--sintax UDB built with --dbmask none matches the fasta database"
+## a UDB built with --dbmask none matches a fasta database used with --dbmask none
+DESCRIPTION="--sintax UDB built with --dbmask none matches the fasta database with --dbmask none"
 LOWCOMP="AATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATTAATAATAACAATAATGAATAATT"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 DB_FASTA=$(mktemp)
@@ -340,7 +361,7 @@ printf ">q\n%s%s\n" "${LOWCOMP}" "${SEQ}" > "${QUERY}"
     --dbmask none \
     --output "${DB_UDB}" \
     --quiet 2>/dev/null
-FROM_FASTA=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_FASTA}" \
+FROM_FASTA=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_FASTA}" --dbmask none \
                  --randseed 1 --tabbedout /dev/stdout --quiet 2>/dev/null)
 FROM_UDB=$("${VSEARCH}" --sintax "${QUERY}" --db "${DB_UDB}" \
                --randseed 1 --tabbedout /dev/stdout --quiet 2>/dev/null)
@@ -1435,16 +1456,17 @@ printf ">q\n%s\n" "${SEQ}" | \
         failure "${DESCRIPTION}"
 unset SEQ
 
-## issue 570: an all-lowercase reference database is silently unusable
-## with --sintax, which never runs DUST, so dust (the default) behaves
-## like soft and masks every reference k-mer. The reference then holds no
-## k-mer at all and every query comes back unclassified. vsearch warns.
-DESCRIPTION="issue 570: --sintax warns about an all-lowercase reference database"
+## issue 570: an all-lowercase reference database is unusable with
+## --dbmask soft, which masks every reference k-mer. The reference then
+## holds no k-mer at all and every query comes back unclassified.
+## vsearch warns.
+DESCRIPTION="issue 570: --sintax --dbmask soft warns about an all-lowercase reference database"
 SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
 printf ">q\n%s\n" "${SEQ}" | \
     "${VSEARCH}" \
         --sintax - \
         --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" | tr "ACGT" "acgt") \
+        --dbmask soft \
         --tabbedout /dev/null \
         --quiet 2>&1 | \
     grep --quiet "1 of 1 sequences yielded no k-mer for the index" && \
@@ -1465,6 +1487,23 @@ printf ">q\n%s\n" "${SEQ}" | \
     grep --quiet "yielded no k-mer for the index" && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+unset SEQ
+
+## issue 570: same reference, default --dbmask dust: DUST ignores the
+## case of the input, so the lowercase reference is indexed and the
+## query is classified
+DESCRIPTION="issue 570: --sintax classifies against an all-lowercase reference by default"
+SEQ="GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTAC"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --sintax - \
+        --db <(printf ">s;tax=d:Bacteria,p:Proteobacteria\n%s\n" "${SEQ}" | tr "ACGT" "acgt") \
+        --randseed 1 \
+        --tabbedout /dev/stdout \
+        --quiet 2>/dev/null | \
+    grep --quiet "p:Proteobacteria" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 unset SEQ
 
 ## an ordinary reference database must not trigger the warning
