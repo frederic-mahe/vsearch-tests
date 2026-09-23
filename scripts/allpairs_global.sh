@@ -475,12 +475,12 @@ for D in 0 1 2 3 4 ; do
 done
 unset D
 
-DESCRIPTION="--allpairs_global --iddef above 4 is rejected"
+DESCRIPTION="--allpairs_global --iddef above 5 is rejected"
 printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
     "${VSEARCH}" \
         --allpairs_global - \
         --acceptall \
-        --iddef 5 \
+        --iddef 6 \
         --blast6out /dev/null \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
