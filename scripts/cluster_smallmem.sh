@@ -465,12 +465,12 @@ for V in 0 1 2 3 4 ; do
 done
 unset V
 
-DESCRIPTION="--cluster_smallmem --iddef rejects value 5"
+DESCRIPTION="--cluster_smallmem --iddef rejects value 6"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_smallmem - \
         --id 1.0 \
-        --iddef 5 \
+        --iddef 6 \
         --minseqlength 1 \
         --centroids /dev/null \
         --quiet 2> /dev/null && \
