@@ -485,7 +485,20 @@ for V in 0 1 2 3 4 ; do
 done
 unset V
 
-DESCRIPTION="--cluster_fast --iddef rejects value 5"
+DESCRIPTION="--cluster_fast --iddef rejects value 6"
+printf ">s1\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 1.0 \
+        --iddef 6 \
+        --minseqlength 1 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --iddef 5 is the score-based identity definition
+DESCRIPTION="--cluster_fast --iddef accepts 5"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_fast - \
@@ -494,8 +507,39 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
         --minseqlength 1 \
         --centroids /dev/null \
         --quiet 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## a 40-nt sequence and a copy missing one internal nucleotide are
+## 97.5% identical under --iddef 2 (39 / 40): one cluster at --id
+## 0.95
+DESCRIPTION="--cluster_fast --iddef 2 gives 1 cluster for a 1-nt gap at --id 0.95"
+printf ">s1\nCCGGCTGACGTACTGTCATATGCTGAGCAATAATCGTATT\n>s2\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.95 \
+        --iddef 2 \
+        --centroids - \
+        --quiet | \
+    grep -c "^>" | \
+    grep -qx "1" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## under --iddef 5 the 1-nt gap weighs its penalty, 20 / (2 + 4) =
+## 3.3 mismatches: 100 * (1 - 20 / 234) = 91.5%, two clusters
+DESCRIPTION="--cluster_fast --iddef 5 gives 2 clusters for a 1-nt gap at --id 0.95"
+printf ">s1\nCCGGCTGACGTACTGTCATATGCTGAGCAATAATCGTATT\n>s2\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.95 \
+        --iddef 5 \
+        --centroids - \
+        --quiet | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--cluster_fast --iddef rejects negative value"
 printf ">s1\nAAAAAAAAAAAA\n" | \
