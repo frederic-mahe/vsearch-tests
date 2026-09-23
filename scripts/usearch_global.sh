@@ -1052,7 +1052,7 @@ for DEF in 0 1 2 3 4 ; do
 done
 unset DEF
 
-DESCRIPTION="--usearch_global --iddef 5 is rejected"
+DESCRIPTION="--usearch_global --iddef 6 is rejected"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
 printf ">q\n%s\n" "${SEQ}" | \
@@ -1060,7 +1060,7 @@ printf ">q\n%s\n" "${SEQ}" | \
         --usearch_global - \
         --db "${DB}" \
         --id 1.0 \
-        --iddef 5 \
+        --iddef 6 \
         --blast6out /dev/null \
         --quiet 2> /dev/null && \
     failure "${DESCRIPTION}" || \
@@ -1082,6 +1082,387 @@ printf ">q\n%s\n" "${SEQ}" | \
         --userout - \
         --quiet | \
     grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --iddef 5 is accepted"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --iddef 5 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --iddef 5 (score-based) produces 100% for an exact full-length match
+DESCRIPTION="--usearch_global --iddef 5 reports 100.0 for exact match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --iddef 5 \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## one substitution costs exactly one mismatch equivalent, so on a
+## gapless alignment --iddef 5 equals the column-based definitions:
+## 39 / 40 = 97.5%
+DESCRIPTION="--usearch_global --iddef 5 equals --iddef 2 for a single substitution"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 5 \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "97.5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a 1-nt internal gap costs --gapopen (20), i.e. 20 / (2 + 4) = 3.33
+## mismatch equivalents over the shortest length (39): 100 * (1 -
+## (78 - 58) / (6 * 39)) = 91.5%
+DESCRIPTION="--usearch_global --iddef 5 weighs a 1-nt internal gap by its penalty"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 5 \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "91.5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the same pair under the default definition: 39 / 40 = 97.5%
+DESCRIPTION="--usearch_global --iddef 2 counts a 1-nt internal gap as one column"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 2 \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "97.5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## with --gapopen 8I the same gap costs 8: 100 * (1 - 8 / 234) = 96.6%
+DESCRIPTION="--usearch_global --iddef 5 follows --gapopen"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 5 \
+        --gapopen 8I \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "96.6" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the unit is --match - --mismatch, not --match: with --match 0 the
+## score is -20 and 100 * (1 - 20 / (4 * 39)) = 87.2%
+DESCRIPTION="--usearch_global --iddef 5 is defined with --match 0"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 5 \
+        --match 0 \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "87.2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## column-based definitions do not read the score: still 97.5% with
+## --match 0 (issue 627)
+DESCRIPTION="--usearch_global --iddef 2 ignores --match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 2 \
+        --match 0 \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "97.5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## doubling every score and penalty doubles the raw score (116) and
+## the unit, so the identity does not move: 91.5%
+DESCRIPTION="--usearch_global --iddef 5 is invariant to scaling all scores"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 5 \
+        --match 4 \
+        --mismatch -8 \
+        --gapopen 40I/4E \
+        --gapext 4I/2E \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "91.5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## a 30-nt prefix of the target leaves a 10-nt terminal gap costing
+## 2 + 9 * 1 = 11: 100 * (1 - (60 - 49) / (6 * 30)) = 93.9%
+DESCRIPTION="--usearch_global --iddef 5 counts terminal gaps at their penalty"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATATGCTGAGCAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 5 \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "93.9" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## with free terminal gaps, a prefix costs nothing
+DESCRIPTION="--usearch_global --iddef 5 is 100.0 for a prefix with free terminal gaps"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATATGCTGAGCAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 5 \
+        --gapopen 0E \
+        --gapext 0E \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## an N scores zero, i.e. --match / (--match - --mismatch) = 1/3 of a
+## mismatch: 100 * (1 - 2 / 240) = 99.2%, where --iddef 2 reports 100.0
+DESCRIPTION="--usearch_global --iddef 5 counts an N as a third of a mismatch"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATANGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --iddef 5 \
+        --userout - \
+        --userfields id+id2 \
+        --quiet | \
+    grep -qx "99.2	100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --id applies to the score-based identity (91.5% here)
+DESCRIPTION="--usearch_global --iddef 5 accepts a hit at --id 0.91"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.91 \
+        --iddef 5 \
+        --userout - \
+        --userfields target \
+        --quiet | \
+    grep -qx "d" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --iddef 5 rejects a hit at --id 0.92"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.92 \
+        --iddef 5 \
+        --output_no_hits \
+        --userout - \
+        --userfields target \
+        --quiet | \
+    grep -qx "\*" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## --maxid too: 91.5% is above 0.91
+DESCRIPTION="--usearch_global --iddef 5 applies --maxid"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --maxid 0.91 \
+        --iddef 5 \
+        --output_no_hits \
+        --userout - \
+        --userfields target \
+        --quiet | \
+    grep -qx "\*" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the unit --match - --mismatch must be positive
+DESCRIPTION="--usearch_global --iddef 5 rejects --match not greater than --mismatch"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --iddef 5 \
+        --match -4 \
+        --mismatch -4 \
+        --blast6out /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ... a restriction that only --iddef 5 imposes
+DESCRIPTION="--usearch_global --iddef 2 accepts --match equal to --mismatch"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --iddef 2 \
+        --match -4 \
+        --mismatch -4 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## issue 627: the reporter's pair (263 matches, 2 mismatches, one
+## 1-nt internal gap) is at 98.9% under --iddef 2 whatever the
+## scores; --iddef 5 gives 100 * (1 - (530 - 498) / (6 * 265)) = 98.0%
+DESCRIPTION="issue 627: --iddef 5 reads the score (default scores)"
+DB=$(mktemp)
+printf ">B\nAACGCACATTGCGCCCGCCAGTATTCTGGCGGGCATGCCTGTCCGAGCGTCATTTCAACCCTCGAACCCCTCCGGGGGGTCGGCGTTGGGGATCGGCCCTCCTCTAGCGGGGGCCGTCTCCGAAATACAGTGGCGGTCTCGCCGCAGCCTCTCCTGCGCAGTAGTTTGCACACTCGCATCGGGAGCGCGGCGCGTCCACAGCCGTTAAACACCCAACTTCTGAAATGTTGACCTCGGATCAGGTAGGAATACCCGCTGAACTTAA\n" > "${DB}"
+printf ">A\nAACGCACATTGCGCCCGCCAGTATTCTGGCGGGCATGCCTGTCCGAGCGTCATTTCAACCCTCGAACCCCTCCGGGGGGTCGGCGTTGGGGATCGGCCCTCCCTTAGCGGGTGGCCGTCTCCGAAATACAGTGGCGGTCTCGCCGCAGCCTCTCCTGCGCAGTAGTTTGCACACTCGCATCGGGAGCGCGGCGCGTCCACAGCCGTTAAACACCCAACTTCTGAAATGTTGACCTCGGATCAGGTAGGAATACCCGCTGAACTTAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --iddef 5 \
+        --userout - \
+        --userfields id+id2 \
+        --quiet | \
+    grep -qx "98.0	98.9" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ... and with --match 0: 100 * (1 - 28 / (4 * 265)) = 97.4%
+DESCRIPTION="issue 627: --iddef 5 reads the score (--match 0)"
+DB=$(mktemp)
+printf ">B\nAACGCACATTGCGCCCGCCAGTATTCTGGCGGGCATGCCTGTCCGAGCGTCATTTCAACCCTCGAACCCCTCCGGGGGGTCGGCGTTGGGGATCGGCCCTCCTCTAGCGGGGGCCGTCTCCGAAATACAGTGGCGGTCTCGCCGCAGCCTCTCCTGCGCAGTAGTTTGCACACTCGCATCGGGAGCGCGGCGCGTCCACAGCCGTTAAACACCCAACTTCTGAAATGTTGACCTCGGATCAGGTAGGAATACCCGCTGAACTTAA\n" > "${DB}"
+printf ">A\nAACGCACATTGCGCCCGCCAGTATTCTGGCGGGCATGCCTGTCCGAGCGTCATTTCAACCCTCGAACCCCTCCGGGGGGTCGGCGTTGGGGATCGGCCCTCCCTTAGCGGGTGGCCGTCTCCGAAATACAGTGGCGGTCTCGCCGCAGCCTCTCCTGCGCAGTAGTTTGCACACTCGCATCGGGAGCGCGGCGCGTCCACAGCCGTTAAACACCCAACTTCTGAAATGTTGACCTCGGATCAGGTAGGAATACCCGCTGAACTTAA\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.1 \
+        --iddef 5 \
+        --match 0 \
+        --userout - \
+        --userfields id+id2 \
+        --quiet | \
+    grep -qx "97.4	98.9" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
@@ -6406,6 +6787,63 @@ printf ">q\n%s\n" "${SEQ}" | \
         --userfields id4 \
         --quiet | \
     grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## ---------------------------------------------------------------------- id5
+
+DESCRIPTION="--usearch_global --userfields id5 reports 100.0 for a full match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --userout - \
+        --userfields id5 \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## under the default --iddef 2, id is column-based (97.5) while id5
+## reads the score (91.5)
+DESCRIPTION="--usearch_global --userfields id5 is reported whatever --iddef is"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\nCCGGCTGACGTACTGTCATAGCTGAGCAATAATCGTATT\n" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 0.5 \
+        --userout - \
+        --userfields id+id5 \
+        --quiet | \
+    grep -qx "97.5	91.5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--usearch_global --userfields id5 is 0.0 when there is no hit"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --usearch_global - \
+        --db "${DB}" \
+        --id 1.0 \
+        --maxid 0.5 \
+        --output_no_hits \
+        --userout - \
+        --userfields target+id5 \
+        --quiet | \
+    grep -qx "\*	0.0" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 rm -f "${DB}"
