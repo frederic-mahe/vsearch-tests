@@ -439,6 +439,19 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## --iddef 5 is the score-based identity definition
+DESCRIPTION="--cluster_unoise --iddef accepts 5"
+printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --sizein \
+        --iddef 5 \
+        --minseqlength 1 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_unoise --maxaccepts accepts a positive integer"
 printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
