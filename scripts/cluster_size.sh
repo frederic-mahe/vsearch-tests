@@ -406,7 +406,20 @@ for V in 0 1 2 3 4 ; do
 done
 unset V
 
-DESCRIPTION="--cluster_size --iddef rejects value 5"
+DESCRIPTION="--cluster_size --iddef rejects value 6"
+printf ">s1\nAAAAAAAAAAAA\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 1.0 \
+        --iddef 6 \
+        --minseqlength 1 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+## --iddef 5 is the score-based identity definition
+DESCRIPTION="--cluster_size --iddef accepts 5"
 printf ">s1\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
         --cluster_size - \
@@ -415,8 +428,8 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
         --minseqlength 1 \
         --centroids /dev/null \
         --quiet 2> /dev/null && \
-    failure "${DESCRIPTION}" || \
-        success "${DESCRIPTION}"
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 DESCRIPTION="--cluster_size --maxaccepts accepts a positive integer"
 printf ">s1\nAAAAAAAAAAAA\n" | \
