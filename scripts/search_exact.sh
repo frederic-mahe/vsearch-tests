@@ -1844,6 +1844,43 @@ awk 'BEGIN {printf ">d\n"; for (i = 0; i < 8750; i++) printf "ACGTTGCA"; printf 
 rm -f "${DB}"
 unset DB
 
+## id5 (score-based identity) of an exact match without ambiguous
+## symbols is 100%
+DESCRIPTION="--search_exact --userfields id5 is 100.0 for an exact match"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+printf ">q\n%s\n" "${SEQ}" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields id5 \
+        --quiet | \
+    grep -qx "100.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## id5 reads the score, in which an N column costs --match: 100 * (1 -
+## (40 - 38) / (6 * 20)) = 98.3, the value --usearch_global reports for
+## the same pair, while id stays at 100.0
+DESCRIPTION="--search_exact --userfields id5 is below 100 when the match holds an N"
+DB=$(mktemp)
+printf ">d\nACGTACGTACNTACGTACGT\n" > "${DB}"
+printf ">q\nACGTACGTACNTACGTACGT\n" | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --userout - \
+        --userfields id+id5 \
+        --quiet | \
+    grep -qx "100.0	98.3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ---------------------------------------------------------------------- xee
 
 DESCRIPTION="--search_exact --xee strips ;ee=float from headers"
