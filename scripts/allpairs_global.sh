@@ -514,6 +514,35 @@ printf ">s1\nAAAA\n>s2\nAATT\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+DESCRIPTION="--allpairs_global --iddef 5 is accepted"
+printf ">s1\n%s\n>s2\n%s\n" "${SEQ}" "${SEQ}" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --iddef 5 \
+        --blast6out /dev/null \
+        --quiet && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --iddef 5 (score-based) is clamped at zero: a 10-nt poly-A against a
+## 30-nt poly-C, internal gaps forbidden, aligns as 10D30I with a raw
+## score of -42 (two terminal gaps, 2 + 9 and 2 + 29), which gives
+## 100 * (1 - (20 + 42) / (6 * 10)) = -3.3 before clamping
+DESCRIPTION="--allpairs_global --iddef 5 is clamped at 0.0"
+printf ">s1\nAAAAAAAAAA\n>s2\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n" | \
+    "${VSEARCH}" \
+        --allpairs_global - \
+        --acceptall \
+        --iddef 5 \
+        --gapopen "*I" \
+        --userout - \
+        --userfields id \
+        --quiet | \
+    grep -qx "0.0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## ---------------------------------------------------------------- maxaccepts
 
 DESCRIPTION="--allpairs_global --maxaccepts is accepted"
