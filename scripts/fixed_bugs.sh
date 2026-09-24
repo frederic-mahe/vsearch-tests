@@ -7210,7 +7210,11 @@ wait
 ## named FIFO instead (/tmp/sh-np-*), so the identifier is that name and not a
 ## number -- a difference in the shell, not in vsearch. The test above, which
 ## names its own FIFO, already covers the FIFO spelling on every platform.
-if [[ "$(echo <(:))" == /dev/fd/* ]] ; then
+##
+## The probe reads its own <() back: a FIFO writer blocks until a reader
+## opens it, and would otherwise hold the $() open forever on FreeBSD.
+procsub_name () { printf "%s\n" "${1}" ; cat "${1}" > /dev/null ; }
+if [[ "$(procsub_name <(:))" == /dev/fd/* ]] ; then
     DESCRIPTION="issue 202: --relabel @ uses the descriptor name of a process substitution"
     "${VSEARCH}" \
         --fastq_filter <(printf "%s\n" "${FASTQ_ENTRY}") \
