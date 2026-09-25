@@ -2098,6 +2098,52 @@ cmp -s "${TMP3}" "${TMP4}" && \
         failure "${DESCRIPTION}"
 rm -f "${TMP1}" "${TMP2}" "${TMP3}" "${TMP4}"
 
+# With 5 threads or more, the R2 records are read on a thread of their
+# own, ahead of the R1 records; where the two inputs stop must still be
+# reported as a sequential reader meets it.
+DESCRIPTION="fastq_mergepairs R2 one read longer across a chunk boundary is reported (8 threads)"
+TMP1=$(mktemp)
+TMP2=$(mktemp)
+for i in $(seq 500) ; do
+    printf "@s%d\n%s\n+\n%s\n" "${i}" "${FWD_20}" "${QUAL_20}"
+done > "${TMP1}"
+for i in $(seq 501) ; do
+    printf "@s%d\n%s\n+\n%s\n" "${i}" "${REV_20}" "${QUAL_20}"
+done > "${TMP2}"
+"${VSEARCH}" \
+    --fastq_mergepairs "${TMP1}" \
+    --reverse "${TMP2}" \
+    --threads 8 \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "More reverse reads than forward reads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${TMP1}" "${TMP2}"
+
+# R1 ends after 3 reads; the 4th R2 record is malformed: a sequential
+# reader parses it when it checks for more R2 reads
+DESCRIPTION="fastq_mergepairs malformed R2 record where R1 ends is a parse error (8 threads)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s%d\n%s\n+\n%s\n" 1 "${FWD_20}" "${QUAL_20}" 2 "${FWD_20}" "${QUAL_20}" 3 "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s%d\n%s\n+\n%s\n" 1 "${REV_20}" "${QUAL_20}" 2 "${REV_20}" "${QUAL_20}" 3 "${REV_20}" "${QUAL_20}" 4 "A!GT" "IIII") \
+    --threads 8 \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "Illegal sequence character" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+# ... but a malformed R2 record after that point is never reached: the
+# 4th R2 record exists, so R2 has more reads
+DESCRIPTION="fastq_mergepairs malformed R2 record past the R1 end is not reached (8 threads)"
+"${VSEARCH}" \
+    --fastq_mergepairs <(printf "@s%d\n%s\n+\n%s\n" 1 "${FWD_20}" "${QUAL_20}" 2 "${FWD_20}" "${QUAL_20}" 3 "${FWD_20}" "${QUAL_20}") \
+    --reverse <(printf "@s%d\n%s\n+\n%s\n" 1 "${REV_20}" "${QUAL_20}" 2 "${REV_20}" "${QUAL_20}" 3 "${REV_20}" "${QUAL_20}" 4 "${REV_20}" "${QUAL_20}" 5 "A!GT" "IIII") \
+    --threads 8 \
+    --fastqout /dev/null 2>&1 | \
+    grep -q "More reverse reads than forward reads" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------- the maxdiffpct guard ---
 
 # A pair with no alignment has best_overlap == 0, and the --fastq_maxdiffpct
