@@ -633,6 +633,25 @@ printf ">q\n%s\n" "${SEQ}" | \
 rm -f "${DB}"
 unset DB
 
+## results are written in query order, whatever the number of threads
+## (20,000 queries span several work chunks)
+DESCRIPTION="--search_exact --threads 4 writes results in query order"
+DB=$(mktemp)
+printf ">d\n%s\n" "${SEQ}" > "${DB}"
+awk -v seq="${SEQ}" 'BEGIN {for (i = 1; i <= 20000; i++) {print ">q" i; print seq}}' | \
+    "${VSEARCH}" \
+        --search_exact - \
+        --db "${DB}" \
+        --threads 4 \
+        --userout - \
+        --userfields query \
+        --quiet | \
+    cmp -s - <(awk 'BEGIN {for (i = 1; i <= 20000; i++) {print "q" i}}') && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 DESCRIPTION="--search_exact --threads above 1024 is rejected"
 DB=$(mktemp)
 printf ">d\n%s\n" "${SEQ}" > "${DB}"
