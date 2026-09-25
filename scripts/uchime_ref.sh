@@ -1044,6 +1044,30 @@ printf ">c1\n%s\n>p1\n%s\n>c2\n%s\n>p2\n%s\n" \
 rm -f "${DB}" "${QUERIES}"
 unset DB QUERIES
 
+## several threads detect several queries at once, but their results are
+## written in the order of the queries: the rows come out in input order
+## whatever the thread count (a binary writing results as they come
+## failed this test in 5 of 5 runs)
+DESCRIPTION="--uchime_ref --threads 4 reports queries in input order"
+DB=$(mktemp)
+QUERIES=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+for i in 1 2 3 4 5 6 7 8 ; do
+    printf ">c%d\n%s\n>p%d\n%s\n" "${i}" "${CHIMERA_AB}" "${i}" "${PARENT_A}"
+done > "${QUERIES}"
+"${VSEARCH}" \
+    --uchime_ref "${QUERIES}" \
+    --db "${DB}" \
+    --threads 4 \
+    --uchimeout - \
+    --quiet | \
+    awk -F'\t' '{printf "%s ", $2}' | \
+    grep -qx "c1 p1 c2 p2 c3 p3 c4 p4 c5 p5 c6 p6 c7 p7 c8 p8 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}" "${QUERIES}"
+unset DB QUERIES i
+
 DESCRIPTION="--uchime_ref --threads above 1024 is rejected"
 DB=$(mktemp)
 printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
