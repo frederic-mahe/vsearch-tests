@@ -1400,6 +1400,22 @@ printf ">s\n%s\n" "${PARENT_A}" | \
 rm -f "${DB}"
 unset DB
 
+DESCRIPTION="--uchime_ref --log summary counts every query"
+DB=$(mktemp)
+printf ">d\n%s\n" "${PARENT_A}" > "${DB}"
+printf ">s1\n%s\n>s2\n%s\n" "${PARENT_A}" "${PARENT_B}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --log - \
+        --chimeras /dev/null \
+        --quiet | \
+    grep -qxF -- "-: 0/2 chimeras (0.0%)" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## ------------------------------------------------------------- maxseqlength
 
 DESCRIPTION="--uchime_ref --maxseqlength is accepted"

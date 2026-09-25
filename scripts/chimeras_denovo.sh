@@ -4936,16 +4936,94 @@ printf ">s;size=1\nA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
-DESCRIPTION="chimeras_denovo: --threads > 1 triggers a warning (not multithreaded)"
+DESCRIPTION="chimeras_denovo: --threads > 1 triggers no warning (multithreaded)"
 printf ">s;size=1\nA\n" | \
     "${VSEARCH}" \
         --chimeras_denovo /dev/stdin \
         --chimeras /dev/null \
         --threads 2 \
         --quiet 2>&1 | \
-    grep -iq "warning" && \
+    grep -iq "does not support multithreading" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# with more than one thread, consecutive queries are detected together,
+# in batches of twice the number of threads: with two threads, the three
+# sequences below are detected at once, the chimera first against an
+# index that does not hold its parents yet. It must then be detected
+# again, once they are indexed, to get the single-threaded result.
+DESCRIPTION="chimeras_denovo: --threads 2 detects a chimera whose parents are in the same batch"
+A_START="TCCAGCTCCAATAGCGTATACTAAAGTTGTTGC"
+B_START="AGTTCATGGGCAGGGGCTCCCCGTCATTTACTG"
+A_END=$(rev <<< "${A_START}")
+B_END=$(rev <<< "${B_START}")
+printf ">parentA;size=50\n%s%s\n>parentB;size=49\n%s%s\n>chimeraAB;size=1\n%s%s\n" \
+    "${A_START}" "${A_END}" "${B_START}" "${B_END}" "${A_START}" "${B_END}" | \
+    "${VSEARCH}" \
+        --chimeras_denovo /dev/stdin \
+        --threads 2 \
+        --chimeras /dev/stdout \
+        --quiet | \
+    grep -qw ">chimeraAB;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+unset A_START B_START A_END B_END
+
+DESCRIPTION="chimeras_denovo: --threads 2 writes the same --tabbedout as --threads 1"
+A_START="TCCAGCTCCAATAGCGTATACTAAAGTTGTTGC"
+B_START="AGTTCATGGGCAGGGGCTCCCCGTCATTTACTG"
+A_END=$(rev <<< "${A_START}")
+B_END=$(rev <<< "${B_START}")
+INPUT=$(mktemp)
+ONE_THREAD=$(mktemp)
+TWO_THREADS=$(mktemp)
+printf ">parentA;size=50\n%s%s\n>parentB;size=49\n%s%s\n>chimeraAB;size=1\n%s%s\n" \
+    "${A_START}" "${A_END}" "${B_START}" "${B_END}" "${A_START}" "${B_END}" > "${INPUT}"
+"${VSEARCH}" \
+    --chimeras_denovo "${INPUT}" \
+    --threads 1 \
+    --tabbedout "${ONE_THREAD}" \
+    --quiet 2> /dev/null
+"${VSEARCH}" \
+    --chimeras_denovo "${INPUT}" \
+    --threads 2 \
+    --tabbedout "${TWO_THREADS}" \
+    --quiet 2> /dev/null
+[[ -s "${ONE_THREAD}" ]] && \
+    cmp -s "${ONE_THREAD}" "${TWO_THREADS}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${INPUT}" "${ONE_THREAD}" "${TWO_THREADS}"
+unset INPUT ONE_THREAD TWO_THREADS
+unset A_START B_START A_END B_END
+
+DESCRIPTION="chimeras_denovo: --threads 2 writes the same --alnout as --threads 1"
+A_START="TCCAGCTCCAATAGCGTATACTAAAGTTGTTGC"
+B_START="AGTTCATGGGCAGGGGCTCCCCGTCATTTACTG"
+A_END=$(rev <<< "${A_START}")
+B_END=$(rev <<< "${B_START}")
+INPUT=$(mktemp)
+ONE_THREAD=$(mktemp)
+TWO_THREADS=$(mktemp)
+printf ">parentA;size=50\n%s%s\n>parentB;size=49\n%s%s\n>chimeraAB;size=1\n%s%s\n" \
+    "${A_START}" "${A_END}" "${B_START}" "${B_END}" "${A_START}" "${B_END}" > "${INPUT}"
+"${VSEARCH}" \
+    --chimeras_denovo "${INPUT}" \
+    --threads 1 \
+    --alnout "${ONE_THREAD}" \
+    --quiet 2> /dev/null
+"${VSEARCH}" \
+    --chimeras_denovo "${INPUT}" \
+    --threads 2 \
+    --alnout "${TWO_THREADS}" \
+    --quiet 2> /dev/null
+[[ -s "${ONE_THREAD}" ]] && \
+    cmp -s "${ONE_THREAD}" "${TWO_THREADS}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${INPUT}" "${ONE_THREAD}" "${TWO_THREADS}"
+unset INPUT ONE_THREAD TWO_THREADS
+unset A_START B_START A_END B_END
 
 
 ## ------------------------------------------------------------------------ xee
