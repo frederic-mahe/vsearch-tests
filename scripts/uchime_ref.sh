@@ -991,12 +991,12 @@ printf ">s\n%s\n" "${PARENT_A}" | \
 rm -f "${DB}"
 unset DB
 
-## The manpage says the output order may vary when using multiple
-## threads. The order is all that varies: each query is compared against
-## the reference database alone, so the set of rows must be the same at
-## any thread count. Comparing the two runs sorted is what makes this
-## test independent of the order (comparing them raw would fail on a
-## perfectly correct binary).
+## Each query is compared against the reference database alone, so the
+## set of rows must be the same at any thread count. Comparing the two
+## runs sorted checks that content independently of the order; the order
+## itself is checked by the input-order tests below (results are written
+## in the order of the queries at any thread count since v2.33.0; before,
+## the order could vary with more than one thread).
 DESCRIPTION="--uchime_ref output content does not depend on --threads"
 DB=$(mktemp)
 QUERIES=$(mktemp)
