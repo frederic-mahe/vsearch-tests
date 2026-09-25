@@ -1127,16 +1127,79 @@ printf ">s\nA\n" | \
     success "${DESCRIPTION}" || \
 	failure "${DESCRIPTION}"
 
-DESCRIPTION="--uchime2_denovo --threads > 1 triggers a warning (not multithreaded)"
+DESCRIPTION="--uchime2_denovo --threads > 1 triggers no warning (multithreaded)"
 printf ">s\nA\n" | \
     "${VSEARCH}" \
         --uchime2_denovo - \
         --threads 2 \
         --quiet \
         --chimeras /dev/null 2>&1 | \
-    grep -iq "warning" && \
+    grep -iq "does not support multithreading" && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+# with more than one thread, consecutive queries are detected together,
+# in batches of twice the number of threads: with two threads, the three
+# sequences below are detected at once, the chimera first against an
+# index that does not hold its parents yet. It must then be detected
+# again, once they are indexed, to get the single-threaded result.
+DESCRIPTION="--uchime2_denovo --threads 2 detects a chimera whose parents are in the same batch"
+printf ">parentA;size=50\n%s\n>parentB;size=49\n%s\n>chimeraAB;size=1\n%s\n" \
+    "${PARENT_A}" "${PARENT_B}" "${CHIMERA_AB}" | \
+    "${VSEARCH}" \
+        --uchime2_denovo - \
+        --threads 2 \
+        --chimeras - \
+        --quiet | \
+    grep -qw ">chimeraAB;size=1" && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+DESCRIPTION="--uchime2_denovo --threads 2 writes the same --uchimeout as --threads 1"
+INPUT=$(mktemp)
+ONE_THREAD=$(mktemp)
+TWO_THREADS=$(mktemp)
+printf ">parentA;size=50\n%s\n>parentB;size=49\n%s\n>chimeraAB;size=1\n%s\n" \
+    "${PARENT_A}" "${PARENT_B}" "${CHIMERA_AB}" > "${INPUT}"
+"${VSEARCH}" \
+    --uchime2_denovo "${INPUT}" \
+    --threads 1 \
+    --uchimeout "${ONE_THREAD}" \
+    --quiet 2> /dev/null
+"${VSEARCH}" \
+    --uchime2_denovo "${INPUT}" \
+    --threads 2 \
+    --uchimeout "${TWO_THREADS}" \
+    --quiet 2> /dev/null
+[[ -s "${ONE_THREAD}" ]] && \
+    cmp -s "${ONE_THREAD}" "${TWO_THREADS}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${INPUT}" "${ONE_THREAD}" "${TWO_THREADS}"
+unset INPUT ONE_THREAD TWO_THREADS
+
+DESCRIPTION="--uchime2_denovo --threads 2 writes the same --uchimealns as --threads 1"
+INPUT=$(mktemp)
+ONE_THREAD=$(mktemp)
+TWO_THREADS=$(mktemp)
+printf ">parentA;size=50\n%s\n>parentB;size=49\n%s\n>chimeraAB;size=1\n%s\n" \
+    "${PARENT_A}" "${PARENT_B}" "${CHIMERA_AB}" > "${INPUT}"
+"${VSEARCH}" \
+    --uchime2_denovo "${INPUT}" \
+    --threads 1 \
+    --uchimealns "${ONE_THREAD}" \
+    --quiet 2> /dev/null
+"${VSEARCH}" \
+    --uchime2_denovo "${INPUT}" \
+    --threads 2 \
+    --uchimealns "${TWO_THREADS}" \
+    --quiet 2> /dev/null
+[[ -s "${ONE_THREAD}" ]] && \
+    cmp -s "${ONE_THREAD}" "${TWO_THREADS}" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${INPUT}" "${ONE_THREAD}" "${TWO_THREADS}"
+unset INPUT ONE_THREAD TWO_THREADS
 
 
 #*****************************************************************************#
