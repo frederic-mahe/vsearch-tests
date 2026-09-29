@@ -79,6 +79,7 @@ for test_script in vsearch.sh \
                        scramble.sh \
                        search_exact.sh \
                        search_global.sh \
+                       search_oligodb.sh \
                        sff_convert.sh \
                        shuffle.sh \
                        sintax.sh \
