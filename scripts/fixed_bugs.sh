@@ -4516,8 +4516,9 @@ printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTAC
         failure "${DESCRIPTION}"
 
 ## in the original report --cons_truncate produced "WARNING: Option
-## --cons_truncate is ignored"; it is now an implemented option (controls
-## terminal gaps in the consensus, see also issue 86 and cluster_fast.sh)
+## --cons_truncate is ignored"; it still does: terminal gaps already
+## vote in the consensus by default, and --cons_notruncate makes them
+## not vote (see issue 86 and cluster_fast.sh)
 DESCRIPTION="issue 97: --cluster_fast --consout accepts --cons_truncate"
 printf ">a\nACGTACGTACGTACGTACGTACGTACGTACGT\n>b\nACGTACGTACGTACGTACGTACGTACGTACGT\n" | \
     "${VSEARCH}" \

@@ -455,6 +455,107 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## --cons_notruncate: terminal gaps do not vote in the consensus (issue 86)
+DESCRIPTION="--cluster_fast --cons_notruncate is accepted"
+printf ">c\nACTGACCCAGT\n>m1\nACCCAGT\n>m2\nACCCAGT\n>m3\nACCCAGT\n>m4\nACCCAGT\n>m5\nACCCAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --consout /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the five members lack the first 4 nt of the centroid: by default,
+## their terminal gaps outvote the centroid at these positions
+DESCRIPTION="--cluster_fast terminal gaps vote in the consensus by default (issue 86)"
+printf ">c\nACTGACCCAGT\n>m1\nACCCAGT\n>m2\nACCCAGT\n>m3\nACCCAGT\n>m4\nACCCAGT\n>m5\nACCCAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --consout - \
+        --quiet 2> /dev/null | \
+    awk 'NR == 2' | \
+    grep -qx "ACCCAGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --cons_notruncate keeps positions covered by the centroid only (issue 86)"
+printf ">c\nACTGACCCAGT\n>m1\nACCCAGT\n>m2\nACCCAGT\n>m3\nACCCAGT\n>m4\nACCCAGT\n>m5\nACCCAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --consout - \
+        --quiet 2> /dev/null | \
+    awk 'NR == 2' | \
+    grep -qx "ACTGACCCAGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --cons_notruncate applies to the --msaout consensus (issue 86)"
+printf ">c\nACTGACCCAGT\n>m1\nACCCAGT\n>m2\nACCCAGT\n>m3\nACCCAGT\n>m4\nACCCAGT\n>m5\nACCCAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --msaout - \
+        --quiet 2> /dev/null | \
+    awk 'previous == ">consensus" {print} {previous = $0}' | \
+    grep -qx "ACTGACCCAGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --profile column 7 is the gap count; position 0 is covered by the
+## centroid only
+DESCRIPTION="--cluster_fast --profile counts terminal gaps by default (issue 86)"
+printf ">c\nACTGACCCAGT\n>m1\nACCCAGT\n>m2\nACCCAGT\n>m3\nACCCAGT\n>m4\nACCCAGT\n>m5\nACCCAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --profile - \
+        --quiet 2> /dev/null | \
+    awk -F "\t" '$1 == "0" {print $7}' | \
+    grep -qx "5" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --cons_notruncate --profile does not count terminal gaps (issue 86)"
+printf ">c\nACTGACCCAGT\n>m1\nACCCAGT\n>m2\nACCCAGT\n>m3\nACCCAGT\n>m4\nACCCAGT\n>m5\nACCCAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --profile - \
+        --quiet 2> /dev/null | \
+    awk -F "\t" '$1 == "0" {print $7}' | \
+    grep -qx "0" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## three members out of four lack the centroid's G at position 15:
+## that gap is internal, so it still outvotes the G
+DESCRIPTION="--cluster_fast --cons_notruncate internal gaps still vote (issue 86)"
+printf ">c\nACGTTGCAAGCTTCGGATCGGATCCATGCAT\n>m1\nACGTTGCAAGCTTCGATCGGATCCATGCAT\n>m2\nACGTTGCAAGCTTCGATCGGATCCATGCAT\n>m3\nACGTTGCAAGCTTCGATCGGATCCATGCAT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.9 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --consout - \
+        --quiet 2> /dev/null | \
+    awk 'NR == 2' | \
+    grep -qx "ACGTTGCAAGCTTCGATCGGATCCATGCAT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --consout: write cluster consensus sequences to filename
 DESCRIPTION="--cluster_fast --consout writes consensus sequences"
 printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
