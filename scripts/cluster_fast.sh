@@ -713,6 +713,62 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --maxclustersize: discard larger clusters from --clusters, --centroids,
+## --consout, --msaout and --profile (issue 263); three clusters of 3, 2
+## and 1 sequences, numbered 0, 1 and 2
+DESCRIPTION="--cluster_fast --maxclustersize is accepted"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --maxclustersize 2 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the remaining clusters keep their numbers: files 1 and 2, no file 0
+DESCRIPTION="--cluster_fast --maxclustersize keeps cluster numbers in --clusters file names (issue 263)"
+TMPDIR_=$(mktemp -d)
+PREFIX="${TMPDIR_}/c"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --maxclustersize 2 \
+        --clusters "${PREFIX}" \
+        --quiet 2> /dev/null
+[[ ! -e "${PREFIX}0" && -f "${PREFIX}1" && -f "${PREFIX}2" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${TMPDIR_}"
+unset PREFIX TMPDIR_
+
+DESCRIPTION="--cluster_fast --maxclustersize removes a larger cluster from --centroids (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --maxclustersize 2 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep "^>" | \
+    tr '\n' ' ' | \
+    grep -qx ">b1 >c1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --maxclustersize rejects 0"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --maxclustersize 0 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## --maxrejects: maximum number of non-matching targets
 DESCRIPTION="--cluster_fast --maxrejects accepts a positive integer"
 printf ">s1\nAAAAAAAAAAAA\n" | \
@@ -725,6 +781,215 @@ printf ">s1\nAAAAAAAAAAAA\n" | \
         --quiet 2> /dev/null && \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
+
+## --minclustersize: discard smaller clusters from --clusters, --centroids,
+## --consout, --msaout and --profile (issue 263). The input below gives
+## three clusters: a1-a3 (3 sequences, cluster 0), b1-b2 (2, cluster 1)
+## and c1 (1, cluster 2).
+DESCRIPTION="--cluster_fast --minclustersize is accepted"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 2 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --clusters writes a file for every cluster by default"
+TMPDIR_=$(mktemp -d)
+PREFIX="${TMPDIR_}/c"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --clusters "${PREFIX}" \
+        --quiet 2> /dev/null
+[[ -f "${PREFIX}0" && -f "${PREFIX}1" && -f "${PREFIX}2" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${TMPDIR_}"
+unset PREFIX TMPDIR_
+
+## the singleton cluster (number 2) gets no file at all
+DESCRIPTION="--cluster_fast --minclustersize creates no --clusters file for a smaller cluster (issue 263)"
+TMPDIR_=$(mktemp -d)
+PREFIX="${TMPDIR_}/c"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 2 \
+        --clusters "${PREFIX}" \
+        --quiet 2> /dev/null
+[[ -f "${PREFIX}0" && -f "${PREFIX}1" && ! -e "${PREFIX}2" ]] && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -rf "${TMPDIR_}"
+unset PREFIX TMPDIR_
+
+DESCRIPTION="--cluster_fast --minclustersize removes a smaller cluster from --centroids (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 2 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep "^>" | \
+    tr '\n' ' ' | \
+    grep -qx ">a1 >b1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --minclustersize removes a smaller cluster from --consout (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 2 \
+        --consout - \
+        --quiet 2> /dev/null | \
+    grep -c "^>" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --minclustersize removes a smaller cluster from --msaout (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 2 \
+        --msaout - \
+        --quiet 2> /dev/null | \
+    grep -c "^>consensus$" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --minclustersize removes a smaller cluster from --profile (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 2 \
+        --profile - \
+        --quiet 2> /dev/null | \
+    grep -c "^>centroid=" | \
+    grep -qx "2" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## --uc is written while clustering, before sizes are known: not filtered
+DESCRIPTION="--cluster_fast --minclustersize does not filter --uc (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 2 \
+        --uc - \
+        --centroids /dev/null \
+        --quiet 2> /dev/null | \
+    awk -F "\t" '$1 == "C"' | \
+    wc -l | \
+    grep -qw "3" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## without --sizein the size is the number of sequences: c1 (size=10)
+## is a 1-sequence cluster and is discarded
+DESCRIPTION="--cluster_fast --minclustersize counts sequences without --sizein (issue 263)"
+printf ">a1;size=1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2;size=1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>c1;size=10\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 2 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep "^>" | \
+    tr '\n' ' ' | \
+    grep -qx ">a1;size=1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## with --sizein the size is the sum of the abundances: c1 (size=10)
+## is a cluster of size 10, and a1-a2 one of size 2
+DESCRIPTION="--cluster_fast --minclustersize sums abundances with --sizein (issue 263)"
+printf ">a1;size=1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2;size=1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>c1;size=10\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --sizein \
+        --minclustersize 3 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep "^>" | \
+    tr '\n' ' ' | \
+    grep -qx ">c1;size=10 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the number of discarded clusters is reported on stderr, even with --quiet
+DESCRIPTION="--cluster_fast --minclustersize reports discarded clusters on stderr (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 2 \
+        --centroids /dev/null \
+        --quiet 2>&1 | \
+    grep -qx "minclustersize 2: 1 cluster discarded." && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --minclustersize warns when no filtered output is given (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 2 \
+        --uc /dev/null \
+        --quiet 2>&1 | \
+    grep -q "have no effect" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --minclustersize larger than --maxclustersize warns (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 3 \
+        --maxclustersize 2 \
+        --centroids /dev/null \
+        --quiet 2>&1 | \
+    grep -q "minclustersize is larger than --maxclustersize" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --minclustersize rejects 0"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize 0 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_fast --minclustersize rejects a negative value"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.97 \
+        --minclustersize -1 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
 
 ## --msaout: multiple sequence alignment per cluster
 DESCRIPTION="--cluster_fast --msaout writes an MSA with a consensus"

@@ -562,6 +562,59 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## --minclustersize, --maxclustersize: discard clusters out of the size
+## range from --clusters, --centroids, --consout, --msaout and --profile
+## (issue 263); three clusters of 3, 2 and 1 sequences (a1, b1, c1)
+DESCRIPTION="--cluster_unoise --minclustersize is accepted"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --minclustersize 2 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_unoise --maxclustersize is accepted"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --maxclustersize 2 \
+        --centroids /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_unoise --minclustersize removes a smaller cluster from --centroids (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --minclustersize 2 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep "^>" | \
+    tr '\n' ' ' | \
+    grep -qx ">a1 >b1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_unoise --maxclustersize removes a larger cluster from --centroids (issue 263)"
+printf ">a1\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a2\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>a3\nACGTTGCAAGCTTCGATCGGATCCATGCATTTGACGGA\n>b1\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>b2\nTTGCCATAGGCAATCGGTACCGATTACGGCATTAGCCT\n>c1\nGGATCCCTAGGTTACCAGTCAGTCGATCGAATTCCGAA\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --maxclustersize 2 \
+        --centroids - \
+        --quiet 2> /dev/null | \
+    grep "^>" | \
+    tr '\n' ' ' | \
+    grep -qx ">b1 >c1 " && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_unoise --msaout writes an MSA with a consensus"
 printf ">s1;size=16\nAAAAAAAAAAAA\n>s2;size=16\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
