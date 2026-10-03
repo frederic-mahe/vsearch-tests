@@ -332,6 +332,17 @@ printf "@s\nA\n+\nI\n" | \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
 
+## 4294967329 is 2^32 + 33: an argument beyond the int range must be
+## rejected, not wrapped into an accepted offset
+DESCRIPTION="--fastq_ascii value beyond the int range is rejected (4294967329)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_ascii 4294967329 \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## -------------------------------------------------------------- fastq_asciiout
 
 DESCRIPTION="--fastq_asciiout 33 is accepted"
@@ -369,6 +380,26 @@ printf "@s\nA\n+\nI\n" | \
         --fastqout /dev/null 2> /dev/null && \
     failure "${DESCRIPTION}" || \
         success "${DESCRIPTION}"
+
+## 4294967360 is 2^32 + 64
+DESCRIPTION="--fastq_asciiout value beyond the int range is rejected (4294967360)"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_asciiout 4294967360 \
+        --fastqout /dev/null 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
+DESCRIPTION="--fastq_asciiout value beyond the int range is reported as a bad offset"
+printf "@s\nA\n+\nI\n" | \
+    "${VSEARCH}" \
+        --fastq_convert - \
+        --fastq_asciiout 4294967360 \
+        --fastqout /dev/null 2>&1 | \
+    grep -q "argument to --fastq_asciiout must be 33 or 64" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
 
 # phred+33 to phred+64: quality char shifts by +31 (64 - 33)
 # 'I' = ASCII 73 = Phred 40; output 'h' = ASCII 104 = 64 + 40
