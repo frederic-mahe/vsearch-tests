@@ -556,6 +556,20 @@ printf ">c\nACGTTGCAAGCTTCGGATCGGATCCATGCAT\n>m1\nACGTTGCAAGCTTCGATCGGATCCATGCAT
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --cons_truncate asks for the opposite of --cons_notruncate
+DESCRIPTION="--cluster_fast --cons_notruncate and --cons_truncate are mutually exclusive"
+printf ">c\nACTGACCCAGT\n>m1\nACCCAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_fast - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --cons_truncate \
+        --consout /dev/null \
+        --quiet 2> /dev/null && \
+    failure "${DESCRIPTION}" || \
+        success "${DESCRIPTION}"
+
 ## --consout: write cluster consensus sequences to filename
 DESCRIPTION="--cluster_fast --consout writes consensus sequences"
 printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
