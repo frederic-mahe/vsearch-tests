@@ -1098,6 +1098,124 @@ printf ">s\n%s\n" "${PARENT_A}" | \
 rm -f "${DB}"
 unset DB
 
+## --------------------------------------------------------------- uchimealns
+
+## issue 159: the alignment is trimmed to the query. The query below is
+## taken from the middle of the parents (residues 11 to 33 of parentA,
+## then 34 to 56 of parentB), so both parents reach 10 nt beyond each
+## end of the query. These overhangs used to be printed as runs of
+## gaps on the query line.
+DESCRIPTION="--uchime_ref --uchimealns query row does not start with a gap (issue 159)"
+DB=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf ">chimeraMid\n%s\n" "${A_START:10}${B_END:0:23}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --alignwidth 0 \
+        --uchimealns - \
+        --quiet | \
+    awk '$1 == "Q" {print $3}' | \
+    grep -q "^[^-]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+DESCRIPTION="--uchime_ref --uchimealns query row does not end with a gap (issue 159)"
+DB=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf ">chimeraMid\n%s\n" "${A_START:10}${B_END:0:23}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --alignwidth 0 \
+        --uchimealns - \
+        --quiet | \
+    awk '$1 == "Q" {print $3}' | \
+    grep -q "[^-]$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the 10 residues of parentA before the query are not shown, so the
+## parentA row starts at position 11
+DESCRIPTION="--uchime_ref --uchimealns parent positions count from the parent start (issue 159)"
+DB=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf ">chimeraMid\n%s\n" "${A_START:10}${B_END:0:23}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --alignwidth 0 \
+        --uchimealns - \
+        --quiet | \
+    awk '$1 == "A" {print $2}' | \
+    grep -qx "11" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## same, with the query starting with parentB (residues 11 to 33 of
+## parentB, then 34 to 56 of parentA): parentB is now shown as the A
+## row, and the B row (parentA) starts after the 9 residues of
+## parentA aligned before the query
+DESCRIPTION="--uchime_ref --uchimealns positions are right when parents are swapped (issue 159)"
+DB=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf ">chimeraMid\n%s\n" "${B_START:10}${A_END:0:23}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --alignwidth 0 \
+        --uchimealns - \
+        --quiet | \
+    awk '$1 == "B" {print $2}' | \
+    grep -qx "10" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## when folded, the last block used to contain parent overhang only,
+## with a query row starting past its end (Q 47 ---------- 46)
+DESCRIPTION="--uchime_ref --uchimealns folded query rows never start past their end (issue 159)"
+DB=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf ">chimeraMid\n%s\n" "${A_START:10}${B_END:0:23}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --alignwidth 10 \
+        --uchimealns - \
+        --quiet | \
+    awk '$1 == "Q" {rows++ ; if ($2 > $NF) {past = 1}}
+         END {exit (rows > 0 && past == 0) ? 0 : 1}' && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
+## the last folded query row ends with the last residue of the query
+DESCRIPTION="--uchime_ref --uchimealns last folded query row ends at the query length (issue 159)"
+DB=$(mktemp)
+printf ">parentA\n%s\n>parentB\n%s\n" "${PARENT_A}" "${PARENT_B}" > "${DB}"
+printf ">chimeraMid\n%s\n" "${A_START:10}${B_END:0:23}" | \
+    "${VSEARCH}" \
+        --uchime_ref - \
+        --db "${DB}" \
+        --alignwidth 10 \
+        --uchimealns - \
+        --quiet | \
+    awk '$1 == "Q" {last = $0} END {print last}' | \
+    grep -qE "^Q +[0-9]+ [^ ]*[^- ] 46$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+rm -f "${DB}"
+unset DB
+
 ## --------------------------------------------------------------- uchimeout5
 
 DESCRIPTION="--uchime_ref --uchimeout5 is accepted"

@@ -655,6 +655,39 @@ printf ">s;size=1\n%s\n" "${PARENT_A}" | \
     success "${DESCRIPTION}" || \
         failure "${DESCRIPTION}"
 
+## --------------------------------------------------------------- uchimealns
+
+## issue 159: the alignment is trimmed to the query. The query below is
+## taken from the middle of the parents (residues 11 to 33 of parentA,
+## then 34 to 56 of parentB), so both parents reach 10 nt beyond each
+## end of the query. These overhangs used to be printed as runs of
+## gaps on the query line.
+DESCRIPTION="--uchime_denovo --uchimealns query row does not start with a gap (issue 159)"
+printf ">parentA;size=50\n%s\n>parentB;size=49\n%s\n>chimeraMid;size=1\n%s\n" \
+    "${PARENT_A}" "${PARENT_B}" "${A_START:10}${B_END:0:23}" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --alignwidth 0 \
+        --uchimealns - \
+        --quiet | \
+    awk '$1 == "Q" {print $3}' | \
+    grep -q "^[^-]" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--uchime_denovo --uchimealns query row does not end with a gap (issue 159)"
+printf ">parentA;size=50\n%s\n>parentB;size=49\n%s\n>chimeraMid;size=1\n%s\n" \
+    "${PARENT_A}" "${PARENT_B}" "${A_START:10}${B_END:0:23}" | \
+    "${VSEARCH}" \
+        --uchime_denovo - \
+        --alignwidth 0 \
+        --uchimealns - \
+        --quiet | \
+    awk '$1 == "Q" {print $3}' | \
+    grep -q "[^-]$" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 ## --------------------------------------------------------------- uchimeout5
 
 DESCRIPTION="--uchime_denovo --uchimeout5 is accepted"
