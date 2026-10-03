@@ -438,6 +438,68 @@ printf ">s1\nAAAAAAAAAAAA\n>s2\nCCCCCCCCCCCC\n" | \
 rm -rf "${TMPDIR_}"
 unset PREFIX TMPDIR_
 
+## --cons_notruncate: terminal gaps do not vote in the consensus (issue 86)
+DESCRIPTION="--cluster_smallmem --cons_notruncate is accepted"
+printf ">c\nCCCAGTCCATG\n>m1\nTTGACCCAGTCCATG\n>m2\nACCCAGTCCATG\n>m3\nACCCAGTCCATG\n>m4\nACCCAGTCCATG\n>m5\nACCCAGTCCATG\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.5 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --consout /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the centroid is the first sequence; m1 extends it by TTGA on the
+## left, m2 to m5 by A only
+DESCRIPTION="--cluster_smallmem --msaout left-justifies a left extension by default (issue 86)"
+printf ">c\nCCCAGTCCATG\n>m1\nTTGACCCAGTCCATG\n>m2\nACCCAGTCCATG\n>m3\nACCCAGTCCATG\n>m4\nACCCAGTCCATG\n>m5\nACCCAGTCCATG\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.5 \
+        --minseqlength 1 \
+        --msaout - \
+        --quiet 2> /dev/null | \
+    awk 'previous == ">m2" {print} {previous = $0}' | \
+    grep -qx "A---CCCAGTCCATG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## with --cons_notruncate, the A of m2 is aligned with the A of m1,
+## right before the centroid
+DESCRIPTION="--cluster_smallmem --cons_notruncate places a left extension next to the centroid (issue 86)"
+printf ">c\nCCCAGTCCATG\n>m1\nTTGACCCAGTCCATG\n>m2\nACCCAGTCCATG\n>m3\nACCCAGTCCATG\n>m4\nACCCAGTCCATG\n>m5\nACCCAGTCCATG\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.5 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --msaout - \
+        --quiet 2> /dev/null | \
+    awk 'previous == ">m2" {print} {previous = $0}' | \
+    grep -qx -e "---ACCCAGTCCATG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_smallmem --cons_notruncate consensus keeps the longest left extension (issue 86)"
+printf ">c\nCCCAGTCCATG\n>m1\nTTGACCCAGTCCATG\n>m2\nACCCAGTCCATG\n>m3\nACCCAGTCCATG\n>m4\nACCCAGTCCATG\n>m5\nACCCAGTCCATG\n" | \
+    "${VSEARCH}" \
+        --cluster_smallmem - \
+        --usersort \
+        --id 0.5 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --consout - \
+        --quiet 2> /dev/null | \
+    awk 'NR == 2' | \
+    grep -qx "TTGACCCAGTCCATG" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_smallmem --consout writes consensus sequences"
 printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \

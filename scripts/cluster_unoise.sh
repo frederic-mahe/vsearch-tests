@@ -400,6 +400,34 @@ printf ">s1;size=16\nAAAAAAAAAAAA\n>s2;size=16\nCCCCCCCCCCCC\n" | \
 rm -rf "${TMPDIR_}"
 unset PREFIX TMPDIR_
 
+## --cons_notruncate: terminal gaps do not vote in the consensus (issue 86)
+DESCRIPTION="--cluster_unoise --cons_notruncate is accepted"
+printf ">c;size=40\nCCCAGTCCATGACGT\n>m1;size=2\nACCCAGTCCATGACGT\n>m2;size=2\nACCCAGTCCATGACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --consout /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## two low-abundance members extend the centroid by one A on the left
+DESCRIPTION="--cluster_unoise --cons_notruncate keeps columns outside the centroid (issue 86)"
+printf ">c;size=40\nCCCAGTCCATGACGT\n>m1;size=2\nACCCAGTCCATGACGT\n>m2;size=2\nACCCAGTCCATGACGT\n" | \
+    "${VSEARCH}" \
+        --cluster_unoise - \
+        --minsize 1 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --consout - \
+        --quiet 2> /dev/null | \
+    awk 'NR == 2' | \
+    grep -qx "ACCCAGTCCATGACGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_unoise --consout writes consensus sequences"
 printf ">s1;size=16\nAAAAAAAAAAAA\n>s2;size=16\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \

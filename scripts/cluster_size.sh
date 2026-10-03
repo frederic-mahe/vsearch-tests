@@ -379,6 +379,48 @@ printf ">s1\nAAAAAAAAAAAA\n>s2\nCCCCCCCCCCCC\n" | \
 rm -rf "${TMPDIR_}"
 unset PREFIX TMPDIR_
 
+## --cons_notruncate: terminal gaps do not vote in the consensus (issue 86)
+DESCRIPTION="--cluster_size --cons_notruncate is accepted"
+printf ">c;size=3\nCCCAGT\n>m1;size=1\nACCCAGT\n>m2;size=1\nACCCAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --consout /dev/null \
+        --quiet 2> /dev/null && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+## the centroid is the most abundant sequence; two members extend it
+## by one A on the left, a column outside the centroid
+DESCRIPTION="--cluster_size --msaout censors columns outside the centroid by default (issue 86)"
+printf ">c;size=3\nCCCAGT\n>m1;size=1\nACCCAGT\n>m2;size=1\nACCCAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --msaout - \
+        --quiet 2> /dev/null | \
+    awk 'previous == ">consensus" {print} {previous = $0}' | \
+    grep -qx "+CCCAGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
+DESCRIPTION="--cluster_size --cons_notruncate keeps columns outside the centroid (issue 86)"
+printf ">c;size=3\nCCCAGT\n>m1;size=1\nACCCAGT\n>m2;size=1\nACCCAGT\n" | \
+    "${VSEARCH}" \
+        --cluster_size - \
+        --id 0.5 \
+        --minseqlength 1 \
+        --cons_notruncate \
+        --consout - \
+        --quiet 2> /dev/null | \
+    awk 'NR == 2' | \
+    grep -qx "ACCCAGT" && \
+    success "${DESCRIPTION}" || \
+        failure "${DESCRIPTION}"
+
 DESCRIPTION="--cluster_size --consout writes consensus sequences"
 printf ">s1\nAAAAAAAAAAAA\n>s2\nAAAAAAAAAAAA\n" | \
     "${VSEARCH}" \
